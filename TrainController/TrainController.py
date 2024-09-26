@@ -1,20 +1,44 @@
 class TrainController:
     def __init__(self):
-        self.commanded_speed = 0
-        self.commanded_authority = False
+        # Everything Displayed to the User
+        self.current_speed = 0.0
+        self.commanded_speed = 0.0
+        self.commanded_authority = 0.0
+        self.current_train_temperature = 72.0
+        self.power_command = 0.0
         self.next_station = ""
-        self.power_command = 0
-        self.current_velocity = 0
-        self.driver_emergency_brake_command = False
-        self.driver_service_brake_command = False
-        self.passenger_brake_command = False
-        self.actual_train_temperature = 72  # Default temp (in Celsius)
-        self.desired_train_temperature = 72  # Default set point
         self.failure_modes = {
             'engine_failure': False,
             'signal_pickup_failure': False,
             'brake_failure': False
         }
+        
+        # Everything Inputted by the User
+        self.setpoint_speed = 0.0
+        self.setpoint_speed_submit = False
+        self.desired_train_temperature = 72.0
+        self.train_id = 1
+        self.operation_mode = "Manual"
+        # MAKE SEPARATE CLASS FOR ENGINEER IN SEPARATE FILE
+        
+        # Everything Interactable for the User
+        self.driver_service_brake_command = False
+        self.driver_emergency_brake_command = False
+        self.status_modes = {
+            'interior_lights': False,   # False = Off, True = On
+            'exterior_lights': False,   # False = Off, True = On
+            'brake_status': False,      # False = Off, True = On
+            'right_door_status': False, # False = Closed, True = Open
+            'left_door_status': False   # False = Closed, True = Open
+        }
+        
+        # Engineering Kp and Ki Values from other file
+        self.kp = 0.0
+        self.ki = 0.0
+        
+        # Input from Train Model for Emergency Brake to be Applied
+        self.passenger_brake_command = False
+      
     
     # Input Handling Methods
     def set_commanded_speed(self, speed):
@@ -82,10 +106,10 @@ class TrainController:
                 print(f"Handling {failure}...")
                 # Implement the logic to handle failures (e.g., stop train, alert driver)
 
-# Example usage:
-train_controller = TrainController()
-train_controller.set_commanded_speed(80)
-train_controller.update_current_velocity(75)
-train_controller.set_train_temperature(20, 22)
-train_controller.apply_emergency_brake()
-train_controller.make_announcement("Arriving at next station.")
+if __name__ == "__main__":
+    train_controller = TrainController()
+    train_controller.set_commanded_speed(80)
+    train_controller.update_current_velocity(75)
+    train_controller.set_train_temperature(20, 22)
+    train_controller.apply_emergency_brake()
+    train_controller.make_announcement("Arriving at next station.")
