@@ -1,6 +1,6 @@
-from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem, QPushButton, QHeaderView, QLabel
+from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem, QHeaderView, QLabel
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QColor, QPalette, QBrush
+from PyQt6.QtGui import QColor, QBrush
 import sys
 
 class TrainEngineer:
@@ -55,6 +55,15 @@ class TrainEngineerUI(QWidget):
         header.setStyleSheet("QHeaderView::section { background-color: #D3D3D3; color: black; }")
         header.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         
+        # Set the default stylesheet for the table items
+        self.table.setStyleSheet("""
+            QTableWidget { color: black; }
+            QTableWidget::item { color: black; }
+            QTableWidget::item:selected { color: black; }
+            QTableWidget::item:editable { color: black; }
+        """)
+
+        
         self.update_table()
         layout.addWidget(self.table)
         
@@ -90,18 +99,19 @@ class TrainEngineerUI(QWidget):
             try:
                 kp = float(self.table.item(row, column).text())
                 self.engineer.set_kp(train_number, kp)
+                self.table.item(row, column).setForeground(QBrush(QColor(0, 0, 0)))  # Set text color to black
             except ValueError:
                 pass
         elif column == 2:  # Ki column
             try:
                 ki = float(self.table.item(row, column).text())
                 self.engineer.set_ki(train_number, ki)
+                self.table.item(row, column).setForeground(QBrush(QColor(0, 0, 0)))  # Set text color to black
             except ValueError:
                 pass
 
 if __name__ == "__main__":
     engineer = TrainEngineer()
-    
     app = QApplication(sys.argv)
     ui = TrainEngineerUI(engineer)
     ui.show()
