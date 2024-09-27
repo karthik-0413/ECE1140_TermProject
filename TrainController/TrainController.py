@@ -1,58 +1,52 @@
-import TrainControllerEngineer
+from TrainControllerEngineer import TrainEngineer
 
 class TrainController:
     def __init__(self):
         # Everything Displayed to the User
-        self.train_number = 0  # Default train number, can be set dynamically
-
-        # Initialize train-specific attributes
-        self.train_data = {}
-
-        # Method to initialize train data
-        def initialize_train_data(train_number):
-            return {
-            'current_speed': 0.0,
-            'commanded_speed': 0.0,
-            'commanded_authority': 0.0,
-            'current_train_temperature': 72.0,
-            'power_command': 0.0,
-            'next_station': "Shadyside",
-            'failure_modes': {
-                'engine_failure': False,
-                'signal_pickup_failure': False,
-                'brake_failure': False
-            },
-            'setpoint_speed': 0.0,
-            'setpoint_speed_submit': False,
-            'desired_train_temperature': 72.0,
-            'train_id': {
-                'train_id': train_number,
-                'kp': TrainControllerEngineer.get_kp(self, train_number),  # Default Kp value
-                'ki': TrainControllerEngineer.get_ki(self, train_number)   # Default Ki value
-            },
-            'operation_mode': "Manual",
-            'driver_service_brake_command': False,
-            'driver_emergency_brake_command': False,
-            'status_modes': {
-                'interior_lights': False,   # False = Off, True = On
-                'exterior_lights': False,   # False = Off, True = On
-                'brake_status': False,      # False = Off, True = On
-                'right_door_status': False, # False = Closed, True = Open
-                'left_door_status': False   # False = Closed, True = Open
-            },
-            'passenger_brake_command': False
-            }
-
-        # Initialize data for the default train number
-        self.train_data[self.train_number] = initialize_train_data(self.train_number)
+        self.current_speed = 0.0
+        self.commanded_speed = 0.0
+        self.commanded_authority = 0.0
+        self.current_train_temperature = 72.0
+        self.power_command = 0.0
+        self.next_station = "Shadyside"
+        self.failure_modes = {
+            'engine_failure': False,
+            'signal_pickup_failure': False,
+            'brake_failure': False
+        }
         
-        # Syntax to access variables -> self.train_number['current_speed'] = 0.0
-
-    def set_train_number(self, train_number):
-        self.train_number = train_number
-        if train_number not in self.train_data:
-            self.train_data[train_number] = self.initialize_train_data(train_number)
-        print(f"Train number set to {self.train_number}")
+        # Everything Inputted by the User
+        self.setpoint_speed = 0.0
+        self.setpoint_speed_submit = False
+        self.desired_train_temperature = 72.0
+        self.train_id = {
+            'train_id': 0.0,
+            'kp': 0.0,
+            'ki': 0.0
+        }
+        self.operation_mode = "Manual"
+        # MAKE SEPARATE CLASS FOR ENGINEER IN SEPARATE FILE
+        
+        # Everything Interactable for the User
+        self.driver_service_brake_command = False
+        self.driver_emergency_brake_command = False
+        self.status_modes = {
+            'interior_lights': False,   # False = Off, True = On
+            'exterior_lights': False,   # False = Off, True = On
+            'brake_status': False,      # False = Off, True = On
+            'right_door_status': False, # False = Closed, True = Open
+            'left_door_status': False   # False = Closed, True = Open
+        }
+        
+        # Engineering Kp and Ki Values from other file
+        self.kp = TrainEngineer.get_kp(self, self.train_id)
+        self.ki = TrainEngineer.get_ki(self, self.train_id)
+        
+        # Input from Train Model for Emergency Brake to be Applied
+        self.passenger_brake_command = False
+      
+    def print_Kp_Ki(self):
+        print(f'Train {self.train_id} Kp: {self.kp}, Ki: {self.ki}')
     
     # Input Handling Methods
     def set_commanded_speed(self, speed):
@@ -119,9 +113,24 @@ class TrainController:
             if triggered:
                 print(f"Handling {failure}...")
                 # Implement the logic to handle failures (e.g., stop train, alert driver)
+                
+    # def PID(Kp, Ki, Kd, setpoint, measurement):
+    #     global time, integral, time_prev, e_prev  # Value of offset - when the error is equal zero
+    #     offset = 320 
+    #     # PID calculations
+    #     e = setpoint - measurement 
+    #     P = Kp*e
+    #     integral = integral + Ki*e*(time - time_prev)
+    #     D = Kd*(e - e_prev)/(time - time_prev)  # calculate manipulated variable - MV 
+    #     MV = offset + P + integral + D 
+    #     # update stored data for next iteration
+    #     e_prev = e
+    #     time_prev = time
+    #     return MV
 
 if __name__ == "__main__":
     train_controller = TrainController()
+    train_controller.print_Kp_Ki()
     train_controller.set_commanded_speed(80)
     train_controller.update_current_velocity(75)
     train_controller.set_train_temperature(20, 22)
