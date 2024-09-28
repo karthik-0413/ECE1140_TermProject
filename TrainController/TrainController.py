@@ -1,8 +1,11 @@
 from TrainControllerEngineer import TrainEngineer
+from PyQt6.QtCore import QTimer, QElapsedTimer
 
 class TrainController:
     def __init__(self):
+        
         # Everything Displayed to the User
+        self.velocity_commanded = 0.0
         self.current_speed = 0.0
         self.commanded_speed = 0.0
         self.commanded_authority = 0.0
@@ -19,13 +22,8 @@ class TrainController:
         self.setpoint_speed = 0.0
         self.setpoint_speed_submit = False
         self.desired_train_temperature = 72.0
-        self.train_id = {
-            'train_id': 0.0,
-            'kp': 0.0,
-            'ki': 0.0
-        }
+        self.train_id = 1
         self.operation_mode = "Manual"
-        # MAKE SEPARATE CLASS FOR ENGINEER IN SEPARATE FILE
         
         # Everything Interactable for the User
         self.driver_service_brake_command = False
@@ -39,100 +37,181 @@ class TrainController:
         }
         
         # Engineering Kp and Ki Values from other file
-        self.kp = TrainEngineer.get_kp(self, self.train_id)
-        self.ki = TrainEngineer.get_ki(self, self.train_id)
+        self._kp = 0.0
+        self._ki = 0.0
         
         # Input from Train Model for Emergency Brake to be Applied
         self.passenger_brake_command = False
+        
+        # For Timer
+        self.elapsed_timer = QElapsedTimer()
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.update_speed)
       
-    def print_Kp_Ki(self):
-        print(f'Train {self.train_id} Kp: {self.kp}, Ki: {self.ki}')
+    def update_Kp_and_Ki(self):
+        self._kp = TrainEngineer.get_kp(self)
+        self._ki = TrainEngineer.get_ki(self)
+        print(f'Train {self.train_id} Kp: {self._kp}, Ki: {self._ki}')
+        
+    # Setting Velocity Commanded for the block diagram
+    def set_velocity_command(self):
+        if self.setpoint_speed > self.commanded_speed:
+            self.velocity_commanded = self.commanded_speed
+        else: 
+            self.velocity_commanded = self.setpoint_speed
+            
+        print(f"Velocity Command set to {self.velocity_commanded} km/h")
     
-    # Input Handling Methods
+    # Setting Commanded Speed
     def set_commanded_speed(self, speed):
         self.commanded_speed = speed
         print(f"Commanded Speed set to {self.commanded_speed} km/h")
 
+    # Setting Commanded Authority
     def set_commanded_authority(self, authority):
         self.commanded_authority = authority
         print(f"Commanded Authority set to {self.commanded_authority}")
-
+        
+    # Updating Train Authority
+    def update_authority(self, authority, distance_traveled):
+        self.commanded_authority = authority - distance_traveled
+        print(f"Commanded Authority updated to {self.commanded_authority}")
+        
+    # Setting Setpoint Speed
+    def set_setpoint_speed(self, speed):
+        self.setpoint_speed = speed
+        print(f"Setpoint Speed set to {self.setpoint_speed} km/h")
+        
+    # Setting Current Temperature
+    def set_current_temperature(self, temperature):
+        self.current_train_temperature = temperature
+        print(f"Current Train Temperature set to {self.current_train_temperature}°F")
+        
+    # Setting Power Command
+    def set_power_command(self, power):
+        self.power_command = power
+        print(f"Power Command set to {self.power_command} kW")
+        
+    # Updating Current Velocity
     def update_current_velocity(self, velocity):
         self.current_velocity = velocity
         print(f"Current Velocity updated to {self.current_velocity} km/h")
+        
+    # Updating the speed as the brakes are pressed
+    def calculate_speed(u, a, t):
+        """
+        Calculate the speed of the train after time t with deceleration a.
 
+        Parameters:
+        u (float): Initial speed (m/s).
+        a (float): Deceleration (m/s^2).
+        t (float): Time (s).
+
+        Returns:
+        float: Speed after time t.
+        """
+        return u + a * t
+    
+    def start_braking(self):
+        self.elapsed_timer.start()
+        self.timer.start(100)  # Update every 100 ms
+
+    def stop_braking(self):
+        self.timer.stop()
+        # Update initial speed to the current speed for the next braking session
+        self.initial_speed = self.current_speed
+
+    def update_speed(self):
+        elapsed_time = self.elapsed_timer.elapsed() / 1000  # Convert ms to seconds
+        new_speed = self.calculate_speed(self.initial_speed * 0.44704, self.deceleration, elapsed_time) / 0.44704  # Convert m/s to mph
+        self.current_speed = new_speed
+        if new_speed <= 0:
+            self.timer.stop()
+        
+    # Triggering Failure Modes (Input in the actual Failure Name)
     def trigger_failure_mode(self, failure_type):
         if failure_type in self.failure_modes:
             self.failure_modes[failure_type] = True
+            self.apply_emergency_brake()
             print(f"Failure Mode Triggered: {failure_type}")
+            # if failure_type == 'signal_pickup_failure':
+                # STOP UPDATING THE SPEED AND AUTHORITY
+                # Commanded Speed will remain the same, since it always stays the same
+                # But, commanded authority will not be updated anymore until it is fixed
         else:
             print(f"Unknown failure type: {failure_type}")
-
+        
+    
+    # Passenger Brake has been activated
     def passenger_brake(self):
         self.passenger_brake_command = True
+        self.apply_emergency_brake()
         print("Passenger Brake Command Activated")
+        
+    
+    # Graudally updating the train temperature
+    def update_train_temperature(self, temperature):
+        self.current_train_temperature = temperature
+        print(f"Train Temperature updated to {self.current_train_temperature}°F")
 
-    def set_train_temperature(self, actual_temp, desired_temp):
-        self.actual_train_temperature = actual_temp
-        self.desired_train_temperature = desired_temp
-        print(f"Train temperature set to {self.actual_train_temperature}°C, Desired: {self.desired_train_temperature}°C")
+
+
+
+
 
     # Output Actions
+    
+    # When pressed by the driver (different deceleartion rate)
     def apply_emergency_brake(self):
         print("Emergency Brake Activated!")
         # Additional logic for stopping the train
+        # Add logic for stopping train using Physics equations
 
+    # When pressed by the driver (different deceleration rate)
     def apply_service_brake(self):
         print("Service Brake Applied.")
         # Logic to gradually slow down the train
-
-    def control_power(self, power_on):
-        if power_on:
-            print("Power Command: ON")
-        else:
-            print("Power Command: OFF")
-
-    def control_doors(self, open_doors):
+         # Add logic for stopping train using Physics equations
+         
+         
+    # When the driver wants to open the right door
+    def control_right_doors(self, open_doors):
         if open_doors:
-            print("Doors Opening")
+            print("Right Doors Opening")
         else:
-            print("Doors Closing")
+            print("Right Doors Closing")
+            
+     # When the driver wants to open the left door
+    def control_left_doors(self, open_doors):
+        if open_doors:
+            print("Left Doors Opening")
+        else:
+            print("Left Doors Closing")
 
-    def control_lights(self, lights_on):
+    # When the driver wants to turn on the exterior lights
+    def control_exterior_lights(self, lights_on):
         if lights_on:
-            print("Lights ON")
+            print("Exterior Lights ON")
         else:
-            print("Lights OFF")
+            print("Exterior Lights OFF")
+            
+    # When the driver wants to turn on the interior lights
+    def control_interior_lights(self, lights_on):
+        if lights_on:
+            print("Interior Lights ON")
+        else:
+            print("Interior Lights OFF")
 
+    # Write the message that has to be announced
     def make_announcement(self, message):
         print(f"Announcement: {message}")
 
-    # Failure handling based on inputs
-    def handle_failures(self):
-        for failure, triggered in self.failure_modes.items():
-            if triggered:
-                print(f"Handling {failure}...")
-                # Implement the logic to handle failures (e.g., stop train, alert driver)
                 
-    # def PID(Kp, Ki, Kd, setpoint, measurement):
-    #     global time, integral, time_prev, e_prev  # Value of offset - when the error is equal zero
-    #     offset = 320 
-    #     # PID calculations
-    #     e = setpoint - measurement 
-    #     P = Kp*e
-    #     integral = integral + Ki*e*(time - time_prev)
-    #     D = Kd*(e - e_prev)/(time - time_prev)  # calculate manipulated variable - MV 
-    #     MV = offset + P + integral + D 
-    #     # update stored data for next iteration
-    #     e_prev = e
-    #     time_prev = time
-    #     return MV
-
+                
 if __name__ == "__main__":
     train_controller = TrainController()
-    train_controller.print_Kp_Ki()
+    train_controller.update_Kp_and_Ki()
     train_controller.set_commanded_speed(80)
     train_controller.update_current_velocity(75)
-    train_controller.set_train_temperature(20, 22)
     train_controller.apply_emergency_brake()
     train_controller.make_announcement("Arriving at next station.")
