@@ -1,12 +1,14 @@
 from TrainControllerEngineer import TrainEngineer
 from PyQt6.QtCore import QTimer, QElapsedTimer
+import math
 
 class TrainController:
     def __init__(self):
         
         # Everything Displayed to the User
         self.velocity_commanded = 0.0
-        self.current_speed = 0.0
+        self.current_speed = 40.0
+        self.initial_speed = 40.0
         self.commanded_speed = 0.0
         self.commanded_authority = 0.0
         self.current_train_temperature = 72.0
@@ -42,6 +44,10 @@ class TrainController:
         
         # Input from Train Model for Emergency Brake to be Applied
         self.passenger_brake_command = False
+        
+        # Values for the Braking System
+        self.service_deceleration = -1.2  # m/s^2
+        self.emergency_deceleration = -2.73  # m/s^2
         
         # For Timer
         self.elapsed_timer = QElapsedTimer()
@@ -97,8 +103,15 @@ class TrainController:
         self.current_velocity = velocity
         print(f"Current Velocity updated to {self.current_velocity} km/h")
         
+    def update_current_speed(self, speed):
+        self.current_speed = speed
+        print(f"Current Speed updated to {self.current_speed} km/h")
+        
+    def get_current_speed(self):    
+        return self.current_speed
+        
     # Updating the speed as the brakes are pressed
-    def calculate_speed(u, a, t):
+    def calculate_speed(self, u, a, t):
         """
         Calculate the speed of the train after time t with deceleration a.
 
@@ -110,11 +123,12 @@ class TrainController:
         Returns:
         float: Speed after time t.
         """
-        return u + a * t
+        return u + (a * t)
     
     def start_braking(self):
         self.elapsed_timer.start()
-        self.timer.start(100)  # Update every 100 ms
+        print("Braking Started")
+        self.timer.start(1000)  # Update every 100 ms
 
     def stop_braking(self):
         self.timer.stop()
@@ -123,9 +137,23 @@ class TrainController:
 
     def update_speed(self):
         elapsed_time = self.elapsed_timer.elapsed() / 1000  # Convert ms to seconds
-        new_speed = self.calculate_speed(self.initial_speed * 0.44704, self.deceleration, elapsed_time) / 0.44704  # Convert m/s to mph
-        self.current_speed = new_speed
-        if new_speed <= 0:
+        if self.driver_emergency_brake_command:
+            print("Emergency Brake Applied Here")
+            new_speed = self.calculate_speed(self.initial_speed * 0.44704, self.emergency_deceleration, elapsed_time) / 0.44704
+        else:
+            new_speed = self.calculate_speed(self.initial_speed * 0.44704, self.service_deceleration, elapsed_time) / 0.44704
+        
+        # Prevent the speed from going negative
+        if new_speed < 0:
+            new_speed = 0.0
+        
+        self.update_current_speed(new_speed)
+        self.current_speed = round(new_speed, 2)
+        print(f"Current Time: {elapsed_time} s")
+        print(f"Current Speed: {self.current_speed} km/h")
+        
+        if new_speed == 0.0:
+            print("Train Stopped")
             self.timer.stop()
         
     # Triggering Failure Modes (Input in the actual Failure Name)
@@ -163,15 +191,17 @@ class TrainController:
     
     # When pressed by the driver (different deceleartion rate)
     def apply_emergency_brake(self):
+        self.driver_emergency_brake_command = True
         print("Emergency Brake Activated!")
         # Additional logic for stopping the train
-        # Add logic for stopping train using Physics equations
+        # Add logic for stopping train using Physics equations - Done in update_speed()
 
     # When pressed by the driver (different deceleration rate)
     def apply_service_brake(self):
+        self.driver_service_brake_command = True
         print("Service Brake Applied.")
         # Logic to gradually slow down the train
-         # Add logic for stopping train using Physics equations
+         # Add logic for stopping train using Physics equations - Done in update_speed()
          
          
     # When the driver wants to open the right door
@@ -210,7 +240,10 @@ class TrainController:
                 
 if __name__ == "__main__":
     train_controller = TrainController()
-    train_controller.update_Kp_and_Ki()
+    # Create a QTimer to call update_Kp_and_Ki at regular intervals
+    update_timer = QTimer()
+    update_timer.timeout.connect(train_controller.update_Kp_and_Ki)
+    update_timer.start(1000)  # Update every 1000 ms (1 second)
     train_controller.set_commanded_speed(80)
     train_controller.update_current_velocity(75)
     train_controller.apply_emergency_brake()

@@ -1,14 +1,21 @@
 from PyQt6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QLineEdit,
-    QPushButton, QComboBox, QSlider, QCheckBox, QFrame, QSizePolicy, QSpacerItem
+    QPushButton, QComboBox, QSlider, QCheckBox, QFrame, QSizePolicy, QSpacerItem, QSpinBox
 )
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QElapsedTimer, QTimer
 from PyQt6.QtGui import QIcon
+from TrainController import TrainController
 
 
 class TrainControllerUI(QWidget):
     def __init__(self):
         super().__init__()
+        self.train_controller = TrainController()
+        # For Timer
+        self.elapsed_timer = QElapsedTimer()
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.train_controller.update_speed)
+        
         self.setWindowTitle("Train Controller")
         self.setStyleSheet("background-color: lightgray;")
 
@@ -17,100 +24,147 @@ class TrainControllerUI(QWidget):
         main_layout.setContentsMargins(30, 15, 30, 10)
 
         # Tabs and Main Header
-        tab_layout = QHBoxLayout()
-        tab1 = QLabel("Train Controller")
-        tab2 = QLabel("Engineer's View")
-        tab3 = QLabel("Test Bench")
-        tab_layout.addWidget(tab1)
-        tab_layout.addWidget(tab2)
-        tab_layout.addWidget(tab3)
+        # tab_layout = QHBoxLayout()
+        # tab1 = QLabel("Train Controller")
+        # tab2 = QLabel("Engineer's View")
+        # tab3 = QLabel("Test Bench")
+        # tab_layout.addWidget(tab1)
+        # tab_layout.addWidget(tab2)
+        # tab_layout.addWidget(tab3)
 
         # Title Label
         title_banner = QHBoxLayout()
+        title_banner.setSpacing(0)
         title_label = QLabel("Train Controller")
-        title_label.setStyleSheet("font-size: 30px; font-weight: bold; color: black; background-color: blue;")
+        title_label.setStyleSheet("font: Times New Roman; font-size: 30px; font-weight: bold; color: white; background-color: blue; border-radius: 10px; padding: 10px;")
         title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        title_banner.addWidget(title_label)
+
+        # Create a container widget for the title banner to avoid the main layout's margin restriction
+        title_container = QWidget()
+        title_container.setLayout(title_banner)
+        title_container.setContentsMargins(0, 0, 0, 0)
+        main_layout.addWidget(title_container)
 
         # Train ID Combo Box in the header
-        self.train_id_combo = QComboBox()
-        self.train_id_combo.addItems(["1", "2", "3"])
-        self.train_id_combo.setStyleSheet("background-color: white; color: black;")
-        self.train_id_combo.setEnabled(False)
-        title_banner.addWidget(title_label, 3)
-        title_banner.addWidget(QLabel("Train ID:"), 0)
-        title_banner.addWidget(self.train_id_combo, 0)
+        # self.train_id_combo = QComboBox()
+        # self.train_id_combo.addItems(["1", "2", "3"])
+        # self.train_id_combo.setStyleSheet("background-color: white; color: black;")
+        # self.train_id_combo.setEnabled(False)
+        # title_banner.addWidget(title_label, 3)
+        # title_banner.addWidget(QLabel("Train ID:"), 0)
+        # title_banner.addWidget(self.train_id_combo, 0)
 
         # Main Grid Layout for UI Elements
         main_grid = QGridLayout()
 
         # LEFT SECTION (Speed Controls and Operation Mode)
         # Speed Information
+        current_speed_box = QVBoxLayout()
         current_speed_label = QLabel("Current Speed:")
-        current_speed_label.setStyleSheet("font-size: 14px; font-weight: bold; color: black; margin-top: 50px; margin-right: 100px")
-        main_grid.addWidget(current_speed_label, 0, 0)
-        self.current_speed_edit = QLineEdit("50")
+        current_speed_label.setStyleSheet("padding-top: 10px; font-size: 14px; font-weight: bold; color: black; margin-top: 0px; margin-right: 100px")
+        
+        current_speed = self.train_controller.get_current_speed()
+        self.current_speed_edit = QLineEdit(str(current_speed))
+        self.timer.timeout.connect(lambda: self.train_controller.update_current_speed(current_speed))
         self.current_speed_edit.setText(self.current_speed_edit.text() + " mph")
         self.current_speed_edit.setEnabled(False)
-        self.current_speed_edit.setStyleSheet("margin-bottom: -20px; background-color: lightgray; max-width: 100px; border-radius: 5px; color: black; margin-bottom: 10px; border: 2px solid black;")
-        main_grid.addWidget(self.current_speed_edit, 1, 0)
+        self.current_speed_edit.setStyleSheet("background-color: lightgray; max-width: 100px; border-radius: 5px; color: black; border: 2px solid black; padding: 2px;")
+        current_speed_box.addWidget(current_speed_label)
+        current_speed_box.addWidget(self.current_speed_edit)
+        current_speed_box.addSpacerItem(QSpacerItem(0, 20, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed))
 
+        main_grid.addLayout(current_speed_box, 0, 0)
+
+
+        commanded_speed_box = QVBoxLayout()
         commanded_speed_label = QLabel("Commanded Speed:")
         commanded_speed_label.setStyleSheet("font-size: 14px; font-weight: bold; color: black;")
-        main_grid.addWidget(commanded_speed_label, 2, 0)
         self.commanded_speed_edit = QLineEdit("55")
         self.commanded_speed_edit.setText(self.commanded_speed_edit.text() + " mph")
         self.commanded_speed_edit.setEnabled(False)
-        self.commanded_speed_edit.setStyleSheet("background-color: lightgray; max-width: 100px; border-radius: 5px; color: black; margin-bottom: 10px; border: 2px solid black;")
-        main_grid.addWidget(self.commanded_speed_edit, 3, 0)
+        self.commanded_speed_edit.setStyleSheet("background-color: lightgray; max-width: 100px; border-radius: 5px; color: black; border: 2px solid black; padding: 2px;")
+        commanded_speed_box.addWidget(commanded_speed_label)
+        commanded_speed_box.addWidget(self.commanded_speed_edit)
+        commanded_speed_box.addSpacerItem(QSpacerItem(0, 20, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed))
+        main_grid.addLayout(commanded_speed_box, 1, 0)
 
+
+        commanded_authority_box = QVBoxLayout()
         commanded_authority_label = QLabel("Commanded Authority:")
         commanded_authority_label.setStyleSheet("font-size: 14px; font-weight: bold; color: black;")
-        main_grid.addWidget(commanded_authority_label, 4, 0)
         self.commanded_authority_edit = QLineEdit("500")
         self.commanded_authority_edit.setText(self.commanded_authority_edit.text() + " feet")
         self.commanded_authority_edit.setEnabled(False)
-        self.commanded_authority_edit.setStyleSheet("background-color: lightgray; max-width: 100px; border-radius: 5px; color: black; margin-bottom: 35px; border: 2px solid black;")
-        main_grid.addWidget(self.commanded_authority_edit, 5, 0)
+        self.commanded_authority_edit.setStyleSheet("background-color: lightgray; max-width: 100px; border-radius: 5px; color: black; margin-bottom: 35px; border: 2px solid black; padding: 2px;")
+        commanded_authority_box.addWidget(commanded_authority_label)
+        commanded_authority_box.addWidget(self.commanded_authority_edit)
+        
+        main_grid.addLayout(commanded_authority_box, 2, 0)
 
         # Operational Mode
         operational_mode_label = QLabel("Operational Mode:")
         operational_mode_label.setStyleSheet("font-size: 14px; font-weight: bold; color: black; margin-bottom 30px;")
-        main_grid.addWidget(operational_mode_label, 6, 0)
+        main_grid.addWidget(operational_mode_label, 4, 0)
         
         self.manual_button = QPushButton("Manual")
         self.manual_button.setStyleSheet("margin-top: 10px; margin-left: 10px; background-color: green; color: white; max-width: 100px; border-radius: 5px; padding-top: 10px; padding-bottom: 10px; border: 2px solid black;")
-        main_grid.addWidget(self.manual_button, 7, 0)
+        main_grid.addWidget(self.manual_button, 5, 0)
 
         self.automatic_button = QPushButton("Automatic")
         self.automatic_button.setStyleSheet("margin-top: 20px; margin-left: 10px; background-color: white; color: black; max-width: 100px; border-radius: 5px; padding-top: 10px; padding-bottom: 10px; border: 2px solid black;")
-        main_grid.addWidget(self.automatic_button, 8, 0)
+        main_grid.addWidget(self.automatic_button, 6, 0)
+        
+
+        # Service brake button
+        self.brake_button = QPushButton("   SERVICE BRAKE")
+        self.brake_button.setStyleSheet("margin-top: 40px; background-color: yellow; font-size: 16px; border-radius: 10px; font-weight: bold; color: black; border: 3px solid black; padding-top: 20px; max-width: 150px; padding-bottom: 20px; padding-right: 15px")
+        # Add the horizontal layout to the main grid
+        self.brake_button.pressed.connect(self.train_controller.apply_service_brake)
+        self.brake_button.pressed.connect(self.train_controller.start_braking)
+        self.brake_button.released.connect(self.train_controller.stop_braking)
+        main_grid.addWidget(self.brake_button, 8, 0)  # Ensure it spans across two columns
 
         # CENTER SECTION (Setpoint Speed and Power Command)
-        setpoint_label = QLabel("Setpoint Speed")
-        setpoint_label.setStyleSheet("font-size: 30px; font-weight: bold; color: black;")
-        main_grid.addWidget(setpoint_label, 2, 1, 1, 1, Qt.AlignmentFlag.AlignCenter)
+        setpoint_box = QVBoxLayout()
 
+        # Setpoint Label
+        setpoint_label = QLabel("Setpoint Speed")
+        setpoint_label.setStyleSheet("padding-left: 20px; font-size: 30px; font-weight: bold; color: black;")
+        setpoint_box.addWidget(setpoint_label, alignment=Qt.AlignmentFlag.AlignCenter)  # Add to setpoint_box with center alignment
+
+        # Setpoint Layout
         setpoint_layout = QHBoxLayout()
+        setpoint_layout.setContentsMargins(0, 0, 0, 0)  # Remove margins
+
         self.setpoint_speed_edit = QLineEdit("50")
-        self.setpoint_speed_edit.setStyleSheet("margin-left: 95px; max-width: 100px; color: black; border: 2px solid black; border-radius: 5px; padding: 5px;")
+        self.setpoint_speed_edit.setStyleSheet("margin-left: 50px; max-width: 100px; color: black; border: 2px solid black; border-radius: 5px; padding: 5px;")
         self.setpoint_speed_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
         self.setpoint_unit = QLabel("mph")
         self.setpoint_unit.setStyleSheet("font-size: 12px; color: black;")
-        setpoint_layout.addWidget(self.setpoint_speed_edit)
-        setpoint_layout.addWidget(self.setpoint_unit)
-        main_grid.addLayout(setpoint_layout, 3, 1, 1, 1, Qt.AlignmentFlag.AlignCenter)
+
+        # Add widgets to setpoint_layout
+        setpoint_layout.addWidget(self.setpoint_speed_edit, alignment=Qt.AlignmentFlag.AlignCenter)
+        setpoint_layout.addWidget(self.setpoint_unit, alignment=Qt.AlignmentFlag.AlignCenter)
+
+        # Add setpoint_layout to setpoint_box
+        setpoint_box.addLayout(setpoint_layout)
+
+        # Finally, add setpoint_box to the main grid at the desired position
+        main_grid.addLayout(setpoint_box, 1, 1, 1, 1, Qt.AlignmentFlag.AlignCenter)
+
 
         # Checkmark
-        self.setpoint_check = QPushButton()
-        self.setpoint_check.setIcon(QIcon('Eo_circle_green_checkmark.png'))
-        self.setpoint_check.setStyleSheet("background-color: white; border: none; padding: 0px;")
-        main_grid.addWidget(self.setpoint_check, 1, 3)
+        # self.setpoint_check = QPushButton()
+        # self.setpoint_check.setIcon(QIcon('Eo_circle_green_checkmark.png'))
+        # self.setpoint_check.setStyleSheet("background-color: white; border: none; padding: 0px;")
+        # main_grid.addWidget(self.setpoint_check, 1, 3)
 
         # Power Command (Centered Narrower Input Box)
         power_command_label = QLabel("Power Command")
-        power_command_label.setStyleSheet("font-size: 25px; font-weight: bold; color: black;")
-        power_command_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        main_grid.addWidget(power_command_label, 7, 1, 1, 1)
+        power_command_label.setStyleSheet("font-size: 25px; font-weight: bold; color: black; padding-left: 22px;")
+        main_grid.addWidget(power_command_label, 4, 1, 1, 1, alignment=Qt.AlignmentFlag.AlignCenter)
 
         power_command_layout = QHBoxLayout()
         self.power_command_edit = QLineEdit("5.5")
@@ -118,103 +172,179 @@ class TrainControllerUI(QWidget):
         self.power_command_edit.setEnabled(False)
         self.power_command_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.power_unit = QLabel("kWatts")
-        self.power_unit.setStyleSheet("font-size: 12px; color: black;")
-        self.power_command_edit.setStyleSheet("margin-left: 90px; max-width: 100px; color: black; border: 2px solid black; border-radius: 5px; padding: 5px; background-color: lightgray;")
+        self.power_unit.setStyleSheet("font-size: 16px; color: black;")
+        self.power_command_edit.setStyleSheet("margin-left: 50px; max-width: 100px; color: black; border: 2px solid black; border-radius: 5px; padding: 5px; background-color: lightgray;")
         self.power_unit.setStyleSheet("font-size: 12px; color: black; background-color: lightgray;")
-        power_command_layout.addWidget(self.power_command_edit)
-        power_command_layout.addWidget(self.power_unit)
-        main_grid.addLayout(power_command_layout, 8, 1, 1, 1, Qt.AlignmentFlag.AlignCenter)
+        power_command_layout.addWidget(self.power_command_edit, alignment=Qt.AlignmentFlag.AlignCenter)
+        power_command_layout.addWidget(self.power_unit, alignment=Qt.AlignmentFlag.AlignCenter)
+        main_grid.addLayout(power_command_layout, 5, 1, 1, 1, Qt.AlignmentFlag.AlignCenter)
 
         # RIGHT SECTION (Train Controls)
-        current_temp_label = QLabel("Current Train Temperature")
-        current_temp_label.setStyleSheet("font-size: 12px; font-weight: bold; color: white; padding-left: 50px;")
-        main_grid.addWidget(current_temp_label, 0, 4)
+        current_temp_box = QVBoxLayout()
+        current_temp_label = QLabel("Current Train Temperature:")
+        current_temp_label.setStyleSheet("font-size: 14px; font-weight: bold; color: black; padding-left: 40px;")
         self.current_temp_edit = QLineEdit("72")
+        self.current_temp_edit.setText(self.current_temp_edit.text() + " °F")
         self.current_temp_edit.setEnabled(False)
-        self.current_temp_edit.setStyleSheet("background-color: lightgray; max-width: 100px; color: black; margin-bottom: 10px; margin-left: 50px;")
-        main_grid.addWidget(self.current_temp_edit, 1, 4)
+        self.current_temp_edit.setStyleSheet("background-color: lightgray; max-width: 100px; color: black; margin-left: 45px; border: 2px solid black; border-radius: 5px; padding: 2px;")
+        current_temp_box.addWidget(current_temp_label)
+        current_temp_box.addWidget(self.current_temp_edit)
+        current_temp_box.addSpacerItem(QSpacerItem(0, 10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed))
+        main_grid.addLayout(current_temp_box, 0, 3)
 
-        desired_temp_label = QLabel("Desired Train Temperature")
-        desired_temp_label.setStyleSheet("font-size: 12px; font-weight: bold; color: white; padding-left: 50px;")
-        main_grid.addWidget(desired_temp_label, 2, 4)
-        self.temp_slider = QSlider(Qt.Orientation.Horizontal)
-        self.temp_slider.setRange(60, 100)
-        self.temp_slider.setValue(72)
-        self.temp_value_label = QLabel(str(self.temp_slider.value()))
-        self.temp_value_label.setStyleSheet("color: white; padding-left: 10px;")
-        main_grid.addWidget(self.temp_value_label, 3, 4)
 
-        main_grid.addWidget(self.temp_slider, 5, 4)
+        # Create the label for the desired train temperature
+        desired_temp_box = QVBoxLayout()
+        desired_temp_label = QLabel("Desired Train Temperature:")
+        desired_temp_label.setStyleSheet("font-size: 14px; font-weight: bold; color: black; padding-left: 40px;")
 
-        # Lights
-        main_grid.addWidget(QLabel("Interior Lights:"), 6, 4)
-        self.interior_light_check = QCheckBox()
-        main_grid.addWidget(self.interior_light_check, 6, 5)
+        # Create a QLineEdit for numeric temperature input
+        self.temp_input = QLineEdit()
+        self.temp_input.setStyleSheet("max-width: 200px; color: black; margin-left: 40px; border: 2px solid black; border-radius: 5px; padding: 3px;")
+        self.temp_input.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        self.temp_input.setPlaceholderText("Enter temperature (70°F to 100°F)")  # Optional placeholder text
 
-        main_grid.addWidget(QLabel("Exterior Lights:"), 7, 4)
-        self.exterior_light_check = QCheckBox()
-        main_grid.addWidget(self.exterior_light_check, 7, 5)
+        # Set the validator to allow only numbers (and optional decimal)
+        from PyQt6.QtGui import QDoubleValidator
+        validator = QDoubleValidator(70.0, 100.0, 2)  # Range from 70 to 100 with 2 decimal places
+        self.temp_input.setValidator(validator)
 
-        # Door Status
-        main_grid.addWidget(QLabel("Right Door Status:"), 9, 4)
+        # Add the label and input field to the layout
+        desired_temp_box.addWidget(desired_temp_label)
+        desired_temp_box.addWidget(self.temp_input)
+
+        # Add the QLineEdit to the main grid at the desired position
+        main_grid.addLayout(desired_temp_box, 1, 3)
+
+
+        # Interior Lights Control
+        interior_lights_layout = QHBoxLayout()
+        interior_lights_label = QLabel("Interior Lights Status:")
+        interior_lights_label.setStyleSheet("font-size: 14px; font-weight: bold; color: black; padding-left: 40px;")
+        self.interior_lights_status = QPushButton("ON")
+        self.interior_lights_status.setStyleSheet("background-color: #f5c842; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
+        interior_lights_layout.addWidget(interior_lights_label)
+        interior_lights_layout.addWidget(self.interior_lights_status)
+        interior_lights_layout.addSpacerItem(QSpacerItem(20, 20))
+        main_grid.addLayout(interior_lights_layout, 2, 3)
+
+
+        # Exterior Lights Control
+        exterior_lights_layout = QHBoxLayout()
+        exterior_lights_label = QLabel("Exterior Lights Status:")
+        exterior_lights_label.setStyleSheet("font-size: 14px; font-weight: bold; color: black; padding-left: 40px;")
+        self.exterior_lights_status = QPushButton("OFF")
+        self.exterior_lights_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
+        exterior_lights_layout.addWidget(exterior_lights_label)
+        exterior_lights_layout.addWidget(self.exterior_lights_status)
+        exterior_lights_layout.addSpacerItem(QSpacerItem(20, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum))
+        main_grid.addLayout(exterior_lights_layout, 3, 3)
+
+
+        # Brake Status Control
+        brake_status_layout = QHBoxLayout()
+        brake_status_label = QLabel("Brake Status:")
+        brake_status_label.setStyleSheet("font-size: 14px; font-weight: bold; color: black; padding-left: 40px;")
+        self.brake_status = QPushButton("ON")
+        self.brake_status.setStyleSheet("background-color: #f5c842; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
+        brake_status_layout.addWidget(brake_status_label)
+        brake_status_layout.addWidget(self.brake_status)
+        brake_status_layout.addSpacerItem(QSpacerItem(20, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum))
+        main_grid.addLayout(brake_status_layout, 4, 3)
+
+
+
+        # Right Door Status Control
+        right_door_layout = QHBoxLayout()
+        right_door_status_label = QLabel("Right Door Status:")
+        right_door_status_label.setStyleSheet("font-size: 14px; font-weight: bold; color: black; padding-left: 40px;")
         self.right_door_status = QPushButton("OPEN")
-        self.right_door_status.setStyleSheet("background-color: green;")
-        main_grid.addWidget(self.right_door_status, 9, 5)
+        self.right_door_status.setStyleSheet("background-color: green; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
+        right_door_layout.addWidget(right_door_status_label)
+        right_door_layout.addWidget(self.right_door_status)
+        right_door_layout.addSpacerItem(QSpacerItem(20, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum))
+        main_grid.addLayout(right_door_layout, 5, 3)
 
-        main_grid.addWidget(QLabel("Left Door Status:"), 10, 4)
+
+
+        # Left Door Status Control
+        left_door_layout = QHBoxLayout()
+        left_door_status_label = QLabel("Left Door Status:")
+        left_door_status_label.setStyleSheet("font-size: 14px; font-weight: bold; color: black; padding-left: 40px;")
         self.left_door_status = QPushButton("CLOSE")
-        self.left_door_status.setStyleSheet("background-color: red;")
-        main_grid.addWidget(self.left_door_status, 10, 5)
+        self.left_door_status.setStyleSheet("background-color: red; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
+        left_door_layout.addWidget(left_door_status_label)
+        left_door_layout.addWidget(self.left_door_status)
+        left_door_layout.addSpacerItem(QSpacerItem(20, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum))
+        main_grid.addLayout(left_door_layout, 6, 3)
 
-        # Bottom Layout for Indicators and Brakes
-        bottom_layout = QHBoxLayout()
 
-        # Service Brake Button (Bottom-Left)
-        service_brake_button = QPushButton("SERVICE BRAKE")
-        service_brake_button.setStyleSheet("background-color: yellow; font-size: 20px; border-radius: 10px;  font-weight: bold; color: black; border: 3px solid black; padding: 50px;")
-        bottom_layout.addWidget(service_brake_button, 0, Qt.AlignmentFlag.AlignLeft)
 
-        # Fault Indicators in the Bottom-Center
-        fault_group = QFrame()
-        fault_layout = QGridLayout()
+        train_engine_failure = QVBoxLayout()
+        brake_failure = QVBoxLayout()
+        signal_pickup_failure = QVBoxLayout()
+        all_failures = QHBoxLayout()
+        all_failures.setSpacing(5)  # Set the spacing to 5 pixels
 
-        # Train Engine Failure
-        train_engine_fail_label = QLabel("Train Engine Failure")
-        train_engine_fail_label.setStyleSheet("font-size: 14px; font-weight: bold; color: black;")
+        # Create the label for "Train Engine Failure"
+        train_engine_fail_label = QLabel('<div style="text-align: center;">Train Engine<br>Failure</div>')
+        train_engine_fail_label.setStyleSheet("font-size: 12px; font-weight: bold; color: black;")
+
+        # Create the green indicator button
         engine_fail_indicator = QPushButton()
-        engine_fail_indicator.setStyleSheet("background-color: green;")
-        fault_layout.addWidget(train_engine_fail_label, 0, 0, Qt.AlignmentFlag.AlignCenter)
-        fault_layout.addWidget(engine_fail_indicator, 1, 0, Qt.AlignmentFlag.AlignCenter)
+        engine_fail_indicator.setFixedSize(40, 40)  # Set a fixed size for the indicator button
+        engine_fail_indicator.setStyleSheet("background-color: green; border-radius: 20px; border: 2px solid black;")  # Circular button
+
+        # Create a vertical box layout for the train engine failure section
+        train_engine_failure = QVBoxLayout()
+        train_engine_failure.setSpacing(0)  # Set spacing to 0 to remove space between items
+
+        # Add widgets to the vertical box layout
+        train_engine_failure.addWidget(train_engine_fail_label, alignment=Qt.AlignmentFlag.AlignCenter)
+        train_engine_failure.addWidget(engine_fail_indicator, alignment=Qt.AlignmentFlag.AlignCenter)
+
+        # Add the train_engine_failure layout to the main layout (assumed to be defined elsewhere)
+        #main_layout.addLayout(train_engine_failure)
+
 
         # Brake Failure
         brake_fail_label = QLabel("Brake Failure")
-        brake_fail_label.setStyleSheet("font-size: 14px; font-weight: bold; color: black;")
+        brake_fail_label.setStyleSheet("font-size: 12px; font-weight: bold; color: black; padding-left: 10px;")
         brake_fail_indicator = QPushButton()
-        brake_fail_indicator.setStyleSheet("background-color: red;")
-        fault_layout.addWidget(brake_fail_label, 0, 1, Qt.AlignmentFlag.AlignCenter)
-        fault_layout.addWidget(brake_fail_indicator, 1, 1, Qt.AlignmentFlag.AlignCenter)
+        brake_fail_indicator.setFixedSize(40, 40)  # Set a fixed size for the indicator button
+        brake_fail_indicator.setStyleSheet("background-color: red; border-radius: 20px; border: 2px solid black;")
+        brake_failure.addWidget(brake_fail_label, alignment=Qt.AlignmentFlag.AlignCenter)
+        brake_failure.addWidget(brake_fail_indicator, alignment=Qt.AlignmentFlag.AlignCenter)
 
         # Signal Pickup Failure
-        signal_fail_label = QLabel("Signal Pickup Failure")
-        signal_fail_label.setStyleSheet("font-size: 14px; font-weight: bold; color: black;")
+        signal_fail_label =  QLabel('<div style="text-align: center;">Signal Pickup<br>Failure</div>')
+        signal_fail_label.setStyleSheet("font-size: 12px; font-weight: bold; color: black; padding-left: 10px;")
         signal_fail_indicator = QPushButton()
-        signal_fail_indicator.setStyleSheet("background-color: green;")
-        fault_layout.addWidget(signal_fail_label, 0, 2, Qt.AlignmentFlag.AlignCenter)
-        fault_layout.addWidget(signal_fail_indicator, 1, 2, Qt.AlignmentFlag.AlignCenter)
+        signal_fail_indicator.setFixedSize(40, 40)  # Set a fixed size for the indicator button
+        signal_fail_indicator.setStyleSheet("background-color: green; border-radius: 20px; border: 2px solid black; padding-left: 10px;")
+        signal_pickup_failure.addWidget(signal_fail_label, alignment=Qt.AlignmentFlag.AlignCenter)
+        signal_pickup_failure.addWidget(signal_fail_indicator, alignment=Qt.AlignmentFlag.AlignCenter)
 
-        fault_group.setLayout(fault_layout)
-        bottom_layout.addWidget(fault_group, 1, Qt.AlignmentFlag.AlignCenter)
+        all_failures.addLayout(train_engine_failure)
+        all_failures.addLayout(brake_failure)
+        all_failures.addLayout(signal_pickup_failure)
+
+        # Add the vertical box layout to the main grid at position (9, 1)
+        main_grid.addLayout(all_failures, 8, 1)
+
+
 
         # Emergency Brake Button (Bottom-Right)
         emergency_brake_button = QPushButton("EMERGENCY BRAKE")
-        emergency_brake_button.setStyleSheet("background-color: red; color: white; font-size: 20px; font-weight: bold; padding: 50px;")
-        bottom_layout.addWidget(emergency_brake_button, 0, Qt.AlignmentFlag.AlignRight)
+        emergency_brake_button.setStyleSheet("border: 3px solid black; margin-left: 40px; background-color: red; color: white; font-size: 20px; font-weight: bold; padding: 50px; border-radius: 10px;")
+        emergency_brake_button.pressed.connect(self.train_controller.apply_emergency_brake)
+        emergency_brake_button.pressed.connect(self.train_controller.start_braking)
+        emergency_brake_button.released.connect(self.train_controller.stop_braking)
+        main_grid.addWidget(emergency_brake_button, 8, 3)
 
         # Add Components to the Main Layout
-        main_layout.addLayout(tab_layout)
         main_layout.addLayout(title_banner)
         main_layout.addLayout(main_grid)
-        main_layout.addLayout(bottom_layout)
 
         # Set Main Layout
         self.setLayout(main_layout)
