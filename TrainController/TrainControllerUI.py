@@ -3,18 +3,44 @@ from PyQt6.QtWidgets import (
     QPushButton, QComboBox, QSlider, QCheckBox, QFrame, QSizePolicy, QSpacerItem, QSpinBox
 )
 from PyQt6.QtCore import Qt, QElapsedTimer, QTimer
-from PyQt6.QtGui import QIcon
 from TrainController import TrainController
-
+from TrainControllerTestBench import TrainControllerTestBench
+from TrainControllerCommunicateSignals import Communicate
+import time
 
 class TrainControllerUI(QWidget):
-    def __init__(self):
+    def __init__(self, communicator: Communicate):
         super().__init__()
         self.train_controller = TrainController()
+        self.communicator = communicator
+        # self.test_bench = TrainControllerTestBench(self.communicator)
         # For Timer
         self.elapsed_timer = QElapsedTimer()
         self.timer = QTimer()
         self.timer.timeout.connect(self.train_controller.update_speed)
+        self.engine_fail = False
+        self.brake_fail = False
+        self.signal_fail = False
+        self.current_temperature = 70.0
+        #print type of current_temperature
+        print(type(self.current_temperature))
+        self.desired_temperature = 73.0
+
+    
+        self.communicator.engine_failure_signal.connect(self.handle_engine_failure)
+        self.communicator.brake_failure_signal.connect(self.handle_brake_failure)
+        self.communicator.signal_failure_signal.connect(self.handle_signal_failure)
+        self.communicator.passenger_brake_command_signal.connect(self.handle_passenger_brake_command)
+
+        
+        
+        # Initialize the test bench
+        self.test_bench = TrainControllerTestBench(self.communicator)
+
+        # Retrieve all variables from the test bench
+        self.test_bench_variables = self.test_bench.get_all_variables()
+        print(self.test_bench_variables)
+
         
         self.setWindowTitle("Train Controller")
         self.setStyleSheet("background-color: lightgray;")
@@ -183,7 +209,7 @@ class TrainControllerUI(QWidget):
         current_temp_box = QVBoxLayout()
         current_temp_label = QLabel("Current Train Temperature:")
         current_temp_label.setStyleSheet("font-size: 14px; font-weight: bold; color: black; padding-left: 40px;")
-        self.current_temp_edit = QLineEdit("72")
+        self.current_temp_edit = QLineEdit(f"{self.current_temperature}")
         self.current_temp_edit.setText(self.current_temp_edit.text() + " °F")
         self.current_temp_edit.setEnabled(False)
         self.current_temp_edit.setStyleSheet("background-color: lightgray; max-width: 100px; color: black; margin-left: 45px; border: 2px solid black; border-radius: 5px; padding: 2px;")
@@ -198,16 +224,16 @@ class TrainControllerUI(QWidget):
         desired_temp_label = QLabel("Desired Train Temperature:")
         desired_temp_label.setStyleSheet("font-size: 14px; font-weight: bold; color: black; padding-left: 40px;")
 
+        
         # Create a QLineEdit for numeric temperature input
         self.temp_input = QLineEdit()
         self.temp_input.setStyleSheet("max-width: 200px; color: black; margin-left: 40px; border: 2px solid black; border-radius: 5px; padding: 3px;")
         self.temp_input.setAlignment(Qt.AlignmentFlag.AlignLeft)
         self.temp_input.setPlaceholderText("Enter temperature (70°F to 100°F)")  # Optional placeholder text
-
-        # Set the validator to allow only numbers (and optional decimal)
-        from PyQt6.QtGui import QDoubleValidator
-        validator = QDoubleValidator(70.0, 100.0, 2)  # Range from 70 to 100 with 2 decimal places
-        self.temp_input.setValidator(validator)
+        self.temp_input.textChanged.connect(self.update_desired_temperature)
+        self.temp_increase_timer = QTimer(self)
+        self.temp_increase_timer.timeout.connect(self.reach_temperature)
+        self.temp_increase_timer.start(1000)  # Adjust temperature every second
 
         # Add the label and input field to the layout
         desired_temp_box.addWidget(desired_temp_label)
@@ -293,7 +319,21 @@ class TrainControllerUI(QWidget):
         # Create the green indicator button
         engine_fail_indicator = QPushButton()
         engine_fail_indicator.setFixedSize(40, 40)  # Set a fixed size for the indicator button
-        engine_fail_indicator.setStyleSheet("background-color: green; border-radius: 20px; border: 2px solid black;")  # Circular button
+        engine_fail_indicator = QPushButton()
+        engine_fail_indicator.setFixedSize(40, 40)  # Set a fixed size for the indicator button
+        engine_fail_indicator.setStyleSheet("background-color: green; border-radius: 20px; border: 2px solid black;")  # Green for no failure
+        self.failure_timer = QTimer(self)
+        self.failure_timer.timeout.connect(lambda: update_engine_failure_status(self.engine_fail))
+        self.failure_timer.start(1000)  # Check every 1000 milliseconds (1 second)
+        
+        def update_engine_failure_status(failure: bool):
+            # print(f"Engine failure status in Function: {failure}")
+            if failure:
+                engine_fail_indicator.setStyleSheet("background-color: red; border-radius: 20px; border: 2px solid black;")  # Red for failure
+                QTimer.singleShot(3000, lambda: (engine_fail_indicator.setStyleSheet("background-color: green; border-radius: 20px; border: 2px solid black;"), setattr(self, 'engine_fail', False)))
+
+            else:
+                engine_fail_indicator.setStyleSheet("background-color: green; border-radius: 20px; border: 2px solid black;")  # Green for no failure
 
         # Create a vertical box layout for the train engine failure section
         train_engine_failure = QVBoxLayout()
@@ -303,16 +343,24 @@ class TrainControllerUI(QWidget):
         train_engine_failure.addWidget(train_engine_fail_label, alignment=Qt.AlignmentFlag.AlignCenter)
         train_engine_failure.addWidget(engine_fail_indicator, alignment=Qt.AlignmentFlag.AlignCenter)
 
-        # Add the train_engine_failure layout to the main layout (assumed to be defined elsewhere)
-        #main_layout.addLayout(train_engine_failure)
-
-
         # Brake Failure
         brake_fail_label = QLabel("Brake Failure")
         brake_fail_label.setStyleSheet("font-size: 12px; font-weight: bold; color: black; padding-left: 10px;")
         brake_fail_indicator = QPushButton()
         brake_fail_indicator.setFixedSize(40, 40)  # Set a fixed size for the indicator button
-        brake_fail_indicator.setStyleSheet("background-color: red; border-radius: 20px; border: 2px solid black;")
+        brake_fail_indicator.setStyleSheet("background-color: green; border-radius: 20px; border: 2px solid black;")
+        self.failure_timer = QTimer(self)
+        self.failure_timer.timeout.connect(lambda: update_brake_failure_status(self.brake_fail))
+        self.failure_timer.start(1000)  # Check every 1000 milliseconds (1 second)
+        
+        def update_brake_failure_status(failure: bool):
+            # print(f"Brake failure status in Function: {failure}")
+            if failure:
+                brake_fail_indicator.setStyleSheet("background-color: red; border-radius: 20px; border: 2px solid black;")  # Red for failure
+                QTimer.singleShot(3000, lambda: (brake_fail_indicator.setStyleSheet("background-color: green; border-radius: 20px; border: 2px solid black;"), setattr(self, 'brake_fail', False)))
+
+            else:
+                brake_fail_indicator.setStyleSheet("background-color: green; border-radius: 20px; border: 2px solid black;")  # Green for no failure
         brake_failure.addWidget(brake_fail_label, alignment=Qt.AlignmentFlag.AlignCenter)
         brake_failure.addWidget(brake_fail_indicator, alignment=Qt.AlignmentFlag.AlignCenter)
 
@@ -322,6 +370,17 @@ class TrainControllerUI(QWidget):
         signal_fail_indicator = QPushButton()
         signal_fail_indicator.setFixedSize(40, 40)  # Set a fixed size for the indicator button
         signal_fail_indicator.setStyleSheet("background-color: green; border-radius: 20px; border: 2px solid black; padding-left: 10px;")
+        self.failure_timer = QTimer(self)
+        self.failure_timer.timeout.connect(lambda: update_signal_failure_status(self.signal_fail))
+        self.failure_timer.start(1000)  # Check every 1000 milliseconds (1 second)
+        
+        def update_signal_failure_status(failure: bool):
+            # print(f"Signal failure status in Function: {failure}")
+            if failure:
+                signal_fail_indicator.setStyleSheet("background-color: red; border-radius: 20px; border: 2px solid black;")  # Red for failure
+                QTimer.singleShot(3000, lambda: (signal_fail_indicator.setStyleSheet("background-color: green; border-radius: 20px; border: 2px solid black;"), setattr(self, 'signal_fail', False)))
+            else:
+                signal_fail_indicator.setStyleSheet("background-color: green; border-radius: 20px; border: 2px solid black;")  # Green for no failure
         signal_pickup_failure.addWidget(signal_fail_label, alignment=Qt.AlignmentFlag.AlignCenter)
         signal_pickup_failure.addWidget(signal_fail_indicator, alignment=Qt.AlignmentFlag.AlignCenter)
 
@@ -348,10 +407,83 @@ class TrainControllerUI(QWidget):
 
         # Set Main Layout
         self.setLayout(main_layout)
+        
+    
+    
+    def handle_engine_failure(self, status: bool):
+        if status == True:
+            self.engine_fail = True
+        else:
+            self.engine_fail = False
+        # print(f"Engine failure status: {status}")
+
+    def handle_brake_failure(self, status: bool):
+        if status == True:
+            self.brake_fail = True
+        else:
+            self.brake_fail = False
+        # print(f"Brake failure status: {status}")
+
+    def handle_signal_failure(self, status: bool):
+        if status == True:
+            self.signal_fail = True
+        else:
+            self.signal_fail = False
+        # print(f"Signal failure status: {status}")
+
+    def handle_passenger_brake_command(self, status: bool):
+        print(f"Passenger brake command status: {status}")
+        
+    def update_desired_temperature(self):
+        temp = int(self.temp_input.text())
+        if 70 <= temp <= 100:
+            self.desired_temperature = temp
+            print(f"Desired temperature set to: {self.desired_temperature}°F")
+        else:
+            print("Temperature out of range. Please enter a value between 70°F and 100°F.")
+            
+    def reach_temperature(self, k=0.1, time_step=1):
+        initial_temp = self.current_temperature
+        desired_temp = self.desired_temperature
+        """
+        Gradually increase temperature from initial_temp to desired_temp using a first-order equation.
+        
+        Parameters:
+        - initial_temp (float): The starting temperature.
+        - desired_temp (float): The desired temperature to reach.
+        - k (float): The rate constant controlling the speed of change.
+        - time_step (float): Time interval between updates in seconds.
+
+        Returns:
+        - None
+        """
+        # Ensure inputs are of float type
+        if not isinstance(initial_temp, (int, float)):
+            raise TypeError(f"Initial temperature should be a number, but got: {type(initial_temp)}")
+
+        if not isinstance(desired_temp, (int, float)):
+            raise TypeError(f"Desired temperature should be a number, but got: {type(desired_temp)}")
+
+        current_temp = initial_temp
+        while abs(current_temp - desired_temp) > 0.01:  # Tolerance for stopping
+            # Calculate the change in temperature using a first-order equation
+            dT = k * (desired_temp - current_temp)
+            
+            # Update the current temperature
+            current_temp += dT
+            
+            # Print the current temperature
+            print(f"Current Temperature: {current_temp:.2f}°C")
+            
+            # Wait for the specified time step
+            time.sleep(time_step)
+
+        print(f"Reached Desired Temperature: {current_temp:.2f}°C")
 
 
 if __name__ == "__main__":
     app = QApplication([])
-    window = TrainControllerUI()
+    communicator = Communicate()
+    window = TrainControllerUI(communicator)
     window.show()
     app.exec()

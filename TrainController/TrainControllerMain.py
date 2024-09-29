@@ -1,28 +1,28 @@
 # main.py
-import multiprocessing
-import subprocess
+import sys
+from PyQt6.QtWidgets import QApplication
+from TrainControllerUI import TrainControllerUI
+from TrainControllerEngineer import TrainEngineerUI
+from TrainControllerTestBench import TrainControllerTestBenchUI
+from TrainControllerCommunicateSignals import Communicate
 
-def run_ui1():
-    subprocess.run(["python", "TrainController/TrainControllerUI.py"])
+def main():
+    # Create a single QApplication instance
+    app = QApplication(sys.argv)
+    
+    # Create instances of each UI window
+    communicator = Communicate()  # Replace with your actual communicator class
+    ui1 = TrainControllerUI(communicator)
+    ui2 = TrainEngineerUI()
+    ui3 = TrainControllerTestBenchUI(communicator)
 
-def run_ui2():
-    subprocess.run(["python", "TrainController/TrainControllerEngineer.py"])
+    # Show each window
+    ui1.show()
+    ui2.show()
+    ui3.show()
 
-def run_ui3():
-    subprocess.run(["python", "TrainController.py"])
+    # Execute the single event loop
+    sys.exit(app.exec())
 
 if __name__ == "__main__":
-    # Create separate processes for each UI
-    p1 = multiprocessing.Process(target=run_ui1)
-    p2 = multiprocessing.Process(target=run_ui2)
-    p3 = multiprocessing.Process(target=run_ui3)
-
-    # Start all UIs simultaneously
-    p1.start()
-    p2.start()
-    p3.start()
-
-    # Wait for all processes to complete
-    p1.join()
-    p2.join()
-    p3.join()
+    main()

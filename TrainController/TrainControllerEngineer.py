@@ -3,6 +3,9 @@ from PyQt6.QtCore import Qt, pyqtSignal, pyqtSlot
 import sys
 
 class TrainEngineer:
+    kp_updated = pyqtSignal(int)
+    ki_updated = pyqtSignal(int)
+        
     def __init__(self):
         self._kp = 0.0
         self._ki = 0.0
@@ -26,9 +29,9 @@ class TrainEngineerUI(QWidget):
     kp_updated = pyqtSignal(float)
     ki_updated = pyqtSignal(float)
     
-    def __init__(self, engineer):
+    def __init__(self):
         super().__init__()
-        self.engineer = engineer
+        self.engineer = TrainEngineer()
         self.initUI()
         
     def initUI(self):
@@ -120,8 +123,7 @@ class TrainEngineerUI(QWidget):
                 item.setText(str(self.engineer.get_ki()))  # Reset to previous value if invalid
 
 if __name__ == "__main__":
-    engineer = TrainEngineer()
     app = QApplication(sys.argv)
-    ui = TrainEngineerUI(engineer)
+    ui = TrainEngineerUI()
     ui.show()
     sys.exit(app.exec())

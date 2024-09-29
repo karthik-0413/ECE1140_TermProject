@@ -1,57 +1,44 @@
+# main_window.py
 import sys
-from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QVBoxLayout
-from PyQt6.QtCore import QTimer, QElapsedTimer
-from test2 import calculate_speed
+from PyQt6.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QLabel
+from test2 import Communicate  # Import the signal module
 
-class TrainControllerUI(QWidget):
+class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
+        
+        # Initialize the Communicate class
+        self.communicate = Communicate()
+
+        # Connect the custom signal to a slot
+        self.communicate.button_clicked_signal.connect(self.on_button_clicked)
+
         self.initUI()
-        self.timer = QTimer()
-        self.timer.timeout.connect(self.update_speed)
-        self.elapsed_timer = QElapsedTimer()
 
     def initUI(self):
-        self.setWindowTitle('Train Controller')
+        self.label = QLabel('Button not clicked yet', self)
+        self.button = QPushButton('Click Me', self)
 
-        # Speed Display
-        self.speed_label = QLabel('Speed (mph):')
-        self.speed_display = QLabel('40')
-        self.brake_button = QPushButton('Apply Brake')
-        self.brake_button.pressed.connect(self.start_braking)
-        self.brake_button.released.connect(self.stop_braking)
+        # Connect the button click event to emit the custom signal
+        self.button.clicked.connect(self.emit_signal)
 
-        # Layout
         layout = QVBoxLayout()
-        layout.addWidget(self.speed_label)
-        layout.addWidget(self.speed_display)
-        layout.addWidget(self.brake_button)
+        layout.addWidget(self.label)
+        layout.addWidget(self.button)
         self.setLayout(layout)
 
-        # Initial conditions
-        self.initial_speed = 40  # Initial speed in mph
-        self.deceleration = -1 * 7.6  # Deceleration in m/s^2 (1 mph/s converted to m/s^2)
-        self.current_speed = self.initial_speed  # Current speed in mph
+        self.setWindowTitle('Custom Signal Example')
+        self.show()
 
-    def start_braking(self):
-        self.elapsed_timer.start()
-        self.timer.start(100)  # Update every 100 ms
+    def emit_signal(self):
+        # Emit the custom signal with a message
+        self.communicate.button_clicked_signal.emit("Button was clicked!")
 
-    def stop_braking(self):
-        self.timer.stop()
-        # Update initial speed to the current speed for the next braking session
-        self.initial_speed = self.current_speed
-
-    def update_speed(self):
-        elapsed_time = self.elapsed_timer.elapsed() / 1000  # Convert ms to seconds
-        new_speed = calculate_speed(self.initial_speed * 0.44704, self.deceleration, elapsed_time) / 0.44704  # Convert m/s to mph
-        self.current_speed = new_speed
-        self.speed_display.setText(f'{new_speed:.2f}')
-        if new_speed <= 0:
-            self.timer.stop()
+    def on_button_clicked(self, message):
+        # Slot to handle the custom signal with the message
+        self.label.setText(message)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    ex = TrainControllerUI()
-    ex.show()
+    main_win = MainWindow()
     sys.exit(app.exec())

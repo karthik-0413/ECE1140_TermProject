@@ -1,6 +1,6 @@
 from TrainControllerEngineer import TrainEngineer
 from PyQt6.QtCore import QTimer, QElapsedTimer
-import math
+import time
 
 class TrainController:
     def __init__(self):
@@ -155,6 +155,43 @@ class TrainController:
         if new_speed == 0.0:
             print("Train Stopped")
             self.timer.stop()
+            
+    def reach_temperature(initial_temp, desired_temp, k=0.1, time_step=1):
+        """
+        Gradually increase temperature from initial_temp to desired_temp using a first-order equation.
+        
+        Parameters:
+        - initial_temp (float): The starting temperature.
+        - desired_temp (float): The desired temperature to reach.
+        - k (float): The rate constant controlling the speed of change.
+        - time_step (float): Time interval between updates in seconds.
+
+        Returns:
+        - None
+        """
+        # Ensure inputs are of float type
+        if not isinstance(initial_temp, (int, float)):
+            raise TypeError(f"Initial temperature should be a number, but got: {type(initial_temp)}")
+
+        if not isinstance(desired_temp, (int, float)):
+            raise TypeError(f"Desired temperature should be a number, but got: {type(desired_temp)}")
+
+        current_temp = initial_temp
+        while abs(current_temp - desired_temp) > 0.01:  # Tolerance for stopping
+            # Calculate the change in temperature using a first-order equation
+            dT = k * (desired_temp - current_temp)
+            
+            # Update the current temperature
+            current_temp += dT
+            
+            # Print the current temperature
+            print(f"Current Temperature: {current_temp:.2f}°C")
+            
+            # Wait for the specified time step
+            time.sleep(time_step)
+
+        print(f"Reached Desired Temperature: {current_temp:.2f}°C")
+
         
     # Triggering Failure Modes (Input in the actual Failure Name)
     def trigger_failure_mode(self, failure_type):
@@ -182,8 +219,8 @@ class TrainController:
         self.current_train_temperature = temperature
         print(f"Train Temperature updated to {self.current_train_temperature}°F")
 
-
-
+    def get_engine_failure_status(self):
+        return self.failure_modes['engine_failure']
 
 
 
