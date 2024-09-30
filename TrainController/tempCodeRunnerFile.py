@@ -1,3 +1,3 @@
- # self.current_speed_edit.setText(self.current_speed_edit.text() + " mph")
-        # self.current_speed_edit.setEnabled(False)
-        # self.current_speed_edit.setStyleSheet("background-
+ency_brake)
+        # emergency_brake_button.pressed.connect(self.train_controller.start_braking)
+        # emergency_brake_button.released.connect(self.train_controller.stop_braking)

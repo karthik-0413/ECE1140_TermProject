@@ -57,6 +57,8 @@ class TrainControllerTestBenchUI(QWidget):
         self.communicator.brake_failure_signal.connect(self.handle_brake_failure)
         self.communicator.signal_failure_signal.connect(self.handle_signal_failure)
         self.communicator.passenger_brake_command_signal.connect(self.handle_passenger_brake_command)
+        self.communicator.commanded_speed_signal.connect(self.handle_commanded_speed)
+        self.communicator.commanded_authority_signal.connect(self.handle_commanded_authority)
         
         self.initUI()
         
@@ -175,7 +177,7 @@ class TrainControllerTestBenchUI(QWidget):
         print(f"Passenger brake command is now {'enabled' if new_value else 'disabled'}")
         
         # Emit the signal
-        self.passenger_brake_command_signal.emit(new_value)
+        self.communicator.passenger_brake_command_signal.emit(new_value)
         
     def apply_changes(self):
         variables = {
@@ -188,7 +190,16 @@ class TrainControllerTestBenchUI(QWidget):
             'beacon_destination_location': self.beacon_input.text(),
         }
         
-        self.apply_changes_signal.emit(variables)
+        if variables['commanded_speed'].isdigit():
+            self.communicator.commanded_speed_signal.emit(int(variables['commanded_speed']))
+        else:
+            print("Invalid commanded speed input")
+
+        if variables['commanded_authority'].isdigit():
+            self.communicator.commanded_authority_signal.emit(int(variables['commanded_authority']))
+        else:
+            print("Invalid commanded authority input")
+         
         self.announcement_output.setText(f"Train {self.train_id_dropdown.currentText()} changes applied.")
         
         # Print all variables to the terminal
@@ -213,6 +224,12 @@ class TrainControllerTestBenchUI(QWidget):
         
     def handle_passenger_brake_command(self, state):
         print(f"Passenger brake command state changed to: {state}")
+        
+    def handle_commanded_speed(self, speed):
+        print(f"Commanded speed changed to: {speed}")
+        
+    def handle_commanded_authority(self, authority):
+        print(f"Commanded authority changed to: {authority}")
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QLineEdit,
-    QPushButton, QComboBox, QSlider, QCheckBox, QFrame, QSizePolicy, QSpacerItem, QSpinBox
+    QPushButton, QComboBox, QSlider, QCheckBox, QFrame, QSizePolicy, QSpacerItem, QSpinBox, QMessageBox
 )
 from PyQt6.QtCore import Qt, QElapsedTimer, QTimer
 from TrainController import TrainController
@@ -17,20 +17,28 @@ class TrainControllerUI(QWidget):
         # For Timer
         self.elapsed_timer = QElapsedTimer()
         self.timer = QTimer()
-        self.timer.timeout.connect(self.train_controller.update_speed)
+        # self.timer.timeout.connect(self.train_controller.update_speed)
         self.engine_fail = False
         self.brake_fail = False
         self.signal_fail = False
+        self.passenger_brake = False
         self.current_temperature = 70.0
         #print type of current_temperature
         print(type(self.current_temperature))
-        self.desired_temperature = 73.0
+        self.desired_temperature = 0.0
+        self.current_velocity = 30.0
 
     
         self.communicator.engine_failure_signal.connect(self.handle_engine_failure)
         self.communicator.brake_failure_signal.connect(self.handle_brake_failure)
         self.communicator.signal_failure_signal.connect(self.handle_signal_failure)
         self.communicator.passenger_brake_command_signal.connect(self.handle_passenger_brake_command)
+        self.communicator.commanded_speed_signal.connect(self.handle_commanded_speed)
+        self.communicator.commanded_authority_signal.connect(self.handle_commanded_authority)
+        self.communicator.passenger_brake_command_signal.connect(self.handle_passenger_brake_command)
+        self.commanded_speed = 0.0
+        self.commanded_authority = 0.0
+        
 
         
         
@@ -210,7 +218,12 @@ class TrainControllerUI(QWidget):
         current_temp_label = QLabel("Current Train Temperature:")
         current_temp_label.setStyleSheet("font-size: 14px; font-weight: bold; color: black; padding-left: 40px;")
         self.current_temp_edit = QLineEdit(f"{self.current_temperature}")
-        self.current_temp_edit.setText(self.current_temp_edit.text() + " °F")
+        
+        # Timer to update the current temperature display
+        # self.temp_update_timer = QTimer(self)
+        # self.temp_update_timer.timeout.connect(self.update_current_temp_display)
+        # self.temp_update_timer.start(1000)  # Update every 1000 milliseconds (1 second)
+        # self.current_temp_edit.setText(self.current_temp_edit.text() + " °F")
         self.current_temp_edit.setEnabled(False)
         self.current_temp_edit.setStyleSheet("background-color: lightgray; max-width: 100px; color: black; margin-left: 45px; border: 2px solid black; border-radius: 5px; padding: 2px;")
         current_temp_box.addWidget(current_temp_label)
@@ -231,9 +244,6 @@ class TrainControllerUI(QWidget):
         self.temp_input.setAlignment(Qt.AlignmentFlag.AlignLeft)
         self.temp_input.setPlaceholderText("Enter temperature (70°F to 100°F)")  # Optional placeholder text
         self.temp_input.textChanged.connect(self.update_desired_temperature)
-        self.temp_increase_timer = QTimer(self)
-        self.temp_increase_timer.timeout.connect(self.reach_temperature)
-        self.temp_increase_timer.start(1000)  # Adjust temperature every second
 
         # Add the label and input field to the layout
         desired_temp_box.addWidget(desired_temp_label)
@@ -404,11 +414,34 @@ class TrainControllerUI(QWidget):
         # Add Components to the Main Layout
         main_layout.addLayout(title_banner)
         main_layout.addLayout(main_grid)
+        
 
         # Set Main Layout
         self.setLayout(main_layout)
         
+    def handle_commanded_speed(self, speed: float):
+        self.commanded_speed = speed
+        print(f"Commanded speed: {self.commanded_speed}")
+        self.commanded_speed_edit.setText(f"{speed:.2f} mph")
+        
+    def handle_commanded_authority(self, authority: float):
+        self.commanded_authority = authority
+        print(f"Commanded authority: {self.commanded_authority}")
+        self.commanded_authority_edit.setText(f"{authority:.2f} ft")
+        # Minus one from authority every second and update it in text UI live
+        self.elapsed_timer.start()
+        self.timer.start(1000)
+        self.timer.timeout.connect(self.update_commanded_authority)
     
+    def update_commanded_authority(self):
+        self.commanded_authority -= 1
+        self.commanded_authority_edit.setText(f"{self.commanded_authority:.2f} ft")
+        if self.commanded_authority == 0:
+            self.timer.stop()
+            self.elapsed_timer.invalidate()
+            self.commanded_authority_edit.setText("0.00 ft")
+            self.commanded_authority = 0.0
+            print("Authority reached 0.0 ft")
     
     def handle_engine_failure(self, status: bool):
         if status == True:
@@ -432,6 +465,45 @@ class TrainControllerUI(QWidget):
         # print(f"Signal failure status: {status}")
 
     def handle_passenger_brake_command(self, status: bool):
+        if status:
+            self.passenger_brake = True
+            if status and not hasattr(self, 'passenger_brake_popup_shown'):
+                self.passenger_brake_popup_shown = True
+                msg_box = QMessageBox()
+                msg_box.setWindowTitle("Passenger Brake")
+                msg_box.setText("Passenger brake has been pressed.")
+                msg_box.setStyleSheet("font-size: 14px;")
+                QTimer.singleShot(3000, msg_box.accept)  # Close the message box after 5 seconds
+                msg_box.exec()
+                # Simulate pressing the emergency brake button
+                # Capture the starting time
+                 # Capture the starting time
+                # previous_time = time.time()
+                
+                while self.current_velocity > 0:
+                    # Ensure velocity doesn't go negative
+                    if self.current_velocity < 0:
+                        self.current_velocity = 0
+
+                    # Apply the formula: v_new = v_current + (a * dt)
+                    dt = 2  # Set the elapsed time interval (2 seconds)
+                    self.current_velocity += -2.73 * dt
+
+                    # Ensure velocity doesn't drop below zero
+                    if self.current_velocity < 0:
+                        self.current_velocity = 0
+
+                    # Print current velocity
+                    print(f"Current Velocity: {self.current_velocity:.2f} mph")
+
+                    # Wait for 2 seconds before the next update
+                    time.sleep(dt)
+                    
+                    
+            elif not status:
+                self.passenger_brake_popup_shown = False
+        else:
+            self.passenger_brake = False
         print(f"Passenger brake command status: {status}")
         
     def update_desired_temperature(self):
@@ -439,10 +511,11 @@ class TrainControllerUI(QWidget):
         if 70 <= temp <= 100:
             self.desired_temperature = temp
             print(f"Desired temperature set to: {self.desired_temperature}°F")
+            self.reach_temperature()
         else:
             print("Temperature out of range. Please enter a value between 70°F and 100°F.")
             
-    def reach_temperature(self, k=0.1, time_step=1):
+    def reach_temperature(self, k=0.3, time_step=2):
         initial_temp = self.current_temperature
         desired_temp = self.desired_temperature
         """
@@ -465,6 +538,7 @@ class TrainControllerUI(QWidget):
             raise TypeError(f"Desired temperature should be a number, but got: {type(desired_temp)}")
 
         current_temp = initial_temp
+        # self.current_temperature = current_temp
         while abs(current_temp - desired_temp) > 0.01:  # Tolerance for stopping
             # Calculate the change in temperature using a first-order equation
             dT = k * (desired_temp - current_temp)
@@ -473,12 +547,88 @@ class TrainControllerUI(QWidget):
             current_temp += dT
             
             # Print the current temperature
-            print(f"Current Temperature: {current_temp:.2f}°C")
+            # self.current_temperature = current_temp
+            self.elapsed_timer.start()
+            self.timer.start(1000)
+            self.timer.timeout.connect(lambda: self.update_current_temp_display(current_temp))
+            self.current_temperature = current_temp
+            print(f"Current Temperature: {current_temp:.2f}°F")
             
             # Wait for the specified time step
             time.sleep(time_step)
 
-        print(f"Reached Desired Temperature: {current_temp:.2f}°C")
+        print(f"Reached Desired Temperature: {current_temp:.2f}°F")
+        
+    def update_current_temp_display(self, current_temp):
+        self.current_temperature = current_temp
+        self.current_temp_edit.setText(f"{self.current_temperature:.2f} °F")
+        
+    def calculate_power_command(current_velocity, desired_velocity, kp, ki, integral_param, dt):
+        """
+        Calculate the power command using a PID controller.
+
+        :param current_velocity: The current velocity of the train
+        :param desired_velocity: The target velocity for the train
+        :param kp: Proportional gain
+        :param ki: Integral gain
+        :param integral_param: Cumulative error for integral term
+        :param dt: Time step for the simulation
+        :return: power command and updated integral_param
+        """
+        # Calculate the error
+        velocity_error = desired_velocity - current_velocity
+
+        # Proportional term
+        p_term = kp * velocity_error
+
+        # Update the integral term with dt for discrete integration
+        integral_param += velocity_error * dt
+
+        # Integral term
+        i_term = ki * integral_param
+
+        # Total power command (without limits for now)
+        power_command = p_term + i_term
+
+        # Optional: Limit power command to a maximum value
+        max_power = 10000  # Define the maximum power output (in Watts)
+        if power_command > max_power:
+            power_command = max_power
+
+        return power_command, integral_param
+
+def update_current_velocity(power_command, current_velocity, dt, mass, friction_condition):
+    """
+    Update the current velocity of the train based on the power command and friction.
+
+    :param power_command: The calculated power command
+    :param current_velocity: The current velocity of the train
+    :param dt: Time step for the simulation
+    :param mass: Mass of the train
+    :param friction_condition: Current friction condition (dry, wet, icy)
+    :return: new_velocity: Updated velocity of the train
+    """
+    # Get the kinetic friction coefficient for the current condition
+    kinetic_friction = 0.4  # Default value for dry conditions
+
+    # Calculate the force of friction
+    friction_force = kinetic_friction * mass * 9.81  # 9.81 m/s^2 is the acceleration due to gravity
+
+    # Calculate the net force acting on the train
+    net_force = power_command - friction_force
+
+    # Calculate the acceleration
+    acceleration = net_force / mass
+
+    # Update the current velocity
+    new_velocity = current_velocity + acceleration * dt
+
+    # Ensure that the velocity does not exceed maximum velocity
+    max_velocity = 30.0  # Define the maximum velocity for the train
+    if new_velocity > max_velocity:
+        new_velocity = max_velocity
+
+    return new_velocity
 
 
 if __name__ == "__main__":
