@@ -1,27 +1,27 @@
 import time
-import Adafruit_CharLCD as LCD
+import random
 
-# Raspberry Pi pin configuration:
-lcd_rs = 25  # Note this might need to be changed to 21 for older revision Pi's.
-lcd_en = 24
-lcd_d4 = 23
-lcd_d5 = 17
-lcd_d6 = 18
-lcd_d7 = 22
-lcd_backlight = 4
+# Function to simulate sensor readings
+def read_voltage():
+    # Simulate voltage reading
+    return random.uniform(1.0, 5.0)  # Voltage between 1V and 5V
 
-# Define LCD column and row size for 16x2 LCD.
-lcd_columns = 16
-lcd_rows = 2
+def read_current():
+    # Simulate current reading
+    return random.uniform(0.1, 2.0)  # Current between 0.1A and 2A
 
-# Initialize the LCD using the pins above.
-lcd = LCD.Adafruit_CharLCD(lcd_rs, lcd_en, lcd_d4, lcd_d5, lcd_d6, lcd_d7, lcd_columns, lcd_rows, lcd_backlight)
+def calculate_power(voltage, current):
+    return voltage * current
 
-# Print a message to the LCD.
-lcd.message('Hello, World!')
+def main():
+    while True:
+        voltage = read_voltage()
+        current = read_current()
+        power = calculate_power(voltage, current)
+        
+        print(f"Voltage: {voltage:.2f} V, Current: {current:.2f} A, Power: {power:.2f} W")
+        
+        time.sleep(1)  # Update every 1 second
 
-# Wait 5 seconds
-time.sleep(5)
-
-# Clear the LCD screen
-lcd.clear()
+if __name__ == "__main__":
+    main()
