@@ -27,6 +27,13 @@ class TrainControllerUI(QWidget):
         print(type(self.current_temperature))
         self.desired_temperature = 0.0
         self.current_velocity = 30.0
+        
+        # For the toggling the different status lights
+        self.exterior_lights = False
+        self.interior_lights = False
+        self.left_door = False
+        self.right_door = False
+        self.brake_status = False
 
     
         self.communicator.engine_failure_signal.connect(self.handle_engine_failure)
@@ -259,6 +266,7 @@ class TrainControllerUI(QWidget):
         interior_lights_label.setStyleSheet("font-size: 14px; font-weight: bold; color: black; padding-left: 40px;")
         self.interior_lights_status = QPushButton("ON")
         self.interior_lights_status.setStyleSheet("background-color: #f5c842; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
+        self.interior_lights_status.pressed.connect(lambda: self.toggle_interior_lights(self.interior_lights))
         interior_lights_layout.addWidget(interior_lights_label)
         interior_lights_layout.addWidget(self.interior_lights_status)
         interior_lights_layout.addSpacerItem(QSpacerItem(20, 20))
@@ -271,6 +279,7 @@ class TrainControllerUI(QWidget):
         exterior_lights_label.setStyleSheet("font-size: 14px; font-weight: bold; color: black; padding-left: 40px;")
         self.exterior_lights_status = QPushButton("OFF")
         self.exterior_lights_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
+        self.exterior_lights_status.pressed.connect(lambda: self.toggle_exterior_lights(self.exterior_lights))
         exterior_lights_layout.addWidget(exterior_lights_label)
         exterior_lights_layout.addWidget(self.exterior_lights_status)
         exterior_lights_layout.addSpacerItem(QSpacerItem(20, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum))
@@ -562,6 +571,30 @@ class TrainControllerUI(QWidget):
     def update_current_temp_display(self, current_temp):
         self.current_temperature = current_temp
         self.current_temp_edit.setText(f"{self.current_temperature:.2f} °F")
+        
+    def toggle_interior_lights(self, status: bool):
+        if status:
+            self.interior_lights = False
+            self.interior_lights_status.setText("OFF")
+            self.interior_lights_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
+            print("Interior lights turned OFF")
+        else:
+            self.interior_lights = True
+            self.interior_lights_status.setText("ON")
+            self.interior_lights_status.setStyleSheet("background-color: #f5c842; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
+            print("Interior lights turned ON")
+            
+    def toggle_exterior_lights(self, status: bool):
+        if status:
+            self.exterior_lights = False
+            self.exterior_lights_status.setText("OFF")
+            self.exterior_lights_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
+            print("Exterior lights turned OFF")
+        else:
+            self.exterior_lights = True
+            self.exterior_lights_status.setText("ON")
+            self.exterior_lights_status.setStyleSheet("background-color: #f5c842; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
+            print("Exterior lights turned ON")
         
     def calculate_power_command(current_velocity, desired_velocity, kp, ki, integral_param, dt):
         """

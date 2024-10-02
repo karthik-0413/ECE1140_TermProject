@@ -1,8 +1,8 @@
 class TrainController:
     def __init__(self):
-        self.kp = 10.0
-        self.ki = 0.5
-        self.dt = 1.0  # Increased time step for faster simulation
+        self.kp = 50.0  # up if too much oscillation
+        self.ki = 45.0  # up if the max is reached to fast
+        self.dt = 15.0  # Increased time step for faster simulation
         self.max_power = 120000
         self.speed_limit = 70
         self.P_MAX = 120000
@@ -14,6 +14,10 @@ class TrainController:
         self.ek_current = 0.0
         self.uk_previous = 0.0
         self.ek_previous = 0.0
+        self.current_position = 0.0
+        
+        # Track circuits and a way the train an know its on a diff block - Polarity
+        
 
     def update_power_command(self, desired_speed, current_speed):
         
@@ -40,33 +44,37 @@ class TrainController:
 
         # Updating the previous variables for next iteration
         self.ek_previous = self.ek_current
-        self.uk_previous += self.uk_current
+        self.uk_previous = self.uk_current
         
         # Power command bound
-        if self.power_command > self.max_power:
-            self.power_command = self.max_power
-        else:
-            self.power_command = self.power_command
+        # if self.power_command > self.max_power:
+        #     self.power_command = self.max_power
+        # else:
+        #     self.power_command = self.power_command
         
         # Returning the power command
         return self.power_command
 
-    def update_current_velocity(self, current_velocity, power_command, friction_coefficient=0.05, max_velocity=19.44, serviceBrake=False, emergencyBrake=False):
-        mass = 40900
+    def update_current_velocity(self, current_velocity, power_command, friction_coefficient, max_velocity, serviceBrake=False, emergencyBrake=False):
+        mass = 56700
         
         # FORCE
         if current_velocity == 0:
             if serviceBrake or emergencyBrake:
                 force = 0
             else:
-                force = 1000
+                force = 1
         else:
             force = power_command / current_velocity
             print(f"Force: {force:.2f} N")
+            
             frictional_force = friction_coefficient * mass * 9.8
+            
             if force < frictional_force:
                 print("Train has stopped moving")
+                
             force -= frictional_force
+            
             print(f"Frictional Force: {frictional_force:.2f} N")
             
         # ACCERLATION - Max acceleration is 0.5 m/s^2
@@ -84,8 +92,11 @@ class TrainController:
         if (new_velocity <= 0):
             new_velocity = 0
         
+        new_position = self.current_position + (self.dt / 2) * (new_velocity + current_velocity)
+        print(f"New Velocity: {new_velocity:.2f} m/s, New Position: {new_position:.2f} m")
 
         self.previous_acceleration = acceleration
+        self.current_position = new_position
 
         return new_velocity
 
@@ -105,7 +116,9 @@ class TrainController:
 
 def main():
     controller = TrainController()
-    controller.run_simulation(19.44)
+    controller.run_simulation(15)
+    # power = controller.update_power_command(9, 0)
+    # print(power)
 
 if __name__ == "__main__":
     main()
