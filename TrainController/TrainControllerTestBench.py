@@ -54,6 +54,8 @@ class TrainControllerTestBenchUI(QWidget):
         
         self.communicator = communicator
         
+        self.announcement_output = ''
+        
         # Connect signals to slots
         self.communicator.engine_failure_signal.connect(self.handle_engine_failure)
         self.communicator.brake_failure_signal.connect(self.handle_brake_failure)
@@ -61,6 +63,8 @@ class TrainControllerTestBenchUI(QWidget):
         self.communicator.passenger_brake_command_signal.connect(self.handle_passenger_brake_command)
         self.communicator.commanded_speed_signal.connect(self.handle_commanded_speed)
         self.communicator.commanded_authority_signal.connect(self.handle_commanded_authority)
+        self.communicator.announcement_signal.connect(self.announcement_output_to_testbench) 
+        
         
         self.initUI()
         
@@ -91,6 +95,7 @@ class TrainControllerTestBenchUI(QWidget):
         
         self.beacon_input = QLineEdit()
         self.beacon_input.setStyleSheet("border-radius: 10px;")
+        self.beacon_input.editingFinished.connect(self.emit_beacon_destination)
         hbox_beacon.addWidget(self.beacon_input)
         
         layout.addLayout(hbox_beacon)
@@ -137,6 +142,10 @@ class TrainControllerTestBenchUI(QWidget):
         self.setLayout(layout)
         self.setWindowTitle('Train Controller')
         self.show()
+        
+    def emit_beacon_destination(self):
+        beacon_destination = self.beacon_input.text()
+        self.communicator.station_name_signal.emit(beacon_destination)
         
     def create_input_field(self, layout, label_text, variable_name):
         vbox = QVBoxLayout()
@@ -235,6 +244,10 @@ class TrainControllerTestBenchUI(QWidget):
         
     def handle_commanded_authority(self, authority):
         print(f"Commanded authority changed to: {authority}")
+        
+    # Handle announcement output
+    def announcement_output_to_testbench(self, announcement):
+        self.announcement_output.setText(announcement)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

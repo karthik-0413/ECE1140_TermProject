@@ -1,8 +1,8 @@
 class TrainController:
     def __init__(self):
-        self.kp = 50.0  # up if too much oscillation
-        self.ki = 45.0  # up if the max is reached to fast
-        self.dt = 15.0  # Increased time step for faster simulation
+        self.kp = 25.0  # up if too much oscillation
+        self.ki = 0.5  # up if the max is reached to fast
+        self.dt = 1.0  # Increased time step for faster simulation
         self.max_power = 120000
         self.speed_limit = 70
         self.P_MAX = 120000
@@ -15,10 +15,7 @@ class TrainController:
         self.uk_previous = 0.0
         self.ek_previous = 0.0
         self.current_position = 0.0
-        
-        # Track circuits and a way the train an know its on a diff block - Polarity
-        
-
+       
     def update_power_command(self, desired_speed, current_speed):
         
         # Determining speed bound
@@ -47,15 +44,16 @@ class TrainController:
         self.uk_previous = self.uk_current
         
         # Power command bound
-        # if self.power_command > self.max_power:
-        #     self.power_command = self.max_power
-        # else:
-        #     self.power_command = self.power_command
+        if self.power_command > self.max_power:
+            self.power_command = self.max_power
+        else:
+            self.power_command = self.power_command
         
         # Returning the power command
         return self.power_command
 
     def update_current_velocity(self, current_velocity, power_command, friction_coefficient, max_velocity, serviceBrake=False, emergencyBrake=False):
+        # Mass of full train
         mass = 56700
         
         # FORCE
@@ -116,9 +114,11 @@ class TrainController:
 
 def main():
     controller = TrainController()
-    controller.run_simulation(15)
-    # power = controller.update_power_command(9, 0)
-    # print(power)
+    # controller.run_simulation(15)
+    power = controller.update_power_command(10, 1)
+    power2 = controller.update_power_command(19, 10)
+    print(power)
+    print(power2)
 
 if __name__ == "__main__":
     main()
