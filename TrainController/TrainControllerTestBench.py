@@ -1,6 +1,6 @@
 import sys
 from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QLineEdit, QVBoxLayout, QHBoxLayout, QComboBox, QPushButton, QTextEdit
-from PyQt6.QtCore import pyqtSignal, QObject
+from PyQt6.QtCore import QObject
 from TrainControllerCommunicateSignals import Communicate
 
 class TrainControllerTestBench(QObject):
@@ -15,6 +15,7 @@ class TrainControllerTestBench(QObject):
         self.acceleration = 0
         self.passengers = 0
         self.train_weight = 0  # New variable
+        self.current_velocity = 0  # New variable
         
         # String variables
         self.beacon_destination_location = ""
@@ -36,6 +37,7 @@ class TrainControllerTestBench(QObject):
             'acceleration': self.acceleration,
             'passengers': self.passengers,
             'train_weight': self.train_weight,
+            'current_velocity': self.current_velocity,  # New variable
             'beacon_destination_location': self.beacon_destination_location,
             'announcement': self.announcement,
             'train_engine_failure': self.train_engine_failure,
@@ -100,6 +102,7 @@ class TrainControllerTestBenchUI(QWidget):
         self.create_input_field(layout, "Acceleration:", "acceleration")
         self.create_input_field(layout, "Passengers:", "passengers")
         self.create_input_field(layout, "Train Weight:", "train_weight")  # New input field
+        self.create_input_field(layout, "Current Velocity:", "current_velocity")  # New input field
         
         # Failure Simulations
         hbox_failures = QHBoxLayout()
@@ -187,6 +190,7 @@ class TrainControllerTestBenchUI(QWidget):
             'acceleration': self.findChild(QLineEdit, "acceleration").text(),
             'passengers': self.findChild(QLineEdit, "passengers").text(),
             'train_weight': self.findChild(QLineEdit, "train_weight").text(),
+            'current_velocity': self.findChild(QLineEdit, "current_velocity").text(),  # New input field
             'beacon_destination_location': self.beacon_input.text(),
         }
         
@@ -209,6 +213,7 @@ class TrainControllerTestBenchUI(QWidget):
         print("Acceleration:", variables['acceleration'])
         print("Passengers:", variables['passengers'])
         print("Train Weight:", variables['train_weight'])
+        print("Current Velocity:", variables['current_velocity'])  # New variable
         print("Beacon Destination Location:", variables['beacon_destination_location'])
         print("Changes applied")
         

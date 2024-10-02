@@ -13,7 +13,7 @@ def main():
     # Create instances of each UI window
     communicator = Communicate()  # Replace with your actual communicator class
     ui1 = TrainControllerUI(communicator)
-    ui2 = TrainEngineerUI()
+    ui2 = TrainEngineerUI(communicator)
     ui3 = TrainControllerTestBenchUI(communicator)
 
     # Show each window

@@ -1,4 +1,4 @@
-from TrainControllerEngineer import TrainEngineer
+from TrainControllerEngineer import TrainEngineerUI
 from PyQt6.QtCore import QTimer, QElapsedTimer
 import time
 
@@ -55,8 +55,8 @@ class TrainController:
         self.timer.timeout.connect(self.update_speed)
       
     def update_Kp_and_Ki(self):
-        self._kp = TrainEngineer.get_kp(self)
-        self._ki = TrainEngineer.get_ki(self)
+        self._kp = TrainEngineerUI.get_kp(self)
+        self._ki = TrainEngineerUI.get_ki(self)
         print(f'Train {self.train_id} Kp: {self._kp}, Ki: {self._ki}')
         
     # Setting Velocity Commanded for the block diagram

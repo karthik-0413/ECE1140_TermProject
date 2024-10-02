@@ -7,3 +7,5 @@ class Communicate(QObject):
     passenger_brake_command_signal = pyqtSignal(bool)
     commanded_speed_signal = pyqtSignal(float)
     commanded_authority_signal = pyqtSignal(float)
+    engineer_kp_signal = pyqtSignal(float)
+    engineer_ki_signal = pyqtSignal(float)
