@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QApplication, QWidget, QPushButton, QLabel, QVBoxLayout, QFrame, QGridLayout, QLineEdit, QHBoxLayout, QSizePolicy, QComboBox, QTimeEdit, QCheckBox
+from PyQt6.QtWidgets import QApplication, QWidget, QPushButton, QLabel, QVBoxLayout, QFrame, QGridLayout, QLineEdit, QHBoxLayout, QSizePolicy, QComboBox, QTimeEdit, QCheckBox, QTableWidget, QHeaderView
 from PyQt6.QtCore import Qt, QTime
 import sys
 
@@ -10,7 +10,7 @@ class App(QWidget):
     def initUI(self):
         self.setWindowTitle('PyQt6 Simple UI')
         self.setGeometry(100, 100, 300, 200)
-        self.setStyleSheet('background-color: #252540;')
+        self.setStyleSheet('background-color: #8f97a3;')
 
         self.layout = QGridLayout()
 
@@ -139,7 +139,20 @@ class App(QWidget):
         self.throughput_rect_layout.addWidget(self.throughput_display, 0, Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter)
         self.throughput_rect_layout.addWidget(self.throughput_label, 1, Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignCenter)
 
-        
+        ######################################################################
+        # Table 1
+        ######################################################################
+
+        self.table1 = QTableWidget(4, 5, self)
+        self.table1.setHorizontalHeaderLabels(["  Train  ", "  Current Block  ", "  Departure Station  ", "  Destination Station  ", "  Departure Time  ", "  Arrival Time  "])
+        self.table1.setFixedHeight(200)
+        self.table1.setFixedWidth(800)
+        self.table1.resizeColumnsToContents()
+        self.table1.resizeRowsToContents()
+        self.table1.verticalHeader().setVisible(False)
+        self.table1.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self.table1.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        #self.table1.horizontalHeader().setStretchLastSection(True)
 
         ######################################################################
         # Layout
@@ -147,6 +160,7 @@ class App(QWidget):
 
         self.layout.addWidget(self.dispatch, 1, 0, 1, 1)
         self.layout.addWidget(self.throughput_rect, 1, 1, 1, 1)
+        self.layout.addWidget(self.table1, 2, 0, 1, 2)
         self.setLayout(self.layout)
 
 
