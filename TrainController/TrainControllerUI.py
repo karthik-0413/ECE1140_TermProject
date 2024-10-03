@@ -23,6 +23,7 @@ class TrainControllerUI(QWidget):
         # Train Specs
         self.mass = 56700
         self.friction_coefficient = 0.05
+        self.max_power = 120000
 
         # For the failure modes
         self.engine_fail = False
@@ -44,15 +45,15 @@ class TrainControllerUI(QWidget):
         self.brake_status = False
         
         # Engineer's Values
-        self.kp = 0.0
-        self.ki = 0.0
+        self.kp = 25.0
+        self.ki = 0.5
         
         # Vital Variables
-        self.commanded_speed = 50.0
+        self.commanded_speed = 31.07
         self.commanded_authority = 1.0
         
         # Key input and output
-        self.current_velocity = 30.0
+        self.current_velocity = 1.0
         self.power_command = 0.0
         self.next_station = 'Shadyside'
         
@@ -81,6 +82,15 @@ class TrainControllerUI(QWidget):
         # Variables needed for speed increase
         self.previous_acceleration = 0.0
         self.current_position = 0.0
+        
+        # Variables needed for power command
+        self.desired_velocity = 0.0
+        self.uk_current = 0.0
+        self.ek_current = 0.0
+        self.uk_previous = 0.0
+        self.ek_previous = 0.0
+        self.dt = 1.0
+    
     
         # All pyqtsignals
         self.communicator.engine_failure_signal.connect(self.handle_engine_failure)
@@ -93,6 +103,7 @@ class TrainControllerUI(QWidget):
         self.communicator.engineer_kp_signal.connect(self.updated_set_kp)
         self.communicator.engineer_ki_signal.connect(self.updated_set_ki)
         self.communicator.station_name_signal.connect(self.handle_station_name)
+        self.communicator.current_velocity_signal.connect(self.handle_current_velocity)
         
         
         # UI STARTS HERE
@@ -223,7 +234,7 @@ class TrainControllerUI(QWidget):
 
         self.setpoint_speed_edit = QLineEdit()
         self.setpoint_speed_edit.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
-        self.setpoint_speed_edit.textChanged.connect(self.update_setpoint_speed)
+        self.setpoint_speed_edit.editingFinished.connect(self.update_setpoint_speed_calculations)
         self.setpoint_speed_edit.setPlaceholderText("50")
         self.setpoint_speed_edit.setStyleSheet("margin-left: 50px; max-width: 100px; color: black; border: 2px solid black; border-radius: 5px; padding: 5px;")
         self.setpoint_speed_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -254,7 +265,13 @@ class TrainControllerUI(QWidget):
         main_grid.addWidget(power_command_label, 4, 1, 1, 1, alignment=Qt.AlignmentFlag.AlignCenter)
 
         power_command_layout = QHBoxLayout()
-        self.power_command_edit = QLineEdit("5.5")
+        self.power_command_edit = QLineEdit(str(self.power_command))
+        # Connect to update function every time setpoint speed is changed
+        self.setpoint_speed_edit.textChanged.connect(lambda: self.update_power_command())
+        # Timer to update power command every millisecond
+        # self.power_command_timer = QTimer(self)
+        # self.power_command_timer.timeout.connect(lambda: self.update_power_command(self.setpoint_speed, self.current_velocity))
+        # self.power_command_timer.start(1)  # Update every 1 millisecond
         self.power_command_edit.setStyleSheet("font-size: 20px; max-width: 100px; color: black; border: 2px solid black; border-radius: 5px; padding: 5px;")
         self.power_command_edit.setEnabled(False)
         self.power_command_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -710,76 +727,102 @@ class TrainControllerUI(QWidget):
             msg_box.exec()
 
         
-    def calculate_power_command(current_velocity, desired_velocity, kp, ki, integral_param, dt):
-        # Calculate the error
-        velocity_error = desired_velocity - current_velocity
-
-        # Proportional term
-        p_term = kp * velocity_error
-
-        # Update the integral term with dt for discrete integration
-        integral_param += velocity_error * dt
-
-        # Integral term
-        i_term = ki * integral_param
-
-        # Total power command (without limits for now)
-        power_command = p_term + i_term
-
-        # Optional: Limit power command to a maximum value
-        max_power = 10000  # Define the maximum power output (in Watts)
-        if power_command > max_power:
-            power_command = max_power
-
-        return power_command, integral_param
-
-    def update_current_velocity(self, current_velocity, power_command, friction_coefficient, max_velocity, serviceBrake=False, emergencyBrake=False):
-        dt = 5
+    # Must be triggered everytime the desired speed changes
+    # Setpoint Speed input
+    # Commanded Speed
+    # Service Brake
+    # Emergency Brake
+    # Commanded Speed
+    def update_power_command(self):
         
-        # Mass of full train
-        mass = 56700
-        
-        # FORCE
-        if current_velocity == 0:
-            if serviceBrake or emergencyBrake:
-                force = 0
-            else:
-                force = 1
+        # Determining speed bound
+        if self.desired_velocity > self.speed_limit:
+            self.desired_velocity = self.speed_limit
         else:
-            force = power_command / current_velocity
-            print(f"Force: {force:.2f} N")
+            self.desired_velocity = self.desired_velocity
             
-            frictional_force = friction_coefficient * mass * 9.8
+        # Print desired and current speed
+        print(f"Desired Speed: {self.desired_velocity:.2f} m/s, Current Speed: {self.current_velocity:.2f} m/s")
+        
+        # Finding the velocity error
+        self.ek_current = self.desired_velocity - self.current_velocity
+        print(f"Velocity Error: {self.ek_current:.2f} m/s")
+        
+        # Finding the power command
+        self.power_command = self.kp * self.ek_current + self.ki * self.uk_current
+        print(f"Power Command FINAL: {self.power_command:.2f} kW")
+
+        # Using the different cases from lecture slides
+        if self.power_command < self.max_power:
+            self.uk_current = self.uk_previous + (self.dt / 2) * (self.ek_current + self.ek_previous)
+        else:
+            self.uk_current = self.uk_previous
+
+        # Updating the previous variables for next iteration
+        self.ek_previous = self.ek_current
+        self.uk_previous = self.uk_current
+        
+        # Power command bound
+        if self.power_command > self.max_power:
+            self.power_command = self.max_power
+        elif self.power_command < 0:
+            self.power_command = 0
+            print("Service Brake Applied")
+        else:
+            self.power_command = self.power_command
             
-            if force < frictional_force:
-                print("Train has stopped moving")
+        self.power_command_edit.setText(f"{self.power_command:.2f} kW")
+        print(f"Power Command: {self.power_command:.2f} kW")
+            
+        return self.power_command
+
+    # def update_current_velocity(self, current_velocity, power_command, friction_coefficient, max_velocity, serviceBrake=False, emergencyBrake=False):
+    #     dt = 5
+        
+    #     # Mass of full train
+    #     mass = 56700
+        
+    #     # FORCE
+    #     if current_velocity == 0:
+    #         if serviceBrake or emergencyBrake:
+    #             force = 0
+    #         else:
+    #             force = 1
+    #     else:
+    #         force = power_command / current_velocity
+    #         print(f"Force: {force:.2f} N")
+            
+    #         frictional_force = friction_coefficient * mass * 9.8
+            
+    #         if force < frictional_force:
+    #             print("Train has stopped moving")
                 
-            force -= frictional_force
+    #         force -= frictional_force
             
-            print(f"Frictional Force: {frictional_force:.2f} N")
+    #         print(f"Frictional Force: {frictional_force:.2f} N")
             
-        # ACCERLATION - Max acceleration is 0.5 m/s^2
-        acceleration = force / mass
+    #     # ACCERLATION - Max acceleration is 0.5 m/s^2
+    #     acceleration = force / mass
         
-        if (acceleration > 0.5 and not serviceBrake and not emergencyBrake):
-            acceleration = 0.5
+    #     if (acceleration > 0.5 and not serviceBrake and not emergencyBrake):
+    #         acceleration = 0.5
         
-        # VELOCITY - Max velocity is 19.44 m/s
-        new_velocity = current_velocity + (dt / 2) * (acceleration + self.previous_acceleration)
+    #     # VELOCITY - Max velocity is 19.44 m/s
+    #     new_velocity = current_velocity + (dt / 2) * (acceleration + self.previous_acceleration)
         
-        if (new_velocity >= max_velocity):
-            new_velocity = max_velocity # m/s
+    #     if (new_velocity >= max_velocity):
+    #         new_velocity = max_velocity # m/s
             
-        if (new_velocity <= 0):
-            new_velocity = 0
+    #     if (new_velocity <= 0):
+    #         new_velocity = 0
         
-        new_position = self.current_position + (dt / 2) * (new_velocity + current_velocity)
-        print(f"New Velocity: {new_velocity:.2f} m/s, New Position: {new_position:.2f} m")
+    #     new_position = self.current_position + (dt / 2) * (new_velocity + current_velocity)
+    #     print(f"New Velocity: {new_velocity:.2f} m/s, New Position: {new_position:.2f} m")
 
-        self.previous_acceleration = acceleration
-        self.current_position = new_position
+    #     self.previous_acceleration = acceleration
+    #     self.current_position = new_position
 
-        return new_velocity
+    #     return new_velocity
 
     def update_speed(self):
             elapsed_time = self.elapsed_timer.elapsed() / 1000  # Convert ms to seconds
@@ -842,13 +885,13 @@ class TrainControllerUI(QWidget):
         self.current_speed_edit.setText(f"{self.current_velocity:.2f} mph")
         print(f"Current Speed updated to {self.current_velocity} mph")
         
-    def update_setpoint_speed(self):
-        self.setpoint_speed_edit.editingFinished.connect(self.update_setpoint_speed_calculations)
-
-    def update_setpoint_speed_calculations(self):
-        speed = float(self.setpoint_speed_edit.text())
-        if self.setpoint_speed > self.speed_limit:  
-            self.setpoint_speed = self.speed_limit
+    def update_setpoint_speed_calculations(self):       
+        # update value of setpoint speed to user input value
+        self.desired_velocity = float(self.setpoint_speed_edit.text()) 
+        print(f"Desired Speed: {self.desired_velocity} mph")    # Good updated value
+        
+        if self.desired_velocity > self.speed_limit:  
+            self.desired_velocity = self.speed_limit
             self.setpoint_speed_edit.setText(str(self.speed_limit))
             
             # Display a message box indicating the speed entered is higher than the speed limit for that track
@@ -860,13 +903,15 @@ class TrainControllerUI(QWidget):
             msg_box.exec()
             
             # Increase speed until the desired speed is reached
-            while self.current_velocity < self.setpoint_speed:
-                self.update_current_velocity(self.setpoint_speed, self.current_velocity, 1, self.mass, self.friction_coefficient)
+            # while self.current_velocity < self.setpoint_speed:
+            self.update_power_command()
+                # self.update_current_velocity(self.setpoint_speed, self.current_velocity, 1, self.mass, self.friction_coefficient)
         else:
-            self.setpoint_speed = speed
-            print(f"Setpoint Speed updated to {self.setpoint_speed} mph")
-            while self.current_velocity < self.setpoint_speed:
-                self.update_current_velocity(self.setpoint_speed, self.current_velocity, 1, self.mass, self.friction_coefficient)
+            print(f"Setpoint Speed updated to {self.desired_velocity} mph")
+            # while self.current_velocity < self.setpoint_speed:
+            self.power_command = self.update_power_command()
+            print(f"Power Command: {self.power_command}")
+                # self.update_current_velocity(self.setpoint_speed, self.current_velocity, 1, self.mass, self.friction_coefficient)
                 
     def update_button_styles(self):
         if self.operation_mode == 1:
@@ -876,7 +921,12 @@ class TrainControllerUI(QWidget):
             self.manual_button.setStyleSheet("margin-top: 10px; margin-left: 10px; background-color: gray; color: white; max-width: 100px; border-radius: 5px; padding-top: 10px; padding-bottom: 10px; border: 2px solid black;")
             self.automatic_button.setStyleSheet("margin-top: 10px; margin-left: 10px; background-color: green; color: white; max-width: 100px; border-radius: 5px; padding-top: 10px; padding-bottom: 10px; border: 2px solid black;")
             
-            
+    def handle_current_velocity(self, velocity: float):
+        self.current_velocity = velocity
+        print(f"Current Velocity: {self.current_velocity}")
+        self.current_speed_edit.setText(f"{self.current_velocity:.2f} mph")
+    
+    
 if __name__ == "__main__":
     app = QApplication([])
     communicator = Communicate()

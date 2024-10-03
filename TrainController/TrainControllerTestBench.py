@@ -203,6 +203,10 @@ class TrainControllerTestBenchUI(QWidget):
             'beacon_destination_location': self.beacon_input.text(),
         }
         
+        # Emit current speed value input
+        if variables['current_speed'].isdigit():
+            self.communicator.current_velocity_signal.emit(int(variables['current_speed']))
+        
         if variables['commanded_speed'].isdigit():
             self.communicator.commanded_speed_signal.emit(int(variables['commanded_speed']))
         else:

@@ -46,6 +46,9 @@ class TrainController:
         # Power command bound
         if self.power_command > self.max_power:
             self.power_command = self.max_power
+        elif self.power_command < 0:
+            self.power_command = 0
+            print("Service Brake Applied")
         else:
             self.power_command = self.power_command
         
@@ -115,10 +118,15 @@ class TrainController:
 def main():
     controller = TrainController()
     # controller.run_simulation(15)
-    power = controller.update_power_command(10, 1)
-    power2 = controller.update_power_command(19, 10)
+    power = controller.update_power_command(19, 1)
+    power2 = controller.update_power_command(19, 8)
+    print(power)
+    print(f"Previous Velocity Error (ek_previous): {controller.ek_previous:.2f}")
     print(power)
     print(power2)
+    print(f"Previous Velocity Error (ek_previous): {controller.ek_previous:.2f}")
+    print(power2)
+
 
 if __name__ == "__main__":
     main()
