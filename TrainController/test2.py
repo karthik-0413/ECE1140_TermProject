@@ -61,10 +61,7 @@ class TrainController:
         
         # FORCE
         if current_velocity == 0:
-            if serviceBrake or emergencyBrake:
-                force = 0
-            else:
-                force = 1
+            force = self.max_power / 19.44
         else:
             force = power_command / current_velocity
             print(f"Force: {force:.2f} N")
@@ -117,15 +114,34 @@ class TrainController:
 
 def main():
     controller = TrainController()
-    # controller.run_simulation(15)
-    power = controller.update_power_command(19, 1)
-    power2 = controller.update_power_command(19, 8)
-    print(power)
-    print(f"Previous Velocity Error (ek_previous): {controller.ek_previous:.2f}")
-    print(power)
-    print(power2)
-    print(f"Previous Velocity Error (ek_previous): {controller.ek_previous:.2f}")
-    print(power2)
+    controller.run_simulation(15)
+    # power = controller.update_power_command(19, 1)
+    # print(f"Previous Velocity Error (ek_previous): {controller.ek_previous:.2f}")
+    # power2 = controller.update_power_command(19, 8)
+    # print(power)
+    
+    # print(power)
+    # print(power2)
+    # print(f"Previous Velocity Error (ek_previous): {controller.ek_previous:.2f}")
+    # print(power2)
+    
+    # MANUAL = 1 
+    # AUTOMATIC = 0
+    
+    # NOTES:
+    # In manual mode, the train should initially go at commanded speed, then the driver should be able to change the speed via the setpoint speed input
+        # The setpoint speed should be lower than the speed limit, if not then the speed is set to the speed limit
+        # If no setpoint speed is given, then the commanded speed should be my desired speed
+        # If setpoint speed is given, then the setpoint speed should be my desired speed
+    
+    # In automatic mode, the current speed would always be bounded by the commanded speed
+        # The command speed would be my desired speed
+    
+    # In either mode, the current speed would be an input from the test bench
+    
+    
+    # DESCRIPTION SENT TO ANUJ:
+    # My current speed would be an input from the test bench and my desired speed would either be setpoint speed or commanded speed depending on the speed limit
 
 
 if __name__ == "__main__":
