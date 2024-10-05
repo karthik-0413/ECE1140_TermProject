@@ -1,25 +1,68 @@
-from PyQt6.QtWidgets import QApplication, QWidget, QPushButton, QLabel, QVBoxLayout, QFrame, QGridLayout, QLineEdit, QHBoxLayout, QSizePolicy, QComboBox, QTimeEdit, QCheckBox, QTableWidget, QHeaderView
+from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QPushButton, QLabel, QVBoxLayout, QFrame, QGridLayout, QLineEdit, QHBoxLayout, QSizePolicy, QComboBox, QTimeEdit, QCheckBox, QTableWidget, QHeaderView, QStackedWidget, QMenuBar, QToolBar, QTabWidget, QWidgetAction
 from PyQt6.QtCore import Qt, QTime
+from PyQt6.QtGui import QAction
 import sys
 
-class App(QWidget):
+class App(QMainWindow):
     def __init__(self):
         super().__init__()
         self.initUI()
 
     def initUI(self):
-        self.setWindowTitle('PyQt6 Simple UI')
+
+        self.setWindowTitle('CTC Office')
         self.setGeometry(100, 100, 300, 200)
         self.setStyleSheet('background-color: #8f97a3;')
 
-        self.layout = QGridLayout()
+        central_widget = QWidget(self)
+        self.setCentralWidget(central_widget)
+
+        self.main_layout = QVBoxLayout(central_widget)
+
+        self.train_view_layout = QGridLayout()
+        self.block_view_layout = QGridLayout()
+
+        self.menuBar = QMenuBar(self)
+        self.setMenuBar(self.menuBar)
+        self.setVisible(True)
+
+        self.toolbar = QToolBar(self)
+        self.addToolBar(Qt.ToolBarArea.TopToolBarArea, self.toolbar)
+        self.toolbar.setVisible(True)
+        self.toolbar.setFixedHeight(25)
+        self.toolbar.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        
+        self.tab_widget = QTabWidget(self)
+        self.tab_widget.addTab(QWidget(), "Train View")
+        self.tab_widget.addTab(QWidget(), "Block View")
+
+        self.tab_widget.currentChanged.connect(self.on_tab_changed)
+
+        self.tab_action = QWidgetAction(self)
+        self.tab_action.setDefaultWidget(self.tab_widget)
+
+        self.toolbar.addAction(self.tab_action)
+
+        self.view_trains = QAction("Train View", self)
+        self.view_blocks = QAction("Block View", self)
+
+        self.menuBar.addAction(self.view_trains)
+        self.menuBar.addAction(self.view_blocks)
+
+        self.view_trains.triggered.connect(self.show_train_view)
+        self.view_blocks.triggered.connect(self.show_block_view)
+
+
+        ######################################################################
+        # Train View Layout
+        ######################################################################
 
         # Create header label
         self.header = QLabel('CTC', self)
         self.header.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.header.setStyleSheet('background-color: #2B78E4; color: white; font-size: 40px; padding: 10px;')
         self.header.setMaximumHeight(60)
-        self.layout.addWidget(self.header, 0, 0, 1, -1) # Row 0, Column 0, Span 1 row, Span all columns
+        self.train_view_layout.addWidget(self.header, 0, 0, 1, -1) # Row 0, Column 0, Span 1 row, Span all columns
         self.header.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
         ######################################################################
@@ -140,28 +183,56 @@ class App(QWidget):
         self.throughput_rect_layout.addWidget(self.throughput_label, 1, Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignCenter)
 
         ######################################################################
-        # Table 1
+        # Train Table 1
         ######################################################################
 
-        self.table1 = QTableWidget(4, 5, self)
-        self.table1.setHorizontalHeaderLabels(["  Train  ", "  Current Block  ", "  Departure Station  ", "  Destination Station  ", "  Departure Time  ", "  Arrival Time  "])
-        self.table1.setFixedHeight(200)
-        self.table1.setFixedWidth(800)
-        self.table1.resizeColumnsToContents()
-        self.table1.resizeRowsToContents()
-        self.table1.verticalHeader().setVisible(False)
-        self.table1.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
-        self.table1.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self.train_table1 = QTableWidget(4, 5, self)
+        self.train_table1.setHorizontalHeaderLabels(["  Train  ", "  Current Block  ", "  Departure Station  ", "  Destination Station  ", "  Departure Time  ", "  Arrival Time  "])
+        self.train_table1.setFixedHeight(200)
+        self.train_table1.setFixedWidth(800)
+        self.train_table1.resizeColumnsToContents()
+        self.train_table1.resizeRowsToContents()
+        self.train_table1.verticalHeader().setVisible(False)
+        self.train_table1.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self.train_table1.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         #self.table1.horizontalHeader().setStretchLastSection(True)
+
+        ######################################################################
+        # Train Table 2
+        ######################################################################
+
+    
+
+
+
+
+        ######################################################################
+        # Block View Layout
+        ######################################################################
+
+        self.maintanence_box = QFrame(self)
+        self.maintanence_box.setFrameShape(QFrame.Shape.Box)
+        self.maintanence_box.setMaximumHeight(200)
+        self.maintanence_box.setLineWidth(2)
+        self.maintanence_box.setMaximumWidth(500)
+
+        self.maintanence_box_layout = QGridLayout(self.maintanence_box)
+        self.maintanence_box_layout.setContentsMargins(20, 20, 20, 20)
+
+        self.maintanence_box_label = QLabel('Maintanence', self.maintanence_box)
+        self.maintanence_box_label.setStyleSheet('font-size: 40px; padding: 0px;')
+
+
+
 
         ######################################################################
         # Layout
         ######################################################################
 
-        self.layout.addWidget(self.dispatch, 1, 0, 1, 1)
-        self.layout.addWidget(self.throughput_rect, 1, 1, 1, 1)
-        self.layout.addWidget(self.table1, 2, 0, 1, 2)
-        self.setLayout(self.layout)
+        self.train_view_layout.addWidget(self.dispatch, 1, 0, 1, 1)
+        self.train_view_layout.addWidget(self.throughput_rect, 1, 1, 1, 1)
+        self.train_view_layout.addWidget(self.train_table1, 2, 0, 1, 2)
+        self.main_layout.addLayout(self.train_view_layout)
 
 
 
@@ -170,11 +241,37 @@ class App(QWidget):
         ####
 
         self.selected_line = None
+        self.tab_index = 0
         
 
-    def on_line_change(self, index):
+    def show_train_view(self):
+        self.clear_layout(self.main_layout)
+        self.tab_index = 0
+        self.main_layout.addLayout(self.train_view_layout)
+
+    def show_block_view(self):
+        self.clear_layout(self.main_layout)
+        self.tab_index = 1
+        self.main_layout.addLayout(self.block_view_layout)
+
+    def clear_layout(self, layout):
+        while layout.count():
+            child = layout.takeAt(0)
+            if child.widget():
+                child.widget().deleteLater()
+
+    def on_tab_changed(self, index):
+        if self.tab_index == 0:
+            self.show_train_view()
+        elif self.tab_index == 1:
+            self.show_block_view()
+
+    def on_line_change(self):
         self.selected_line = self.line_select.currentText()
 
+    def change_page(self, layout):
+        self.setLayout(layout)
+        pass
 
     def on_click(self):
         pass
