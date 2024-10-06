@@ -6,10 +6,9 @@ from TrainControllerCommunicateSignals import Communicate
 class TrainEngineerUI(QWidget):
     def __init__(self, communicator: Communicate):
         super().__init__()
-        # communicator = Communicate()
-        # self.engineer = TrainEngineer(communicator)
-        self.kp = 0.0
-        self.ki = 0.0
+        
+        self.kp = 6315.0
+        self.ki = 3.0
         self.communicator = communicator
         self.initUI()
         

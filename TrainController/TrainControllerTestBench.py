@@ -3,50 +3,6 @@ from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QLineEdit, QVBoxLayou
 from PyQt6.QtCore import QObject
 from TrainControllerCommunicateSignals import Communicate
 
-class TrainControllerTestBench(QObject):
-    def __init__(self, communicator: Communicate):
-        super().__init__()
-        
-        # Integer variables
-        self.current_speed = 0
-        self.commanded_speed = 0
-        self.commanded_authority = 0
-        self.mass_of_train = 0
-        self.acceleration = 0
-        self.passengers = 0
-        self.train_weight = 0  # New variable
-        self.current_velocity = 0  # New variable
-        
-        # String variables
-        self.beacon_destination_location = ""
-        self.announcement = ""
-        
-        # Boolean variables
-        self.train_engine_failure = False
-        self.brake_failure = False
-        self.signal_pickup_failure = False
-        self.passenger_brake_command = False
-        self.apply_changes = False
-        
-    def get_all_variables(self):
-        return {
-            'current_speed': self.current_speed,
-            'commanded_speed': self.commanded_speed,
-            'commanded_authority': self.commanded_authority,
-            'mass_of_train': self.mass_of_train,
-            'acceleration': self.acceleration,
-            'passengers': self.passengers,
-            'train_weight': self.train_weight,
-            'current_velocity': self.current_velocity,  # New variable
-            'beacon_destination_location': self.beacon_destination_location,
-            'announcement': self.announcement,
-            'train_engine_failure': self.train_engine_failure,
-            'brake_failure': self.brake_failure,
-            'signal_pickup_failure': self.signal_pickup_failure,
-            'passenger_brake_command': self.passenger_brake_command,
-            'apply_changes': self.apply_changes
-        }
-
 class TrainControllerTestBenchUI(QWidget):
     
     def __init__(self, communicator: Communicate):
@@ -256,14 +212,5 @@ class TrainControllerTestBenchUI(QWidget):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     communicator = Communicate()
-    controller = TrainControllerTestBench(communicator)
     ex = TrainControllerTestBenchUI(communicator)
-    
-    # Connect UI signals to controller slots
-    # ex.engine_failure_signal.connect(controller.communicator.engine_failure_signal.emit)
-    # ex.brake_failure_signal.connect(controller.communicator.brake_failure_signal.emit)
-    # ex.signal_failure_signal.connect(controller.communicator.signal_failure_signal.emit)
-    # ex.passenger_brake_command_signal.connect(controller.communicator.passenger_brake_command_signal.emit)
-    # ex.apply_changes_signal.connect(lambda variables: controller.apply_changes_signal.emit(variables))
-    
     sys.exit(app.exec())

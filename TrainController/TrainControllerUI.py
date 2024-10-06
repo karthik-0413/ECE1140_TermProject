@@ -19,8 +19,6 @@ class TrainControllerUI(QWidget):
         self.timer = QTimer()
         
         # Train Specs
-        self.mass = 56700
-        self.friction_coefficient = 0.05
         self.max_power = 120000
 
         # For the failure modes
@@ -74,12 +72,7 @@ class TrainControllerUI(QWidget):
         self.driver_service_brake_command = False
         self.driver_emergency_brake_command = False
         
-        # Deceleration for Braking
-        self.service_brake_deceleration = -1.2
-        self.emergency_brake_deceleration = -2.73
-        
         # Variables needed for speed increase
-        self.previous_acceleration = 0.0
         self.current_position = 0.0
         
         # Variables needed for power command
@@ -579,7 +572,7 @@ class TrainControllerUI(QWidget):
         # Inputting as mph but need varible in m/s
         self.commanded_speed = speed / 2.237
         print(f"Commanded speed: {self.commanded_speed}")
-        self.commanded_speed_edit.setText(f"{speed * 2.237:.2f} mph")
+        self.commanded_speed_edit.setText(f"{speed:.2f} mph")
     # DONE
     def handle_commanded_authority(self, authority: float):
         # self.commanded_authority_edit.setText(f"{self.commanded_authority:.2f} ft")

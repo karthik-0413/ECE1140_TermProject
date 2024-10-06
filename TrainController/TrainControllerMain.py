@@ -36,8 +36,9 @@ if __name__ == "__main__":
 # In lab, find out Kp and Ki correct values - DONE
 # If above commanded velocity, then power = 0 and service brake is activated until current velocity is below commanded velocity - DONE
 # Emergency is not automatic, it is manual (ALWAYS MANUAL) - DONE
+# Fix commanded speed from Test Bench - DONE
+# Make sure all unit conversion is good - DONE
 
 
 # STILL NEED TO DO:
 
-# Make sure all unit conversion is good

@@ -86,7 +86,7 @@ class TrainController:
 
     def run_simulation(self, desired_velocity):
 
-        for i in range(200):
+        for i in range(20000):
             power_command = self.update_power_command(desired_velocity)
             self.current_velocity = self.update_current_velocity(power_command)
             
