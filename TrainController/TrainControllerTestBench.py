@@ -217,7 +217,7 @@ class TrainControllerTestBenchUI(QWidget):
         else:
             print("Invalid commanded authority input")
          
-        self.announcement_output.setText(f"Train {self.train_id_dropdown.currentText()} changes applied.")
+        # self.announcement_output.setText(f"Train {self.train_id_dropdown.currentText()} changes applied.")
         
         # Print all variables to the terminal
         print("Current Speed:", variables['current_speed'])
