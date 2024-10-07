@@ -26,19 +26,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
-# DONE:
-# Position can be found from current velocity * timestep (Accumulate Over Time) - DONE
-# Current Velocity should only change from Test Bench and Brakes!! - DONE
-# When brakes are pressed, then you make power = 0 and activate service brake - DONE
-# Find out why pressing the brakes makes the authority stops working - DONE
-# Make Brake Buttons diveted in the UI whenever it is pressed and make power command to 0 - DONE
-# In lab, find out Kp and Ki correct values - DONE
-# If above commanded velocity, then power = 0 and service brake is activated until current velocity is below commanded velocity - DONE
-# Emergency is not automatic, it is manual (ALWAYS MANUAL) - DONE
-# Fix commanded speed from Test Bench - DONE
-# Make sure all unit conversion is good - DONE
-
-
-# STILL NEED TO DO:
-

@@ -1,13 +1,13 @@
-from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem, QHeaderView, QLabel
-from PyQt6.QtCore import Qt, pyqtSignal, pyqtSlot
 import sys
+from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem, QHeaderView, QLabel
+from PyQt6.QtCore import Qt
 from TrainControllerCommunicateSignals import Communicate
 
 class TrainEngineerUI(QWidget):
     def __init__(self, communicator: Communicate):
         super().__init__()
         
-        self.kp = 6315.0
+        self.kp = 6173.0
         self.ki = 3.0
         self.communicator = communicator
         self.initUI()
@@ -29,8 +29,6 @@ class TrainEngineerUI(QWidget):
     
     def get_ki(self):
         return self.ki
-    
-        
         
     def initUI(self):
         self.setWindowTitle('Train Engineer Controller')

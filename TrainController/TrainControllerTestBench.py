@@ -1,6 +1,5 @@
 import sys
 from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QLineEdit, QVBoxLayout, QHBoxLayout, QComboBox, QPushButton, QTextEdit
-from PyQt6.QtCore import QObject
 from TrainControllerCommunicateSignals import Communicate
 
 class TrainControllerTestBenchUI(QWidget):
@@ -160,20 +159,23 @@ class TrainControllerTestBenchUI(QWidget):
         }
         
         # Emit current speed value input
-        if variables['current_speed'].isdigit():
-            self.communicator.current_velocity_signal.emit(int(variables['current_speed']))
-        
-        if variables['commanded_speed'].isdigit():
-            self.communicator.commanded_speed_signal.emit(int(variables['commanded_speed']))
-        else:
+        try:
+            current_speed = float(variables['current_speed'])
+            self.communicator.current_velocity_signal.emit(current_speed)
+        except ValueError:
+            print("Invalid current speed input")
+
+        try:
+            commanded_speed = float(variables['commanded_speed'])
+            self.communicator.commanded_speed_signal.emit(commanded_speed)
+        except ValueError:
             print("Invalid commanded speed input")
 
-        if variables['commanded_authority'].isdigit():
-            self.communicator.commanded_authority_signal.emit(int(variables['commanded_authority']))
-        else:
+        try:
+            commanded_authority = float(variables['commanded_authority'])
+            self.communicator.commanded_authority_signal.emit(commanded_authority)
+        except ValueError:
             print("Invalid commanded authority input")
-         
-        # self.announcement_output.setText(f"Train {self.train_id_dropdown.currentText()} changes applied.")
         
         # Print all variables to the terminal
         print("Current Speed:", variables['current_speed'])
