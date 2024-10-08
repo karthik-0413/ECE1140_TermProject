@@ -798,11 +798,13 @@ class TrainControllerUI(QWidget):
     ##########################
    
     def update_power_command(self):
-        if self.desired_velocity == self.current_velocity:
+        if round(self.desired_velocity, 2) == round(self.current_velocity, 2):
             self.power_command = 0
-            print("Service Brake Applied")
-            # Press the service brake button in UI
-            self.divet_in_service_brake_button()
+            # Service brake should be not applied
+            self.reset_service_brake_button_style()
+            # Put Brake Status has OFF
+            self.brake_status.setText("OFF")
+            self.brake_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
             return self.power_command
 
         print(f"Desired Speed: {self.desired_velocity:.2f} m/s, Current Speed: {self.current_velocity:.2f} m/s")
