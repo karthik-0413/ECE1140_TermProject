@@ -544,18 +544,39 @@ class TrainControllerUI(QWidget):
     def handle_engine_failure(self, status: bool):
         if status == True:
             self.engine_fail = True
+            # Set current velocity to 0
+            self.current_velocity = 0.0
+            self.current_speed_edit.setText(f"{self.current_velocity:.2f} mph")
+            # Divet in Emergency Brake
+            self.apply_emergency_brake()
+            self.divet_in_emergency_brake_buttons()
+            QTimer.singleShot(3000, self.reset_emergency_brake_button_style)
         else:
             self.engine_fail = False
 
     def handle_brake_failure(self, status: bool):
         if status == True:
             self.brake_fail = True
+            # Set current velocity to 0
+            self.current_velocity = 0.0
+            self.current_speed_edit.setText(f"{self.current_velocity:.2f} mph")
+            # Divet in Emergency Brake
+            self.apply_emergency_brake()
+            self.divet_in_emergency_brake_buttons()
+            QTimer.singleShot(3000, self.reset_emergency_brake_button_style)
         else:
             self.brake_fail = False
     
     def handle_signal_failure(self, status: bool):
         if status == True:
             self.signal_fail = True
+            # Set current velocity to 0
+            self.current_velocity = 0.0
+            self.current_speed_edit.setText(f"{self.current_velocity:.2f} mph")
+            # Divet in Emergency Brake
+            self.apply_emergency_brake()
+            self.divet_in_emergency_brake_buttons()
+            QTimer.singleShot(3000, self.reset_emergency_brake_button_style)
         else:
             self.signal_fail = False
             
