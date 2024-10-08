@@ -930,7 +930,10 @@ class TrainControllerUI(QWidget):
         self.brake_button.released.connect(self.reset_brake_status)
 
     def reset_service_brake_button_style(self):
-        self.brake_button.setStyleSheet("margin-top: 40px; background-color: yellow; font-size: 16px; border-radius: 10px; font-weight: bold; color: black; border: 3px solid black; padding-top: 20px; max-width: 150px; padding-bottom: 20px; padding-right: 15px")
+        self.brake_button.setStyleSheet("margin-top: 40px; background-color: yellow; font-size: 16px; border-radius: 10px; font-weight: bold; color: black; border: 3px solid black; padding-top: 20px; max-width: 150px; padding-bottom: 20px;")
+        # Turn the brake status to OFF
+        self.brake_status.setText("OFF")
+        self.brake_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
 
     def divet_in_emergency_brake_buttons(self):
         self.emergency_brake_button.setStyleSheet("border: 3px solid black; margin-left: 40px; background-color: darkred; color: white; font-size: 20px; font-weight: bold; padding: 50px; border-radius: 10px;")
@@ -941,6 +944,9 @@ class TrainControllerUI(QWidget):
         
     def reset_emergency_brake_button_style(self):
         self.emergency_brake_button.setStyleSheet("border: 3px solid black; margin-left: 40px; background-color: red; color: white; font-size: 20px; font-weight: bold; padding: 50px; border-radius: 10px;")
+        # Turn the brake status to OFF
+        self.brake_status.setText("OFF")
+        self.brake_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
 
     def reset_brake_status(self):
         self.brake_status.setText("OFF")
