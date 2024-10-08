@@ -1,50 +1,57 @@
-from node import Node
-import numpy as np
-from collections import deque
+from node import Node, NodeType
+from priority_queue import CustomQueue
 
 class Graph:
     def __init__(self):
-        self.node_list = list[Node]
+        self.nodes = list()
 
-    def addNode(self, index, status):
-        for node in self.node_list:
-            if node.index == index:
-                raise ValueError("Node already exists")
-            
-        self.node_list.append(Node(index, status))
+    def addNode(self, index, node_type:NodeType):
+        node = Node(index, node_type)
+        self.nodes.append(node)
 
-    def addDirectionalEdge(self, index1, index2, weight):
-        self.node_list[index1].addEdge(index2, weight)
+    def addDirectionalEdge(self, node1, node2, weight):
+        self.nodes[self.nodes.index(node1)].addEdge(node2, weight)
 
-    def addTwoWayEdge(self, index1, index2, weight):
-        self.node_list[index1].addEdge(index2,weight)
+    def addTwoWayEdge(self, node1, node2, weight):
+        self.addDirectionalEdge(node1, node2, weight)
+        self.addDirectionalEdge(node2, node1, weight)
 
-    def removeDirectionalEdge(self, index1, index2):
-        self.node_list[index1].removeEdge(index2)
+    def removeDirectionalEdge(self, node1, node2):
+        self.nodes[self.nodes.index(node1)].removeEdge(node2)
 
-    def removeTwoWayEdge(self, index1, index2):
-        self.node_list[index1].removeEdge(index2)
-        self.node_list[index2].removeEdge(index1)
+    def removeTwoWayEdge(self, node1, node2):
+        self.removeDirectionalEdge(node1, node2)
+        self.removeDirectionalEdge(node2, node1)
 
-    def removeNode(self, index):
-        pass 
+    def removeNode(self, node):
+        self.nodes.remove(node)
 
-    def DijPathfind(self, start, target):
-        length = len(self.node_list)
-        dist = np.array(length)
-        prev = np.array(length)
+    def DijPathfind(self, start):
 
-        for node in range(length):
-            dist =  1000000000
-            prev = -1000000000
+        Q = CustomQueue()
+        Q.push(start)
 
-        dist[start] = 0
-        prev[start] = -1000000000
+        distances = {node: float('inf') for node in self.nodes}
+        distances[start] = 0
 
-        Q = deque()
+        predecessors = {node: None for node in self.nodes}
 
+        while not Q.isEmpty():
 
+            current = Q.pop()
+            for edge in current.edge_list:
+                neighbor = edge[0]
+                weight = edge[1]
+                new_dist = distances[current] + edge[1]
 
+                if new_dist < distances[neighbor]:
+                    distances[neighbor] = new_dist
+                    predecessors[neighbor] = current.index
+                    Q.push(neighbor)
 
-
+        return distances, predecessors
+    
+    def distanceBetweenNodes(self, start, end):
+        distances, predecessors = self.DijPathfind(start)
+        return distances[end], predecessors
     

@@ -23,10 +23,27 @@ class Node:
             raise ValueError("Edge already exists")
 
     def removeEdge(self, connectedNode):
-        self.edge_list = [edge for edge in self.edge_list if self.edge_list[1] != connectedNode]
+        edges = self.numEdges()
+        if edges != 0:
+            self.edge_list = [edge for edge in self.edge_list if edge[0] != connectedNode]
+            if (edges == self.numEdges()):
+                raise ValueError("Edge does not exist")
+        else:
+            raise ValueError("No edges to remove")
+        
+    def removeMinWeightEdge(self):
+        min = self.minEdgeWeight()
+        return self.edge_list.pop(self.edge_list.index(min))
 
     def get_string(self) -> str:
-        return str("Node: \n" + "Name: " + self.index + "\nType: " + self.node_type + "\nStatus: " + self.status)
+        return "***| Node Info |*** \n" + "Name: " + self.index + "\nType: " + self.node_type + "\nStatus: " + self.status
+    
+    def minEdgeWeight(self):
+        min = 1000000000000
+        for edge in self.edge_list:
+            if self.edge_list[edge][1] < min:
+                min = edge[1]
+        return min
     
     def __getitem__(self, index):
         return self.edge_list[index][0], self.edge_list[index][1]

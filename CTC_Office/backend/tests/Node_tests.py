@@ -1,55 +1,51 @@
-from node_old import Node
-import node_old
+import sys
+import os
+
+cur_dir = os.path.dirname(__file__)
+lib_dir = os.path.join(cur_dir, '../lib/')
+sys.path.append(lib_dir)
+
+from node import Node
 import pytest
 import numpy as np
 
 def test_creation():
-    node1 = Node("A", 49)
-    assert node1.data == 49
-    node2 = Node("B", "HI")
-    assert node2.data == "HI"
-    node3 = Node("C", list())
-    assert node3.data == list()
-    node4 = Node("D", -238)
-    assert node4.data == -238
+    node1 = Node("A", "Station")
+    assert node1.node_type == "Station"
+    node2 = Node("B", "Switch")
+    assert node2.node_type == "Switch"
+    node3 = Node("C", None)
+    assert node3.node_type == None
+    node4 = Node("D", "Garbage")
+    assert node4.node_type == "Garbage"
+
+def test_str():
+    node1 = Node("A", "Station")
+    assert node1.get_string() == "***| Node Info |*** \n" + "Name: " + "A" + "\nType: " + "Station" + "\nStatus: " + "Clear"
 
 def test_edgeAdd():
-    node1 = Node("A", 10)
-    node2 = Node("B", 15)
+    node1 = Node("A", "Station")
+    node2 = Node("B", "Switch")
     node1.addEdge(node2, 200)
-    assert node1.get_string() == "Data = 10\nConnections to nodes: ['B']\nWeights are: [200]"
-
-def test_emptyNode():
-    node1 = Node("A", 10)
-    assert node1.get_string() == "Data = 10\nConnections to nodes: []\nWeights are: []"
-    
-def test_nullNode():
-    with pytest.raises(ValueError):
-        node1 = Node(None, None)
+    assert node1.numEdges() == 1
 
 def test_edgeRemove():
-    node1 = Node("A", 10)
-    node2 = Node("B", 15)
+    node1 = Node("A", "Station")
+    node2 = Node("B", "Switch")
     node1.addEdge(node2, 200)
     node1.removeEdge(node2)
-    assert node1.get_string() == "Data = 10\nConnections to nodes: []\nWeights are: []"
+    assert node1.numEdges() == 0
 
 def test_removeFromEmpty():
-    node1 = Node("A", 10)
+    node1 = Node("A", "Station")
     with pytest.raises(ValueError):
         node1.removeEdge(0)
 
 def test_removeBadIndex():
-    node1 = Node("A", 10)
-    node2 = Node("B", 15)
+    node1 = Node("A", "Station")
+    node2 = Node("B", "Switch")
     node1.addEdge(node2, 200)
     with pytest.raises(ValueError):
         node1.removeEdge(node1)
 
-def test_createDirectionalEdge():
-    node_list = list[Node]
-    node_list.append(Node("A", 10))
-    node_list.append(Node("B", 15))
-    adj_list = np.zeros((len(node_list), len(node_list)))
-    node_old.newDirectionalEdge(node_list, adj_list, "A", "B", 100)
     
