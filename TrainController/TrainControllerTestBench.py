@@ -59,10 +59,6 @@ class TrainControllerTestBenchUI(QWidget):
         self.create_input_field(layout, "Current Speed:", "current_speed")
         self.create_input_field(layout, "Commanded Speed:", "commanded_speed")
         self.create_input_field(layout, "Commanded Authority:", "commanded_authority")
-        self.create_input_field(layout, "Acceleration:", "acceleration")
-        self.create_input_field(layout, "Passengers:", "passengers")
-        self.create_input_field(layout, "Train Weight:", "train_weight")  # New input field
-        self.create_input_field(layout, "Current Velocity:", "current_velocity")  # New input field
         
         # Failure Simulations
         hbox_failures = QHBoxLayout()
@@ -151,10 +147,6 @@ class TrainControllerTestBenchUI(QWidget):
             'current_speed': self.findChild(QLineEdit, "current_speed").text(),
             'commanded_speed': self.findChild(QLineEdit, "commanded_speed").text(),
             'commanded_authority': self.findChild(QLineEdit, "commanded_authority").text(),
-            'acceleration': self.findChild(QLineEdit, "acceleration").text(),
-            'passengers': self.findChild(QLineEdit, "passengers").text(),
-            'train_weight': self.findChild(QLineEdit, "train_weight").text(),
-            'current_velocity': self.findChild(QLineEdit, "current_velocity").text(),  # New input field
             'beacon_destination_location': self.beacon_input.text(),
         }
         
@@ -181,10 +173,6 @@ class TrainControllerTestBenchUI(QWidget):
         print("Current Speed:", variables['current_speed'])
         print("Commanded Speed:", variables['commanded_speed'])
         print("Commanded Authority:", variables['commanded_authority'])
-        print("Acceleration:", variables['acceleration'])
-        print("Passengers:", variables['passengers'])
-        print("Train Weight:", variables['train_weight'])
-        print("Current Velocity:", variables['current_velocity'])  # New variable
         print("Beacon Destination Location:", variables['beacon_destination_location'])
         print("Changes applied")
         
