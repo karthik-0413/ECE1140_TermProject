@@ -1,4 +1,5 @@
 import time
+from RPLCD.i2c import CharLCD
 from PyQt6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QLineEdit,
     QPushButton, QSizePolicy, QSpacerItem, QMessageBox
@@ -9,6 +10,10 @@ from TrainControllerCommunicateSignals import Communicate
 class TrainControllerUI(QWidget):
     def __init__(self, communicator: Communicate):
         super().__init__()
+
+        # LCD Initialization
+        self.lcd = CharLCD(i2c_expander='PCF8574', address=0x20, port=1, cols=16, rows=2, dotsize=8)
+        self.lcd.clear()
         
         # For for pyqtsignals file
         self.communicator = communicator
@@ -520,7 +525,6 @@ class TrainControllerUI(QWidget):
         # Operation mode = 0 means automatic mode
         if self.operation_mode == 0:
             self.set_automatic_mode()
-            
     
     def handle_commanded_authority(self, authority: float):
         self.commanded_authority = authority / 3.281
@@ -539,7 +543,8 @@ class TrainControllerUI(QWidget):
         print(f"Current Velocity: {self.current_velocity}")
         self.current_speed_edit.setText(f"{self.current_velocity * 2.23694:.2f} mph")
         self.power_command = self.update_power_command()
-        self.power_command_edit.setText(f"{self.power_command:.2f}")
+        # self.power_command_edit.setText(f"{self.power_command:.2f}")
+        self.lcd.write_string(f"Power Command:    {self.power_command:.2f} kWatts")
         
     def handle_current_speed(self):
         print(f"Current Speed: {self.current_velocity}")
@@ -718,6 +723,8 @@ class TrainControllerUI(QWidget):
                 self.commanded_authority = 0.0
                 self.commanded_authority_edit.setText("0.00 ft")
             if self.commanded_authority == 0.0:
+                self.current_velocity = 0.0
+                self.current_speed_edit.setText(f"{self.current_velocity:.2f} mph")
                 # Turn left and right doors to open
                 self.left_door_status.setText("OPEN")
                 self.left_door_status.setStyleSheet("background-color: green; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
@@ -873,7 +880,7 @@ class TrainControllerUI(QWidget):
         
         self.power_command = self.update_power_command()
         # Update the power command display
-        self.power_command_edit.setText(f"{self.power_command:.2f}")
+        self.lcd.write_string(f"Power Command:    {self.power_command:.2f} kWatts")
         print(f"Power Command: {self.power_command} kW")
         
     
@@ -927,7 +934,7 @@ class TrainControllerUI(QWidget):
     ################################################
     
     def divet_in_service_brake_button(self):
-        self.brake_button.setStyleSheet("margin-top: 40px; background-color: #B8860B; font-size: 16px; border-radius: 10px; font-weight: bold; color: black; border: 3px solid black; padding-top: 20px; max-width: 150px; padding-bottom: 20px; padding-right: 15px;")
+        self.brake_button.setStyleSheet("margin-top: 40px; background-color: #B8860B; font-size: 16px; border-radius: 10px; font-weight: bold; color: black; border: 3px solid black; padding-top: 20px; max-width: 150px; padding-bottom: 20px;")
         # Put button status in UI to ON
         self.brake_status.setText("ON")
         self.brake_status.setStyleSheet("background-color: #f5c842; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
