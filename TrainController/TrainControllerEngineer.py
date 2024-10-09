@@ -7,8 +7,8 @@ class TrainEngineerUI(QWidget):
     def __init__(self, communicator: Communicate):
         super().__init__()
         
-        self.kp = 6173.0
-        self.ki = 3.0
+        self.kp = 7173.0
+        self.ki = 15.0
         self.communicator = communicator
         self.initUI()
         
