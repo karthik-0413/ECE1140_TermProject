@@ -520,7 +520,6 @@ class TrainControllerUI(QWidget):
         # Operation mode = 0 means automatic mode
         if self.operation_mode == 0:
             self.set_automatic_mode()
-            
     
     def handle_commanded_authority(self, authority: float):
         self.commanded_authority = authority / 3.281
@@ -927,7 +926,7 @@ class TrainControllerUI(QWidget):
     ################################################
     
     def divet_in_service_brake_button(self):
-        self.brake_button.setStyleSheet("margin-top: 40px; background-color: #B8860B; font-size: 16px; border-radius: 10px; font-weight: bold; color: black; border: 3px solid black; padding-top: 20px; max-width: 150px; padding-bottom: 20px; padding-right: 15px;")
+        self.brake_button.setStyleSheet("margin-top: 40px; background-color: #B8860B; font-size: 16px; border-radius: 10px; font-weight: bold; color: black; border: 3px solid black; padding-top: 20px; max-width: 150px; padding-bottom: 20px;")
         # Put button status in UI to ON
         self.brake_status.setText("ON")
         self.brake_status.setStyleSheet("background-color: #f5c842; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
