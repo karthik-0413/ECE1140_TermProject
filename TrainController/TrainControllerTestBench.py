@@ -1,5 +1,6 @@
 import sys
 from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QLineEdit, QVBoxLayout, QHBoxLayout, QComboBox, QPushButton, QTextEdit
+from PyQt6.QtCore import QTimer
 from TrainControllerCommunicateSignals import Communicate
 
 class TrainControllerTestBenchUI(QWidget):

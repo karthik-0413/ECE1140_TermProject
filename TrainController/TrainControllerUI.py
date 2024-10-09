@@ -717,6 +717,8 @@ class TrainControllerUI(QWidget):
                 self.commanded_authority = 0.0
                 self.commanded_authority_edit.setText("0.00 ft")
             if self.commanded_authority == 0.0:
+                self.current_velocity = 0.0
+                self.current_speed_edit.setText(f"{self.current_velocity:.2f} mph")
                 # Turn left and right doors to open
                 self.left_door_status.setText("OPEN")
                 self.left_door_status.setStyleSheet("background-color: green; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
