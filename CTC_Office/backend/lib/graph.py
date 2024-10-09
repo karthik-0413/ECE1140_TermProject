@@ -11,6 +11,8 @@ class Graph:
 
     def addDirectionalEdge(self, node1, node2, weight):
         self.nodes[self.nodes.index(node1)].addEdge(node2, weight)
+        #print("Edge added from " + f"{node1.index.block_number}" + " to " + f"{node2.index.block_number}" + " with weight " + str(weight))
+        #print(len(node1.edge_list))
 
     def addTwoWayEdge(self, node1, node2, weight):
         self.addDirectionalEdge(node1, node2, weight)
