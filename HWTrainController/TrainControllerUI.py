@@ -517,6 +517,10 @@ class TrainControllerUI(QWidget):
         self.commanded_speed = speed / 2.237
         print(f"Commanded speed: {self.commanded_speed}")
         self.commanded_speed_edit.setText(f"{speed:.2f} mph")
+        # Operation mode = 0 means automatic mode
+        if self.operation_mode == 0:
+            self.set_automatic_mode()
+            
     
     def handle_commanded_authority(self, authority: float):
         self.commanded_authority = authority / 3.281
