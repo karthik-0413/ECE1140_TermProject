@@ -10,8 +10,8 @@ from TrainControllerCommunicateSignals import Communicate
 class TrainControllerUI(QWidget):
     def __init__(self, communicator: Communicate):
         super().__init__()
-
-        # LCD Initialization
+        
+        # For LCD Display
         self.lcd = CharLCD(i2c_expander='PCF8574', address=0x20, port=1, cols=16, rows=2, dotsize=8)
         self.lcd.clear()
         
@@ -34,7 +34,7 @@ class TrainControllerUI(QWidget):
         self.passenger_brake = False
         
         # Temperature Values
-        self.current_temperature = 70.0
+        self.current_temperature = 65.0
         self.desired_temperature = 0.0
         
         # For the toggling the different status lights
@@ -77,6 +77,11 @@ class TrainControllerUI(QWidget):
         self.uk_previous = 0.0
         self.ek_previous = 0.0
         self.dt = 1.0
+        
+        
+        # Call the calculate_brake_distance function every millisecond
+        self.timer.start(1000)
+        self.timer.timeout.connect(self.calculate_brake_distance)
 
     
         # All pyqtsignals for Test Bench Inputs/Outputs
@@ -538,14 +543,16 @@ class TrainControllerUI(QWidget):
         self.right_door_status.setStyleSheet("background-color: red; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
     
     def handle_current_velocity(self, velocity: float):
-        # Convert velocity to m/s
-        self.current_velocity = velocity / 2.23694
-        print(f"Current Velocity: {self.current_velocity}")
-        self.current_speed_edit.setText(f"{self.current_velocity * 2.23694:.2f} mph")
-        self.power_command = self.update_power_command()
-        # self.power_command_edit.setText(f"{self.power_command:.2f}")
-        self.lcd.clear()
-        self.lcd.write_string(f"Power Command:  {self.power_command:.2f} kWatts")
+        if self.operation_mode == 1:
+            # Convert velocity to m/s
+            self.current_velocity = velocity / 2.23694
+            print(f"Current Velocity: {self.current_velocity}")
+            self.current_speed_edit.setText(f"{self.current_velocity * 2.23694:.2f} mph")
+            self.power_command = self.update_power_command()
+            # self.power_command_edit.setText(f"{self.power_command:.2f}")
+            self.lcd.clear()
+            self.lcd.write_string(f"Power Command:  {self.power_command:.2f} kWatts")
+            print(f"Power Command: {self.power_command} kW")
         
     def handle_current_speed(self):
         print(f"Current Speed: {self.current_velocity}")
@@ -640,7 +647,7 @@ class TrainControllerUI(QWidget):
     
     def update_desired_temperature(self):
         temp = float(self.temp_input.text())
-        if 70 <= temp <= 100:
+        if 60 <= temp <= 75:
             self.desired_temperature = temp
             print(f"Desired temperature set to: {self.desired_temperature}°F")
             if self.current_temperature < self.desired_temperature:
@@ -649,7 +656,7 @@ class TrainControllerUI(QWidget):
                 self.desired_temperature -= 0.01
             self.reach_temperature()
         else:
-            print("Temperature out of range. Please enter a value between 70°F and 100°F.")
+            print("Temperature out of range. Please enter a value between 60°F and 75.")
 
     def reach_temperature(self, k=0.3, time_step=0.5):
         initial_temp = self.current_temperature
@@ -724,8 +731,6 @@ class TrainControllerUI(QWidget):
                 self.commanded_authority = 0.0
                 self.commanded_authority_edit.setText("0.00 ft")
             if self.commanded_authority == 0.0:
-                self.current_velocity = 0.0
-                self.current_speed_edit.setText(f"{self.current_velocity:.2f} mph")
                 # Turn left and right doors to open
                 self.left_door_status.setText("OPEN")
                 self.left_door_status.setStyleSheet("background-color: green; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
@@ -881,8 +886,10 @@ class TrainControllerUI(QWidget):
         
         self.power_command = self.update_power_command()
         # Update the power command display
+        # self.power_command_edit.setText(f"{self.power_command:.2f}")
         self.lcd.clear()
         self.lcd.write_string(f"Power Command:  {self.power_command:.2f} kWatts")
+        print(f"Power Command: {self.power_command} kW")
         print(f"Power Command: {self.power_command} kW")
         
     
@@ -929,11 +936,33 @@ class TrainControllerUI(QWidget):
             self.commanded_authority -= self.current_velocity * 2.23694 * timestep
             self.commanded_authority_edit.setText(f"{self.commanded_authority:.2f} ft")
 
-    
-    
+
+   
     ################################################
     # BRAKE DIVET FUNCTIONS AND OTHER UI FUNCTIONS #
     ################################################
+    
+    def calculate_brake_distance(self):
+        # Calculate the brake distance
+        brake_distance = (self.current_velocity ** 2) / (2 * 1.2)
+        final_distance = brake_distance * 3.281
+        if self.commanded_authority <= final_distance:
+            # Divet in Service Brake
+            self.apply_service_brake()
+            self.divet_in_service_brake_button()
+            # Put Brake Status has ON
+            self.brake_status.setText("ON")
+            self.brake_status.setStyleSheet("background-color: #f5c842; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
+            
+        if self.commanded_authority == 0:
+            # Undivet the service brake
+            self.reset_service_brake_button_style()
+            # Put Brake Status has OFF
+            self.brake_status.setText("OFF")
+            self.brake_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
+            
+        print(f"Commanded Authority: {self.commanded_authority:.2f} ft")
+        print(f"Brake Distance: {brake_distance:.2f} m")
     
     def divet_in_service_brake_button(self):
         self.brake_button.setStyleSheet("margin-top: 40px; background-color: #B8860B; font-size: 16px; border-radius: 10px; font-weight: bold; color: black; border: 3px solid black; padding-top: 20px; max-width: 150px; padding-bottom: 20px;")
