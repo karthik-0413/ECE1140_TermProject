@@ -137,6 +137,8 @@ class CTC_Controller():
         self.trains[train_index].departure_time = departure_time
         self.trains[train_index].destination = destination
         
+    def time_string(self):
+        return self.simulation_time.strftime('%H:%M:%S')
 
 
 

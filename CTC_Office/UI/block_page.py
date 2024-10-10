@@ -3,9 +3,13 @@ from PyQt6.QtCore import Qt, QTime
 from PyQt6.QtGui import QAction
 import sys
 
-class App(QMainWindow):
-    def __init__(self):
+from backend import CTC_Controller
+from communicationSignals import Communicate
+
+class BP(QMainWindow):
+    def __init__(self, communicator):
         super().__init__()
+        self.communicator = communicator
         self.initUI()
 
     def initUI(self):
@@ -110,7 +114,6 @@ class App(QMainWindow):
         self.train_table1.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         #self.table1.horizontalHeader().setStretchLastSection(True)
 
-
         ######################################################################
         # Layout
         ######################################################################
@@ -125,6 +128,6 @@ class App(QMainWindow):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    ex = App()
+    ex = BP()
     ex.show()
     sys.exit(app.exec())

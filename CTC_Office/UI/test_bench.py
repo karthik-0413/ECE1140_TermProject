@@ -9,10 +9,12 @@ lib_dir = os.path.join(cur_dir, '../backend/')
 sys.path.append(lib_dir)
 
 from backend import CTC_Controller
+from communicationSignals import Communicate
 
-class App(QMainWindow):
-    def __init__(self):
+class TB(QMainWindow):
+    def __init__(self, communicator):
         super().__init__()
+        self.communicator = communicator
         self.initUI()
 
     def initUI(self):
@@ -124,6 +126,7 @@ class App(QMainWindow):
         self.occupancy_checkbox = QCheckBox(self.input_box)
         self.occupancy_checkbox.setFixedSize(20, 20)
         self.occupancy_checkbox.setStyleSheet('QCheckBox::indicator { width: 40px; height: 40px; }')
+        self.occupancy_checkbox.stateChanged.connect(self.toggle_occupied)
         self.input_layout.addWidget(self.occupancy_checkbox, 0, 0, 1, 1)
 
         # occupancy label
@@ -184,16 +187,11 @@ class App(QMainWindow):
         # Signal Selector
         self.signal_selector = QComboBox(self.input_box)
         self.signal_selector.addItems(["Green", "Yellow", "Red"])
+        self.signal_selector.currentIndexChanged.connect(self.signal_change)
         self.input_layout.addWidget(self.signal_selector, 1, 3, 1, 1)
 
 
         ############
-
-
-
-
-
-
 
 
 
@@ -203,7 +201,20 @@ class App(QMainWindow):
         self.main_layout.addWidget(self.input_box, 2, 0, 1, -1)
 
 
+    def toggle_occupied(self):
+        if self.communicator.blockOccupied:
+            self.communicator.blockOccupied.emit(False)
+        else:
+            self.communicator.blockOccupied.emit(True)
 
+    def toggle_crossing(self):
+        if self.communicator.crossingState:
+            self.communicator.crossingState.emit(False)
+        else:
+            self.communicator.crossingState.emit(True)
+        
+    def signal_change(self, index):
+        self.communicator.signalColor.emit(index)
 
 
 
@@ -211,6 +222,7 @@ class App(QMainWindow):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    ex = App()
+    comm = Communicate()
+    ex = TB(comm)
     ex.show()
     sys.exit(app.exec())

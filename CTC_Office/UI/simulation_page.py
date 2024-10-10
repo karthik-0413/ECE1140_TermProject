@@ -9,11 +9,14 @@ lib_dir = os.path.join(cur_dir, '../backend/')
 sys.path.append(lib_dir)
 
 from backend import CTC_Controller
+from communicationSignals import Communicate
 
-class App(QMainWindow):
-    def __init__(self):
+class Simulate(QMainWindow):
+    def __init__(self, communicator):
         super().__init__()
+        self.communicator = communicator
         self.initUI()
+        
 
     def initUI(self):
 
@@ -87,13 +90,13 @@ class App(QMainWindow):
 
     def update_slider_value(self, value):
         self.slider_value_label.setText(str(value) + "x")
-
-
+        self.communicator.time_speedup.emit(value)
 
 
 
 if __name__ == '__main__':
+    communicator = Communicate()
     app = QApplication(sys.argv)
-    ex = App()
+    ex = Simulate(communicator)
     ex.show()
     sys.exit(app.exec())

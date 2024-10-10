@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QPushButton, QLabel, QVBoxLayout, QFrame, QGridLayout, QLineEdit, QHBoxLayout, QSizePolicy, QComboBox, QTimeEdit, QCheckBox, QTableWidget, QHeaderView, QStackedWidget, QMenuBar, QToolBar, QTabWidget, QWidgetAction
+from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QPushButton, QLabel, QVBoxLayout, QFrame, QGridLayout, QLineEdit, QHBoxLayout, QSizePolicy, QComboBox, QTimeEdit, QCheckBox, QTableWidget, QHeaderView, QStackedWidget, QMenuBar, QToolBar, QTabWidget, QWidgetAction, QFileDialog
 from PyQt6.QtCore import Qt, QTime
 from PyQt6.QtGui import QAction
 import sys
@@ -9,13 +9,17 @@ lib_dir = os.path.join(cur_dir, '../backend/')
 sys.path.append(lib_dir)
 
 from backend import CTC_Controller
+from communicationSignals import Communicate
 
 class App(QMainWindow):
-    def __init__(self):
+    def __init__(self, communicator):
         super().__init__()
+        self.communicator = communicator
         self.initUI()
 
     def initUI(self):
+
+        self.ctc = CTC_Controller()
 
         self.setWindowTitle('CTC Office')
         self.setGeometry(100, 100, 300, 200)
@@ -173,12 +177,12 @@ class App(QMainWindow):
         self.throughput_rect.setFrameShape(QFrame.Shape.Box)
         self.throughput_rect.setMaximumHeight(160)
         self.throughput_rect.setLineWidth(2)
-        self.throughput_rect.setMaximumWidth(175)
+        self.throughput_rect.setMaximumWidth(200)
 
         self.throughput_rect_layout = QVBoxLayout(self.throughput_rect)
         self.throughput_rect_layout.setContentsMargins(20, 20, 20, 20)
 
-        self.time = QLabel(f"15:40", self.throughput_rect)
+        self.time = QLabel(self.ctc.time_string(), self.throughput_rect)
         self.time.setStyleSheet('color: white; font-size: 40px; padding: 0px;')
         self.time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
@@ -193,6 +197,11 @@ class App(QMainWindow):
         self.throughput_rect_layout.addWidget(self.time, 0, Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter)
         self.throughput_rect_layout.addWidget(self.throughput_display, 1, Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter)
         self.throughput_rect_layout.addWidget(self.throughput_label, 2, Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignCenter)
+
+
+        self.upload_schedule_button = QPushButton("Upload Schedule", self)
+        self.upload_schedule_button.setStyleSheet('background-color: #FF00FF; font-size: 15px; padding: 10px;')
+        self.upload_schedule_button.clicked.connect(self.upload_schedule)
 
         ######################################################################
         # Train Table 1
@@ -237,13 +246,23 @@ class App(QMainWindow):
 
 
 
+
+
+        self.track_button = QPushButton("Upload Track Layout", self)
+        self.track_button.setStyleSheet('background-color: #2B78E4; font-size: 15px; padding: 10px;')
+        self.track_button.clicked.connect(self.upload_layout)
+        self.train_view_layout.addWidget(self.track_button, 4, 0, 1, 1)
+
+
         ######################################################################
         # Layout
         ######################################################################
 
-        self.train_view_layout.addWidget(self.dispatch, 1, 0, 1, 1)
+        self.train_view_layout.addWidget(self.dispatch, 1, 0, 2, 1)
         self.train_view_layout.addWidget(self.throughput_rect, 1, 1, 1, 1)
-        self.train_view_layout.addWidget(self.train_table1, 2, 0, 1, 2)
+        self.train_view_layout.addWidget(self.upload_schedule_button, 2, 1, 1, 1)
+        self.train_view_layout.addWidget(self.train_table1, 3, 0, 1, 2)
+
         self.main_layout.addLayout(self.train_view_layout)
 
 
@@ -284,6 +303,26 @@ class App(QMainWindow):
     def change_page(self, layout):
         self.setLayout(layout)
         pass
+
+
+    def time_step(self):
+        self.ctc.increment_time(self)
+
+        self.time.setText(self.ctc.time_string())
+
+
+
+    def upload_layout(self):
+        file_name, _ = QFileDialog.getOpenFileName(self, "Open Layout File", os.getcwd(), "Excel File (*.xlsx *.xls)")
+        if file_name:
+            print(f"Selected file: {file_name}")
+            self.ctc.upload_layout(file_name)
+
+    def upload_schedule(self):
+        file_name, _ = QFileDialog.getOpenFileName(self, "Open Schedule File", os.getcwd(), "Excel File (*.xlsx *.xls)")
+        if file_name:
+            print(f"Selected file: {file_name}")
+            self.ctc.upload_schedule(file_name)
 
     def on_click(self):
         pass
