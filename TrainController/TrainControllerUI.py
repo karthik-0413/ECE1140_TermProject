@@ -29,7 +29,7 @@ class TrainControllerUI(QWidget):
         self.passenger_brake = False
         
         # Temperature Values
-        self.current_temperature = 70.0
+        self.current_temperature = 65.0
         self.desired_temperature = 0.0
         
         # For the toggling the different status lights
@@ -638,7 +638,7 @@ class TrainControllerUI(QWidget):
     
     def update_desired_temperature(self):
         temp = float(self.temp_input.text())
-        if 70 <= temp <= 100:
+        if 60 <= temp <= 75:
             self.desired_temperature = temp
             print(f"Desired temperature set to: {self.desired_temperature}°F")
             if self.current_temperature < self.desired_temperature:
@@ -647,7 +647,7 @@ class TrainControllerUI(QWidget):
                 self.desired_temperature -= 0.01
             self.reach_temperature()
         else:
-            print("Temperature out of range. Please enter a value between 70°F and 100°F.")
+            print("Temperature out of range. Please enter a value between 60°F and 75.")
 
     def reach_temperature(self, k=0.3, time_step=0.5):
         initial_temp = self.current_temperature
@@ -924,8 +924,8 @@ class TrainControllerUI(QWidget):
             self.commanded_authority -= self.current_velocity * 2.23694 * timestep
             self.commanded_authority_edit.setText(f"{self.commanded_authority:.2f} ft")
 
-    
-    
+
+   
     ################################################
     # BRAKE DIVET FUNCTIONS AND OTHER UI FUNCTIONS #
     ################################################
