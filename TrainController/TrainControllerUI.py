@@ -358,7 +358,7 @@ class TrainControllerUI(QWidget):
         # Create the green indicator button
         self.brake_fail_indicator = QPushButton()
         self.brake_fail_indicator.setFixedSize(40, 40)  # Set a fixed size for the indicator button
-        self.brake_fail_indicator.setStyleSheet("background-color: green; border-radius: 20px; border: 2px solid black;")
+        self.brake_fail_indicator.setStyleSheet("background-color: green; border-radius: 20px; border: 2px solid black; padding-left: 100px;")
         self.failure_timer = QTimer(self)
         self.failure_timer.timeout.connect(lambda: self.update_brake_failure_status(self.brake_fail))
         self.failure_timer.start(1000)  # Check every 1000 milliseconds (1 second)
@@ -698,7 +698,9 @@ class TrainControllerUI(QWidget):
             self.current_velocity = self.speed_limit
             self.current_speed_edit.setText(f"{self.current_velocity * 2.23694:.2f} mph")
             self.setpoint_speed_edit.clear()
-
+            
+        self.power_command = 0
+        self.power_command_edit.setText("0.00") 
            
         # Update the current speed display in UI for users
         self.current_speed_edit.setText(f"{self.current_velocity * 2.23694:.2f} mph")
@@ -865,15 +867,21 @@ class TrainControllerUI(QWidget):
     
     def update_setpoint_speed_calculations(self):  
         # Put the setpoint speed input in a variable in m/s even though it is in mph
-        min_speed = min(self.speed_limit, self.commanded_speed)
-        print(f"Min Speed: {min_speed}")
+        max_speed = min(self.speed_limit, self.commanded_speed)
+        print(f"Min Speed: {max_speed}")
         
         self.desired_velocity = float(self.setpoint_speed_edit.text()) * 0.44704
         
-        if (self.desired_velocity) > min_speed:
-            self.desired_velocity = min_speed
-            self.setpoint_speed_edit.setText(f"{min_speed * 2.237:.2f}")
-        
+        if (self.desired_velocity) > max_speed:
+            self.desired_velocity = max_speed
+            self.setpoint_speed_edit.setText(f"{max_speed * 2.237:.2f}")
+            msg_box = QMessageBox()
+            msg_box.setWindowTitle("Error")
+            msg_box.setText(f"Cannot exceed {max_speed * 2.237:.2f} mph")
+            msg_box.setStyleSheet("font-size: 14px;")
+            QTimer.singleShot(3000, msg_box.accept)  # Close the message box after 3 seconds
+            msg_box.exec()
+                    
         print(f"Desired Speed: {self.desired_velocity} m/s")    # Good updated value
         
         self.power_command = self.update_power_command()
