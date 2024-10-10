@@ -106,6 +106,7 @@ class Simulate(QMainWindow):
 
 
 
+
 if __name__ == '__main__':
     communicator = Communicate()
     app = QApplication(sys.argv)
