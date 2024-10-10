@@ -544,7 +544,8 @@ class TrainControllerUI(QWidget):
         self.current_speed_edit.setText(f"{self.current_velocity * 2.23694:.2f} mph")
         self.power_command = self.update_power_command()
         # self.power_command_edit.setText(f"{self.power_command:.2f}")
-        self.lcd.write_string(f"Power Command:    {self.power_command:.2f} kWatts")
+        self.lcd.clear()
+        self.lcd.write_string(f"Power Command:  {self.power_command:.2f} kWatts")
         
     def handle_current_speed(self):
         print(f"Current Speed: {self.current_velocity}")
@@ -880,7 +881,8 @@ class TrainControllerUI(QWidget):
         
         self.power_command = self.update_power_command()
         # Update the power command display
-        self.lcd.write_string(f"Power Command:    {self.power_command:.2f} kWatts")
+        self.lcd.clear()
+        self.lcd.write_string(f"Power Command:  {self.power_command:.2f} kWatts")
         print(f"Power Command: {self.power_command} kW")
         
     
