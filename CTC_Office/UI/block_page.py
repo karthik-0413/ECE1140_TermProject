@@ -2,13 +2,6 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QPushButton, QLa
 from PyQt6.QtCore import Qt, QTime
 from PyQt6.QtGui import QAction
 import sys
-import os
-
-cur_dir = os.path.dirname(__file__)
-lib_dir = os.path.join(cur_dir, '../backend/')
-sys.path.append(lib_dir)
-
-from backend import CTC_Controller
 
 class App(QMainWindow):
     def __init__(self):
@@ -171,16 +164,12 @@ class App(QMainWindow):
 
         self.throughput_rect = QFrame(self)
         self.throughput_rect.setFrameShape(QFrame.Shape.Box)
-        self.throughput_rect.setMaximumHeight(160)
+        self.throughput_rect.setMaximumHeight(100)
         self.throughput_rect.setLineWidth(2)
         self.throughput_rect.setMaximumWidth(175)
 
         self.throughput_rect_layout = QVBoxLayout(self.throughput_rect)
         self.throughput_rect_layout.setContentsMargins(20, 20, 20, 20)
-
-        self.time = QLabel(f"15:40", self.throughput_rect)
-        self.time.setStyleSheet('color: white; font-size: 40px; padding: 0px;')
-        self.time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.throughput_display = QLabel(f"X Trains/hr/line", self.throughput_rect)
         self.throughput_display.setStyleSheet('background-color: #2B78E4; color: white; font-size: 15px; padding: 0px; border: 2px solid #000000;')
@@ -190,9 +179,8 @@ class App(QMainWindow):
         self.throughput_label = QLabel('Throughput', self.throughput_rect)
         self.throughput_label.setStyleSheet('font-size: 20px; padding: 0px;')
 
-        self.throughput_rect_layout.addWidget(self.time, 0, Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter)
-        self.throughput_rect_layout.addWidget(self.throughput_display, 1, Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter)
-        self.throughput_rect_layout.addWidget(self.throughput_label, 2, Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignCenter)
+        self.throughput_rect_layout.addWidget(self.throughput_display, 0, Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter)
+        self.throughput_rect_layout.addWidget(self.throughput_label, 1, Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignCenter)
 
         ######################################################################
         # Train Table 1
