@@ -16,9 +16,9 @@ from graph import Graph
 
 class CTC_Controller():
     def __init__(self):
+        self.lines = list()
         self.layout = list()
         self.scheulde = list()
-        self.lines = list()
         self.trains = list()
         self.excel_layout = dict()
         self.excel_schedule = dict()
@@ -57,7 +57,8 @@ class CTC_Controller():
                     self.graph.addDirectionalEdge(node, self.graph.nodes[self.layout[index].switch_states[1]-1], self.layout[index].block_length)
                 
 
-
+    def request_switch_toggle(self, block_number):
+        pass
 
 
     def increment_time(self):
@@ -69,31 +70,48 @@ class CTC_Controller():
             train.suggested_speed = train.location.speed_limit
 
     def calculate_authority(self, train:Train):
-        self.graph.distanceBetweenNodes(train.location, train.destination)
-        #for train in self.trains:
-        #    num_blocks_to_location = 
-        #    train.authority = 
+        for train in self.trains:
+            authority = 0
+            num_blocks, predecessors = self.graph.distanceBetweenNodes(train.location, train.destination)
+            for blk in predecessors:
+                authority += self.layout[self.layout.index(blk)].block_length
+
+            train.authoriy = authority
+        
+    def upload_schedule(self, path_to_schedule:str):
+        self.excel_schedule = pd.read_excel(path_to_schedule, sheet_name=None)
     
-    def upload_schedule(self, path_to_scheudule:str):
-        self.excel_schedule = pd.read_excel(path_to_scheudule, sheet_name=None)
-        # The sky only blows westward in the darkest of the eastern nights
+    
+    def update_schedule(self):
+
+        for train in self.trains:
+            if not train.task:
+                for key in self.excel_schedule.keys():
+                    for index, row in self.excel_schedule[key].iterrows():
+
+                        if train.location.block_number == 1:
+                            if index == 0:
+                                train.destination = row['Infrastructure']
+                                train.task = True
+
+    # The sky only blows westward in the darkest of the eastern nights
 
     def upload_layout(self, path_to_layout:str):
         self.excel_layout = pd.read_excel(path_to_layout, sheet_name=None)
         
         for key in self.excel_layout.keys():
             self.lines.append(key)
-            for index, col in self.excel_layout[key].iterrows():
+            for index, row in self.excel_layout[key].iterrows():
                 block = Block(
-                    line=col['Line'],
-                    section=col['Section'],
-                    block_number=col['Block Number'],
-                    block_length=col['Block Length (m)'],
-                    block_grade=col['Block Grade (%)'],
-                    speed_limit=col['Speed Limit (Km/Hr)'],
-                    infrastructure=col['Infrastructure'],
-                    elevation=col['ELEVATION (M)'],
-                    cummulative_elevation=col['CUMALTIVE ELEVATION (M)']
+                    line=row['Line'],
+                    section=row['Section'],
+                    block_number=row['Block Number'],
+                    block_length=row['Block Length (m)'],
+                    block_grade=row['Block Grade (%)'],
+                    speed_limit=row['Speed Limit (Km/Hr)'],
+                    infrastructure=row['Infrastructure'],
+                    elevation=row['ELEVATION (M)'],
+                    cummulative_elevation=row['CUMALTIVE ELEVATION (M)']
                 )
                 self.layout.append(block)
 
@@ -111,13 +129,22 @@ class CTC_Controller():
                 Infrastructure: {block.infrastructure}, 
                 Elevation: {block.elevation}, 
                 Cummulative Elevation: {block.cummulative_elevation}''')
+            
+    def create_train(self):
+        self.trains.append(Train(len(self.trains), self.layout[0]))
+
+    def schedule_train(self, train_index, departure_time, destination):
+        self.trains[train_index].departure_time = departure_time
+        self.trains[train_index].destination = destination
+        
+
 
 
 
     
 if __name__ == '__main__': 
     ctc = CTC_Controller()
-    ctc.upload_layout("/Users/thomaseckrich/Documents/Classes/ECE 1140/ECE1140_TermProject/CTC_Office/Blue_line_layout.xlsx")
+    ctc.upload_layout("../Blue_line_layout.xlsx")
     #ctc.display_layout()
 
 
@@ -147,6 +174,12 @@ if __name__ == '__main__':
     #    for j in range(len(ctc.graph.nodes[i].edge_list)):
     #        print(ctc.graph.nodes[i].index.block_number, " ", ctc.graph.nodes[i].node_type, " ",ctc.graph.nodes[i].edge_list[j][0].index.block_number)
 
+
+    ctc.create_train()
+    ctc.upload_schedule("../Blue Line Schedule - Station B.xlsx")
+    ctc.update_schedule()
+
+    print(ctc.trains[0].location.block_number)
 
 
     print("done")
