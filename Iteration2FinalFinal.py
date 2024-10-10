@@ -1622,7 +1622,7 @@ class Ui_MainWindow(object):
                 if self.SecIndex == 0:
                         if 3 <= self.BlockIndex <= 4: # Train is approaching switch
                                 if self.Sec[0][6][4] == 0 and self.SecOccRest[1] == 1: # Trying to move onto Occupied Track
-                                        self.TRKOutputCmdSpeedValue = '0000000' + str(self.Sec[0][6][4]) + '10'
+                                        self.TRKOutputCmdSpeedValue = '0000000000'
                                 
                                 elif self.Sec[0][6][4] == 0 and self.SecOccRest[1] == 0: # Trying to move onto Unoccupied Track
                                         self.TRKOutputCmdSpeedValue = self.SuggSpeed + str(self.Sec[0][6][4]) + '10'
