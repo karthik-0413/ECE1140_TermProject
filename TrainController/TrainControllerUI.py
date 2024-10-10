@@ -72,6 +72,11 @@ class TrainControllerUI(QWidget):
         self.uk_previous = 0.0
         self.ek_previous = 0.0
         self.dt = 1.0
+        
+        
+        # Call the calculate_brake_distance function every millisecond
+        self.timer.start(1000)
+        self.timer.timeout.connect(self.calculate_brake_distance)
 
     
         # All pyqtsignals for Test Bench Inputs/Outputs
@@ -717,8 +722,6 @@ class TrainControllerUI(QWidget):
                 self.commanded_authority = 0.0
                 self.commanded_authority_edit.setText("0.00 ft")
             if self.commanded_authority == 0.0:
-                self.current_velocity = 0.0
-                self.current_speed_edit.setText(f"{self.current_velocity:.2f} mph")
                 # Turn left and right doors to open
                 self.left_door_status.setText("OPEN")
                 self.left_door_status.setStyleSheet("background-color: green; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
@@ -926,6 +929,28 @@ class TrainControllerUI(QWidget):
     ################################################
     # BRAKE DIVET FUNCTIONS AND OTHER UI FUNCTIONS #
     ################################################
+    
+    def calculate_brake_distance(self):
+        # Calculate the brake distance
+        brake_distance = (self.current_velocity ** 2) / (2 * 1.2)
+        final_distance = brake_distance * 3.281
+        if self.commanded_authority <= final_distance:
+            # Divet in Service Brake
+            self.apply_service_brake()
+            self.divet_in_service_brake_button()
+            # Put Brake Status has ON
+            self.brake_status.setText("ON")
+            self.brake_status.setStyleSheet("background-color: #f5c842; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
+            
+        if self.commanded_authority == 0:
+            # Undivet the service brake
+            self.reset_service_brake_button_style()
+            # Put Brake Status has OFF
+            self.brake_status.setText("OFF")
+            self.brake_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
+            
+        print(f"Commanded Authority: {self.commanded_authority:.2f} ft")
+        print(f"Brake Distance: {brake_distance:.2f} m")
     
     def divet_in_service_brake_button(self):
         self.brake_button.setStyleSheet("margin-top: 40px; background-color: #B8860B; font-size: 16px; border-radius: 10px; font-weight: bold; color: black; border: 3px solid black; padding-top: 20px; max-width: 150px; padding-bottom: 20px;")
