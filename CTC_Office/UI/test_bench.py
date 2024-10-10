@@ -31,7 +31,7 @@ class App(QMainWindow):
         ######################################################################
 
         # Create Block box and label
-        self.header = QLabel('CTC', self)
+        self.header = QLabel('CTC - Test Benech', self)
         self.header.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.header.setStyleSheet('background-color: #2B78E4; color: white; font-size: 40px; padding: 10px;')
         self.header.setMaximumHeight(60)
@@ -101,9 +101,9 @@ class App(QMainWindow):
         self.output_box_layout.addWidget(self.authority_label, 1, 2, 1, 1)
 
         # Authority Display
-        self.speed_display = QLabel('0 m', self.output_box)
-        self.speed_display.setStyleSheet('font-size: 15px; padding: 0px; border: 2px solid #000000;')
-        self.output_box_layout.addWidget(self.speed_display, 1, 3, 1, 1)
+        self.authority_display = QLabel('0 m', self.output_box)
+        self.authority_display.setStyleSheet('font-size: 15px; padding: 0px; border: 2px solid #000000;')
+        self.output_box_layout.addWidget(self.authority_display, 1, 3, 1, 1)
 
 
         ###########
@@ -111,9 +111,9 @@ class App(QMainWindow):
         # Input Box
         self.input_box = QFrame(self)
         self.input_box.setFrameShape(QFrame.Shape.Box)
-        self.input_box.setMaximumHeight(250)
+        self.input_box.setMaximumHeight(150)
         self.input_box.setLineWidth(2)
-        self.input_box.setMaximumWidth(650)
+        self.input_box.setMaximumWidth(500)
         
         # input layout
         self.input_layout = QGridLayout(self.input_box)
@@ -129,7 +129,7 @@ class App(QMainWindow):
         # occupancy label
         self.occupancy_label = QLabel('Block Occupied', self.input_box)
         self.occupancy_label.setStyleSheet('font-size: 15px;')
-        self.input_layout.addWidget(self.occupancy_label, 0, 1, 1, 1)
+        self.input_layout.addWidget(self.occupancy_label, 0, 1, 1, 2)
 
         # Damage Checkbox
         self.damage_checkbox = QCheckBox(self.input_box)
@@ -139,8 +139,8 @@ class App(QMainWindow):
 
         # Track damaged label
         self.damage_label = QLabel('Track Damaged', self.input_box)
-        self.damage_label.setStyleSheet('font-size: 15px; padding: 0px; border: 2px solid #000000;')
-        self.input_layout.addWidget(self.speed_display, 1, 1, 1, 1)
+        self.damage_label.setStyleSheet('font-size: 15px; padding: 0px;')
+        self.input_layout.addWidget(self.damage_label, 1, 1, 1, 2)
 
         # Crossing Checkbox
         self.crossing_checkbox = QCheckBox(self.input_box)
@@ -150,24 +150,59 @@ class App(QMainWindow):
 
         # Crossing label
         self.crossing_label = QLabel('Crossing Closed', self.input_box)
-        self.crossing_label.setStyleSheet('font-size: 15px; padding: 0px; border: 2px solid #000000;')
-        self.input_layout.addWidget(self.speed_display, 2, 1, 1, 1)
+        self.crossing_label.setStyleSheet('font-size: 15px; padding: 0px;')
+        self.input_layout.addWidget(self.crossing_label, 2, 1, 1, 2)
 
         # Maintenance label
         self.maintanence_label = QLabel('Block Under Maintenance: ', self.input_box)
         self.maintanence_label.setStyleSheet('font-size: 15px;')
-        self.input_layout.addWidget(self.maintanence_label, 3, 0, 1, 1)
+        self.input_layout.addWidget(self.maintanence_label, 3, 0, 1, 2)
 
         # Maintenance display
-        self.maintanence_display = QLabel(self.input_box)
+        self.maintanence_display = QLabel('No', self.input_box)
+        self.maintanence_display.setAlignment(Qt.AlignmentFlag.AlignLeft)
         self.maintanence_display.setStyleSheet('font-size: 15px; padding: 0px; border: 2px solid #000000;')
-        self.input_layout.addWidget(self.maintanence_display, 3, 1, 1, 1)
+        self.input_layout.addWidget(self.maintanence_display, 3, 2, 1, 1)
+
+
+        # Switch Label
+        self.switch_position = QLabel("Switch Position", self.input_box)
+        self.switch_position.setStyleSheet('font-size: 15px; padding: 0px;')
+        self.input_layout.addWidget(self.switch_position, 0, 2, 1, 1)
+
+        # Switch Position Selector
+        self.switch_selector = QComboBox(self.input_box)
+        self.switch_selector.addItems(["Block", "Block 6", "Block 11"])
+        self.switch_selector.setMinimumWidth(60)
+        self.input_layout.addWidget(self.switch_selector, 1, 2, 1, 1)
+
+        # Signal Label
+        self.signal_state = QLabel("Signal State", self.input_box)
+        self.signal_state.setStyleSheet('font-size: 15px; padding: 0px;')
+        self.input_layout.addWidget(self.signal_state, 0, 3, 1, 1)
+
+        # Signal Selector
+        self.signal_selector = QComboBox(self.input_box)
+        self.signal_selector.addItems(["Green", "Yellow", "Red"])
+        self.input_layout.addWidget(self.signal_selector, 1, 3, 1, 1)
+
+
+        ############
+
+
+
+
+
+
+
 
 
 
         self.main_layout.addWidget(self.block_info, 1, 0, 1, 1)
         self.main_layout.addWidget(self.output_box, 1, 1, 1, 2)
         self.main_layout.addWidget(self.input_box, 2, 0, 1, -1)
+
+
 
 
 

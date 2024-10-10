@@ -65,7 +65,7 @@ class App(QMainWindow):
         ######################################################################
 
         # Create header label
-        self.header = QLabel('CTC', self)
+        self.header = QLabel('CTC - Train View', self)
         self.header.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.header.setStyleSheet('background-color: #2B78E4; color: white; font-size: 40px; padding: 10px;')
         self.header.setMaximumHeight(60)
