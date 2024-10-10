@@ -7,11 +7,11 @@ from TrainControllerTestBench import TrainControllerTestBenchUI
 from TrainControllerCommunicateSignals import Communicate
 
 def main():
-    # Create a single QApplication instance
+    # Create a QApplication instance
     app = QApplication(sys.argv)
     
     # Create instances of each UI window
-    communicator = Communicate()  # Replace with your actual communicator class
+    communicator = Communicate()
     ui1 = TrainControllerUI(communicator)
     ui2 = TrainEngineerUI(communicator)
     ui3 = TrainControllerTestBenchUI(communicator)
