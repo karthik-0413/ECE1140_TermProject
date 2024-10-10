@@ -10,11 +10,13 @@ sys.path.append(lib_dir)
 
 from backend import CTC_Controller
 from communicationSignals import Communicate
+from train import Train
 
 class TB(QMainWindow):
     def __init__(self, communicator):
         super().__init__()
         self.communicator = communicator
+        self.communicator.cur_train_info.connect(self.update_train_info)
         self.initUI()
 
     def initUI(self):
@@ -215,6 +217,11 @@ class TB(QMainWindow):
         
     def signal_change(self, index):
         self.communicator.signalColor.emit(index)
+
+    def update_train_info(self, train):
+        self.speed_display.setText(str(train.speed) + ' kph')
+        self.authority_display.setText(str(train.authority) + ' m')
+        #self.maintanence_display.setText(train.maintenance)
 
 
 

@@ -29,12 +29,15 @@ class Graph:
         self.nodes.remove(node)
 
     def DijPathfind(self, start):
+        for item in self.nodes:
+            if item.index == start:
+                beginning = item
 
         Q = CustomQueue()
-        Q.push(start)
+        Q.push(beginning)
 
         distances = {node: float('inf') for node in self.nodes}
-        distances[start] = 0
+        distances[beginning] = 0
 
         predecessors = {node: None for node in self.nodes}
 
@@ -55,5 +58,5 @@ class Graph:
     
     def distanceBetweenNodes(self, start, end):
         distances, predecessors = self.DijPathfind(start)
-        return distances[end], predecessors
+        return distances[end], predecessors[end]
     

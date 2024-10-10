@@ -1,7 +1,7 @@
 import sys
 from PyQt6.QtWidgets import QApplication
 from communicationSignals import Communicate
-from frontend import CTC_Controller
+from frontend import App
 from block_page import BP
 from simulation_page import Simulate
 from test_bench import TB
@@ -12,7 +12,7 @@ def main():
     
     # Create instances of each UI window
     communicator = Communicate()  # Replace with your actual communicator class
-    ui1 = CTC_Controller(communicator)
+    ui1 = App(communicator)
     ui2 = BP(communicator)
     ui3 = Simulate(communicator)
     ui4 = TB(communicator)

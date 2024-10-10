@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QPushButton, QLabel, QVBoxLayout, QFrame, QGridLayout, QLineEdit, QHBoxLayout, QSizePolicy, QComboBox, QTimeEdit, QCheckBox, QTableWidget, QHeaderView, QStackedWidget, QMenuBar, QToolBar, QTabWidget, QWidgetAction, QFileDialog
+from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QPushButton, QLabel, QVBoxLayout, QFrame, QGridLayout, QLineEdit, QHBoxLayout, QSizePolicy, QComboBox, QTimeEdit, QCheckBox, QTableWidget, QHeaderView, QStackedWidget, QMenuBar, QToolBar, QTabWidget, QWidgetAction, QFileDialog, QTableWidgetItem
 from PyQt6.QtCore import Qt, QTime
 from PyQt6.QtGui import QAction
 import sys
@@ -15,6 +15,7 @@ class App(QMainWindow):
     def __init__(self, communicator):
         super().__init__()
         self.communicator = communicator
+        self.communicator.time_step.connect(self.time_step)
         self.initUI()
 
     def initUI(self):
@@ -208,7 +209,7 @@ class App(QMainWindow):
         ######################################################################
 
         self.train_table1 = QTableWidget(4, 5, self)
-        self.train_table1.setHorizontalHeaderLabels(["  Train  ", "  Current Block  ", "  Departure Station  ", "  Destination Station  ", "  Departure Time  ", "  Arrival Time  "])
+        self.train_table1.setHorizontalHeaderLabels(["  Train  ", "  Current Block  ", "  Destination Station  ", "  Departure Time  ", "  Arrival Time  "])
         self.train_table1.setFixedHeight(200)
         self.train_table1.setFixedWidth(800)
         self.train_table1.resizeColumnsToContents()
@@ -216,7 +217,6 @@ class App(QMainWindow):
         self.train_table1.verticalHeader().setVisible(False)
         self.train_table1.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.train_table1.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
-        #self.table1.horizontalHeader().setStretchLastSection(True)
 
         ######################################################################
         # Train Table 2
@@ -306,9 +306,17 @@ class App(QMainWindow):
 
 
     def time_step(self):
-        self.ctc.increment_time(self)
+        self.ctc.increment_time()
+        self.ctc.calculate_suggested_speed()
+        self.ctc.calculate_authority()
 
-        self.time.setText(self.ctc.time_string())
+ 
+
+        time = self.ctc.time_string()
+        self.time.setText(time)
+        self.communicator.time.emit(time)
+        self.communicator.cur_train_info.emit(self.ctc.trains[0])
+        
 
 
 
@@ -319,16 +327,31 @@ class App(QMainWindow):
             self.ctc.upload_layout(file_name)
 
     def upload_schedule(self):
+        self.ctc.create_train()
         file_name, _ = QFileDialog.getOpenFileName(self, "Open Schedule File", os.getcwd(), "Excel File (*.xlsx *.xls)")
         if file_name:
             print(f"Selected file: {file_name}")
             self.ctc.upload_schedule(file_name)
+
+        self.ctc.update_schedule()
+        self.populate_train_table()
+        self.populate_train_table()
+
+    def populate_train_table(self):
+        data = [5]
+        for train in self.ctc.trains:
+            data[train.index] = [f"Train {train.index}", str(train.location.block_number), train.destination, train.departure_time_str,  train.arrival_time_str()]
+
+        for row, row_data in enumerate(data):
+            for column, item in enumerate(row_data):
+                self.train_table1.setItem(row, column, QTableWidgetItem(item))
 
     def on_click(self):
         pass
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    ex = App()
+    comm = Communicate
+    ex = App(comm)
     ex.show()
     sys.exit(app.exec())

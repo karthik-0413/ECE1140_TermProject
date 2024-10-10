@@ -10,6 +10,8 @@ class BP(QMainWindow):
     def __init__(self, communicator):
         super().__init__()
         self.communicator = communicator
+        self.communicator.time.connect(self.update_clock)
+
         self.initUI()
 
     def initUI(self):
@@ -78,7 +80,7 @@ class BP(QMainWindow):
         self.throughput_rect.setFrameShape(QFrame.Shape.Box)
         self.throughput_rect.setMaximumHeight(160)
         self.throughput_rect.setLineWidth(2)
-        self.throughput_rect.setMaximumWidth(175)
+        self.throughput_rect.setMaximumWidth(200)
 
         self.throughput_rect_layout = QVBoxLayout(self.throughput_rect)
         self.throughput_rect_layout.setContentsMargins(20, 20, 20, 20)
@@ -122,6 +124,10 @@ class BP(QMainWindow):
         self.main_layout.addWidget(self.throughput_rect, 1, 1, 1, 1)
         self.main_layout.addWidget(self.train_table1, 2, 0, 1, 2)
 
+
+    def update_clock(self, time):
+        self.time.setText(time)
+        print(str(time))
 
     def on_click(self):
         pass

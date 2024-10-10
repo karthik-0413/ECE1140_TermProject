@@ -1,6 +1,7 @@
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QPushButton, QLabel, QVBoxLayout, QFrame, QGridLayout, QLineEdit, QHBoxLayout, QSizePolicy, QComboBox, QTimeEdit, QCheckBox, QTableWidget, QHeaderView, QStackedWidget, QMenuBar, QToolBar, QTabWidget, QWidgetAction, QSlider
 from PyQt6.QtCore import Qt, QTime
 from PyQt6.QtGui import QAction
+from time import sleep as tsleep
 import sys
 import os
 
@@ -85,12 +86,23 @@ class Simulate(QMainWindow):
         # Label to display the time format
         self.time_format_label = QLabel('hr:min:sec', self)
         self.time_format_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.main_layout.addWidget(self.time_format_label, 6, 0, 1, -1)     
+        self.main_layout.addWidget(self.time_format_label, 6, 0, 1, -1) 
+
+        self.time_step_button = QPushButton("Time step", self)
+        self.time_step_button.setStyleSheet('background-color: #6AA84F; font-size: 15px; padding: 10px;')
+        self.time_step_button.clicked.connect(self.time_step)
+        self.main_layout.addWidget(self.time_step_button, 7, 0, 1, 1)
 
 
     def update_slider_value(self, value):
         self.slider_value_label.setText(str(value) + "x")
         self.communicator.time_speedup.emit(value)
+
+    def time_step(self):
+        self.communicator.time_step.emit(True)
+        tsleep(1)
+        self.communicator.time_step.emit(False)
+
 
 
 

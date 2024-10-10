@@ -28,7 +28,7 @@ class CTC_Controller():
         self.start_time = dt.datetime.now()
         self.time_speedup = 1
 
-        self.upload_layout("/Users/thomaseckrich/Documents/Classes/ECE 1140/ECE1140_TermProject/CTC_Office/Blue_line_layout.xlsx")
+        #self.upload_layout("/Users/thomaseckrich/Documents/Classes/ECE 1140/ECE1140_TermProject/CTC_Office/Blue_line_layout.xlsx")
 
         self.graph = Graph()
         for block in self.layout:
@@ -65,13 +65,14 @@ class CTC_Controller():
         self.simulation_time = (dt.datetime.combine(dt.date(1, 1, 1),self.simulation_time) + (dt.datetime.now() - self.start_time) * self.time_speedup).time()
 
 
-    def calculate_suggested_speed(self, train:Train):
+    def calculate_suggested_speed(self):
         for train in self.trains:
             train.suggested_speed = train.location.speed_limit
 
-    def calculate_authority(self, train:Train):
+    def calculate_authority(self):
         for train in self.trains:
             authority = 0
+            print(f"Train Destination: {train.destination.block_number}")
             num_blocks, predecessors = self.graph.distanceBetweenNodes(train.location, train.destination)
             for blk in predecessors:
                 authority += self.layout[self.layout.index(blk)].block_length
@@ -91,10 +92,15 @@ class CTC_Controller():
 
                         if train.location.block_number == 1:
                             if index == 0:
-                                train.destination = row['Infrastructure']
+                                dest_str = row['Infrastructure']
+                                
+                                train.destination
+                                timediff = row["total time to station w/dwell (min)"]
+                                delta = dt.timedelta(minutes=float(timediff))
+                                train.arrival_time = (dt.datetime.combine(dt.date(1, 1, 1),train.departure_time) + delta).time()
                                 train.task = True
+                                print(f"Schedule:\n {row}")
 
-    # The sky only blows westward in the darkest of the eastern nights
 
     def upload_layout(self, path_to_layout:str):
         self.excel_layout = pd.read_excel(path_to_layout, sheet_name=None)
@@ -114,6 +120,7 @@ class CTC_Controller():
                     cummulative_elevation=row['CUMALTIVE ELEVATION (M)']
                 )
                 self.layout.append(block)
+                print(f"Block number: {block.block_number}  Section: {block.section}  Infrastructure: {block.infrastructure}")
 
     def schedule_new_train(self, train:Train):
         pass
