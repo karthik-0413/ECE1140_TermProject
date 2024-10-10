@@ -538,12 +538,13 @@ class TrainControllerUI(QWidget):
         self.right_door_status.setStyleSheet("background-color: red; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
     
     def handle_current_velocity(self, velocity: float):
-        # Convert velocity to m/s
-        self.current_velocity = velocity / 2.23694
-        print(f"Current Velocity: {self.current_velocity}")
-        self.current_speed_edit.setText(f"{self.current_velocity * 2.23694:.2f} mph")
-        self.power_command = self.update_power_command()
-        self.power_command_edit.setText(f"{self.power_command:.2f}")
+        if self.operation_mode == 1:
+            # Convert velocity to m/s
+            self.current_velocity = velocity / 2.23694
+            print(f"Current Velocity: {self.current_velocity}")
+            self.current_speed_edit.setText(f"{self.current_velocity * 2.23694:.2f} mph")
+            self.power_command = self.update_power_command()
+            self.power_command_edit.setText(f"{self.power_command:.2f}")
         
     def handle_current_speed(self):
         print(f"Current Speed: {self.current_velocity}")
