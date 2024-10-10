@@ -30,7 +30,10 @@ class CTC_Controller():
 
         #self.upload_layout("/Users/thomaseckrich/Documents/Classes/ECE 1140/ECE1140_TermProject/CTC_Office/Blue_line_layout.xlsx")
 
+
+    def create_graph(self):
         self.graph = Graph()
+        #print(f"num nodes: {len(self.layout)}")
         for block in self.layout:
 
             # if block has a station
@@ -73,14 +76,17 @@ class CTC_Controller():
         for train in self.trains:
             authority = 0
             print(f"Train Destination: {train.destination.block_number}")
-            num_blocks, predecessors = self.graph.distanceBetweenNodes(train.location, train.destination)
+            num_blocks, predecessors = self.graph.distanceBetweenNodes(train.location.block_number, train.destination.block_number)
+            print(predecessors)
             for blk in predecessors:
                 authority += self.layout[self.layout.index(blk)].block_length
+
 
             train.authoriy = authority
         
     def upload_schedule(self, path_to_schedule:str):
         self.excel_schedule = pd.read_excel(path_to_schedule, sheet_name=None)
+        self.create_graph()
     
     
     def update_schedule(self):
@@ -93,8 +99,11 @@ class CTC_Controller():
                         if train.location.block_number == 1:
                             if index == 0:
                                 dest_str = row['Infrastructure']
-                                
-                                train.destination
+                                for item in self.layout:
+                                    if item.infrastructure == dest_str:
+                                        train.destination = item
+                                        train.task = True
+                                        
                                 timediff = row["total time to station w/dwell (min)"]
                                 delta = dt.timedelta(minutes=float(timediff))
                                 train.arrival_time = (dt.datetime.combine(dt.date(1, 1, 1),train.departure_time) + delta).time()

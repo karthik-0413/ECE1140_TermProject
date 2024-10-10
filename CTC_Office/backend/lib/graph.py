@@ -29,24 +29,28 @@ class Graph:
         self.nodes.remove(node)
 
     def DijPathfind(self, start):
-        for item in self.nodes:
-            if item.index == start:
-                beginning = item
 
         Q = CustomQueue()
-        Q.push(beginning)
+        #print("len(self.nodes)")
+        #print(len(self.nodes))
+        #print(self.nodes)
+        #print(self.nodes[start])
+        Q.push(self.nodes[start])
+        print(f"Q: {Q.elements}")
 
-        distances = {node: float('inf') for node in self.nodes}
-        distances[beginning] = 0
+        distances = {node: node.index.block_length for node in self.nodes}
+        distances[start] = 0
 
-        predecessors = {node: None for node in self.nodes}
-
+        predecessors = {node: list() for node in self.nodes}
+        print(f"empty: {Q.isEmpty()}")
         while not Q.isEmpty():
 
             current = Q.pop()
+            print(f"current: {current.edge_list}")
             for edge in current.edge_list:
                 neighbor = edge[0]
                 weight = edge[1]
+                print(f"weight: {weight}")
                 new_dist = distances[current] + edge[1]
 
                 if new_dist < distances[neighbor]:
@@ -58,5 +62,15 @@ class Graph:
     
     def distanceBetweenNodes(self, start, end):
         distances, predecessors = self.DijPathfind(start)
-        return distances[end], predecessors[end]
+        for index, item in enumerate(distances.keys()):
+            if index == end:
+                distance = distances[item]
+        
+        for index, item in enumerate(predecessors.keys()):
+            if index == end:
+                predecessor = predecessors[item]
+
+
+        print(f"Distance: {distance}, Predecessor: {predecessor}")
+        return distance, predecessor
     

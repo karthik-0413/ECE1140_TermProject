@@ -3,6 +3,7 @@ from enum import Enum
 class NodeType(Enum):
     STATION = 1
     SWITCH = 2
+    BLOCK = 3
 
 class Node:
     def __init__(self, index, type:NodeType):
@@ -40,9 +41,9 @@ class Node:
     
     def minEdgeWeight(self):
         min = 1000000000000
-        for edge in self.edge_list:
-            if self.edge_list[edge][1] < min:
-                min = edge[1]
+        for index, edge in enumerate(self.edge_list):
+            if self.edge_list[index][1] < min:
+                min = self.edge_list[index][1]
         return min
     
     def __getitem__(self, index):

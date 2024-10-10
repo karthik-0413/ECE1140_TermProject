@@ -340,7 +340,7 @@ class App(QMainWindow):
     def populate_train_table(self):
         data = [5]
         for train in self.ctc.trains:
-            data[train.index] = [f"Train {train.index}", str(train.location.block_number), train.destination, train.departure_time_str,  train.arrival_time_str()]
+            data[train.index] = [f"Train {train.index}", str(train.location.block_number), train.destination_str(), train.departure_time_str,  train.arrival_time_str()]
 
         for row, row_data in enumerate(data):
             for column, item in enumerate(row_data):

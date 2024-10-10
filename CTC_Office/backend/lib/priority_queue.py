@@ -13,6 +13,7 @@ class CustomQueue:
 
     def pop(self):
         node = heapq.heappop(self.elements)
+        print(f"node: {node}")
         node.removeMinWeightEdge()
         if node.numEdges() != 0:
             self.push(node)

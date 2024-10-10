@@ -32,6 +32,7 @@ class Block():
         self.cummulative_elevation = int(cummulative_elevation)
 
         self.occupied = False
+        self.damage = False
 
         # Optional 
         self.signal = None

@@ -219,7 +219,7 @@ class TB(QMainWindow):
         self.communicator.signalColor.emit(index)
 
     def update_train_info(self, train):
-        self.speed_display.setText(str(train.speed) + ' kph')
+        self.speed_display.setText(str(train.suggested_speed) + ' kph')
         self.authority_display.setText(str(train.authority) + ' m')
         #self.maintanence_display.setText(train.maintenance)
 
