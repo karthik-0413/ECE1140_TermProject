@@ -18,6 +18,7 @@ class Communicate(QObject):
     # pass ctc.layout[block_info_request]
     block_info_request = pyqtSignal(int)
     cur_block_info = pyqtSignal(Block)
+    block_count = pyqtSignal(int)
 
     # pass ctc.trains[train_info_reqeust]
     train_info_request = pyqtSignal(int)

@@ -35,7 +35,8 @@ class Graph:
         #print(len(self.nodes))
         #print(self.nodes)
         #print(self.nodes[start])
-        Q.push(self.nodes[start])
+        print(f"start: {start}")
+        Q.push(self.nodes[start][1])
         print(f"Q: {Q.elements}")
 
         distances = {node: node.index.block_length for node in self.nodes}

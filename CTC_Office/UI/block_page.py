@@ -132,6 +132,18 @@ class BP(QMainWindow):
     def on_click(self):
         pass
 
+    def update_table(self, num_blocks):
+        pass
+
+    def highlight_block(self):
+        selected_items = self.train_table1.selectedItems()
+        if selected_items:
+            selected_row = selected_items[0].row()
+            for column in range(self.train_table1.columnCount()):
+                item = self.train_table1.item(selected_row, column)
+                
+        
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = BP()

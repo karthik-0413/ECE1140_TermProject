@@ -8,6 +8,7 @@ cur_dir = os.path.dirname(__file__)
 lib_dir = os.path.join(cur_dir, '../backend/')
 sys.path.append(lib_dir)
 
+from train import Train
 from backend import CTC_Controller
 from communicationSignals import Communicate
 
@@ -118,7 +119,7 @@ class App(QMainWindow):
 
         # Departure Station
         self.departure_station = QComboBox(self.dispatch)
-        self.departure_station.addItems(["Shadyside", "Station 2", "Station 3"])
+        self.departure_station.addItems(["Yard", "Staion B", "Station C"])
         self.departure_station.setMinimumWidth(140)
         self.dispatch_layout.addWidget(self.departure_station, 1, 1, Qt.AlignmentFlag.AlignCenter)
 
@@ -139,7 +140,7 @@ class App(QMainWindow):
 
         # Arrival Station
         self.arrival_station = QComboBox(self.dispatch)
-        self.arrival_station.addItems(["Edgewood", "Station 2", "Station 3"])
+        self.arrival_station.addItems(["Station B", "Station C"])
         self.arrival_station.setMinimumWidth(140)
         self.dispatch_layout.addWidget(self.arrival_station, 2, 1, Qt.AlignmentFlag.AlignCenter)
 
@@ -156,7 +157,7 @@ class App(QMainWindow):
         # Dispatch Button
         self.button = QPushButton('Dispatch Train', self)
         self.button.setStyleSheet('background-color: #6AA84F; font-size: 15px; padding: 10px;')
-        self.button.clicked.connect(self.on_click)
+        self.button.clicked.connect(self.schedule_train)
         self.dispatch_layout.addWidget(self.button, 3, 3, 1, 1, Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
 
         # Automatic Dispatch Label
@@ -304,11 +305,31 @@ class App(QMainWindow):
         self.setLayout(layout)
         pass
 
+    def schedule_train(self):
+        
+        new_train = Train(len(self.ctc.trains), 1)
+        
+        if self.arrival_station.currentText() == "Station C":
+            new_train.destination = self.ctc.layout[14]
+        else:
+            new_train.destination = self.ctc.layout[9]
+
+        new_train.departure_time_str = self.departure_time.currentSection()
+        new_train.arrival_time_str = self.arrival_time.currentSection()
+
+        self.populate_train_table()
+
+
 
     def time_step(self):
         self.ctc.increment_time()
         self.ctc.calculate_suggested_speed()
-        self.ctc.calculate_authority()
+        #self.ctc.calculate_authority()
+        if self.ctc.trains[0].location.block_number > 10:
+            self.ctc.trains[0].authority = 5*50 - self.ctc.trains[0].location.block_number-10*50
+        else:
+            self.ctc.trains[0].authority = 15*50 - self.ctc.trains[0].location.block_number*50 
+        
 
  
 
@@ -340,7 +361,7 @@ class App(QMainWindow):
     def populate_train_table(self):
         data = [5]
         for train in self.ctc.trains:
-            data[train.index] = [f"Train {train.index}", str(train.location.block_number), train.destination_str(), train.departure_time_str,  train.arrival_time_str()]
+            data[train.index] = [f"Train {train.index}", str(train.location.block_number), train.destination_str(), train.departure_time_str,  train.arrival_time_str]
 
         for row, row_data in enumerate(data):
             for column, item in enumerate(row_data):
