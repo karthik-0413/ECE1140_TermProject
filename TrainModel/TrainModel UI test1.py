@@ -1,10 +1,13 @@
 import sys
+from PyQt6.QtGui import QFont, QPixmap
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QPushButton, QLabel,
-    QVBoxLayout, QHBoxLayout, QStackedWidget, QSizePolicy, QSpacerItem, QGridLayout, QScrollArea, QLineEdit, QComboBox, QDialog, QDialogButtonBox
+    QVBoxLayout, QHBoxLayout, QStackedWidget, QSizePolicy, QGridLayout,
+    QScrollArea, QLineEdit, QComboBox, QDialog, QFrame
 )
 from PyQt6.QtGui import QFont
-from PyQt6.QtCore import Qt, pyqtSignal, QObject
+from PyQt6.QtCore import Qt, pyqtSignal, QObject, QTimer
+
 
 class TrainData(QObject):
     data_changed = pyqtSignal()
@@ -12,69 +15,187 @@ class TrainData(QObject):
     def __init__(self):
         super().__init__()
         # Variables for the data values
-        self.cabin_temperature = 78  # degrees Fahrenheit
+        self.cabin_temperature = 78  # degrees Fahrenheit (Actual Temperature)
         self.maximum_capacity = 222  # passengers
         self.passenger_count = 100
         self.crew_count = 2
         self.maximum_speed = 50  # mph
         self.current_speed = 40  # mph
-        self.total_car_weight = 226.8  # tons
+        self.total_car_weight = 40.9  # tons (empty train weight)
 
-        self.train_length = 32.2  # meters
-        self.train_height = 3.42  # meters
-        self.train_width = 2.65  # meters
-        self.number_of_cars = 4  # variable
+        self.train_length_m = 32.2  # meters
+        self.train_height_m = 3.42  # meters
+        self.train_width_m = 2.65  # meters
+        self.train_length = self.train_length_m * 3.28084  # feet (converted)
+        self.train_height = self.train_height_m * 3.28084  # feet (converted)
+        self.train_width = self.train_width_m * 3.28084  # feet (converted)
+        self.number_of_cars = 1  # variable
         self.single_car_tare_weight = 40.9  # tons
 
         self.announcement = "RED ALERT"
 
         # Train Control Input Variables
         self.commanded_power = 90  # kw
-        self.commanded_speed_tc = 60  # km/h
+        self.commanded_speed_tc = 80  # km/h
+        self.commanded_speed = self.commanded_speed_tc * 0.621371  # mph (converted)
         self.authority = 400  # m
+        self.commanded_authority = self.authority * 3.28084  # ft (converted)
         self.service_brake = False  # Changed to boolean
-        self.train_light = True
-        self.train_horn = False
+        self.exterior_light = True
+        self.interior_light = True
         self.emergency_brake = False
-        self.direction_control = "Forward"
-        self.beacon = "We are approaching to station Alpha"
+        self.beacon_station = "Station Alpha"  # Default station
 
         # Cabin Control Variables
-        self.temperature_commanded = 76  # °F
-        self.cabin_light = True
+        self.desired_temperature = 76  # °F
+        self.cabin_temperature = self.desired_temperature  # °F (Actual Temperature)
         self.train_left_door = False
         self.train_right_door = False
         self.advertisement = "Picture1"
-        self.passenger_brake = False
+        self.passenger_boarding = 0  # Number of passengers boarding at next station (default 0)
 
         # Variables for the buttons
-        self.interior_light_on = self.cabin_light
-        self.exterior_light_on = self.train_light
+        self.interior_light_on = self.interior_light
+        self.exterior_light_on = self.exterior_light
         self.left_door_open = self.train_left_door
         self.right_door_open = self.train_right_door
-        self.passenger_emergency_brake = self.passenger_brake
+        self.passenger_emergency_brake = False
 
         # Added variables for dynamic information
-        self.current_acceleration = 2.3  # ft/s²
-        self.commanded_speed = 40  # mph
-        self.commanded_authority = 500  # ft
-        self.available_seats = 122
-        self.current_train_weight = 48.4  # t
+        self.current_acceleration = 0.3  # ft/s²
+        self.available_seats = self.maximum_capacity - self.passenger_count
+        self.current_train_weight = 40.9  # t (will be updated based on passengers)
 
         # Variables for static information
-        self.static_cars = 1
-        self.static_length = 105  # ft
-        self.static_width = 9  # ft
-        self.static_height = 11  # ft
-        self.static_empty_train_weight = 40.9  # t
+        self.static_cars = self.number_of_cars
+        self.static_length = self.train_length  # ft
+        self.static_width = self.train_width  # ft
+        self.static_height = self.train_height  # ft
+        self.static_empty_train_weight = self.single_car_tare_weight  # t
+
+        # Update train weight based on initial passenger count
+        self.update_train_weight()
+
+        # Timer for updating train state every second
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.update_train_state)
+
+    # Method to update train weight based on passenger count
+    def update_train_weight(self):
+        empty_train_weight_kg = 40.9 * 1000  # Empty train weight in kg
+        passenger_weight_kg = self.passenger_count * 68.0388  # Each passenger weighs 150 lbs (68.0388 kg)
+        total_weight_kg = empty_train_weight_kg + passenger_weight_kg
+        self.current_train_weight = total_weight_kg / 1000  # Convert back to tonnes
+        self.total_car_weight = self.current_train_weight  # Update total car weight
+        self.available_seats = self.maximum_capacity - self.passenger_count  # Update available seats
+        self.data_changed.emit()
 
     # Add setter methods to emit signal on data change
     def set_value(self, var_name, value):
         setattr(self, var_name, value)
+        # Update dependent variables
+        if var_name == 'desired_temperature':
+            self.cabin_temperature = value
+        if var_name == 'exterior_light':
+            self.exterior_light_on = value
+        if var_name == 'interior_light':
+            self.interior_light_on = value
+        if var_name == 'train_left_door':
+            self.left_door_open = value
+        if var_name == 'train_right_door':
+            self.right_door_open = value
+        if var_name == 'number_of_cars':
+            self.static_cars = value
+        if var_name == 'commanded_speed_tc':
+            # Convert km/h to mph
+            self.commanded_speed = value * 0.621371
+        if var_name == 'passenger_count':
+            self.update_train_weight()
+        if var_name in ['service_brake', 'emergency_brake', 'passenger_emergency_brake']:
+            # Start the timer when brakes are pressed
+            self.start_timer()
+        if var_name == 'commanded_power':
+            # Start the timer when commanded power changes
+            self.start_timer()
         self.data_changed.emit()
 
+    def start_timer(self):
+        if not self.timer.isActive():
+            self.timer.start(1000)  # Update every 1000 ms (1 second)
+
+    def stop_timer(self):
+        if self.timer.isActive():
+            self.timer.stop()
+
+    def update_train_state(self, delta_t=1.0):
+        mass = self.current_train_weight * 1000  # Convert to kg
+
+        current_velocity = self.current_speed * 0.44704  # Convert mph to m/s
+
+        power_command_kw = self.commanded_power
+        max_power_kw = 120
+
+        # Use a local variable for effective power command
+        effective_power_command_kw = power_command_kw
+
+        # Limit effective commanded power
+        if effective_power_command_kw > max_power_kw:
+            effective_power_command_kw = max_power_kw
+        elif effective_power_command_kw < 0:
+            effective_power_command_kw = 0
+
+        effective_power_command = effective_power_command_kw * 1000  # Convert kW to W
+
+        # Check for brakes
+        if self.service_brake:
+            acceleration = -1.2  # m/s²
+            effective_power_command = 0
+        elif self.emergency_brake or self.passenger_emergency_brake:
+            acceleration = -2.73  # m/s²
+            effective_power_command = 0
+        else:
+            # Calculate force
+            if current_velocity == 0:
+                force = max_power_kw * 1000 / 19.44  # W / m/s = N
+            else:
+                force = effective_power_command / current_velocity
+
+            frictional_force = 0.002 * mass * 9.8
+
+            if force < frictional_force:
+                force = 0
+            else:
+                force -= frictional_force
+
+            acceleration = force / mass
+
+            if acceleration > 0.5:
+                acceleration = 0.5  # Cap positive acceleration to +0.5 m/s²
+
+        new_velocity = current_velocity + acceleration * delta_t
+
+        if new_velocity < 0:
+            new_velocity = 0
+            if acceleration < 0:
+                acceleration = 0  # If speed is zero, acceleration cannot be negative
+
+        # Convert units back for display
+        self.current_speed = new_velocity * 2.23694  # m/s to mph
+        self.current_acceleration = acceleration * 3.28084  # m/s² to ft/s²
+
+        self.data_changed.emit()
+
+        # Speed Constraints: Ensure current speed does not exceed commanded or maximum speed
+        self.current_speed = min(self.current_speed, self.commanded_speed, self.maximum_speed)
+
+        # Stop the timer if the train has stopped and no power is commanded
+        if self.current_speed == 0 and (effective_power_command == 0 or self.current_acceleration == 0):
+            self.stop_timer()
+
+
+
 class BasePage(QWidget):
-    def __init__(self, title):
+    def __init__(self, title, train_id_callback):
         super().__init__()
 
         # Set background color to very light gray
@@ -86,15 +207,56 @@ class BasePage(QWidget):
         main_layout.setSpacing(0)
 
         # Header
-        header = QLabel(title)
-        header.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        header.setFont(QFont('Arial', 32, QFont.Weight.Bold))
-        header.setStyleSheet("""
-            background-color: lightblue;
+        header_widget = QWidget()
+        header_layout = QHBoxLayout()
+        header_layout.setContentsMargins(0, 0, 10, 0)  # Add margin to the right
+        header_layout.setSpacing(0)
+
+        header_widget.setLayout(header_layout)
+        header_widget.setStyleSheet("""
+            background-color: rgb(43,120,228);  /* Blue */
             padding: 5px 0;
         """)
-        header.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        main_layout.addWidget(header)
+        header_widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+
+        # Title label
+        title_label = QLabel(title)
+        title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the title
+        title_label.setFont(QFont('Arial', 32, QFont.Weight.Bold))
+
+        # Dropdown menu
+        dropdown_layout = QHBoxLayout()
+        dropdown_layout.setSpacing(5)
+        dropdown_layout.setContentsMargins(0, 0, 0, 0)
+        train_id_label = QLabel("Train ID:")
+        train_id_label.setFont(QFont('Arial', 14))
+        self.train_id_combo = QComboBox()
+        self.train_id_combo.addItems(["1", "2", "3"])
+        self.train_id_combo.setCurrentText("1")
+        self.train_id_combo.setFixedWidth(60)
+        self.train_id_combo.setStyleSheet("""
+            QComboBox {
+                color: black;
+                border: 2px solid black;
+                font-weight: bold;
+            }
+        """)
+        # Prevent action on Train ID change
+        # self.train_id_combo.currentTextChanged.connect(train_id_callback)
+
+        # Add to dropdown_layout
+        dropdown_layout.addWidget(train_id_label)
+        dropdown_layout.addWidget(self.train_id_combo)
+        dropdown_widget = QWidget()
+        dropdown_widget.setLayout(dropdown_layout)
+
+        # Add to header_layout
+        header_layout.addWidget(title_label, alignment=Qt.AlignmentFlag.AlignCenter)
+        header_layout.addStretch()
+        header_layout.addWidget(dropdown_widget, alignment=Qt.AlignmentFlag.AlignRight)
+
+        # Add header_widget to main_layout
+        main_layout.addWidget(header_widget)
 
         # Content area
         self.content_layout = QVBoxLayout()
@@ -104,9 +266,15 @@ class BasePage(QWidget):
 
         self.setLayout(main_layout)
 
+    def set_train_id_combo(self, train_id):
+        self.train_id_combo.blockSignals(True)
+        self.train_id_combo.setCurrentText(train_id)
+        self.train_id_combo.blockSignals(False)
+
+
 class MurphyPage(BasePage):
-    def __init__(self, train_data):
-        super().__init__("Murphy")
+    def __init__(self, train_data, train_id_callback):
+        super().__init__("                                    Murphy", train_id_callback)
         self.train_data = train_data
 
         # Adjust margins to make the page as big as other pages
@@ -119,6 +287,7 @@ class MurphyPage(BasePage):
         failures_layout = QVBoxLayout()
         failures_layout.setContentsMargins(20, 20, 20, 20)  # Adjusted margins
         failures_layout.setSpacing(20)  # Adjusted spacing
+        failures_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the elements
 
         # Define failure types with ":" appended
         failure_types = ["Signal Pickup Failure:", "Train Engine Failure:", "Brake Failure:"]
@@ -126,7 +295,7 @@ class MurphyPage(BasePage):
         for failure in failure_types:
             failure_layout = QHBoxLayout()
             failure_layout.setContentsMargins(0, 0, 0, 0)
-            failure_layout.setSpacing(10)  # Adjusted spacing
+            failure_layout.setSpacing(5)  # Adjusted spacing for closer elements
 
             label = QLabel(failure)
             label.setFont(QFont('Arial', 18))
@@ -153,6 +322,7 @@ class MurphyPage(BasePage):
 
             failure_layout.addWidget(label)
             failure_layout.addWidget(button)
+            failure_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center each row
 
             failures_layout.addLayout(failure_layout)
 
@@ -161,6 +331,16 @@ class MurphyPage(BasePage):
 
         # Add main content layout to content_layout
         self.content_layout.addLayout(main_content_layout)
+
+    def set_train_data(self, train_data):
+        # Disconnect previous train_data signal
+        try:
+            self.train_data.data_changed.disconnect(self.update_display)
+        except:
+            pass
+        self.train_data = train_data
+        self.train_data.data_changed.connect(self.update_display)
+        self.update_display()
 
     def toggle_button(self, button):
         if button.isChecked():
@@ -185,9 +365,13 @@ class MurphyPage(BasePage):
                 }
             """)
 
+    def update_display(self):
+        pass  # Add any display updates if needed
+
+
 class TrainModelPage(BasePage):
-    def __init__(self, train_data):
-        super().__init__("Train Model")
+    def __init__(self, train_data, train_id_callback):
+        super().__init__("                                Train Model", train_id_callback)
         self.train_data = train_data  # Store the train data
 
         # Create a scroll area
@@ -213,19 +397,16 @@ class TrainModelPage(BasePage):
         dynamic_info_layout.setVerticalSpacing(0)  # Reduced line spacing
         dynamic_info_layout.setHorizontalSpacing(50)  # Increase spacing between labels and values
         dynamic_info_layout.setContentsMargins(0, 0, 0, 0)
-        #dynamic_info_layout.
 
         data_items = [
-            ("Cabin Temperature", "cabin_temperature", "°F"),
+            ("Actual Temperature", "cabin_temperature", "°F"),
             ("Maximum Capacity", "maximum_capacity", "passengers"),
             ("Passenger Count", "passenger_count", ""),
             ("Crew Count", "crew_count", ""),
             ("Maximum Speed", "maximum_speed", "mph"),
             ("Current Speed", "current_speed", "mph"),
             ("Total Car Weight", "total_car_weight", "t"),
-            ("Train Length", "train_length", "m"),
-            ("Train Height", "train_height", "m"),
-            ("Train Width", "train_width", "m"),
+            # Removed 'Train Length', 'Train Height', 'Train Width' from Dynamic Information
             ("Number of Cars", "number_of_cars", ""),
             ("Single Car Tare Weight", "single_car_tare_weight", "t"),
             ("Current Acceleration", "current_acceleration", "ft/s²"),
@@ -235,27 +416,24 @@ class TrainModelPage(BasePage):
             ("Current Train Wt.", "current_train_weight", "t"),
         ]
 
-        # font sizes
+        # Font settings
         font_label = QFont('Arial', 12)
         font_label.setBold(True)
         font_value = QFont('Arial', 12)
 
         self.value_labels = {}
 
-        # Add column headers
-        dynamic_info_layout.addWidget(QLabel("Element Name"), 0, 0, alignment=Qt.AlignmentFlag.AlignCenter)
-        dynamic_info_layout.addWidget(QLabel("Train 1"), 0, 1, alignment=Qt.AlignmentFlag.AlignCenter)
-
+        # Populate dynamic information layout
         for i, (label_text, var_name, unit) in enumerate(data_items):
             label = QLabel(label_text)
             label.setFont(font_label)
             label.setStyleSheet("color: black;")
+            label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)  # Allow label to expand
             value_label = QLabel()
             value_label.setFont(font_value)
-
             value_label.setStyleSheet("color: black;")
-            dynamic_info_layout.addWidget(label, i + 1, 0, alignment=Qt.AlignmentFlag.AlignRight)
-            dynamic_info_layout.addWidget(value_label, i + 1, 1, alignment=Qt.AlignmentFlag.AlignLeft)
+            dynamic_info_layout.addWidget(label, i, 0, alignment=Qt.AlignmentFlag.AlignRight)
+            dynamic_info_layout.addWidget(value_label, i, 1, alignment=Qt.AlignmentFlag.AlignLeft)
             self.value_labels[var_name] = value_label
             self.value_labels[var_name].setMaximumHeight(30)
             label.setMaximumHeight(30)
@@ -269,10 +447,10 @@ class TrainModelPage(BasePage):
         data_layout.addWidget(dynamic_info_label)
         data_layout.addLayout(dynamic_info_layout)
 
-        # Add vertical spacer of 20 pixels
-        data_layout.addSpacing(80)
+        # Reduce the vertical spacing between the tables
+        data_layout.addSpacing(20)  # Reduced from 80 to 20
 
-        # Static Information Table (Updated to match dynamic info table)
+        # Static Information Table
         static_info_layout = QGridLayout()
         static_info_layout.setVerticalSpacing(0)  # Reduced line spacing
         static_info_layout.setHorizontalSpacing(50)  # Increase spacing between labels and values
@@ -280,27 +458,25 @@ class TrainModelPage(BasePage):
 
         static_data_items = [
             ("Cars", "static_cars", ""),
-            ("Length", "static_length", "ft."),
-            ("Width", "static_width", "ft."),
-            ("Height", "static_height", "ft."),
+            ("Length", "static_length", "ft"),
+            ("Width", "static_width", "ft"),
+            ("Height", "static_height", "ft"),
             ("Empty Train Wt.", "static_empty_train_weight", "t"),
         ]
 
         self.static_value_labels = {}
 
-        # Add column headers
-        static_info_layout.addWidget(QLabel("Element Name"), 0, 0, alignment=Qt.AlignmentFlag.AlignCenter)
-        static_info_layout.addWidget(QLabel("Train 1"), 0, 1, alignment=Qt.AlignmentFlag.AlignCenter)
-
+        # Populate static information layout
         for i, (label_text, var_name, unit) in enumerate(static_data_items):
             label = QLabel(label_text)
             label.setFont(font_label)
             label.setStyleSheet("color: black;")
+            label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)  # Allow label to expand
             value_label = QLabel()
             value_label.setFont(font_value)
             value_label.setStyleSheet("color: black;")
-            static_info_layout.addWidget(label, i + 1, 0, alignment=Qt.AlignmentFlag.AlignRight)
-            static_info_layout.addWidget(value_label, i + 1, 1, alignment=Qt.AlignmentFlag.AlignLeft)
+            static_info_layout.addWidget(label, i, 0, alignment=Qt.AlignmentFlag.AlignRight)
+            static_info_layout.addWidget(value_label, i, 1, alignment=Qt.AlignmentFlag.AlignLeft)
             self.static_value_labels[var_name] = value_label
             self.static_value_labels[var_name].setMaximumHeight(30)
             label.setMaximumHeight(30)
@@ -314,13 +490,18 @@ class TrainModelPage(BasePage):
         data_layout.addWidget(static_info_label)
         data_layout.addLayout(static_info_layout)
 
-        # Wrap the data_layout in a widget with a border
-        data_widget = QWidget()
+        # Wrap the data_layout in a QFrame with a black border
+        data_widget = QFrame()
         data_widget.setLayout(data_layout)
+        data_widget.setFrameShape(QFrame.Shape.Panel)
+        data_widget.setFrameShadow(QFrame.Shadow.Plain)
+        data_widget.setLineWidth(2)
+        data_widget.setMidLineWidth(0)
         data_widget.setStyleSheet("""
-            QWidget {
-                border: 2px solid black;
+            QFrame {
                 padding: 5px;
+                max-width: 400px;  /* Increased width to allow for longer labels */
+                border: 2px solid black;  /* Set border to black */
             }
             QLabel {
                 border: none;
@@ -362,19 +543,15 @@ class TrainModelPage(BasePage):
 
         # Passenger Emergency Brake button (blood red background)
         self.passenger_emergency_brake_button.setStyleSheet("""
-            background-color: #8B0000;
-            color: black;
-            font-weight: bold;
+            QPushButton {
+                background-color: #8B0000;
+                color: black;
+                font-weight: bold;
+            }
         """)
         self.passenger_emergency_brake_button.setFixedSize(440, 190)  # Made the panic button bigger
-        self.passenger_emergency_brake_button.setEnabled(False)
-
-        # Disable buttons in TrainModelPage
-        self.interior_light_button.setEnabled(False)
-        self.exterior_light_button.setEnabled(False)
-        self.left_door_button.setEnabled(False)
-        self.right_door_button.setEnabled(False)
-        self.passenger_emergency_brake_button.setEnabled(False)
+        self.passenger_emergency_brake_button.setEnabled(True)
+        self.passenger_emergency_brake_button.clicked.connect(self.passenger_emergency_brake_pressed)
 
         # Add buttons to vertical layout
         buttons_layout.addWidget(self.interior_light_button)
@@ -423,10 +600,40 @@ class TrainModelPage(BasePage):
         # Add scroll area to content_layout
         self.content_layout.addWidget(scroll_area)
 
+        # -------------------- Added Advertisement Square Below --------------------
+        # Add a stretch to push the advertisement to the bottom
+        self.content_layout.addStretch()
+
+        # Create the advertisement square
+        advertisement_widget = QFrame()
+        advertisement_widget.setFixedSize(500, 100)  # Adjust size as needed
+        advertisement_widget.setStyleSheet("border: 2px solid black;")
+        ad_layout = QVBoxLayout()
+        ad_label = QLabel("ADVERTISEMENT HERE")
+        ad_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        ad_label.setFont(QFont('Arial', 20, QFont.Weight.Bold))
+        ad_label.setStyleSheet("color: black;")
+        ad_layout.addWidget(ad_label)
+        advertisement_widget.setLayout(ad_layout)
+
+        # Add advertisement_widget to content_layout centered
+        self.content_layout.addWidget(advertisement_widget, alignment=Qt.AlignmentFlag.AlignCenter)
+        # ---------------------------------------------------------------------------
+
         # Connect data changed signal
         self.train_data.data_changed.connect(self.update_display)
 
         # Initial display update
+        self.update_display()
+
+    def set_train_data(self, train_data):
+        # Disconnect previous train_data signal
+        try:
+            self.train_data.data_changed.disconnect(self.update_display)
+        except:
+            pass
+        self.train_data = train_data
+        self.train_data.data_changed.connect(self.update_display)
         self.update_display()
 
     def set_light_button_style(self, button, is_on, label, font, size):
@@ -456,9 +663,9 @@ class TrainModelPage(BasePage):
             'maximum_speed': 'mph',
             'current_speed': 'mph',
             'total_car_weight': 't',
-            'train_length': 'm',
-            'train_height': 'm',
-            'train_width': 'm',
+            'train_length': 'ft',
+            'train_height': 'ft',
+            'train_width': 'ft',
             'number_of_cars': '',
             'single_car_tare_weight': 't',
             'current_acceleration': 'ft/s²',
@@ -468,9 +675,9 @@ class TrainModelPage(BasePage):
             'current_train_weight': 't',
             # Static units
             'static_cars': '',
-            'static_length': 'ft.',
-            'static_width': 'ft.',
-            'static_height': 'ft.',
+            'static_length': 'ft',
+            'static_width': 'ft',
+            'static_height': 'ft',
             'static_empty_train_weight': 't',
         }
         return units.get(var_name, '')
@@ -480,14 +687,20 @@ class TrainModelPage(BasePage):
         for var_name, label in self.value_labels.items():
             value = getattr(self.train_data, var_name)
             unit = self.get_unit(var_name)
-            value_text = f"{value} {unit}".strip()
+            if isinstance(value, int):
+                value_text = f"{value} {unit}".strip()
+            else:
+                value_text = f"{value:.2f} {unit}".strip()
             label.setText(value_text)
 
         # Update static information
         for var_name, label in self.static_value_labels.items():
             value = getattr(self.train_data, var_name)
             unit = self.get_unit(var_name)
-            value_text = f"{value} {unit}".strip()
+            if isinstance(value, int):
+                value_text = f"{value} {unit}".strip()
+            else:
+                value_text = f"{value:.2f} {unit}".strip()
             label.setText(value_text)
 
         # Update the announcement text
@@ -500,6 +713,18 @@ class TrainModelPage(BasePage):
         self.set_light_button_style(self.exterior_light_button, self.train_data.exterior_light_on, "Exterior Light", button_font, button_size)
         self.set_door_button_style(self.left_door_button, self.train_data.left_door_open, "Left Door", button_font, button_size)
         self.set_door_button_style(self.right_door_button, self.train_data.right_door_open, "Right Door", button_font, button_size)
+
+
+    def passenger_emergency_brake_pressed(self):
+        # Update the passenger emergency brake state
+        self.train_data.set_value('passenger_emergency_brake', True)
+        # Darken the color of the button
+        self.passenger_emergency_brake_button.setStyleSheet("""
+            background-color: #550000;  /* Darker red */
+            color: black;
+            font-weight: bold;
+        """)
+
 
 class AnnouncementDialog(QDialog):
     def __init__(self, parent=None):
@@ -518,18 +743,116 @@ class AnnouncementDialog(QDialog):
         self.text_edit.setStyleSheet("color: black;")
         layout.addWidget(self.text_edit)
 
-        # OK Button
+        # Current Commanded Power Display
+        self.current_power_label = QLabel(f"Current Commanded Power: {self.parent().train_data.commanded_power} kW")
+        self.current_power_label.setFont(QFont('Arial', 14))
+        self.current_power_label.setStyleSheet("color: black;")
+        layout.addWidget(self.current_power_label)
+
+        # OK Button with white background and black text
         self.ok_button = QPushButton("OK")
         self.ok_button.setFont(QFont('Arial', 14))
-        self.ok_button.setStyleSheet("color: black;")
+        self.ok_button.setStyleSheet("""
+            QPushButton {
+                background-color: white;
+                color: black;
+                border: 2px solid black;
+                border-radius: 5px;
+                padding: 5px 15px;
+            }
+            QPushButton:hover {
+                background-color: #f0f0f0;
+            }
+        """)
         self.ok_button.clicked.connect(self.accept)
         layout.addWidget(self.ok_button, alignment=Qt.AlignmentFlag.AlignCenter)
 
         self.setLayout(layout)
 
+    def get_announcement(self):
+        return self.text_edit.text()
+
+
+class SetCommandedPowerDialog(QDialog):
+    def __init__(self, parent=None, current_power=0):
+        super().__init__(parent)
+        self.setWindowTitle("Set Commanded Power")
+        self.setFixedSize(400, 200)
+
+        layout = QVBoxLayout()
+
+        # Current Commanded Power Display
+        self.current_power_label = QLabel(f"Current Commanded Power: {current_power} kW")
+        self.current_power_label.setFont(QFont('Arial', 14))
+        self.current_power_label.setStyleSheet("color: black;")
+        layout.addWidget(self.current_power_label, alignment=Qt.AlignmentFlag.AlignCenter)
+
+        # Input Field
+        self.label = QLabel("Enter the Commanded Power (kW):")
+        self.label.setFont(QFont('Arial', 14))
+        self.label.setStyleSheet("color: black;")
+        layout.addWidget(self.label, alignment=Qt.AlignmentFlag.AlignCenter)
+
+        self.power_edit = QLineEdit(str(current_power))
+        self.power_edit.setFont(QFont('Arial', 14))
+        self.power_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.power_edit.setStyleSheet("color: black;")
+        layout.addWidget(self.power_edit, alignment=Qt.AlignmentFlag.AlignCenter)
+
+        # Buttons layout
+        buttons_layout = QHBoxLayout()
+        self.ok_button = QPushButton("OK")
+        self.ok_button.setFont(QFont('Arial', 12, QFont.Weight.Bold))
+        self.ok_button.setStyleSheet("""
+            QPushButton {
+                background-color: white;
+                color: black;
+                border: 2px solid black;
+                border-radius: 5px;
+                padding: 5px 15px;
+            }
+            QPushButton:hover {
+                background-color: #f0f0f0;
+            }
+        """)
+        self.ok_button.clicked.connect(self.accept)
+
+        self.cancel_button = QPushButton("Cancel")
+        self.cancel_button.setFont(QFont('Arial', 12, QFont.Weight.Bold))
+        self.cancel_button.setStyleSheet("""
+            QPushButton {
+                background-color: white;
+                color: black;
+                border: 2px solid black;
+                border-radius: 5px;
+                padding: 5px 15px;
+            }
+            QPushButton:hover {
+                background-color: #f0f0f0;
+            }
+        """)
+        self.cancel_button.clicked.connect(self.reject)
+
+        buttons_layout.addWidget(self.ok_button)
+        buttons_layout.addWidget(self.cancel_button)
+
+        layout.addLayout(buttons_layout)
+
+        self.setLayout(layout)
+
+    def get_commanded_power(self):
+        try:
+            power = float(self.power_edit.text())
+            if power < 0:
+                raise ValueError
+            return power
+        except ValueError:
+            return None  # Invalid input
+
+
 class TestBenchPage(BasePage):
-    def __init__(self, train_data):
-        super().__init__("Test Bench")
+    def __init__(self, train_data, train_id_callback):
+        super().__init__("                                 Test Bench", train_id_callback)
         self.train_data = train_data  # Store the train data
 
         # Create a scroll area
@@ -567,17 +890,17 @@ class TestBenchPage(BasePage):
 
         tc_input_layout = QGridLayout()
         tc_input_layout.setSpacing(5)
+        tc_input_layout.setHorizontalSpacing(10)  # Adjusted horizontal spacing
         tc_input_layout.setContentsMargins(0, 0, 0, 0)
 
         tc_data_items = [
-            ("Commanded Power", "commanded_power", "kw"),
-            ("Commanded Speed", "commanded_speed_tc", "km/h"),
-            ("Authority", "authority", "m"),
+            ("Commanded Power(kw)", "commanded_power"),
+            ("Commanded Speed(km/h)", "commanded_speed_tc"),
+            ("Authority(m)", "authority"),
             ("Service Brake", "service_brake"),
-            ("Train Light", "train_light"),
-            ("Train Horn", "train_horn"),
+            ("Exterior Light", "exterior_light"),
+            ("Interior Light", "interior_light"),
             ("Emergency Brake", "emergency_brake"),
-            ("Direction Control", "direction_control", ["Forward", "Reverse"]),
             ("Beacon", "beacon"),
         ]
 
@@ -586,7 +909,7 @@ class TestBenchPage(BasePage):
             label.setFont(self.font_label)
             label.setStyleSheet("color: black;")
 
-            if var_name in ["service_brake", "train_light", "train_horn", "emergency_brake"]:
+            if var_name in ["service_brake", "exterior_light", "interior_light", "emergency_brake"]:
                 # Use a button for ON/OFF
                 button = QPushButton("OFF")
                 button.setCheckable(True)
@@ -600,46 +923,57 @@ class TestBenchPage(BasePage):
                 unit_label.setStyleSheet("color: black;")
                 tc_input_layout.addWidget(unit_label, i, 2, alignment=Qt.AlignmentFlag.AlignLeft)
                 self.tc_edit_fields[var_name] = button
-            elif var_name == "direction_control":
-                # Use combo box for direction
-                options = rest[0]
-                combo_box = QComboBox()
-                combo_box.addItems(options)
-                combo_box.setCurrentText(getattr(self.train_data, var_name))
-                combo_box.setFont(self.font_value)
-                combo_box.setStyleSheet("color: black;")
-                combo_box.currentTextChanged.connect(lambda text, var=var_name: self.update_train_data(var, text))
-                tc_input_layout.addWidget(label, i, 0, alignment=Qt.AlignmentFlag.AlignLeft)
-                tc_input_layout.addWidget(combo_box, i, 1, alignment=Qt.AlignmentFlag.AlignLeft)
-                unit_label = QLabel("")
-                tc_input_layout.addWidget(unit_label, i, 2)
-                self.tc_edit_fields[var_name] = combo_box
             elif var_name == "beacon":
-                # Use two combo boxes for beacon
-                action_combo = QComboBox()
-                action_combo.addItems(["We are approaching to", "We are locating at"])
+                # Use a combo box for beacon with "We are approaching"
                 station_combo = QComboBox()
-                station_combo.addItems(["station Alpha", "station Beta", "station Delta"])
-                action_combo.setFont(self.font_value)
+                station_combo.addItems(["Station Alpha", "Station Beta", "Station Delta"])
+                station_combo.setCurrentText(self.train_data.beacon_station)
                 station_combo.setFont(self.font_value)
-                action_combo.setStyleSheet("color: black;")
                 station_combo.setStyleSheet("color: black;")
-                action_combo.currentIndexChanged.connect(self.update_beacon)
-                station_combo.currentIndexChanged.connect(self.update_beacon)
+                station_combo.currentTextChanged.connect(self.update_beacon)
                 tc_input_layout.addWidget(label, i, 0, alignment=Qt.AlignmentFlag.AlignLeft)
+
                 beacon_layout = QHBoxLayout()
-                beacon_layout.addWidget(action_combo)
+                prefix_label = QLabel("We are approaching")
+                prefix_label.setFont(self.font_value)
+                prefix_label.setStyleSheet("color: black;")
+                beacon_layout.addWidget(prefix_label)
                 beacon_layout.addWidget(station_combo)
+
                 tc_input_layout.addLayout(beacon_layout, i, 1)
                 unit_label = QLabel("")
-                tc_input_layout.addWidget(unit_label, i, 2)
-                self.tc_edit_fields["beacon_action"] = action_combo
+                tc_input_layout.addWidget(unit_label, i, 2, alignment=Qt.AlignmentFlag.AlignLeft)
                 self.tc_edit_fields["beacon_station"] = station_combo
+            elif var_name == "commanded_power":
+                # Replace QLineEdit and OK button with a single button to open a popup
+                set_power_button = QPushButton("Set Commanded Power")
+                set_power_button.setFont(self.font_value)
+                set_power_button.setFixedWidth(200)
+                set_power_button.setStyleSheet("""
+                    QPushButton {
+                        background-color: #2196F3;
+                        color: white;
+                        border-radius: 5px;
+                        padding: 5px 10px;
+                    }
+                    QPushButton:hover {
+                        background-color: #0b7dda;
+                    }
+                """)
+                set_power_button.clicked.connect(self.open_set_commanded_power_dialog)
+                tc_input_layout.addWidget(label, i, 0, alignment=Qt.AlignmentFlag.AlignLeft)
+                tc_input_layout.addWidget(set_power_button, i, 1, alignment=Qt.AlignmentFlag.AlignLeft)
+                unit_label = QLabel(rest[0] if rest else "")
+                unit_label.setFont(self.font_label)
+                unit_label.setStyleSheet("color: black;")
+                tc_input_layout.addWidget(unit_label, i, 2, alignment=Qt.AlignmentFlag.AlignLeft)
+                self.tc_edit_fields[var_name] = set_power_button
             else:
                 # Numeric inputs
                 value = getattr(self.train_data, var_name)
                 value_edit = QLineEdit(str(value))
                 value_edit.setFont(self.font_value)
+                value_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Centered text
                 value_edit.setMaximumWidth(80)
                 value_edit.setStyleSheet("color: black;")
                 value_edit.editingFinished.connect(lambda var=var_name, edit=value_edit: self.update_train_data(var, edit.text()))
@@ -648,6 +982,7 @@ class TestBenchPage(BasePage):
                 unit_label = QLabel(rest[0] if rest else "")
                 unit_label.setFont(self.font_label)
                 unit_label.setStyleSheet("color: black;")
+                # Adjust unit label position
                 tc_input_layout.addWidget(unit_label, i, 2, alignment=Qt.AlignmentFlag.AlignLeft)
                 self.tc_edit_fields[var_name] = value_edit
 
@@ -669,15 +1004,15 @@ class TestBenchPage(BasePage):
 
         cabin_control_layout = QGridLayout()
         cabin_control_layout.setSpacing(5)
+        cabin_control_layout.setHorizontalSpacing(10)  # Adjusted horizontal spacing
         cabin_control_layout.setContentsMargins(0, 0, 0, 0)
 
         cabin_data_items = [
-            ("Temperature Commanded", "temperature_commanded", "°F"),
-            ("Cabin Light", "cabin_light"),
+            ("Desired Temperature", "desired_temperature", "°F"),
             ("Train Left Door", "train_left_door"),
             ("Train Right Door", "train_right_door"),
-            ("Passenger Brake", "passenger_brake"),
             ("Advertisement", "advertisement", ["Picture1", "Picture2", "Picture3"]),
+            ("Passenger Boarding", "passenger_boarding", ""),
         ]
 
         for i, (label_text, var_name, *rest) in enumerate(cabin_data_items):
@@ -685,7 +1020,7 @@ class TestBenchPage(BasePage):
             label.setFont(self.font_label)
             label.setStyleSheet("color: black;")
 
-            if var_name in ["cabin_light", "train_left_door", "train_right_door", "passenger_brake"]:
+            if var_name in ["train_left_door", "train_right_door"]:
                 # Use a button for ON/OFF
                 button = QPushButton("OFF")
                 button.setCheckable(True)
@@ -711,20 +1046,69 @@ class TestBenchPage(BasePage):
                 unit_label = QLabel("")
                 cabin_control_layout.addWidget(unit_label, i, 2)
                 self.cabin_edit_fields[var_name] = combo_box
-            else:
-                # Numeric inputs
+            elif var_name == "passenger_boarding":
+                # Numeric input with OK button
                 value = getattr(self.train_data, var_name)
                 value_edit = QLineEdit(str(value))
                 value_edit.setFont(self.font_value)
+                value_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Centered text
                 value_edit.setMaximumWidth(80)
                 value_edit.setStyleSheet("color: black;")
-                value_edit.editingFinished.connect(lambda var=var_name, edit=value_edit: self.update_train_data(var, edit.text()))
+                # Do not connect editingFinished
                 cabin_control_layout.addWidget(label, i, 0, alignment=Qt.AlignmentFlag.AlignLeft)
-                cabin_control_layout.addWidget(value_edit, i, 1, alignment=Qt.AlignmentFlag.AlignLeft)
+
+                # Create a horizontal layout for input field and OK button
+                input_layout = QHBoxLayout()
+                input_layout.setContentsMargins(0, 0, 0, 0)
+                input_layout.setSpacing(5)
+                input_layout.addWidget(value_edit)
+
+                ok_button = QPushButton("OK")
+                ok_button.setFont(self.font_value)
+                ok_button.setFixedWidth(50)
+                ok_button.setStyleSheet("""
+                    QPushButton {
+                        color: black;
+                        border: 2px solid black;
+                        font-weight: bold;
+                    }
+                    QPushButton:hover {
+                        background-color: #E0E0E0;
+                    }
+                """)
+                ok_button.clicked.connect(lambda _, var=var_name, edit=value_edit: self.update_passenger_boarding(var, edit.text()))
+                input_layout.addWidget(ok_button)
+
+                cabin_control_layout.addLayout(input_layout, i, 1)
+
                 unit_label = QLabel(rest[0] if rest else "")
                 unit_label.setFont(self.font_label)
                 unit_label.setStyleSheet("color: black;")
                 cabin_control_layout.addWidget(unit_label, i, 2, alignment=Qt.AlignmentFlag.AlignLeft)
+                self.cabin_edit_fields[var_name] = value_edit
+            else:
+                # Numeric inputs with unit label next to input field
+                value = getattr(self.train_data, var_name)
+                value_edit = QLineEdit(str(value))
+                value_edit.setFont(self.font_value)
+                value_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Centered text
+                value_edit.setMaximumWidth(80)
+                value_edit.setStyleSheet("color: black;")
+                value_edit.editingFinished.connect(lambda var=var_name, edit=value_edit: self.update_train_data(var, edit.text()))
+                cabin_control_layout.addWidget(label, i, 0, alignment=Qt.AlignmentFlag.AlignLeft)
+
+                # Create a horizontal layout for input field and unit label
+                input_layout = QHBoxLayout()
+                input_layout.setContentsMargins(0, 0, 0, 0)
+                input_layout.setSpacing(5)
+                input_layout.addWidget(value_edit)
+
+                unit_label = QLabel(rest[0] if rest else "")
+                unit_label.setFont(self.font_label)
+                unit_label.setStyleSheet("color: black;")
+                input_layout.addWidget(unit_label)
+
+                cabin_control_layout.addLayout(input_layout, i, 1)
                 self.cabin_edit_fields[var_name] = value_edit
 
         cabin_section_layout.addWidget(cabin_title)
@@ -774,76 +1158,142 @@ class TestBenchPage(BasePage):
         # Initialize button states
         self.update_button_states()
 
+        # Update the displays when data changes
+        self.train_data.data_changed.connect(self.update_display)
+
+    def set_train_data(self, train_data):
+        # Disconnect previous train_data signal
+        try:
+            self.train_data.data_changed.disconnect(self.update_display)
+        except:
+            pass
+        self.train_data = train_data
+        self.train_data.data_changed.connect(self.update_display)
+        self.update_button_states()
+
     def toggle_on_off(self, var_name, button):
         is_on = button.isChecked()
         button.setText("ON" if is_on else "OFF")
+        # Use the same green color as in Train Model page
         button.setStyleSheet(f"""
             QPushButton {{
                 background-color: {'green' if is_on else 'lightgray'};
                 color: black;
+                font-weight: bold;
             }}
         """)
         self.train_data.set_value(var_name, is_on)
         # Map variables with different names
-        if var_name == 'cabin_light':
+        if var_name == 'interior_light':
             self.train_data.set_value('interior_light_on', is_on)
-        elif var_name == 'train_light':
+        elif var_name == 'exterior_light':
             self.train_data.set_value('exterior_light_on', is_on)
         elif var_name == 'train_left_door':
             self.train_data.set_value('left_door_open', is_on)
         elif var_name == 'train_right_door':
             self.train_data.set_value('right_door_open', is_on)
-        elif var_name == 'passenger_brake':
-            self.train_data.set_value('passenger_emergency_brake', is_on)
+        elif var_name in ['service_brake', 'emergency_brake']:
+            # Update train state when brakes are applied
+            self.train_data.set_value(var_name, is_on)
+            self.update_display()
+
+    def open_set_commanded_power_dialog(self):
+        dialog = SetCommandedPowerDialog(self, current_power=self.train_data.commanded_power)
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            new_power = dialog.get_commanded_power()
+            if new_power is not None:
+                self.train_data.set_value('commanded_power', new_power)
+            else:
+                # Handle invalid input if necessary
+                pass
 
     def update_train_data(self, var_name, value):
         # Update the variable in train_data
         try:
             # Convert to appropriate type
-            if var_name in ['commanded_power', 'commanded_speed_tc', 'authority', 'temperature_commanded']:
+            if var_name in ['commanded_speed_tc', 'authority', 'desired_temperature', 'passenger_boarding']:
                 current_value = getattr(self.train_data, var_name)
                 if isinstance(current_value, int):
                     value = int(value)
                 elif isinstance(current_value, float):
                     value = float(value)
             self.train_data.set_value(var_name, value)
-            # Map variables with different names
+            # Map variables with different names and perform unit conversions
             if var_name == 'commanded_speed_tc':
-                self.train_data.set_value('commanded_speed', value)
+                self.train_data.set_value('commanded_speed_tc', value)
+                # Commanded Speed is updated via set_value method
             elif var_name == 'authority':
-                self.train_data.set_value('commanded_authority', value)
-            elif var_name == 'temperature_commanded':
+                # Convert meters to feet
+                value_ft = float(value) * 3.28084
+                self.train_data.set_value('commanded_authority', value_ft)
+            elif var_name == 'desired_temperature':
+                # Update actual temperature
                 self.train_data.set_value('cabin_temperature', value)
         except ValueError:
             pass  # Handle invalid input as desired
 
-    def update_beacon(self):
-        action = self.tc_edit_fields["beacon_action"].currentText()
-        station = self.tc_edit_fields["beacon_station"].currentText()
-        beacon_text = f"{action} {station}"
+    def update_commanded_power(self, var_name, value):
+        # This method is no longer needed as commanded power is set via popup
+        pass
+
+    def update_passenger_boarding(self, var_name, value):
+        # Update passenger boarding and add to passenger count
+        try:
+            value = int(value)
+            self.train_data.passenger_boarding = value
+            # Add passenger_boarding to passenger_count
+            self.train_data.passenger_count += self.train_data.passenger_boarding
+            self.train_data.passenger_boarding = 0  # Reset passenger_boarding to 0
+            self.train_data.update_train_weight()
+            self.update_display()
+        except ValueError:
+            pass  # Handle invalid input
+
+    def update_beacon(self, station):
+        beacon_text = f"We are approaching {station}"
+        self.train_data.set_value('beacon_station', station)
         self.train_data.set_value('beacon', beacon_text)
 
     def open_announcement_dialog(self):
         dialog = AnnouncementDialog(self)
         if dialog.exec() == QDialog.DialogCode.Accepted:
-            announcement = dialog.text_edit.text()
+            announcement = dialog.get_announcement()
             self.train_data.set_value('announcement', announcement)
 
     def update_button_states(self):
         # Initialize button states based on train_data
         for var_name, button in self.tc_edit_fields.items():
-            if var_name in ["service_brake", "train_light", "train_horn", "emergency_brake"]:
+            if var_name in ["service_brake", "exterior_light", "interior_light", "emergency_brake"]:
                 is_on = getattr(self.train_data, var_name)
                 button.setChecked(is_on)
                 button.setText("ON" if is_on else "OFF")
+                # Use the same green color as in Train Model page
                 button.setStyleSheet(f"""
                     QPushButton {{
                         background-color: {'green' if is_on else 'lightgray'};
                         color: black;
+                        font-weight: bold;
                     }}
                 """)
         for var_name, button in self.cabin_edit_fields.items():
-            if var_name in ["cabin_light", "train_left_door", "train_right_door", "passenger_brake"]:
+            if var_name in ["train_left_door", "train_right_door"]:
+                is_on = getattr(self.train_data, var_name)
+                button.setChecked(is_on)
+                button.setText("ON" if is_on else "OFF")
+                # Use the same green color as in Train Model page
+                button.setStyleSheet(f"""
+                    QPushButton {{
+                        background-color: {'green' if is_on else 'lightgray'};
+                        color: black;
+                        font-weight: bold;
+                    }}
+                """)
+
+    def update_display(self):
+        # Update the state of the brake buttons
+        for var_name in ['service_brake', 'emergency_brake']:
+            button = self.tc_edit_fields.get(var_name)
+            if button:
                 is_on = getattr(self.train_data, var_name)
                 button.setChecked(is_on)
                 button.setText("ON" if is_on else "OFF")
@@ -851,18 +1301,437 @@ class TestBenchPage(BasePage):
                     QPushButton {{
                         background-color: {'green' if is_on else 'lightgray'};
                         color: black;
+                        font-weight: bold;
                     }}
                 """)
+
+
+class TestBenchPage(BasePage):
+    def __init__(self, train_data, train_id_callback):
+        super().__init__("                                 Test Bench", train_id_callback)
+        self.train_data = train_data  # Store the train data
+
+        # Create a scroll area
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+
+        # Main content widget and vertical layout inside scroll area
+        content_widget = QWidget()
+        content_widget.setStyleSheet("background-color: #F5F5F5;")
+
+        main_vertical_layout = QVBoxLayout()
+        main_vertical_layout.setContentsMargins(10, 0, 10, 10)
+        main_vertical_layout.setSpacing(5)
+        main_vertical_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+
+        self.font_label = QFont('Arial', 13)  # Increased by 1
+        self.font_label.setBold(True)
+        self.font_value = QFont('Arial', 13)  # Increased by 1
+
+        self.tc_edit_fields = {}
+        self.cabin_edit_fields = {}
+
+        # Main horizontal layout to place tables side by side
+        main_horizontal_layout = QHBoxLayout()
+        main_horizontal_layout.setSpacing(20)
+
+        # Train Control Input Section
+        tc_section_layout = QVBoxLayout()
+        tc_section_layout.setSpacing(5)
+
+        tc_title = QLabel("Train Control Input")
+        tc_title.setFont(QFont('Arial', 17, QFont.Weight.Bold))  # Increased by 1
+        tc_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        tc_title.setStyleSheet("color: black;")
+
+        tc_input_layout = QGridLayout()
+        tc_input_layout.setSpacing(5)
+        tc_input_layout.setHorizontalSpacing(10)  # Adjusted horizontal spacing
+        tc_input_layout.setContentsMargins(0, 0, 0, 0)
+
+        tc_data_items = [
+            ("Commanded Power(kw)", "commanded_power"),
+            ("Commanded Speed(km/h)", "commanded_speed_tc"),
+            ("Authority(m)", "authority"),
+            ("Service Brake", "service_brake"),
+            ("Exterior Light", "exterior_light"),
+            ("Interior Light", "interior_light"),
+            ("Emergency Brake", "emergency_brake"),
+            ("Beacon", "beacon"),
+        ]
+
+        for i, (label_text, var_name, *rest) in enumerate(tc_data_items):
+            label = QLabel(label_text)
+            label.setFont(self.font_label)
+            label.setStyleSheet("color: black;")
+
+            if var_name in ["service_brake", "exterior_light", "interior_light", "emergency_brake"]:
+                # Use a button for ON/OFF
+                button = QPushButton("OFF")
+                button.setCheckable(True)
+                button.setFont(self.font_value)
+                button.setFixedWidth(80)
+                button.clicked.connect(lambda checked, var=var_name, btn=button: self.toggle_on_off(var, btn))
+                tc_input_layout.addWidget(label, i, 0, alignment=Qt.AlignmentFlag.AlignLeft)
+                tc_input_layout.addWidget(button, i, 1, alignment=Qt.AlignmentFlag.AlignLeft)
+                unit_label = QLabel(rest[0] if rest else "")
+                unit_label.setFont(self.font_label)
+                unit_label.setStyleSheet("color: black;")
+                tc_input_layout.addWidget(unit_label, i, 2, alignment=Qt.AlignmentFlag.AlignLeft)
+                self.tc_edit_fields[var_name] = button
+            elif var_name == "beacon":
+                # Use a combo box for beacon with "We are approaching"
+                station_combo = QComboBox()
+                station_combo.addItems(["Station Alpha", "Station Beta", "Station Delta"])
+                station_combo.setCurrentText(self.train_data.beacon_station)
+                station_combo.setFont(self.font_value)
+                station_combo.setStyleSheet("color: black;")
+                station_combo.currentTextChanged.connect(self.update_beacon)
+                tc_input_layout.addWidget(label, i, 0, alignment=Qt.AlignmentFlag.AlignLeft)
+
+                beacon_layout = QHBoxLayout()
+                prefix_label = QLabel("We are approaching")
+                prefix_label.setFont(self.font_value)
+                prefix_label.setStyleSheet("color: black;")
+                beacon_layout.addWidget(prefix_label)
+                beacon_layout.addWidget(station_combo)
+
+                tc_input_layout.addLayout(beacon_layout, i, 1)
+                unit_label = QLabel("")
+                tc_input_layout.addWidget(unit_label, i, 2, alignment=Qt.AlignmentFlag.AlignLeft)
+                self.tc_edit_fields["beacon_station"] = station_combo
+            elif var_name == "commanded_power":
+                # Replace QLineEdit and OK button with a single button to open a popup
+                set_power_button = QPushButton("Set Commanded Power")
+                set_power_button.setFont(self.font_value)
+                set_power_button.setFixedWidth(200)
+                set_power_button.setStyleSheet("""
+                    QPushButton {
+                        background-color: #2196F3;
+                        color: white;
+                        border-radius: 5px;
+                        padding: 5px 10px;
+                    }
+                    QPushButton:hover {
+                        background-color: #0b7dda;
+                    }
+                """)
+                set_power_button.clicked.connect(self.open_set_commanded_power_dialog)
+                tc_input_layout.addWidget(label, i, 0, alignment=Qt.AlignmentFlag.AlignLeft)
+                tc_input_layout.addWidget(set_power_button, i, 1, alignment=Qt.AlignmentFlag.AlignLeft)
+                unit_label = QLabel(rest[0] if rest else "")
+                unit_label.setFont(self.font_label)
+                unit_label.setStyleSheet("color: black;")
+                tc_input_layout.addWidget(unit_label, i, 2, alignment=Qt.AlignmentFlag.AlignLeft)
+                self.tc_edit_fields[var_name] = set_power_button
+            else:
+                # Numeric inputs
+                value = getattr(self.train_data, var_name)
+                value_edit = QLineEdit(str(value))
+                value_edit.setFont(self.font_value)
+                value_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Centered text
+                value_edit.setMaximumWidth(80)
+                value_edit.setStyleSheet("color: black;")
+                value_edit.editingFinished.connect(lambda var=var_name, edit=value_edit: self.update_train_data(var, edit.text()))
+                tc_input_layout.addWidget(label, i, 0, alignment=Qt.AlignmentFlag.AlignLeft)
+                tc_input_layout.addWidget(value_edit, i, 1, alignment=Qt.AlignmentFlag.AlignLeft)
+                unit_label = QLabel(rest[0] if rest else "")
+                unit_label.setFont(self.font_label)
+                unit_label.setStyleSheet("color: black;")
+                # Adjust unit label position
+                tc_input_layout.addWidget(unit_label, i, 2, alignment=Qt.AlignmentFlag.AlignLeft)
+                self.tc_edit_fields[var_name] = value_edit
+
+        tc_section_layout.addWidget(tc_title)
+        tc_section_layout.addLayout(tc_input_layout)
+
+        # Train Control Input Widget
+        tc_input_widget = QWidget()
+        tc_input_widget.setLayout(tc_section_layout)
+
+        # Cabin Control Section
+        cabin_section_layout = QVBoxLayout()
+        cabin_section_layout.setSpacing(5)
+
+        cabin_title = QLabel("Cabin Control")
+        cabin_title.setFont(QFont('Arial', 17, QFont.Weight.Bold))  # Increased by 1
+        cabin_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        cabin_title.setStyleSheet("color: black;")
+
+        cabin_control_layout = QGridLayout()
+        cabin_control_layout.setSpacing(5)
+        cabin_control_layout.setHorizontalSpacing(10)  # Adjusted horizontal spacing
+        cabin_control_layout.setContentsMargins(0, 0, 0, 0)
+
+        cabin_data_items = [
+            ("Desired Temperature", "desired_temperature", "°F"),
+            ("Train Left Door", "train_left_door"),
+            ("Train Right Door", "train_right_door"),
+            ("Advertisement", "advertisement", ["Picture1", "Picture2", "Picture3"]),
+            ("Passenger Boarding", "passenger_boarding", ""),
+        ]
+
+        for i, (label_text, var_name, *rest) in enumerate(cabin_data_items):
+            label = QLabel(label_text)
+            label.setFont(self.font_label)
+            label.setStyleSheet("color: black;")
+
+            if var_name in ["train_left_door", "train_right_door"]:
+                # Use a button for ON/OFF
+                button = QPushButton("OFF")
+                button.setCheckable(True)
+                button.setFont(self.font_value)
+                button.setFixedWidth(80)
+                button.clicked.connect(lambda checked, var=var_name, btn=button: self.toggle_on_off(var, btn))
+                cabin_control_layout.addWidget(label, i, 0, alignment=Qt.AlignmentFlag.AlignLeft)
+                cabin_control_layout.addWidget(button, i, 1, alignment=Qt.AlignmentFlag.AlignLeft)
+                unit_label = QLabel("")
+                cabin_control_layout.addWidget(unit_label, i, 2)
+                self.cabin_edit_fields[var_name] = button
+            elif var_name == "advertisement":
+                # Use a combo box for advertisement
+                options = rest[0]
+                combo_box = QComboBox()
+                combo_box.addItems(options)
+                combo_box.setCurrentText(getattr(self.train_data, var_name))
+                combo_box.setFont(self.font_value)
+                combo_box.setStyleSheet("color: black;")
+                combo_box.currentTextChanged.connect(lambda text, var=var_name: self.update_train_data(var, text))
+                cabin_control_layout.addWidget(label, i, 0, alignment=Qt.AlignmentFlag.AlignLeft)
+                cabin_control_layout.addWidget(combo_box, i, 1, alignment=Qt.AlignmentFlag.AlignLeft)
+                unit_label = QLabel("")
+                cabin_control_layout.addWidget(unit_label, i, 2)
+                self.cabin_edit_fields[var_name] = combo_box
+            elif var_name == "passenger_boarding":
+                # Numeric input with OK button
+                value = getattr(self.train_data, var_name)
+                value_edit = QLineEdit(str(value))
+                value_edit.setFont(self.font_value)
+                value_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Centered text
+                value_edit.setMaximumWidth(80)
+                value_edit.setStyleSheet("color: black;")
+                # Do not connect editingFinished
+                cabin_control_layout.addWidget(label, i, 0, alignment=Qt.AlignmentFlag.AlignLeft)
+
+                # Create a horizontal layout for input field and OK button
+                input_layout = QHBoxLayout()
+                input_layout.setContentsMargins(0, 0, 0, 0)
+                input_layout.setSpacing(5)
+                input_layout.addWidget(value_edit)
+                unit_label = QLabel(rest[0] if rest else "")
+                unit_label.setFont(self.font_label)
+                unit_label.setStyleSheet("color: black;")
+                input_layout.addWidget(unit_label)
+
+                cabin_control_layout.addLayout(input_layout, i, 1)
+                self.cabin_edit_fields[var_name] = value_edit
+
+        cabin_section_layout.addWidget(cabin_title)
+        cabin_section_layout.addLayout(cabin_control_layout)
+
+        # Cabin Control Widget
+        cabin_control_widget = QWidget()
+        cabin_control_widget.setLayout(cabin_section_layout)
+
+        # Add both widgets to the horizontal layout
+        main_horizontal_layout.addWidget(tc_input_widget)
+        main_horizontal_layout.addWidget(cabin_control_widget)
+
+        main_vertical_layout.addLayout(main_horizontal_layout)
+
+        # Announcement Button (moved below the tables)
+        announcement_button = QPushButton("Announcement")
+        announcement_button.setFont(QFont('Arial', 15, QFont.Weight.Bold))  # Increased by 1
+        announcement_button.setFixedSize(200, 50)
+        announcement_button.setStyleSheet("""
+            QPushButton {
+                border: 2px solid black;
+                background-color: #F0F0F0;
+                color: black;
+            }
+            QPushButton:hover {
+                background-color: #E0E0E0;
+            }
+        """)
+        announcement_button.clicked.connect(self.open_announcement_dialog)
+
+        # Center the Announcement button
+        announcement_layout = QHBoxLayout()
+        announcement_layout.addStretch()
+        announcement_layout.addWidget(announcement_button)
+        announcement_layout.addStretch()
+
+        main_vertical_layout.addLayout(announcement_layout)
+
+        # Set content widget layout
+        content_widget.setLayout(main_vertical_layout)
+        scroll_area.setWidget(content_widget)
+
+        # Add scroll area to content_layout
+        self.content_layout.addWidget(scroll_area)
+
+        # Initialize button states
+        self.update_button_states()
+
+        # Update the displays when data changes
+        self.train_data.data_changed.connect(self.update_display)
+
+    def set_train_data(self, train_data):
+        # Disconnect previous train_data signal
+        try:
+            self.train_data.data_changed.disconnect(self.update_display)
+        except:
+            pass
+        self.train_data = train_data
+        self.train_data.data_changed.connect(self.update_display)
+        self.update_button_states()
+
+    def toggle_on_off(self, var_name, button):
+        is_on = button.isChecked()
+        button.setText("ON" if is_on else "OFF")
+        # Use the same green color as in Train Model page
+        button.setStyleSheet(f"""
+            QPushButton {{
+                background-color: {'green' if is_on else 'lightgray'};
+                color: black;
+                font-weight: bold;
+            }}
+        """)
+        self.train_data.set_value(var_name, is_on)
+        # Map variables with different names
+        if var_name == 'interior_light':
+            self.train_data.set_value('interior_light_on', is_on)
+        elif var_name == 'exterior_light':
+            self.train_data.set_value('exterior_light_on', is_on)
+        elif var_name == 'train_left_door':
+            self.train_data.set_value('left_door_open', is_on)
+        elif var_name == 'train_right_door':
+            self.train_data.set_value('right_door_open', is_on)
+        elif var_name in ['service_brake', 'emergency_brake']:
+            # Update train state when brakes are applied
+            self.train_data.set_value(var_name, is_on)
+            self.update_display()
+
+    def open_set_commanded_power_dialog(self):
+        dialog = SetCommandedPowerDialog(self, current_power=self.train_data.commanded_power)
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            new_power = dialog.get_commanded_power()
+            if new_power is not None:
+                self.train_data.set_value('commanded_power', new_power)
+            else:
+                # Handle invalid input if necessary
+                pass
+
+    def update_train_data(self, var_name, value):
+        # Update the variable in train_data
+        try:
+            # Convert to appropriate type
+            if var_name in ['commanded_speed_tc', 'authority', 'desired_temperature', 'passenger_boarding']:
+                current_value = getattr(self.train_data, var_name)
+                if isinstance(current_value, int):
+                    value = int(value)
+                elif isinstance(current_value, float):
+                    value = float(value)
+            self.train_data.set_value(var_name, value)
+            # Map variables with different names and perform unit conversions
+            if var_name == 'commanded_speed_tc':
+                self.train_data.set_value('commanded_speed_tc', value)
+                # Commanded Speed is updated via set_value method
+            elif var_name == 'authority':
+                # Convert meters to feet
+                value_ft = float(value) * 3.28084
+                self.train_data.set_value('commanded_authority', value_ft)
+            elif var_name == 'desired_temperature':
+                # Update actual temperature
+                self.train_data.set_value('cabin_temperature', value)
+        except ValueError:
+            pass  # Handle invalid input as desired
+
+    def update_commanded_power(self, var_name, value):
+        # This method is no longer needed as commanded power is set via popup
+        pass
+
+    def update_passenger_boarding(self, var_name, value):
+        # Update passenger boarding and add to passenger count
+        try:
+            value = int(value)
+            self.train_data.passenger_boarding = value
+            # Add passenger_boarding to passenger_count
+            self.train_data.passenger_count += self.train_data.passenger_boarding
+            self.train_data.passenger_boarding = 0  # Reset passenger_boarding to 0
+            self.train_data.update_train_weight()
+            self.update_display()
+        except ValueError:
+            pass  # Handle invalid input
+
+    def update_beacon(self, station):
+        beacon_text = f"We are approaching {station}"
+        self.train_data.set_value('beacon_station', station)
+        self.train_data.set_value('beacon', beacon_text)
+
+    def open_announcement_dialog(self):
+        dialog = AnnouncementDialog(self)
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            announcement = dialog.get_announcement()
+            self.train_data.set_value('announcement', announcement)
+
+    def update_button_states(self):
+        # Initialize button states based on train_data
+        for var_name, button in self.tc_edit_fields.items():
+            if var_name in ["service_brake", "exterior_light", "interior_light", "emergency_brake"]:
+                is_on = getattr(self.train_data, var_name)
+                button.setChecked(is_on)
+                button.setText("ON" if is_on else "OFF")
+                # Use the same green color as in Train Model page
+                button.setStyleSheet(f"""
+                    QPushButton {{
+                        background-color: {'green' if is_on else 'lightgray'};
+                        color: black;
+                        font-weight: bold;
+                    }}
+                """)
+        for var_name, button in self.cabin_edit_fields.items():
+            if var_name in ["train_left_door", "train_right_door"]:
+                is_on = getattr(self.train_data, var_name)
+                button.setChecked(is_on)
+                button.setText("ON" if is_on else "OFF")
+                # Use the same green color as in Train Model page
+                button.setStyleSheet(f"""
+                    QPushButton {{
+                        background-color: {'green' if is_on else 'lightgray'};
+                        color: black;
+                        font-weight: bold;
+                    }}
+                """)
+
+    def update_display(self):
+        # Update the state of the brake buttons
+        for var_name in ['service_brake', 'emergency_brake']:
+            button = self.tc_edit_fields.get(var_name)
+            if button:
+                is_on = getattr(self.train_data, var_name)
+                button.setChecked(is_on)
+                button.setText("ON" if is_on else "OFF")
+                button.setStyleSheet(f"""
+                    QPushButton {{
+                        background-color: {'green' if is_on else 'lightgray'};
+                        color: black;
+                        font-weight: bold;
+                    }}
+                """)
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.setWindowTitle("PyQt6 Application Example")
-        self.setGeometry(100, 100, 1000, 600)  # Increased window size
+        self.setWindowTitle("PyQt6 Train Control Application")
+        self.setGeometry(100, 100, 1000, 620)  # Increased window size
 
-        # Create TrainData instance
-        self.train_data = TrainData()
+        # Create TrainData instances for each Train ID
+        self.train_data_dict = {'1': TrainData(), '2': TrainData(), '3': TrainData()}
+        self.current_train_id = '1'
+        self.current_train_data = self.train_data_dict[self.current_train_id]
 
         # Central widget and main layout
         central_widget = QWidget()
@@ -915,9 +1784,9 @@ class MainWindow(QMainWindow):
         self.stacked_widget = QStackedWidget()
 
         # Pages
-        self.train_model_page = TrainModelPage(self.train_data)
-        self.test_bench_page = TestBenchPage(self.train_data)
-        self.murphy_page = MurphyPage(self.train_data)
+        self.train_model_page = TrainModelPage(self.current_train_data, self.train_id_changed)
+        self.test_bench_page = TestBenchPage(self.current_train_data, self.train_id_changed)
+        self.murphy_page = MurphyPage(self.current_train_data, self.train_id_changed)
 
         # Add pages to stacked widget
         self.stacked_widget.addWidget(self.train_model_page)
@@ -933,6 +1802,9 @@ class MainWindow(QMainWindow):
         central_widget.setLayout(main_layout)
         self.setCentralWidget(central_widget)
 
+    def train_id_changed(self, new_train_id):
+        pass  # No action on Train ID change
+
     def show_train_model(self):
         self.train_model_page.update_display()
         self.stacked_widget.setCurrentWidget(self.train_model_page)
@@ -943,11 +1815,13 @@ class MainWindow(QMainWindow):
     def show_murphy(self):
         self.stacked_widget.setCurrentWidget(self.murphy_page)
 
+
 def main():
     app = QApplication(sys.argv)
     window = MainWindow()
     window.show()
     sys.exit(app.exec())
+
 
 if __name__ == "__main__":
     main()
