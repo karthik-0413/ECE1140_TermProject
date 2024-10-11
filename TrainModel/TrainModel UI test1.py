@@ -75,6 +75,9 @@ class TrainData(QObject):
         # Update train weight based on initial passenger count
         self.update_train_weight()
 
+        # Added variable for automatic service brake
+        self.auto_service_brake = False
+
         # Timer for updating train state every second
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_train_state)
@@ -145,17 +148,31 @@ class TrainData(QObject):
 
         effective_power_command = effective_power_command_kw * 1000  # Convert kW to W
 
+        # Calculate speed limit
+        speed_limit_mps = min(self.commanded_speed, self.maximum_speed) * 0.44704  # Convert mph to m/s
+
+        # Check if current speed exceeds speed limit
+        if current_velocity > speed_limit_mps:
+            self.auto_service_brake = True
+        else:
+            self.auto_service_brake = False
+
+        # If emergency brake is engaged, turn off service brake
+        if self.emergency_brake or self.passenger_emergency_brake:
+            self.service_brake = False
+            self.auto_service_brake = False
+
         # Check for brakes
-        if self.service_brake:
-            acceleration = -1.2  # m/s²
-            effective_power_command = 0
-        elif self.emergency_brake or self.passenger_emergency_brake:
+        if self.emergency_brake or self.passenger_emergency_brake:
             acceleration = -2.73  # m/s²
+            effective_power_command = 0
+        elif self.service_brake or self.auto_service_brake:
+            acceleration = -1.2  # m/s²
             effective_power_command = 0
         else:
             # Calculate force
             if current_velocity == 0:
-                force = max_power_kw * 1000 / 19.44  # W / m/s = N
+                force = effective_power_command / 0.1  # Prevent division by zero
             else:
                 force = effective_power_command / current_velocity
 
@@ -184,13 +201,9 @@ class TrainData(QObject):
 
         self.data_changed.emit()
 
-        # Speed Constraints: Ensure current speed does not exceed commanded or maximum speed
-        self.current_speed = min(self.current_speed, self.commanded_speed, self.maximum_speed)
-
         # Stop the timer if the train has stopped and no power is commanded
         if self.current_speed == 0 and (effective_power_command == 0 or self.current_acceleration == 0):
             self.stop_timer()
-
 
 
 class BasePage(QWidget):
@@ -714,7 +727,6 @@ class TrainModelPage(BasePage):
         self.set_light_button_style(self.exterior_light_button, self.train_data.exterior_light_on, "Exterior Light", button_font, button_size)
         self.set_door_button_style(self.left_door_button, self.train_data.left_door_open, "Left Door", button_font, button_size)
         self.set_door_button_style(self.right_door_button, self.train_data.right_door_open, "Right Door", button_font, button_size)
-
 
     def passenger_emergency_brake_pressed(self):
         # Update the passenger emergency brake state
