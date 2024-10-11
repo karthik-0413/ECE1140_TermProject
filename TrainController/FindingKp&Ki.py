@@ -63,7 +63,7 @@ class TrainController:
             force = power_command / self.current_velocity
             print(f"Force: {force:.2f} N")
             
-            frictional_force = 0.00 * mass * 9.8
+            frictional_force = 0.002 * mass * 9.8
             
             if force < frictional_force:
                 print("Train has stopped moving")
@@ -87,7 +87,7 @@ class TrainController:
 
     def run_simulation(self, desired_velocity):
 
-        for i in range(200):
+        for i in range(400):
             power_command = self.update_power_command(desired_velocity)
             self.current_velocity = self.update_current_velocity(power_command)
             

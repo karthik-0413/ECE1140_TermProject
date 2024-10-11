@@ -1,4 +1,6 @@
 import time
+import json
+import pandas as pd
 from PyQt6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QLineEdit,
     QPushButton, QSizePolicy, QSpacerItem, QMessageBox
@@ -9,6 +11,56 @@ from TrainControllerCommunicateSignals import Communicate
 class TrainControllerUI(QWidget):
     def __init__(self, communicator: Communicate):
         super().__init__()
+        
+        # Polarity of Tracks (knows when entered new block)
+        self.polarity = True
+        
+        # Beacon Inputs of the different block numbers from current station to next
+        self.beacon_block_numbers_inputs = [1, 2, 3]
+        
+        self.final_beacon_block_numbers_inputs = [i - 1 for i in self.beacon_block_numbers_inputs]
+        
+        # Variables needed for the Track Layouts (GREEN LINE)
+        self.green_block_number = []
+        self.green_speed_limit = []
+        self.green_block_grade = []
+        self.green_block_elevation = []
+        self.green_underground = []
+        
+        # Variables needed for the Track Layouts (RED LINE)
+        self.red_block_number = []
+        self.red_speed_limit = []
+        self.red_block_grade = []
+        self.red_block_elevation = []
+        self.red_underground = []   
+        
+        
+        # Load the track layout data from GreenLine.json file in Track Layouts folder
+        with open('Track Layouts/GreenLine.json', 'r') as file:
+            data = json.load(file)
+            
+            for entry in data:
+                self.green_block_elevation.append(entry['ELEVATION (M)'])
+                self.green_block_grade.append(entry['Block Grade (%)'])
+                self.green_speed_limit.append(entry['Speed Limit (Km/Hr)'])
+                self.green_underground.append('UNDERGROUND' in entry['Infrastructure'])
+                self.green_block_number.append(entry['Block Number'])
+                
+            
+        # Load the track layout data from GreenLine.json file in Track Layouts folder
+        with open('Track Layouts/RedLine.json', 'r') as file:
+            data = json.load(file)
+            
+            for entry in data:
+                self.red_block_elevation.append(entry['ELEVATION (M)'])
+                self.red_block_grade.append(entry['Block Grade (%)'])
+                self.red_speed_limit.append(entry['Speed Limit (Km/Hr)'])
+                self.red_underground.append('UNDERGROUND' in entry['Infrastructure'])
+                self.red_block_number.append(entry['Block Number'])
+                
+            for i in self.final_beacon_block_numbers_inputs:
+                print(f"Beacon Block Elevation: {self.green_block_elevation[i]}")
+                
         
         # For for pyqtsignals file
         self.communicator = communicator
@@ -152,7 +204,7 @@ class TrainControllerUI(QWidget):
 
         # COMMANDED SPEED SECTION
         self.commanded_speed_box = QVBoxLayout()
-        self.commanded_speed_label = QLabel("Commanded Speed:")
+        self.commanded_speed_label = QLabel("Recommended Speed:")
         self.commanded_speed_label.setStyleSheet("font-size: 14px; font-weight: bold; color: black;")
         
         # Displaying the commanded speed in UI
@@ -319,6 +371,18 @@ class TrainControllerUI(QWidget):
         main_grid.addLayout(self.left_door_layout, 6, 3)
         
         
+        # PASSENGER BRAKE STATUS CONTROL
+        self.passenger_brake_layout = QHBoxLayout()
+        self.passenger_brake_label = QLabel("Passenger Brake Status:")
+        self.passenger_brake_label.setStyleSheet("font-size: 14px; font-weight: bold; color: black; padding-left: 40px;")
+        self.passenger_brake_status = QPushButton("OFF")
+        self.passenger_brake_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
+        self.passenger_brake_layout.addWidget(self.passenger_brake_label)
+        self.passenger_brake_layout.addWidget(self.passenger_brake_status)
+        self.passenger_brake_layout.addSpacerItem(QSpacerItem(20, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum))
+        main_grid.addLayout(self.passenger_brake_layout, 7, 3)
+        
+        
         
         
         ################################################
@@ -358,7 +422,7 @@ class TrainControllerUI(QWidget):
         # Create the green indicator button
         self.brake_fail_indicator = QPushButton()
         self.brake_fail_indicator.setFixedSize(40, 40)  # Set a fixed size for the indicator button
-        self.brake_fail_indicator.setStyleSheet("background-color: green; border-radius: 20px; border: 2px solid black;")
+        self.brake_fail_indicator.setStyleSheet("background-color: green; border-radius: 20px; border: 2px solid black; padding-left: 100px;")
         self.failure_timer = QTimer(self)
         self.failure_timer.timeout.connect(lambda: self.update_brake_failure_status(self.brake_fail))
         self.failure_timer.start(1000)  # Check every 1000 milliseconds (1 second)
@@ -520,8 +584,30 @@ class TrainControllerUI(QWidget):
     
     def handle_commanded_speed(self, speed: float):
         self.commanded_speed = speed / 2.237
+        
+        # Changing recommemded speed in the UI to the min between the commanded speed and the speed limit
+        if self.commanded_speed < self.speed_limit:
+            self.commanded_speed = self.commanded_speed
+            self.commanded_speed_edit.setText(f"{self.commanded_speed * 2.237:.2f} mph")
+        elif self.commanded_speed > self.speed_limit:
+            self.commanded_speed = self.speed_limit
+            self.commanded_speed_edit.setText(f"{self.commanded_speed * 2.237:.2f} mph")
+        
+        # # ONLY WHEN CHANGING FROM MANUAL TO AUTOMATIC MODE - always pick the lowest of the speed limit and the commanded speed
+        # if self.desired_velocity < self.speed_limit and self.desired_velocity < self.commanded_speed and self.commanded_speed < self.speed_limit:
+        #     # If the setpoint speed is less than the speed limit and the commanded speed
+        #     self.current_velocity = self.commanded_speed
+        #     self.current_speed_edit.setText(f"{self.current_velocity * 2.23694:.2f} mph")
+        #     self.setpoint_speed_edit.clear()
+        # elif self.desired_velocity < self.speed_limit and self.desired_velocity < self.commanded_speed and self.commanded_speed > self.speed_limit:
+        #     # If the setpoint speed is less than the speed limit and the commanded speed is greater than the speed limit
+        #     self.current_velocity = self.speed_limit
+        #     self.current_speed_edit.setText(f"{self.current_velocity * 2.23694:.2f} mph")
+        #     self.setpoint_speed_edit.clear()
+            
+            
         print(f"Commanded speed: {self.commanded_speed}")
-        self.commanded_speed_edit.setText(f"{speed:.2f} mph")
+        # self.commanded_speed_edit.setText(f"{speed:.2f} mph")
         # Operation mode = 0 means automatic mode
         if self.operation_mode == 0:
             self.set_automatic_mode()
@@ -538,12 +624,13 @@ class TrainControllerUI(QWidget):
         self.right_door_status.setStyleSheet("background-color: red; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
     
     def handle_current_velocity(self, velocity: float):
-        # Convert velocity to m/s
-        self.current_velocity = velocity / 2.23694
-        print(f"Current Velocity: {self.current_velocity}")
-        self.current_speed_edit.setText(f"{self.current_velocity * 2.23694:.2f} mph")
-        self.power_command = self.update_power_command()
-        self.power_command_edit.setText(f"{self.power_command:.2f}")
+        if self.operation_mode == 1:
+            # Convert velocity to m/s
+            self.current_velocity = velocity / 2.23694
+            print(f"Current Velocity: {self.current_velocity}")
+            self.current_speed_edit.setText(f"{self.current_velocity * 2.23694:.2f} mph")
+            self.power_command = self.update_power_command()
+            self.power_command_edit.setText(f"{self.power_command:.2f}")
         
     def handle_current_speed(self):
         print(f"Current Speed: {self.current_velocity}")
@@ -590,15 +677,13 @@ class TrainControllerUI(QWidget):
             
     def handle_passenger_brake_command(self, status: bool):
         if status:
-            self.passenger_brake = True
-            if status and not hasattr(self, 'passenger_brake_popup_shown'):
-                self.passenger_brake_popup_shown = True
-                msg_box = QMessageBox()
-                msg_box.setWindowTitle("Passenger Brake")
-                msg_box.setText("Passenger brake has been pressed.")
-                msg_box.setStyleSheet("font-size: 14px;")
-                QTimer.singleShot(3000, msg_box.accept)  # Close the message box after 5 seconds
-                msg_box.exec()
+            # Turn on the passenger brake indcator
+            self.passenger_brake_status.setText("ON")
+            self.passenger_brake_status.setStyleSheet("background-color: red; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
+        else:
+            # Turn off the passenger brake indicator
+            self.passenger_brake_status.setText("OFF")
+            self.passenger_brake_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
                 
     def updated_set_kp(self, kp: float):
         if self.current_position == 0 or self.current_velocity == 0.0:
@@ -697,7 +782,9 @@ class TrainControllerUI(QWidget):
             self.current_velocity = self.speed_limit
             self.current_speed_edit.setText(f"{self.current_velocity * 2.23694:.2f} mph")
             self.setpoint_speed_edit.clear()
-
+            
+        self.power_command = 0
+        self.power_command_edit.setText("0.00") 
            
         # Update the current speed display in UI for users
         self.current_speed_edit.setText(f"{self.current_velocity * 2.23694:.2f} mph")
@@ -864,15 +951,15 @@ class TrainControllerUI(QWidget):
     
     def update_setpoint_speed_calculations(self):  
         # Put the setpoint speed input in a variable in m/s even though it is in mph
-        min_speed = min(self.speed_limit, self.commanded_speed)
-        print(f"Min Speed: {min_speed}")
+        max_speed = min(self.speed_limit, self.commanded_speed)
+        print(f"Min Speed: {max_speed}")
         
         self.desired_velocity = float(self.setpoint_speed_edit.text()) * 0.44704
         
-        if (self.desired_velocity) > min_speed:
-            self.desired_velocity = min_speed
-            self.setpoint_speed_edit.setText(f"{min_speed * 2.237:.2f}")
-        
+        if (self.desired_velocity) > max_speed:
+            self.desired_velocity = max_speed
+            self.setpoint_speed_edit.setText(f"{max_speed * 2.237:.2f}")
+                    
         print(f"Desired Speed: {self.desired_velocity} m/s")    # Good updated value
         
         self.power_command = self.update_power_command()
