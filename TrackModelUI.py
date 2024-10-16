@@ -46,6 +46,10 @@ class Block:
         allBlocks = [block for blocks in sections.values() for block in blocks]
         cls.setOccupancy(ui, allBlocks, lengthArray, position)
         cls.setPolarity(allBlocks)
+        for section, blocks in sections.items():
+            print(f"Section: {section}")
+            for block in blocks:
+                print(f"Block {block.number}")
         return sections
 
     @staticmethod
@@ -55,7 +59,10 @@ class Block:
 
         for i, (length, block) in enumerate(zip(lengthArray, blocks)):
             blockEnd = blockStart + length
-            occupied = blockStart <= x < blockEnd or Block.checkFailure(ui)
+            if block.functional:
+                occupied = blockStart <= x < blockEnd
+            else:
+                occupied = Block.checkFailure(ui) or (blockStart <= x < blockEnd)
             blocks[i].occupied = occupied
             occupancies.append(occupied)
             blockStart = blockEnd
@@ -124,6 +131,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.occupancies = Block.setOccupancy(self.ui, [block for blocks in self.blocks.values() for block in blocks], self.lengthArray, position)
         self.updateBlockTable()
         self.createSwitches()
+        self.createCrossings()
 
     def checkTemp(self) -> None:
         temp = self.ui.tempStepper.value()
@@ -147,10 +155,17 @@ class MainWindow(QtWidgets.QMainWindow):
     def applyChanges(self) -> None:
         self.printPassInfo()
 
+    def createStaions(self) -> None:
+        self.stations = []
+        for blocks in self.blocks.values():
+            for block in blocks:
+                if "STATION" in block.infrastructure:
+                    self.crossingArray.append(block.number)
+
     @staticmethod
     def extractSwitchNumbers(infrastructure: str) -> List[int]:
         return list(map(int, re.findall(r'\d+', infrastructure)))
-
+    
     def createSwitches(self) -> None:
         for blocks in self.blocks.values():
             for block in blocks:
@@ -164,7 +179,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.switches.clear()
         for switch in self.switchArray:
             self.ui.switches.addItem(f"Switch at Block {switch['joint']}")
-
 
     def checkSwitch(self) -> str:
         switchText = self.ui.switches.currentText()
@@ -191,6 +205,36 @@ class MainWindow(QtWidgets.QMainWindow):
                     self.ui.blockTable.item(blockNum - 1, 2).setBackground(QtGui.QColor('red'))
                 elif color == 'yellow':
                     self.ui.blockTable.item(blockNum - 1, 2).setBackground(QtGui.QColor('yellow'))
+
+    def createCrossings(self) -> None:
+        self.crossingArray = []
+        for blocks in self.blocks.values():
+            for block in blocks:
+                if "RAILWAY CROSSING" in block.infrastructure:
+                    self.crossingArray.append(block.number)
+        self.ui.crossings.clear()
+        for crossing in self.crossingArray:
+            self.ui.crossings.addItem(f"Crossing at Block {crossing}")
+
+    def checkCrossing(self) -> None:
+        crossingText = self.ui.crossings.currentText()
+        if crossingText:
+            crossing = int(re.search(r'\d+', crossingText).group())
+            if self.ui.crossingStatus.isChecked():
+                self.setCrossingLights(crossing, 'red')
+                return (f"Crossing at Block {crossing} is active.") 
+            else:
+                self.setCrossingLights(crossing, 'lightgray')
+                return (f"Crossing at Block {crossing} is clear.") 
+            
+    def setCrossingLights(self, blockNum: int, color: str) -> None:
+        crossingText = self.ui.crossings.currentText()
+        if crossingText:
+            crossing = int(re.search(r'\d+', crossingText).group())
+            if color == 'red':
+                self.ui.blockTable.item(blockNum - 1, 2).setBackground(QtGui.QColor('red'))
+            else:
+                self.ui.blockTable.item(blockNum - 1, 2).setBackground(QtGui.QColor('lightgray'))
 
     def printPassInfo(self) -> None:
         rowCount = self.ui.passInfoTable.rowCount()
@@ -259,13 +303,11 @@ class MainWindow(QtWidgets.QMainWindow):
             self.ui.blockTable.setItem(row, 2, switch_item)
 
             if block.occupied:
-                for col in range(len(headers)):
-                    self.ui.blockTable.item(row, 0).setBackground(QtGui.QColor('lightblue'))
-                    self.ui.blockTable.item(row, 1).setBackground(QtGui.QColor('lightblue'))
+                for col in range(len(headers)-1):
+                    self.ui.blockTable.item(row, col).setBackground(QtGui.QColor('lightblue'))
             if not block.functional:
-                for col in range(len(headers)):
-                    self.ui.blockTable.item(row, 0).setBackground(QtGui.QColor('lightcoral'))
-                    self.ui.blockTable.item(row, 1).setBackground(QtGui.QColor('lightcoral'))
+                for col in range(len(headers)-1):
+                    self.ui.blockTable.item(row, col).setBackground(QtGui.QColor('lightcoral'))
 
     def printBlockInfo(self) -> None:
         selectedItems = self.ui.blockTable.selectedItems()
@@ -301,8 +343,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.updateBlockTable()
 
     def recurring(self) -> None:
-        self.checkTemp()
         self.updateOccupancy()
+        self.checkSwitch()
+        self.checkCrossing()
+        self.checkTemp()
+        
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication([])
