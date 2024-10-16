@@ -1,13 +1,12 @@
 import sys
-import os
-from PyQt6 import QtWidgets, QtCore, QtGui, uic
-from Track_Model_UI import Ui_TrackModel
-import pandas as pd
 import csv
-from typing import List
+import re
+from typing import List, Dict
+from PyQt6 import QtWidgets, QtCore, QtGui
+from Track_Model_UI import Ui_TrackModel
 
 class Block:
-    def __init__(self, line: str, section: str, number: int, length: float, grade: float, speedLimit: float, infrastructure: str, elevation: float, cumulativeElevation: float, polarity: bool = False, functional: bool = True, occupancy: bool = False):
+    def __init__(self, line: str, section: str, number: int, length: float, grade: float, speedLimit: float, infrastructure: str, elevation: float, cumulativeElevation: float, right: bool = False, left: bool = False, polarity: bool = False, functional: bool = True, occupied: bool = False):
         self.line = line
         self.section = section
         self.number = number
@@ -15,25 +14,22 @@ class Block:
         self.grade = grade
         self.speedLimit = speedLimit
         self.infrastructure = infrastructure
+        self.right = right
+        self.left = left
         self.elevation = elevation
         self.cumulativeElevation = cumulativeElevation
         self.polarity = polarity
         self.functional = functional
-        self.occupancy = occupancy
+        self.occupied = occupied
 
     @staticmethod
-    def setFailureMode(ui, block_number: int) -> bool:
-        selected_values = [ui.comboBox1.currentText(), ui.comboBox2.currentText(), ui.comboBox3.currentText()]
-        break_buttons = [ui.breakButton1, ui.breakButton2, ui.breakButton3]
-        return not any(selected_value == str(block_number) and break_button.isChecked() for selected_value, break_button in zip(selected_values, break_buttons))
+    def checkFailure(ui) -> bool:
+        return any(toggle.isChecked() for toggle in [ui.breakStatus1, ui.breakStatus2, ui.breakStatus3])
 
     @classmethod
-    def create_blocks(cls, ui, layout_data: List[List[str]], lengthArray: List[float], position: int, switchStatus: bool) -> List['Block']:
-        blocks = []
-        sectionA = []
-        sectionB = []
-        sectionC = []
-        for row in layout_data:
+    def createBlocks(cls, ui, layoutData: List[List[str]], lengthArray: List[float], position: int) -> Dict[str, List['Block']]:
+        sections = {row[1]: [] for row in layoutData}
+        for row in layoutData:
             line, section, number, length, grade, speedLimit, infrastructure, elevation, cumulativeElevation = row[:9]
             block = cls(
                 line=line,
@@ -46,34 +42,25 @@ class Block:
                 elevation=float(elevation),
                 cumulativeElevation=float(cumulativeElevation)
             )
-            blocks.append(block)
-            if section == "A":
-                sectionA.append(block)
-            elif section == "B":
-                sectionB.append(block)
-            elif section == "C":
-                sectionC.append(block)
-        
-        if switchStatus:
-            sectionA.extend(sectionB)
-        else:
-            sectionA.extend(sectionC)
-        
-        cls.setOccupancy(ui, blocks, lengthArray, position)
-        cls.setPolarity(blocks)
-        return blocks
+            sections[section].append(block)
+        allBlocks = [block for blocks in sections.values() for block in blocks]
+        cls.setOccupancy(ui, allBlocks, lengthArray, position)
+        cls.setPolarity(allBlocks)
+        return sections
 
     @staticmethod
     def setOccupancy(ui, blocks: List['Block'], lengthArray: List[float], x: int) -> List[bool]:
-        occupancy_status = []
+        occupancies = []
         blockStart = 0
-        for i, length in enumerate(lengthArray):
+
+        for i, (length, block) in enumerate(zip(lengthArray, blocks)):
             blockEnd = blockStart + length
-            occupancy = blockStart <= x < blockEnd or not Block.setFailureMode(ui, blocks[i].number)
-            blocks[i].occupancy = occupancy
-            occupancy_status.append(occupancy)
+            occupied = blockStart <= x < blockEnd or Block.checkFailure(ui)
+            blocks[i].occupied = occupied
+            occupancies.append(occupied)
             blockStart = blockEnd
-        return occupancy_status
+
+        return occupancies
 
     @staticmethod
     def setPolarity(blocks: List['Block']) -> None:
@@ -85,160 +72,241 @@ class MainWindow(QtWidgets.QMainWindow):
         super().__init__()
         self.ui = Ui_TrackModel()
         self.ui.setupUi(self)
-        self.ui.fileUploadButton.clicked.connect(self.upload_file)
-        self.ui.tempStepper.valueChanged.connect(self.check_temperature)
-        self.ui.applyChangesButton.clicked.connect(self.apply_changes)
-        self.ui.breakButton1.clicked.connect(self.break_button1_clicked)
-        self.ui.breakButton2.clicked.connect(self.break_button2_clicked)
-        self.ui.breakButton3.clicked.connect(self.break_button3_clicked)
-        self.blocks = []
-        self.layout_data = []
+        self.setupConnections()
+        self.blocks = {}
+        self.layoutData = []
         self.lengthArray = []
-        self.occupancy_status = []
-        self.switchStatus = False 
+        self.occupancies = []
+        self.switchStatus = False
+        self.switchArray = []
+        self.switchLightArray = []
         self.timer = QtCore.QTimer(self)
-        self.timer.timeout.connect(self.on_timer_timeout)
-        self.timer.start(1000) 
-        self.temp_increase_timer = QtCore.QTimer(self)
-        self.temp_increase_timer.timeout.connect(self.increase_temperature)
+        self.timer.timeout.connect(self.recurring)
+        self.timer.start(1000)
+        self.tempIncreaseTimer = QtCore.QTimer(self)
+        self.tempIncreaseTimer.timeout.connect(self.increaseTemp)
 
-    def upload_file(self) -> None:
-        file_dialog = QtWidgets.QFileDialog()
-        file_path, _ = file_dialog.getOpenFileName(self, "Open CSV File", "", "CSV Files (*.csv)")
-        if file_path:
+    def setupConnections(self) -> None:
+        self.ui.uploadButton.clicked.connect(self.uploadFile)
+        self.ui.tempStepper.valueChanged.connect(self.checkTemp)
+        self.ui.applyChangesButton.clicked.connect(self.applyChanges)
+        self.ui.breakStatus1.toggled.connect(self.breakToggle1)
+        self.ui.breakStatus2.toggled.connect(self.breakToggle2)
+        self.ui.breakStatus3.toggled.connect(self.breakToggle3)
+        self.ui.switchToggle.toggled.connect(self.checkSwitch)
+        self.ui.blockTable.itemSelectionChanged.connect(self.printBlockInfo)
+
+    def uploadFile(self) -> None:
+        fileDialog = QtWidgets.QFileDialog()
+        filePath, _ = fileDialog.getOpenFileName(self, "Open CSV File", "", "CSV Files (*.csv)")
+        if filePath:
             try:
-                with open(file_path, newline='') as layoutFile:
-                    spamreader = csv.reader(layoutFile, delimiter=',', quotechar='|')
-                    next(spamreader)
-                    self.layout_data = []
-                    self.lengthArray = []
-                    for row in spamreader:
-                        self.layout_data.append(row)
-                        self.lengthArray.append(float(row[3]))
-                print("Imported Information:")
-                for row in self.layout_data:
-                    print(row)
-                total_length = sum(self.lengthArray)
-                self.ui.positionValue.setMaximum(total_length)
-                position = self.ui.positionValue.value()
-                self.blocks = Block.create_blocks(self.ui, self.layout_data, self.lengthArray, position, self.switchStatus)
-                self.occupancy_status = Block.setOccupancy(self.ui, self.blocks, self.lengthArray, position)
-                self.print_block_information()
+                self.readLayoutFile(filePath)
+                self.initializeBlocks()
             except Exception as e:
                 print(f"Error reading file: {e}")
 
-    def check_temperature(self) -> None:
-        current_temp = self.ui.tempStepper.value()
-        if current_temp <= 32:
-            print("Turn on track heater")
-            self.ui.label_2.setStyleSheet("font: 10pt \"Times New Roman\";\n"
-                                          "background-color: yellow;\n"
-                                          "color: rgb(0, 0, 0);")
-            QtCore.QTimer.singleShot(2000, self.start_temp_increase_timer)
-        else:
-            self.ui.label_2.setStyleSheet("font: 10pt \"Times New Roman\";\n"
-                                          "background-color: rgb(68, 68, 68);\n"
-                                          "color: rgb(0, 0, 0);")
-            self.temp_increase_timer.stop()
+    def readLayoutFile(self, filePath: str) -> None:
+        with open(filePath, newline='') as layoutFile:
+            reader = csv.reader(layoutFile, delimiter=',', quotechar='|')
+            next(reader)
+            self.layoutData = []
+            self.lengthArray = []
+            for row in reader:
+                self.layoutData.append(row)
+                self.lengthArray.append(float(row[3]))
 
-    def start_temp_increase_timer(self) -> None:
-        self.temp_increase_timer.start(500) 
-
-    def increase_temperature(self) -> None:
-        current_temp = self.ui.tempStepper.value()
-        if current_temp <= 32:
-            self.ui.tempStepper.setValue(current_temp + 1)
-        else:
-            self.temp_increase_timer.stop()
-
-    def apply_changes(self) -> None:
-        print("Apply Changes Button pressed")
-        self.print_pass_information()
-
-    def checkSwitch(self) -> None:
-        switch_state = self.ui.switchTable.item(0, 1).text()
-        if switch_state == "(5 to 6)":
-            self.switchStatus = True
-            print(switch_state)
-        elif switch_state == "(5 to 11)":
-            self.switchStatus = False
-
-    def print_pass_information(self) -> None:
-        print("Pass Information:")
-        row_count = self.ui.passInfoTable.rowCount()
-        column_count = self.ui.passInfoTable.columnCount()
-        for row in range(row_count):
-            row_data = []
-            for column in range(column_count):
-                item = self.ui.passInfoTable.item(row, column)
-                row_data.append(item.text() if item else "")
-            print(row_data)
-
-    def break_button1_clicked(self) -> None:
-        self.set_block_non_functional(self.ui.comboBox1.currentText())
-        self.print_block_information()
-
-    def break_button2_clicked(self) -> None:
-        self.set_block_non_functional(self.ui.comboBox2.currentText())
-        self.print_block_information()
-
-    def break_button3_clicked(self) -> None:
-        self.set_block_non_functional(self.ui.comboBox3.currentText())
-        self.print_block_information()
-
-    def set_block_non_functional(self, block_number_str: str) -> None:
-        try:
-            block_number = int(block_number_str)
-            for block in self.blocks:
-                if block.number == block_number:
-                    block.functional = False
-                    block.occupancy = True
-                    print(f"Block {block_number} set to non-functional and occupied")
-                    QtCore.QTimer.singleShot(3000, lambda: self.set_block_functional(block_number))
-                    return
-            print(f"Block {block_number} not found")
-        except ValueError:
-            print(f"Invalid block number: {block_number_str}")
-
-    def set_block_functional(self, block_number: int) -> None:
-        for block in self.blocks:
-            if block.number == block_number:
-                block.functional = True
-                block.occupancy = False
-                print(f"Block {block_number} set back to functional")
-                return
-
-    def print_block_information(self) -> None:
-        print("Block Information:")
-        self.ui.tableWidget.setRowCount(len(self.blocks))
-        headers = ["Line", "Section", "Number", "Length", "Grade", "Speed Limit", "Infrastructure", "Elevation", "Cumulative Elevation", "Polarity", "Functional", "Occupancy"]
-        self.ui.tableWidget.setColumnCount(len(headers))
-        self.ui.tableWidget.setHorizontalHeaderLabels(headers)
-        
-        for row, block in enumerate(self.blocks):
-            self.ui.tableWidget.setItem(row, 0, QtWidgets.QTableWidgetItem(block.line))
-            self.ui.tableWidget.setItem(row, 1, QtWidgets.QTableWidgetItem(block.section))
-            self.ui.tableWidget.setItem(row, 2, QtWidgets.QTableWidgetItem(str(block.number)))
-            self.ui.tableWidget.setItem(row, 3, QtWidgets.QTableWidgetItem(str(block.length)))
-            self.ui.tableWidget.setItem(row, 4, QtWidgets.QTableWidgetItem(str(block.grade)))
-            self.ui.tableWidget.setItem(row, 5, QtWidgets.QTableWidgetItem(str(block.speedLimit)))
-            self.ui.tableWidget.setItem(row, 6, QtWidgets.QTableWidgetItem(block.infrastructure))
-            self.ui.tableWidget.setItem(row, 7, QtWidgets.QTableWidgetItem(str(block.elevation)))
-            self.ui.tableWidget.setItem(row, 8, QtWidgets.QTableWidgetItem(str(block.cumulativeElevation)))
-            self.ui.tableWidget.setItem(row, 9, QtWidgets.QTableWidgetItem(str(block.polarity)))
-            self.ui.tableWidget.setItem(row, 10, QtWidgets.QTableWidgetItem(str(block.functional)))
-            self.ui.tableWidget.setItem(row, 11, QtWidgets.QTableWidgetItem(str(self.occupancy_status[row])))
-            
-            print(vars(block))
-
-    def update_block_occupancy(self) -> None:
+    def initializeBlocks(self) -> None:
+        totLen = sum(self.lengthArray)
+        self.ui.positionValue.setMaximum(totLen)
         position = self.ui.positionValue.value()
-        self.occupancy_status = Block.setOccupancy(self.ui, self.blocks, self.lengthArray, position)
-        self.print_block_information()
+        self.blocks = Block.createBlocks(self.ui, self.layoutData, self.lengthArray, position)
+        self.occupancies = Block.setOccupancy(self.ui, [block for blocks in self.blocks.values() for block in blocks], self.lengthArray, position)
+        self.updateBlockTable()
+        self.createSwitches()
 
-    def on_timer_timeout(self) -> None:
-        self.check_temperature()
-        self.update_block_occupancy()
+    def checkTemp(self) -> None:
+        temp = self.ui.tempStepper.value()
+        if temp <= 32:
+            self.ui.heaterStatus.setStyleSheet("font: 10pt \"Times New Roman\";\nbackground-color: yellow;\ncolor: rgb(0, 0, 0);")
+            QtCore.QTimer.singleShot(2000, self.initiateTempIncrease)
+        else:
+            self.ui.heaterStatus.setStyleSheet("font: 10pt \"Times New Roman\";\nbackground-color: rgb(68, 68, 68);\ncolor: rgb(0, 0, 0);")
+            self.tempIncreaseTimer.stop()
+
+    def initiateTempIncrease(self) -> None:
+        self.tempIncreaseTimer.start(500)
+
+    def increaseTemp(self) -> None:
+        temp = self.ui.tempStepper.value()
+        if temp <= 32:
+            self.ui.tempStepper.setValue(temp + 1)
+        else:
+            self.tempIncreaseTimer.stop()
+
+    def applyChanges(self) -> None:
+        self.printPassInfo()
+
+    @staticmethod
+    def extractSwitchNumbers(infrastructure: str) -> List[int]:
+        return list(map(int, re.findall(r'\d+', infrastructure)))
+
+    def createSwitches(self) -> None:
+        for blocks in self.blocks.values():
+            for block in blocks:
+                if "SWITCH" in block.infrastructure:
+                    switchNums = self.extractSwitchNumbers(block.infrastructure)
+                    joint = next(num for num in switchNums if switchNums.count(num) == 2)
+                    leg1 = min(num for num in switchNums if num != joint)
+                    leg2 = max(num for num in switchNums if num != joint)
+                    self.switchArray.append({'joint': joint, 'leg1': leg1, 'leg2': leg2})
+                    self.switchLightArray.append({'leg1': leg1, 'leg2': leg2})
+        self.ui.switches.clear()
+        for switch in self.switchArray:
+            self.ui.switches.addItem(f"Switch at Block {switch['joint']}")
+
+
+    def checkSwitch(self) -> str:
+        switchText = self.ui.switches.currentText()
+        if switchText:
+            joint = int(re.search(r'\d+', switchText).group())
+            switch = next(b for blocks in self.blocks.values() for b in blocks if b.number == joint)
+            leg1 = min(num for num in self.extractSwitchNumbers(switch.infrastructure) if num != joint)
+            leg2 = max(num for num in self.extractSwitchNumbers(switch.infrastructure) if num != joint)
+            if self.ui.switchToggle.isChecked():
+                self.setLightColor(leg2, 'green')
+                self.setLightColor(leg1, 'red')
+                for block in [b for blocks in self.blocks.values() for b in blocks if b.section == switch.section and b.number != leg1]:
+                    block.occupied = False
+                return f"{joint} to {leg2}"
+            else:
+                self.setLightColor(leg2, 'red')
+                self.setLightColor(leg1, 'green')
+                for block in [b for blocks in self.blocks.values() for b in blocks if b.section == switch.section and b.number != leg2]:
+                    block.occupied = False
+                return f"{joint} to {leg1}"
+
+    def setLightColor(self, blockNum: int, color: str) -> None:
+        for light in self.switchLightArray:
+            if light['leg1'] == blockNum or light['leg2'] == blockNum:
+                if color == 'green':
+                    self.ui.blockTable.item(blockNum - 1, 2).setBackground(QtGui.QColor('green'))
+                elif color == 'red':
+                    self.ui.blockTable.item(blockNum - 1, 2).setBackground(QtGui.QColor('red'))
+                elif color == 'yellow':
+                    self.ui.blockTable.item(blockNum - 1, 2).setBackground(QtGui.QColor('yellow'))
+
+    def printPassInfo(self) -> None:
+        rowCount = self.ui.passInfoTable.rowCount()
+        colCount = self.ui.passInfoTable.columnCount()
+        for row in range(rowCount):
+            data = [self.ui.passInfoTable.item(row, column).text() if self.ui.passInfoTable.item(row, column) else "" for column in range(colCount)]
+            print(data)
+
+    def breakToggle1(self) -> None:
+        self.handleBreakToggle(self.ui.breakStatus1, self.ui.murphyBlockNumber1.value(), "Circuit")
+
+    def breakToggle2(self) -> None:
+        self.handleBreakToggle(self.ui.breakStatus2, self.ui.murphyBlockNumber2.value(), "Power")
+
+    def breakToggle3(self) -> None:
+        self.handleBreakToggle(self.ui.breakStatus3, self.ui.murphyBlockNumber3.value(), "Rail")
+
+    def handleBreakToggle(self, toggle, blockNum: int, failureType: str) -> None:
+        if toggle.isChecked():
+            self.fail(blockNum)
+            print(f"{failureType} failure on Block {blockNum}.")
+        else:
+            self.fix(blockNum)
+        self.updateBlockTable()
+
+    def fail(self, blockNum: int) -> None:
+        for blocks in self.blocks.values():
+            for block in blocks:
+                if block.number == blockNum:
+                    block.functional = False
+                    block.occupied = True
+                    allBlocks = [block for blocks in self.blocks.values() for block in blocks]
+                    block.occupied = Block.setOccupancy(self.ui, allBlocks, self.lengthArray, self.ui.positionValue.value())[allBlocks.index(block)]
+                    return
+
+    def fix(self, blockNum: int) -> None:
+        for blocks in self.blocks.values():
+            for block in blocks:
+                if block.number == blockNum:
+                    block.functional = True
+                    block.occupied = False
+                    allBlocks = [block for blocks in self.blocks.values() for block in blocks]
+                    block.occupied = Block.setOccupancy(self.ui, allBlocks, self.lengthArray, self.ui.positionValue.value())[allBlocks.index(block)]
+                    print(f"Block {blockNum} is fixed.")
+                    return
+
+    def updateBlockTable(self) -> None:
+        allBlocks = [block for blocks in self.blocks.values() for block in blocks]
+        self.ui.blockTable.setRowCount(len(allBlocks))
+
+        headers = ["Functional", "Occupied", "Switch State"]
+        self.ui.blockTable.setColumnCount(len(headers))
+        self.ui.blockTable.setHorizontalHeaderLabels(headers)
+
+        for row, block in enumerate(allBlocks):
+            functional_item = QtWidgets.QTableWidgetItem(str(block.functional))
+            occupancy_item = QtWidgets.QTableWidgetItem(str(block.occupied))
+            switch_item = QtWidgets.QTableWidgetItem("")
+
+            for switch in self.switchArray:
+                if block.number == switch['joint']:
+                    switch_item.setText(self.checkSwitch())
+
+            self.ui.blockTable.setItem(row, 0, functional_item)
+            self.ui.blockTable.setItem(row, 1, occupancy_item)
+            self.ui.blockTable.setItem(row, 2, switch_item)
+
+            if block.occupied:
+                for col in range(len(headers)):
+                    self.ui.blockTable.item(row, 0).setBackground(QtGui.QColor('lightblue'))
+                    self.ui.blockTable.item(row, 1).setBackground(QtGui.QColor('lightblue'))
+            if not block.functional:
+                for col in range(len(headers)):
+                    self.ui.blockTable.item(row, 0).setBackground(QtGui.QColor('lightcoral'))
+                    self.ui.blockTable.item(row, 1).setBackground(QtGui.QColor('lightcoral'))
+
+    def printBlockInfo(self) -> None:
+        selectedItems = self.ui.blockTable.selectedItems()
+        if not selectedItems:
+            return
+        selectedRow = selectedItems[0].row()
+        allBlocks = [block for blocks in self.blocks.values() for block in blocks]
+        selectedBlock = allBlocks[selectedRow]
+
+        self.ui.blockInfo.setRowCount(12)
+        self.ui.blockInfo.setColumnCount(1)
+        self.ui.blockInfo.setVerticalHeaderLabels([
+            "Line", "Section", "Number", "Length", "Grade", "Speed Limit", 
+            "Infrastructure", "Elevation", "Cumulative Elevation", "Right", 
+            "Left", "Polarity"
+        ])
+        self.ui.blockInfo.setItem(0, 0, QtWidgets.QTableWidgetItem(selectedBlock.line))
+        self.ui.blockInfo.setItem(1, 0, QtWidgets.QTableWidgetItem(selectedBlock.section))
+        self.ui.blockInfo.setItem(2, 0, QtWidgets.QTableWidgetItem(str(selectedBlock.number)))
+        self.ui.blockInfo.setItem(3, 0, QtWidgets.QTableWidgetItem(str(selectedBlock.length)))
+        self.ui.blockInfo.setItem(4, 0, QtWidgets.QTableWidgetItem(str(selectedBlock.grade)))
+        self.ui.blockInfo.setItem(5, 0, QtWidgets.QTableWidgetItem(str(selectedBlock.speedLimit)))
+        self.ui.blockInfo.setItem(6, 0, QtWidgets.QTableWidgetItem(selectedBlock.infrastructure))
+        self.ui.blockInfo.setItem(7, 0, QtWidgets.QTableWidgetItem(str(selectedBlock.elevation)))
+        self.ui.blockInfo.setItem(8, 0, QtWidgets.QTableWidgetItem(str(selectedBlock.cumulativeElevation)))
+        self.ui.blockInfo.setItem(9, 0, QtWidgets.QTableWidgetItem(str(selectedBlock.right)))
+        self.ui.blockInfo.setItem(10, 0, QtWidgets.QTableWidgetItem(str(selectedBlock.left)))
+        self.ui.blockInfo.setItem(11, 0, QtWidgets.QTableWidgetItem(str(selectedBlock.polarity)))
+
+    def updateOccupancy(self) -> None:
+        position = self.ui.positionValue.value()
+        self.occupancies = Block.setOccupancy(self.ui, [block for blocks in self.blocks.values() for block in blocks], self.lengthArray, position)
+        self.updateBlockTable()
+
+    def recurring(self) -> None:
+        self.checkTemp()
+        self.updateOccupancy()
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication([])
