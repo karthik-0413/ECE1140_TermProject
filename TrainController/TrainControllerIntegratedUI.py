@@ -4,7 +4,7 @@ from PyQt6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QLineEdit,
     QPushButton, QSizePolicy, QSpacerItem, QMessageBox
 )
-from PyQt6.QtCore import Qt, QElapsedTimer, QTimer, QCoreApplication
+from PyQt6.QtCore import Qt, QElapsedTimer, QTimer
 from TrainControllerIntegratedCommunicateSignals import IntegratedCommunicate
 
 class TrainIntegratedControllerUI(QWidget):
