@@ -8,6 +8,61 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt, pyqtSignal, QObject, QTimer
 
 
+'''
+Inputs from Track Model:
+Commanded Speed
+Variable in Code: self.commanded_speed (converted from self.commanded_speed_tc)
+Authority
+Variable in Code: self.authority
+Beacon Info
+Variable in Code: self.beacon_station, self.beacon
+Light Level Status
+Variable in Code: Not explicitly defined in the code; may need to be added.
+Passengers Boarding at Next Station
+Variable in Code: self.passenger_boarding
+Inputs from Train Controller:
+Driver Emergency Brake
+Variable in Code: self.emergency_brake
+Driver Service Brake
+Variable in Code: self.service_brake
+Power Command
+Variable in Code: self.commanded_power
+Left Doors Open/Close
+Variable in Code: self.train_left_door
+Right Doors Open/Close
+Variable in Code: self.train_right_door
+Outside Lights On/Off
+Variable in Code: self.exterior_light
+Interior Lights On/Off
+Variable in Code: self.interior_light
+Any Announcement
+Variable in Code: self.announcement
+Desired Train Temperature
+Variable in Code: self.desired_temperature
+Outputs to Train Controller:
+Commanded Speed
+Variable in Code: self.commanded_speed
+Authority
+Variable in Code: self.authority
+Beacon
+Variable in Code: self.beacon
+Current Velocity
+Variable in Code: self.current_speed
+Trigger for Failure Modes
+Variable in Code: self.auto_service_brake, self.emergency_brake
+Passenger Brake Status
+Variable in Code: self.passenger_emergency_brake
+Actual Train Temperature
+Variable in Code: self.cabin_temperature
+Output to Track Model:
+Number of Available Seats Inside Train
+Variable in Code: self.available_seats
+'''
+
+
+
+
+
 class TrainData(QObject):
     data_changed = pyqtSignal()
 
