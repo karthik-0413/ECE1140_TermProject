@@ -176,14 +176,10 @@ class MainWindow(QtWidgets.QMainWindow):
             if self.ui.switchToggle.isChecked():
                 self.setLightColor(leg2, 'green')
                 self.setLightColor(leg1, 'red')
-                for block in [b for blocks in self.blocks.values() for b in blocks if b.section == switch.section and b.number != leg1]:
-                    block.occupied = False
                 return f"{joint} to {leg2}"
             else:
                 self.setLightColor(leg2, 'red')
                 self.setLightColor(leg1, 'green')
-                for block in [b for blocks in self.blocks.values() for b in blocks if b.section == switch.section and b.number != leg2]:
-                    block.occupied = False
                 return f"{joint} to {leg1}"
 
     def setLightColor(self, blockNum: int, color: str) -> None:
