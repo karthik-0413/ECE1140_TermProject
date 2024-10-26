@@ -11,8 +11,10 @@ from base_page import BasePage
 
 
 class TrainModelPage(BasePage):
+    """Page representing the Train Model."""
+
     def __init__(self, train_data, train_id_callback):
-        super().__init__("                                Train Model", train_id_callback)
+        super().__init__("Train Model", train_id_callback)
         self.train_data = train_data  # Store the train data
 
         # Create a scroll area
@@ -191,6 +193,7 @@ class TrainModelPage(BasePage):
         # Passenger Emergency Brake button (blood red background)
         self.passenger_emergency_brake_button = QPushButton("Passenger\nEmergency\nBrake")
         self.passenger_emergency_brake_button.setFont(QFont('Arial', 14, QFont.Weight.Bold))
+        self.passenger_emergency_brake_button.setCheckable(True)
         self.passenger_emergency_brake_button.setStyleSheet("""
             QPushButton {
                 background-color: #8B0000;
@@ -265,16 +268,18 @@ class TrainModelPage(BasePage):
         self.update_display()
 
     def set_train_data(self, train_data):
+        """Set the current train data and update connections."""
         # Disconnect previous train_data signal
         try:
             self.train_data.data_changed.disconnect(self.update_display)
-        except Exception:
+        except TypeError:
             pass
         self.train_data = train_data
         self.train_data.data_changed.connect(self.update_display)
         self.update_display()
 
     def set_light_button_style(self, button, is_on, label, font, size):
+        """Set the style of a light control button."""
         button.setText(f"{label}: {'On' if is_on else 'Off'}")
         button.setFont(font)
         button.setFixedSize(*size)
@@ -284,6 +289,7 @@ class TrainModelPage(BasePage):
             button.setStyleSheet("background-color: gray; color: black; font-weight: bold;")
 
     def set_door_button_style(self, button, is_open, label, font, size):
+        """Set the style of a door control button."""
         button.setText(f"{label}: {'Open' if is_open else 'Closed'}")
         button.setFont(font)
         button.setFixedSize(*size)
@@ -293,6 +299,7 @@ class TrainModelPage(BasePage):
             button.setStyleSheet("background-color: red; color: black; font-weight: bold;")
 
     def get_unit(self, var_name):
+        """Get the unit associated with a variable."""
         units = {
             'cabin_temperature': '°F',
             'maximum_capacity': 'passengers',
@@ -321,6 +328,7 @@ class TrainModelPage(BasePage):
         return units.get(var_name, '')
 
     def update_display(self):
+        """Update the display based on the current train data."""
         # Update the data labels
         for var_name, label in self.value_labels.items():
             value = getattr(self.train_data, var_name)
@@ -352,14 +360,28 @@ class TrainModelPage(BasePage):
         self.set_door_button_style(self.left_door_button, self.train_data.left_door_open, "Left Door", button_font, button_size)
         self.set_door_button_style(self.right_door_button, self.train_data.right_door_open, "Right Door", button_font, button_size)
 
-    def passenger_emergency_brake_pressed(self):
-        # Update the passenger emergency brake state
-        self.train_data.set_value('passenger_emergency_brake', True)
-        # Darken the color of the button
-        self.passenger_emergency_brake_button.setStyleSheet("""
-            QPushButton {
-                background-color: #550000;  /* Darker red */
+        # Update the Passenger Emergency Brake button
+        is_on = self.train_data.passenger_emergency_brake
+        self.passenger_emergency_brake_button.blockSignals(True)  # Block signals to prevent recursion
+        self.passenger_emergency_brake_button.setChecked(is_on)
+        self.passenger_emergency_brake_button.blockSignals(False)  # Re-enable signals
+        self.passenger_emergency_brake_button.setStyleSheet(f"""
+            QPushButton {{
+                background-color: {'#550000' if is_on else '#8B0000'};
                 color: black;
                 font-weight: bold;
-            }
+            }}
+        """)
+
+    def passenger_emergency_brake_pressed(self):
+        """Handle the passenger emergency brake being pressed."""
+        is_on = self.passenger_emergency_brake_button.isChecked()
+        self.train_data.set_value('passenger_emergency_brake', is_on)
+        # Update button style based on state
+        self.passenger_emergency_brake_button.setStyleSheet(f"""
+            QPushButton {{
+                background-color: {'#550000' if is_on else '#8B0000'};
+                color: black;
+                font-weight: bold;
+            }}
         """)

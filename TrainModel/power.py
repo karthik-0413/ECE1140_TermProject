@@ -1,82 +1,60 @@
-# power.py
+def calculate_train_speed(train_data, delta_t=5.0):
+    """Calculate and update the train's speed and acceleration."""
+    mass = train_data.current_train_weight * 1000  # Convert to kg
 
-from PyQt6.QtGui import QFont
-from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QLineEdit, QPushButton, QHBoxLayout
-from PyQt6.QtCore import Qt
+    # Convert current speed from mph to m/s
+    current_speed_mps = train_data.current_speed * 0.44704  # mph to m/s
 
+    power_command_w = train_data.commanded_power
+    max_power_w = 120000  # 120 kW in watts
 
-class SetCommandedPowerDialog(QDialog):
-    def __init__(self, parent=None, current_power=0):
-        super().__init__(parent)
-        self.setWindowTitle("Set Commanded Power")
-        self.setFixedSize(400, 200)
+    # If emergency brake is engaged, turn off service brake
+    if train_data.emergency_brake or train_data.passenger_emergency_brake:
+        train_data.service_brake = False
+        train_data.auto_service_brake = False
 
-        layout = QVBoxLayout()
+    # Check for brakes
+    if train_data.emergency_brake or train_data.passenger_emergency_brake:
+        acceleration = -2.73  # m/s²
+        power_command_w = 0
+    elif train_data.service_brake or train_data.auto_service_brake:
+        acceleration = -1.2  # m/s²
+        power_command_w = 0
+    else:
+        # Normal operation
+        if current_speed_mps == 0:
+            force = max_power_w / 19.44  # Use 19.44 m/s when speed is zero
+        else:
+            force = power_command_w / current_speed_mps
+            print(f"Force: {force:.2f} N")
 
-        # Current Commanded Power Display
-        self.current_power_label = QLabel(f"Current Commanded Power: {current_power} kW")
-        self.current_power_label.setFont(QFont('Arial', 14))
-        self.current_power_label.setStyleSheet("color: black;")
-        layout.addWidget(self.current_power_label, alignment=Qt.AlignmentFlag.AlignCenter)
+        # Keep frictional force calculation unchanged
+        frictional_force = 0.002 * mass * 9.8
 
-        # Input Field
-        self.label = QLabel("Enter the Commanded Power (kW):")
-        self.label.setFont(QFont('Arial', 14))
-        self.label.setStyleSheet("color: black;")
-        layout.addWidget(self.label, alignment=Qt.AlignmentFlag.AlignCenter)
+        if force < frictional_force:
+            print("Train has stopped moving")
+            force = 0
+        else:
+            force -= frictional_force
 
-        self.power_edit = QLineEdit(str(current_power))
-        self.power_edit.setFont(QFont('Arial', 14))
-        self.power_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.power_edit.setStyleSheet("color: black;")
-        layout.addWidget(self.power_edit, alignment=Qt.AlignmentFlag.AlignCenter)
+        print(f"Frictional Force: {frictional_force:.2f} N")
 
-        # Buttons layout
-        buttons_layout = QHBoxLayout()
-        self.ok_button = QPushButton("OK")
-        self.ok_button.setFont(QFont('Arial', 12, QFont.Weight.Bold))
-        self.ok_button.setStyleSheet("""
-            QPushButton {
-                background-color: white;
-                color: black;
-                border: 2px solid black;
-                border-radius: 5px;
-                padding: 5px 15px;
-            }
-            QPushButton:hover {
-                background-color: #f0f0f0;
-            }
-        """)
-        self.ok_button.clicked.connect(self.accept)
+        acceleration = force / mass
+        print(f"Acceleration: {acceleration:.2f} m/s^2")
 
-        self.cancel_button = QPushButton("Cancel")
-        self.cancel_button.setFont(QFont('Arial', 12, QFont.Weight.Bold))
-        self.cancel_button.setStyleSheet("""
-            QPushButton {
-                background-color: white;
-                color: black;
-                border: 2px solid black;
-                border-radius: 5px;
-                padding: 5px 15px;
-            }
-            QPushButton:hover {
-                background-color: #f0f0f0;
-            }
-        """)
-        self.cancel_button.clicked.connect(self.reject)
+        # Cap positive acceleration to +0.5 m/s²
+        if acceleration > 0.5:
+            acceleration = 0.5
 
-        buttons_layout.addWidget(self.ok_button)
-        buttons_layout.addWidget(self.cancel_button)
+    # Update speed
+    new_speed_mps = current_speed_mps + acceleration * delta_t
 
-        layout.addLayout(buttons_layout)
+    if new_speed_mps < 0:
+        new_speed_mps = 0
+        acceleration = 0  # If speed is zero, acceleration cannot be negative
 
-        self.setLayout(layout)
+    # Update train_data
+    train_data.previous_acceleration = acceleration
+    train_data.current_speed = new_speed_mps * 2.23694  # Convert m/s back to mph
 
-    def get_commanded_power(self):
-        try:
-            power = float(self.power_edit.text())
-            if power < 0:
-                raise ValueError
-            return power
-        except ValueError:
-            return None  # Invalid input
+    return train_data.current_speed

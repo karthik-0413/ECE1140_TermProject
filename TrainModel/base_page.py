@@ -8,6 +8,8 @@ from PyQt6.QtCore import Qt
 
 
 class BasePage(QWidget):
+    """Base class for all pages in the application."""
+
     def __init__(self, title, train_id_callback):
         super().__init__()
 
@@ -80,6 +82,7 @@ class BasePage(QWidget):
         self.setLayout(main_layout)
 
     def set_train_id_combo(self, train_id):
+        """Set the current train ID in the combo box without emitting signals."""
         self.train_id_combo.blockSignals(True)
         self.train_id_combo.setCurrentText(train_id)
         self.train_id_combo.blockSignals(False)
