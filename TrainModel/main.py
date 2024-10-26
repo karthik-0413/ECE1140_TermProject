@@ -15,6 +15,8 @@ from train_data import TrainData
 
 
 class MainWindow(QMainWindow):
+    """Main window of the application."""
+
     def __init__(self):
         super().__init__()
 
@@ -38,11 +40,11 @@ class MainWindow(QMainWindow):
 
         # Navigation buttons
         self.train_model_btn = QPushButton("Train Model")
-        self.test_bench_btn = QPushButton("Test Bench")
         self.murphy_btn = QPushButton("Murphy")
+        self.test_bench_btn = QPushButton("Test Bench")  # Moved to third position
 
         # Set fixed size and style for navigation buttons
-        for btn in [self.train_model_btn, self.test_bench_btn, self.murphy_btn]:
+        for btn in [self.train_model_btn, self.murphy_btn, self.test_bench_btn]:
             btn.setFixedSize(150, 50)
             btn.setFont(QFont('Arial', 12, QFont.Weight.Bold))
             btn.setStyleSheet("""
@@ -62,10 +64,10 @@ class MainWindow(QMainWindow):
         self.test_bench_btn.clicked.connect(self.show_test_bench)
         self.murphy_btn.clicked.connect(self.show_murphy)
 
-        # Add navigation buttons to layout without spacing
+        # Add navigation buttons to layout in new order
         nav_layout.addWidget(self.train_model_btn)
-        nav_layout.addWidget(self.test_bench_btn)
         nav_layout.addWidget(self.murphy_btn)
+        nav_layout.addWidget(self.test_bench_btn)
 
         # Add navigation layout to main layout
         nav_container = QWidget()
@@ -81,10 +83,10 @@ class MainWindow(QMainWindow):
         self.test_bench_page = TestBenchPage(self.current_train_data, self.train_id_changed)
         self.murphy_page = MurphyPage(self.current_train_data, self.train_id_changed)
 
-        # Add pages to stacked widget
-        self.stacked_widget.addWidget(self.train_model_page)
-        self.stacked_widget.addWidget(self.test_bench_page)
-        self.stacked_widget.addWidget(self.murphy_page)
+        # Add pages to stacked widget in the new order
+        self.stacked_widget.addWidget(self.train_model_page)  # Index 0
+        self.stacked_widget.addWidget(self.murphy_page)       # Index 1
+        self.stacked_widget.addWidget(self.test_bench_page)   # Index 2
 
         # Initially show Murphy page
         self.stacked_widget.setCurrentWidget(self.murphy_page)
@@ -96,7 +98,7 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(central_widget)
 
     def train_id_changed(self, new_train_id):
-        # Handle Train ID change
+        """Handle Train ID change."""
         self.current_train_id = new_train_id
         self.current_train_data = self.train_data_dict[self.current_train_id]
         # Update the pages with the new train data
@@ -110,17 +112,21 @@ class MainWindow(QMainWindow):
         self.murphy_page.set_train_id_combo(new_train_id)
 
     def show_train_model(self):
+        """Show the Train Model page."""
         self.train_model_page.update_display()
         self.stacked_widget.setCurrentWidget(self.train_model_page)
 
     def show_test_bench(self):
+        """Show the Test Bench page."""
         self.stacked_widget.setCurrentWidget(self.test_bench_page)
 
     def show_murphy(self):
+        """Show the Murphy page."""
         self.stacked_widget.setCurrentWidget(self.murphy_page)
 
 
 def main():
+    """Main function to run the application."""
     app = QApplication(sys.argv)
     window = MainWindow()
     window.show()
@@ -128,4 +134,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+        main()
