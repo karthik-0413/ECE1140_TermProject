@@ -1,5 +1,7 @@
 import time
 import json
+import sys
+import os
 from PyQt6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QLineEdit,
     QPushButton, QSizePolicy, QSpacerItem, QMessageBox
@@ -7,9 +9,20 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt, QElapsedTimer, QTimer, QCoreApplication
 from TrainControllerCommunicateSignals import Communicate
 
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from Resources.Clock import Clock
+
 class TrainControllerUI(QWidget):
     def __init__(self, communicator: Communicate):
         super().__init__()
+        
+        self.update_time(5)
+        
+        # Print each of the "tick" signal being emitted from the Clock class
+        self.clock = Clock()
+        # self.clock.tick.connect(lambda second: self.update_time(second))
+        self.clock.tick.connect(lambda second: print(second))
+        self.clock.start_timer()
         
         # Polarity of Tracks (knows when entered new block)
         self.polarity = True
@@ -118,7 +131,6 @@ class TrainControllerUI(QWidget):
         self.ek_current = 0.0
         self.uk_previous = 0.0
         self.ek_previous = 0.0
-        self.dt = 1.0
         
         
         # Call the calculate_brake_distance function every millisecond
@@ -174,6 +186,7 @@ class TrainControllerUI(QWidget):
         ####################################################
         # SPEED & AUTHORITY CONTROLS IN THE USER INTERFACE #
         ####################################################
+        #include which blocks are under the jurisdcition of each wayside
 
 
         # CURRENT SPEED SECTION
@@ -761,24 +774,34 @@ class TrainControllerUI(QWidget):
         # Disable the setpoint speed input field
         self.setpoint_speed_edit.setEnabled(True)
         print("Operation Mode set to Manual")
+        
+        # self.update_desired_speed()
+        # Call the setpoint speed calculations function in the update_desired_speed() function
 
+    # 
     def set_automatic_mode(self):
         self.operation_mode = 0
         
+        # This would go in update_desired_speed() function
         # ONLY WHEN CHANGING FROM MANUAL TO AUTOMATIC MODE - always pick the lowest of the speed limit and the commanded speed
         if self.desired_velocity < self.speed_limit and self.desired_velocity < self.commanded_speed and self.commanded_speed < self.speed_limit:
             # If the setpoint speed is less than the speed limit and the commanded speed
             self.current_velocity = self.commanded_speed
+            # self.desired_velocity = self.commanded_speed
             self.current_speed_edit.setText(f"{self.current_velocity * 2.23694:.2f} mph")
             self.setpoint_speed_edit.clear()
         elif self.desired_velocity < self.speed_limit and self.desired_velocity < self.commanded_speed and self.commanded_speed > self.speed_limit:
             # If the setpoint speed is less than the speed limit and the commanded speed is greater than the speed limit
             self.current_velocity = self.speed_limit
+            # self.desired_velocity = self.speed_limit
             self.current_speed_edit.setText(f"{self.current_velocity * 2.23694:.2f} mph")
             self.setpoint_speed_edit.clear()
             
         self.power_command = 0
         self.power_command_edit.setText("0.00") 
+        
+        # For Integrartion 
+        # self.power_command = self.update_power_command()
            
         # Update the current speed display in UI for users
         self.current_speed_edit.setText(f"{self.current_velocity * 2.23694:.2f} mph")
@@ -982,8 +1005,6 @@ class TrainControllerUI(QWidget):
         # Update the power command display
         self.power_command_edit.setText(f"{self.power_command:.2f}")
         print(f"Power Command: {self.power_command} kW")
-        
-    
     
     ##########################
     # FAILURE MODE FUNCTIONS #
@@ -1074,7 +1095,9 @@ class TrainControllerUI(QWidget):
     
     
     
-    
+    def update_time(self, time: float):
+        self.time = time
+        
     
     
     
@@ -1088,3 +1111,13 @@ if __name__ == "__main__":#
     window = TrainControllerUI(communicator)
     window.show()
     app.exec()
+    
+# DIAGRAMS TO DO:
+# DONE - 5/5
+
+
+# 1. USE CASE DIAGRAM - DONE
+# 2. SEQUENCE DIAGRAM - DONE
+# 3. CLASS DIAGRAM - DONE
+# 4. USE CASE DESCRIPTIONS - DONE
+# 5. DEPLOYMENT DIAGRAM - DONE

@@ -1,4 +1,5 @@
 import sys
+import os
 from PyQt6.QtGui import QFont, QPixmap, QImage
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QPushButton, QLabel,
@@ -6,7 +7,13 @@ from PyQt6.QtWidgets import (
     QScrollArea, QLineEdit, QComboBox, QDialog, QFrame
 )
 from PyQt6.QtCore import Qt, pyqtSignal, QObject, QTimer
-from ..TrainController.TrainControllerIntegratedCommunicateSignals import IntegratedCommunicate
+
+# Add the path to the 'TrainController' folder
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+# Now you can import from TrainController
+from TrainController.TrainControllerIntegratedCommunicateSignals import IntegratedCommunicate
+
 
 
 '''
@@ -79,31 +86,31 @@ class TrainData(QObject):
         # For for pyqtsignals file
         self.communicator = communicator
         
-        # Output to Train Controller from Track Model (Must emit signal to update the Train Controller)
-        self.communicator.current_velocity_signal.connect(self.send_current_velocity)
-        self.communicator.commanded_speed_signal.connect(self.send_commanded_speed)
-        self.communicator.commanded_authority_signal.connect(self.send_commanded_authority)
-        self.communicator.engine_failure_signal.connect(self.send_engine_failure)
-        self.communicator.brake_failure_signal.connect(self.send_brake_failure)
-        self.communicator.signal_failure_signal.connect(self.send_signal_failure)
-        self.communicator.passenger_brake_command_signal.connect(self.send_passenger_brake_command)
-        self.communicator.actual_temperature_signal.connect(self.send_actual_temperature)
-        self.communicator.blocks_between_stations_signal.connect(self.send_blocks_between_stations)
-        self.communicator.enable_switch_status_signal.connect(self.send_enable_switch_status)
-        self.communicator.switch_status_signal.connect(self.send_switch_status)
+        # # Output to Train Controller from Track Model (Must emit signal to update the Train Controller)
+        # self.communicator.current_velocity_signal.connect(self.send_current_velocity)
+        # self.communicator.commanded_speed_signal.connect(self.send_commanded_speed)
+        # self.communicator.commanded_authority_signal.connect(self.send_commanded_authority)
+        # self.communicator.engine_failure_signal.connect(self.send_engine_failure)
+        # self.communicator.brake_failure_signal.connect(self.send_brake_failure)
+        # self.communicator.signal_failure_signal.connect(self.send_signal_failure)
+        # self.communicator.passenger_brake_command_signal.connect(self.send_passenger_brake_command)
+        # self.communicator.actual_temperature_signal.connect(self.send_actual_temperature)
+        # self.communicator.blocks_between_stations_signal.connect(self.send_blocks_between_stations)
+        # self.communicator.enable_switch_status_signal.connect(self.send_enable_switch_status)
+        # self.communicator.switch_status_signal.connect(self.send_switch_status)
         
         
-        # Input from Train Controller
-        self.communicator.power_command_signal.connect(self.handle_power_command)
-        self.communicator.service_brake_command_signal.connect(self.handle_service_brake_command)
-        self.communicator.emergency_brake_command_signal.connect(self.handle_emergency_brake_command)
-        self.communicator.desired_temperature_signal.connect(self.handle_desired_temperature)
-        self.communicator.exterior_lights_signal.connect(self.handle_exterior_lights)
-        self.communicator.interior_lights_signal.connect(self.handle_interior_lights)
-        self.communicator.left_door_signal.connect(self.handle_left_door)
-        self.communicator.right_door_signal.connect(self.handle_right_door)
-        self.communicator.announcement_signal.connect(self.handle_announcement)
-        self.communicator.station_name_signal.connect(self.handle_station_name)
+        # # Input from Train Controller
+        # self.communicator.power_command_signal.connect(self.handle_power_command)
+        # self.communicator.service_brake_command_signal.connect(self.handle_service_brake_command)
+        # self.communicator.emergency_brake_command_signal.connect(self.handle_emergency_brake_command)
+        # self.communicator.desired_temperature_signal.connect(self.handle_desired_temperature)
+        # self.communicator.exterior_lights_signal.connect(self.handle_exterior_lights)
+        # self.communicator.interior_lights_signal.connect(self.handle_interior_lights)
+        # self.communicator.left_door_signal.connect(self.handle_left_door)
+        # self.communicator.right_door_signal.connect(self.handle_right_door)
+        # self.communicator.announcement_signal.connect(self.handle_announcement)
+        # self.communicator.station_name_signal.connect(self.handle_station_name)
         
         
         # # Outputs to the Train Model
@@ -291,7 +298,7 @@ class TrainData(QObject):
         else:
             # Calculate force
             if current_velocity == 0:
-                force = effective_power_command / 0.1  # Prevent division by zero
+                force = 120000 / 19.44  # Prevent division by zero (Make maximum force exerted)
             else:
                 force = effective_power_command / current_velocity
 
@@ -1446,7 +1453,11 @@ class MainWindow(QMainWindow):
         self.setGeometry(100, 100, 1000, 620)  # Increased window size
 
         # Create TrainData instances for each Train ID
-        self.train_data_dict = {'1': TrainData(), '2': TrainData(), '3': TrainData()}
+        self.train_data_dict = {
+            '1': TrainData(communicator=IntegratedCommunicate()), 
+            '2': TrainData(communicator=IntegratedCommunicate()), 
+            '3': TrainData(communicator=IntegratedCommunicate())
+        }
         self.current_train_id = '1'
         self.current_train_data = self.train_data_dict[self.current_train_id]
 

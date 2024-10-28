@@ -2,10 +2,6 @@ from PyQt6.QtCore import pyqtSignal, QObject
 
 class IntegratedCommunicate(QObject):
     
-    # Engineer Signals
-    engineer_kp_signal = pyqtSignal(float)
-    engineer_ki_signal = pyqtSignal(float)
-    
     # Outputs to the Train Model
     power_command_signal = pyqtSignal(float)
     service_brake_command_signal = pyqtSignal(bool)
@@ -26,7 +22,8 @@ class IntegratedCommunicate(QObject):
     brake_failure_signal = pyqtSignal(bool)
     signal_failure_signal = pyqtSignal(bool)
     passenger_brake_command_signal = pyqtSignal(bool)
+    polarity_signal = pyqtSignal(bool) # If flipped, then train has moved onto next block - NEW
+    lamp_status_signal = pyqtSignal(bool) # 1 = Lamp is on, 0 = Lamp is off - NEW
     actual_temperature_signal = pyqtSignal(float)   # NEW
-    blocks_between_stations_signal = pyqtSignal(list)   # NEW
     enable_switch_status_signal = pyqtSignal(bool)   # NEW -> 1 = check for next switch status, 0 = ignore next switch status
-    switch_status_signal = pyqtSignal(bool)   # NEW -> 1 = switch is right/down, 0 = switch is left/up
+    switch_status_signal = pyqtSignal(bool)   # NEW -> 1 = switch is red, 0 = switch is green

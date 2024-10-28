@@ -80,7 +80,6 @@ class TrainController:
         
         new_velocity = self.current_velocity + acceleration * 5.0
 
-        self.previous_acceleration = acceleration
         self.current_velocity = new_velocity
 
         return new_velocity

@@ -1,34 +1,31 @@
-import sys
 from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem, QHeaderView, QLabel
-from PyQt6.QtCore import Qt
-from TrainControllerCommunicateSignals import Communicate
+from PyQt6.QtCore import Qt, QSize
+import sys
 
-class TrainEngineerUI(QWidget):
-    def __init__(self, communicator: Communicate):
-        super().__init__()
-        
-        self.kp = 7173.0
-        self.ki = 15.0
-        self.communicator = communicator
-        self.initUI()
+class TrainEngineer:
+    def __init__(self):
+        self._kp = 0.0
+        self._ki = 0.0
         
     def set_kp(self, kp):
-        self.kp = kp
-        # emit kp value to signal
-        self.communicator.engineer_kp_signal.emit(self.kp)
-        print(f"Kp set to {self.kp}")
+        self._kp = kp
+        print(f"Kp set to {self._kp}")
         
     def set_ki(self, ki):
-        self.ki = ki
-        # emit kp value to signal
-        self.communicator.engineer_ki_signal.emit(self.ki)
-        print(f"Ki set to {self.ki}")
+        self._ki = ki
+        print(f"Ki set to {self._ki}")
         
     def get_kp(self):
-        return self.kp
+        return self._kp
     
     def get_ki(self):
-        return self.ki
+        return self._ki
+    
+class TrainEngineerUI(QWidget):
+    def __init__(self, engineer):
+        super().__init__()
+        self.engineer = engineer
+        self.initUI()
         
     def initUI(self):
         self.setWindowTitle('Train Engineer Controller')
@@ -50,8 +47,8 @@ class TrainEngineerUI(QWidget):
         train_number_item.setFlags(train_number_item.flags() & ~Qt.ItemFlag.ItemIsEditable)  # Make non-editable
         self.table.setItem(0, 0, train_number_item)
         
-        self.table.setItem(0, 1, QTableWidgetItem(str(self.get_kp())))
-        self.table.setItem(0, 2, QTableWidgetItem(str(self.get_ki())))
+        self.table.setItem(0, 1, QTableWidgetItem(str(self.engineer.get_kp())))
+        self.table.setItem(0, 2, QTableWidgetItem(str(self.engineer.get_ki())))
         self.table.itemChanged.connect(self.update_values)
         
         # Hide the number column to the left of the train number column
@@ -108,19 +105,19 @@ class TrainEngineerUI(QWidget):
         if col == 1:  # Kp column
             try:
                 kp = float(item.text())
-                self.set_kp(kp)
+                self.engineer.set_kp(kp)
             except ValueError:
-                item.setText(str(self.get_kp()))  # Reset to previous value if invalid
+                item.setText(str(self.engineer.get_kp()))  # Reset to previous value if invalid
         elif col == 2:  # Ki column
             try:
                 ki = float(item.text())
-                self.set_ki(ki)
+                self.engineer.set_ki(ki)
             except ValueError:
-                item.setText(str(self.get_ki()))  # Reset to previous value if invalid
+                item.setText(str(self.engineer.get_ki()))  # Reset to previous value if invalid
 
 if __name__ == "__main__":
+    engineer = TrainEngineer()
     app = QApplication(sys.argv)
-    communicator = Communicate()
-    ui = TrainEngineerUI(communicator)
+    ui = TrainEngineerUI(engineer)
     ui.show()
     sys.exit(app.exec())

@@ -201,7 +201,7 @@
         "Block Length (m)": 150,
         "Block Grade (%)": 0,
         "Speed Limit (Km/Hr)": 70,
-        "Infrastructure": "STATION",
+        "Infrastructure": "STATION; MONROEVILLE",
         "Station Side": "Left/Right",
         "ELEVATION (M)": 0,
         "CUMALTIVE ELEVATION (M)": 0.5,
