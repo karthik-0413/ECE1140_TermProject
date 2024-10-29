@@ -269,6 +269,8 @@ class TrainModelPage(BasePage):
 
         # Initial display update
         self.update_display()
+        
+    # Keep the PYQT UI elements in this file, but use PQYTsignals from other file for when 
 
     def set_train_data(self, train_data):
         """Set the current train data and update connections."""
@@ -332,6 +334,15 @@ class TrainModelPage(BasePage):
         return units.get(var_name, '')
 
     def update_display(self):
+        # Double check if these values are from the current train data file - Karthik Raja
+        # If it is, then add all of your connect functions here - Karthik Raja
+        # For example, if you have a speed variable in the train data file, you can connect it to a function that updates the speed in the UI - Karthik Raja
+        # If these values are not from the current train data file, then change this function to make it so that it is the values from the current train data file - Karthik Raja
+        # Add imports to each file that has the signal you want to connect to - Karthik Raja
+        # Make sure the data_changed signal in the train data file emits EVERYTIME ANY variables has been changed - Karthik Raja
+        # Every time an input is given to you, you can emit the data_changed signal - Karthik Raja
+        # This all can be done with your data_changed signal from the Train Data file - Karthik Raja
+        # If this is the case, then you can add one connect function that takes care of all of the UI updates for all displayed variables - Karthik Raja
         """Update the display based on the current train data."""
         # Update the data labels
         for var_name, label in self.value_labels.items():

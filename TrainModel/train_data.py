@@ -7,11 +7,16 @@ from power import calculate_train_speed
 class TrainData(QObject):
     """Class representing the data and state of a train."""
     data_changed = pyqtSignal()
+    # announcement = pyqtSignal(str) - Karthik Raja
 
     def __init__(self, tc_communicate, tm_communicate):
         super().__init__()
+        
+        self.read_from_trainController_trackModel()
+        
         self.tc_communicate = tc_communicate
         self.tm_communicate = tm_communicate
+        self.signal_status = list()
         # Variables for the data values
         self.cabin_temperature = 78  # degrees Fahrenheit (Actual Temperature)
         self.maximum_capacity = 222  # passengers
@@ -91,7 +96,9 @@ class TrainData(QObject):
         # Timer for updating train state every second
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_train_state)
-
+        
+        
+    def read_from_trainController_trackModel(self):
         # Connect incoming signals from Train Controller
         self.tc_communicate.power_command_signal.connect(self.set_power_command)
         self.tc_communicate.service_brake_signal.connect(self.set_service_brake)
@@ -106,8 +113,13 @@ class TrainData(QObject):
         self.tm_communicate.track_commanded_speed_signal.connect(self.set_track_commanded_speed)
         self.tm_communicate.track_commanded_authority_signal.connect(self.set_track_commanded_authority)
         self.tm_communicate.block_info_signal.connect(self.set_block_info)
+        # Make separate set functions for each block property - Karthik Raja
+        # Make a set function for the nuumber of passengers boarding 
         self.tm_communicate.track_polarity_signal.connect(self.set_track_polarity)
         self.tm_communicate.track_signal_status_signal.connect(self.set_track_signal_status)
+        
+    def write_to_trainController_trackModel(self):
+        self.update_train_state()
 
     # Handler methods for incoming signals from Train Controller
     def set_power_command(self, power):
@@ -130,6 +142,7 @@ class TrainData(QObject):
         self.set_value('train_right_door', state)
 
     def set_announcement(self, announcement):
+        # self.announcement.emit(announcement) - Karthik Raja
         self.set_value('announcement', announcement)
 
     def set_station_name(self, name):
@@ -150,7 +163,11 @@ class TrainData(QObject):
     def set_track_polarity(self, polarity):
         self.set_value('polarity', polarity)
 
+    # Parameter is supposed to be a list of ints - Karthik Raja
+    # self.signal_status = list
     def set_track_signal_status(self, status, block_number):
+        # Your Signal Status vairbale set to param value
+        # self.signal_status = status
         self.set_value('signal_status', status)
         self.set_value('signal_block_number', block_number)
 
@@ -211,6 +228,8 @@ class TrainData(QObject):
         self.data_changed.emit()
 
         # Send signals to Train Controller
+        # MAKE SURE TO ADD COMMANDED SPEED, SIGNAL STATUS, AND COMMANDED AUTHORITY TO EMIT FUNCTION LIST BELOW - Karthik Raja
+        
         self.tc_communicate.current_velocity_signal.emit(self.current_speed)
         self.tc_communicate.current_temperature_signal.emit(self.cabin_temperature)
         self.tc_communicate.passenger_brake_signal.emit(self.passenger_emergency_brake)
@@ -223,9 +242,11 @@ class TrainData(QObject):
 
         # Send signals to Track Model
         self.tm_communicate.position_signal.emit(self.current_position)
+        # Variable should be named passenger_leaving - Karthik Raja
         self.tm_communicate.passengers_disembarking_signal.emit(self.passenger_boarding)
         self.tm_communicate.seat_vacancy_signal.emit(self.available_seats)
 
         # Stop the timer if the train has stopped and no power is commanded
+        # Remove built-in timer - Karthik Raja
         if self.current_speed == 0 and (self.commanded_power == 0 or self.current_acceleration == 0):
             self.stop_timer()
