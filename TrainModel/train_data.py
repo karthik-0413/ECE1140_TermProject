@@ -8,8 +8,10 @@ class TrainData(QObject):
     """Class representing the data and state of a train."""
     data_changed = pyqtSignal()
 
-    def __init__(self):
+    def __init__(self, tc_communicate, tm_communicate):
         super().__init__()
+        self.tc_communicate = tc_communicate
+        self.tm_communicate = tm_communicate
         # Variables for the data values
         self.cabin_temperature = 78  # degrees Fahrenheit (Actual Temperature)
         self.maximum_capacity = 222  # passengers
@@ -34,7 +36,7 @@ class TrainData(QObject):
         self.commanded_power = 90  # kW
         self.commanded_speed_tc = 80  # km/h
         self.commanded_speed = self.commanded_speed_tc * 0.621371  # mph (converted)
-        self.authority = 400  # m
+        self.authority = 15  # number of blocks
         self.commanded_authority = self.authority * 3.28084  # ft (converted)
         self.service_brake = False
         self.exterior_light = True
@@ -75,9 +77,82 @@ class TrainData(QObject):
         # Added variable for automatic service brake
         self.auto_service_brake = False
 
+        # Position Variables
+        self.current_position = 0.0  # meters
+        self.grade = 0.0  # percentage
+        self.elevation = 0.0  # meters
+        self.underground = False  # boolean
+
+        # Failure Modes
+        self.engine_failure = False
+        self.brake_failure = False
+        self.signal_failure = False
+
         # Timer for updating train state every second
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_train_state)
+
+        # Connect incoming signals from Train Controller
+        self.tc_communicate.power_command_signal.connect(self.set_power_command)
+        self.tc_communicate.service_brake_signal.connect(self.set_service_brake)
+        self.tc_communicate.emergency_brake_signal.connect(self.set_emergency_brake)
+        self.tc_communicate.desired_temperature_signal.connect(self.set_desired_temperature)
+        self.tc_communicate.light_command_signal.connect(self.set_interior_light)
+        self.tc_communicate.door_command_signal.connect(self.set_doors)
+        self.tc_communicate.announcement_signal.connect(self.set_announcement)
+        self.tc_communicate.station_name_signal.connect(self.set_station_name)
+
+        # Connect incoming signals from Track Model
+        self.tm_communicate.track_commanded_speed_signal.connect(self.set_track_commanded_speed)
+        self.tm_communicate.track_commanded_authority_signal.connect(self.set_track_commanded_authority)
+        self.tm_communicate.block_info_signal.connect(self.set_block_info)
+        self.tm_communicate.track_polarity_signal.connect(self.set_track_polarity)
+        self.tm_communicate.track_signal_status_signal.connect(self.set_track_signal_status)
+
+    # Handler methods for incoming signals from Train Controller
+    def set_power_command(self, power):
+        self.set_value('commanded_power', power)
+
+    def set_service_brake(self, state):
+        self.set_value('service_brake', state)
+
+    def set_emergency_brake(self, state):
+        self.set_value('emergency_brake', state)
+
+    def set_desired_temperature(self, temp):
+        self.set_value('desired_temperature', temp)
+
+    def set_interior_light(self, state):
+        self.set_value('interior_light', state)
+
+    def set_doors(self, state):
+        self.set_value('train_left_door', state)
+        self.set_value('train_right_door', state)
+
+    def set_announcement(self, announcement):
+        self.set_value('announcement', announcement)
+
+    def set_station_name(self, name):
+        self.set_value('beacon_station', name)
+
+    # Handler methods for incoming signals from Track Model
+    def set_track_commanded_speed(self, speed):
+        self.set_value('commanded_speed_tc', speed)
+
+    def set_track_commanded_authority(self, authority):
+        self.set_value('authority', authority)
+
+    def set_block_info(self, grade, elevation, underground):
+        self.set_value('grade', grade)
+        self.set_value('elevation', elevation)
+        self.set_value('underground', underground)
+
+    def set_track_polarity(self, polarity):
+        self.set_value('polarity', polarity)
+
+    def set_track_signal_status(self, status, block_number):
+        self.set_value('signal_status', status)
+        self.set_value('signal_block_number', block_number)
 
     def update_train_weight(self):
         """Update the train's weight based on passenger count."""
@@ -131,10 +206,26 @@ class TrainData(QObject):
     def update_train_state(self, delta_t=1.0):
         """Update the train's state."""
         # Call the calculate_train_speed function
-        effective_power_command = calculate_train_speed(self, delta_t)
+        calculate_train_speed(self, delta_t)
 
         self.data_changed.emit()
 
+        # Send signals to Train Controller
+        self.tc_communicate.current_velocity_signal.emit(self.current_speed)
+        self.tc_communicate.current_temperature_signal.emit(self.cabin_temperature)
+        self.tc_communicate.passenger_brake_signal.emit(self.passenger_emergency_brake)
+        self.tc_communicate.polarity_signal.emit(True)  # Example value
+
+        # Send failure signals
+        self.tc_communicate.engine_failure_signal.emit(self.engine_failure)
+        self.tc_communicate.brake_failure_signal.emit(self.brake_failure)
+        self.tc_communicate.signal_failure_signal.emit(self.signal_failure)
+
+        # Send signals to Track Model
+        self.tm_communicate.position_signal.emit(self.current_position)
+        self.tm_communicate.passengers_disembarking_signal.emit(self.passenger_boarding)
+        self.tm_communicate.seat_vacancy_signal.emit(self.available_seats)
+
         # Stop the timer if the train has stopped and no power is commanded
-        if self.current_speed == 0 and (effective_power_command == 0 or self.current_acceleration == 0):
+        if self.current_speed == 0 and (self.commanded_power == 0 or self.current_acceleration == 0):
             self.stop_timer()

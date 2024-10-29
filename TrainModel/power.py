@@ -1,11 +1,15 @@
-def calculate_train_speed(train_data, delta_t=5.0):
-    """Calculate and update the train's speed and acceleration."""
+# power.py
+
+import math
+
+def calculate_train_speed(train_data, delta_t=1.0):
+    """Calculate and update the train's speed, acceleration, and position."""
     mass = train_data.current_train_weight * 1000  # Convert to kg
 
     # Convert current speed from mph to m/s
     current_speed_mps = train_data.current_speed * 0.44704  # mph to m/s
 
-    power_command_w = train_data.commanded_power
+    power_command_w = train_data.commanded_power * 1000  # Convert kW to W
     max_power_w = 120000  # 120 kW in watts
 
     # If emergency brake is engaged, turn off service brake
@@ -26,20 +30,20 @@ def calculate_train_speed(train_data, delta_t=5.0):
             force = max_power_w / 19.44  # Use 19.44 m/s when speed is zero
         else:
             force = power_command_w / current_speed_mps
-            print(f"Force: {force:.2f} N")
 
-        # Keep frictional force calculation unchanged
+        # Frictional force
         frictional_force = 0.002 * mass * 9.8
 
-        if force < frictional_force:
-            print("Train has stopped moving")
-            force = 0
-        else:
-            force -= frictional_force
+        # Grade calculations
+        slope_angle = math.atan(train_data.grade / 100)  # Convert grade percentage to angle in radians
+        grade_force = mass * 9.8 * math.sin(slope_angle)
+        print(f"Grade Force: {grade_force:.2f} N")
 
-        print(f"Frictional Force: {frictional_force:.2f} N")
+        # Adjust force with friction and grade
+        net_force = force - frictional_force - grade_force
+        print(f"Net Force: {net_force:.2f} N")
 
-        acceleration = force / mass
+        acceleration = net_force / mass
         print(f"Acceleration: {acceleration:.2f} m/s^2")
 
         # Cap positive acceleration to +0.5 m/s²
@@ -53,8 +57,12 @@ def calculate_train_speed(train_data, delta_t=5.0):
         new_speed_mps = 0
         acceleration = 0  # If speed is zero, acceleration cannot be negative
 
+    # Update position
+    new_position = train_data.current_position + (delta_t * new_speed_mps)
+    train_data.current_position = new_position
+
     # Update train_data
-    train_data.previous_acceleration = acceleration
+    train_data.current_acceleration = acceleration * 3.28084  # Convert m/s² to ft/s²
     train_data.current_speed = new_speed_mps * 2.23694  # Convert m/s back to mph
 
     return train_data.current_speed

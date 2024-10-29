@@ -13,9 +13,11 @@ from base_page import BasePage
 class TrainModelPage(BasePage):
     """Page representing the Train Model."""
 
-    def __init__(self, train_data, train_id_callback):
+    def __init__(self, train_data, train_id_callback, tc_communicate, tm_communicate):
         super().__init__("Train Model", train_id_callback)
         self.train_data = train_data  # Store the train data
+        self.tc_communicate = tc_communicate
+        self.tm_communicate = tm_communicate
 
         # Create a scroll area
         scroll_area = QScrollArea()
@@ -62,6 +64,7 @@ class TrainModelPage(BasePage):
             ("Commanded Authority", "commanded_authority", "ft"),
             ("Available Seats", "available_seats", ""),
             ("Current Train Wt.", "current_train_weight", "t"),
+            ("Current Position", "current_position", "m"),
         ]
 
         # Font settings
@@ -318,6 +321,7 @@ class TrainModelPage(BasePage):
             'commanded_authority': 'ft',
             'available_seats': '',
             'current_train_weight': 't',
+            'current_position': 'm',
             # Static units
             'static_cars': '',
             'static_length': 'ft',
@@ -377,6 +381,8 @@ class TrainModelPage(BasePage):
         """Handle the passenger emergency brake being pressed."""
         is_on = self.passenger_emergency_brake_button.isChecked()
         self.train_data.set_value('passenger_emergency_brake', is_on)
+        # Emit signal to Train Controller
+        self.tc_communicate.passenger_brake_signal.emit(is_on)
         # Update button style based on state
         self.passenger_emergency_brake_button.setStyleSheet(f"""
             QPushButton {{

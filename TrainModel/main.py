@@ -12,6 +12,8 @@ from train_model import TrainModelPage
 from testbench import TestBenchPage
 from murphy import MurphyPage
 from train_data import TrainData
+from train_controller_communicate import TrainControllerCommunicate
+from track_model_communicate import TrackModelCommunicate
 
 
 class MainWindow(QMainWindow):
@@ -23,8 +25,16 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("PyQt6 Train Control Application")
         self.setGeometry(100, 100, 1000, 620)  # Increased window size
 
+        # Create communication instances
+        self.tc_communicate = TrainControllerCommunicate()
+        self.tm_communicate = TrackModelCommunicate()
+
         # Create TrainData instances for each Train ID
-        self.train_data_dict = {'1': TrainData(), '2': TrainData(), '3': TrainData()}
+        self.train_data_dict = {
+            '1': TrainData(self.tc_communicate, self.tm_communicate),
+            '2': TrainData(self.tc_communicate, self.tm_communicate),
+            '3': TrainData(self.tc_communicate, self.tm_communicate)
+        }
         self.current_train_id = '1'
         self.current_train_data = self.train_data_dict[self.current_train_id]
 
@@ -79,9 +89,9 @@ class MainWindow(QMainWindow):
         self.stacked_widget = QStackedWidget()
 
         # Pages
-        self.train_model_page = TrainModelPage(self.current_train_data, self.train_id_changed)
-        self.test_bench_page = TestBenchPage(self.current_train_data, self.train_id_changed)
-        self.murphy_page = MurphyPage(self.current_train_data, self.train_id_changed)
+        self.train_model_page = TrainModelPage(self.current_train_data, self.train_id_changed, self.tc_communicate, self.tm_communicate)
+        self.test_bench_page = TestBenchPage(self.current_train_data, self.train_id_changed, self.tc_communicate, self.tm_communicate)
+        self.murphy_page = MurphyPage(self.current_train_data, self.train_id_changed, self.tc_communicate, self.tm_communicate)
 
         # Add pages to stacked widget in the new order
         self.stacked_widget.addWidget(self.train_model_page)  # Index 0
@@ -134,4 +144,4 @@ def main():
 
 
 if __name__ == "__main__":
-        main()
+    main()
