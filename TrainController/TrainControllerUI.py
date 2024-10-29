@@ -9,8 +9,8 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt, QElapsedTimer, QTimer, QCoreApplication
 from TrainControllerCommunicateSignals import Communicate
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from Resources.Clock import Clock
+# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+# from Resources.Clock import Clock
 
 class TrainControllerUI(QWidget):
     def __init__(self, communicator: Communicate):
@@ -18,11 +18,11 @@ class TrainControllerUI(QWidget):
         
         self.update_time(5)
         
-        # Print each of the "tick" signal being emitted from the Clock class
-        self.clock = Clock()
-        # self.clock.tick.connect(lambda second: self.update_time(second))
-        self.clock.tick.connect(lambda second: print(second))
-        self.clock.start_timer()
+        # # Print each of the "tick" signal being emitted from the Clock class
+        # self.clock = Clock()
+        # # self.clock.tick.connect(lambda second: self.update_time(second))
+        # self.clock.tick.connect(lambda second: print(second))
+        # self.clock.start_timer()
         
         # Polarity of Tracks (knows when entered new block)
         self.polarity = True
@@ -1013,7 +1013,7 @@ class TrainControllerUI(QWidget):
     def update_engine_failure_status(self, failure: bool):
         if failure:
             self.engine_fail_indicator.setStyleSheet("background-color: red; border-radius: 20px; border: 2px solid black;")  # Red for failure
-            QTimer.singleShot(3000, lambda: (self.engine_fail_indicator.setStyleSheet("background-color: green; border-radius: 20px; border: 2px solid black;"), setattr(self, 'engine_fail', False)))
+            # QTimer.singleShot(3000, lambda: (self.engine_fail_indicator.setStyleSheet("background-color: green; border-radius: 20px; border: 2px solid black;"), setattr(self, 'engine_fail', False)))
 
         else:
             self.engine_fail_indicator.setStyleSheet("background-color: green; border-radius: 20px; border: 2px solid black;")  # Green for no failure

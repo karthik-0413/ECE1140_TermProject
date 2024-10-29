@@ -23,12 +23,12 @@ class TimerThread(QThread):
                 self.pause_signal.wait(self.lock)
             self.lock.unlock()
 
-            adjusted_speed = self.speed_multiplier * 1000
+            adjusted_speed = self.speed_multiplier * 10
 
             # Sleeping based on the adjusted simulation speed
             time.sleep(1.0 / adjusted_speed)
             self.seconds_elapsed += 1
-            print(self.seconds_elapsed)
+            # print(self.seconds_elapsed)
             self.second_passed.emit(self.seconds_elapsed)
 
     def start_clock(self):
@@ -69,7 +69,7 @@ class TimerUI(QWidget):
 
         # Timer display label
         self.time_display = QLabel("00:00:00")
-        self.time_display.setFixedWidth(160)
+        self.time_display.setFixedWidth(170)
         self.time_display.setStyleSheet("""
             font-size: 30px;
             color: #222222;

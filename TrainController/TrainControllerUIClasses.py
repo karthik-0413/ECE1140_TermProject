@@ -20,7 +20,7 @@ class Doors(QObject):
         super().__init__()
         self.left_door = False
         self.right_door = False
-    
+ 
     def open_left_door(self):
         self.left_door = True
         self.left_door_update.emit(self.left_door)
@@ -28,7 +28,7 @@ class Doors(QObject):
         
     def open_right_door(self):
         self.right_door = True
-        self.left_door_update.emit(self.right_door)
+        self.right_door_update.emit(self.right_door)
         print("Right door opened")
         
     def close_left_door(self):
@@ -67,12 +67,13 @@ class BrakeStatus(QObject):
     passenger_brake_command_signal = pyqtSignal(bool)
     driver_brake_signal = pyqtSignal(bool)
     
-    def __init__(self):
+    def __init__(self, communicator: Communicate):
         super().__init__()
         self.driver_service_brake_command = False
         self.driver_emergency_brake_command = False
         self.driver_brake_status = False
         self.passenger_brake = False
+        self.communicator = communicator
         
     def apply_emergency_brake(self):
         self.driver_emergency_brake_command = True
@@ -101,8 +102,8 @@ class BrakeStatus(QObject):
             # Turn on the passenger brake indcator until current velocity is 0
             self.driver_emergency_brake_command = True
             self.passenger_brake_command_signal.emit(self.driver_emergency_brake_command)
-            # self.passenger_brake_status.setText("ON")
-            # self.passenger_brake_status.setStyleSheet("background-color: red; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
+            print("Passenger Brake Applied")
+            self.communicator.passenger_brake_command_signal.emit(True)
         
 class PowerCommand(QObject):
     power_command_signal = pyqtSignal(float)
@@ -124,14 +125,9 @@ class PowerCommand(QObject):
         if round(desired_velocity, 2) == round(current_velocity, 2):
             self.power_command = 0
             self.power_command_signal.emit(self.power_command)
-            # Service brake should be not applied
-            # self.reset_service_brake_button_style()
             # Put Brake Status has OFF
-            self.brake_status.driver_service_brake_command = False
-            self.brake_status.driver_brake_status = False
-            self.brake_status.driver_emergency_brake_command = False
-            # self.brake_status.setText("OFF")
-            # self.brake_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
+            self.brake_status.no_apply_service_brake()
+            self.brake_status.no_apply_emergency_brake()
             return self.power_command
 
         print(f"Desired Speed: {desired_velocity:.2f} m/s, Current Speed: {current_velocity:.2f} m/s")
@@ -155,31 +151,31 @@ class PowerCommand(QObject):
         # Power command bound
         if self.power_command > self.max_power:
             self.power_command = self.max_power
-            # self.reset_service_brake_button_style()
             # Put Brake Status has OFF
             self.brake_status.driver_brake_status = False
             self.brake_status.driver_service_brake_command = False
             self.brake_status.driver_brake_status = False
             self.brake_status.driver_emergency_brake_command = False
-            # self.brake_status.setText("OFF")
-            # self.brake_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
+            self.brake_status.no_apply_service_brake()
+            self.brake_status.no_apply_emergency_brake()
+            
         elif self.power_command <= 0:
             self.power_command = 0
             self.brake_status.driver_service_brake_command = True
             self.brake_status.driver_brake_status = True
             self.brake_status.driver_emergency_brake_command = False
             print("Service Brake Applied")
-            # Press the service brake button in UI
-            # self.divet_in_service_brake_button()
+            self.brake_status.apply_service_brake()
+            self.brake_status.no_apply_emergency_brake()
+            
         else:
             self.power_command = self.power_command
             # self.reset_service_brake_button_style()
             self.brake_status.driver_service_brake_command = False
             self.brake_status.driver_brake_status = False
             self.brake_status.driver_emergency_brake_command = False
-            # Put Brake Status has OFF
-            # self.brake_status.setText("OFF")
-            # self.brake_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
+            self.brake_status.no_apply_service_brake()
+            self.brake_status.no_apply_emergency_brake()
             
         self.power_command_signal.emit(self.power_command)
     
@@ -187,9 +183,9 @@ class SpeedControl(QObject):
     commanded_speed_signal = pyqtSignal(float)
     current_velocity_signal = pyqtSignal(float)
     
-    def __init__(self, power_class: PowerCommand, brake_status: BrakeStatus):
+    def __init__(self, power_class: PowerCommand, brake_status: BrakeStatus, communicator: Communicate):
         super().__init__()
-        self.commanded_speed = 0.0
+        self.commanded_speed = 13.89
         self.setpoint_speed = 0.0
         self.setpoint_speed_submit = False
         self.speed_limit = 13.89
@@ -198,6 +194,12 @@ class SpeedControl(QObject):
         self.desired_velocity = 0.0
         self.power_class = power_class
         self.brake_status = brake_status
+        self.communicator = communicator
+        self.max_speed = 0.0
+        self.find_max_speed()
+        
+    def find_max_speed(self):
+        self.max_speed = min(self.speed_limit, self.commanded_speed)
         
     def update_speed_limit(self, speed: float):
         self.speed_limit = speed
@@ -207,12 +209,11 @@ class SpeedControl(QObject):
         if speed == 0:
             self.current_velocity = 0
             self.current_velocity_signal.emit(self.current_velocity)
-            # self.current_speed_edit.setText(f"{self.current_velocity:.2f} mph")
-            # Make passenger brake status and all other statuses are OFF HERE IN UI
             self.brake_status.passenger_brake = False
             self.brake_status.driver_brake_status = False
             self.brake_status.driver_service_brake_command = False
             self.brake_status.driver_emergency_brake_command = False
+            self.communicator.passenger_brake_command_signal.emit(False)
             
             
         self.current_velocity = speed
@@ -246,18 +247,18 @@ class SpeedControl(QObject):
             
     def update_setpoint_speed_calculations(self, speed: float):  
         # Put the setpoint speed input in a variable in m/s even though it is in mph
-        max_speed = min(self.speed_limit, self.commanded_speed)
-        print(f"Min Speed: {max_speed}")
+        self.max_speed = min(self.speed_limit, self.commanded_speed)
+        print(f"Min Speed: {self.max_speed}")
         
         self.desired_velocity = speed * 0.44704
         
-        if (self.desired_velocity) > max_speed:
-            self.desired_velocity = max_speed
+        if (self.desired_velocity) > self.max_speed:
+            self.desired_velocity = self.max_speed
             # self.setpoint_speed_edit.setText(f"{max_speed * 2.237:.2f}")
                     
         print(f"Desired Speed: {self.desired_velocity} m/s")    # Good updated value
         
-        self.power_class.power_command = self.power_class.update_power_command(self.current_velocity, self.desired_velocity)
+        self.power_class.update_power_command(self.current_velocity, self.desired_velocity)
         self.power_class.power_command_signal.emit(self.power_class.power_command)
         # Update the power command display
         # self.power_command_edit.setText(f"{self.power_command:.2f}")
@@ -275,7 +276,7 @@ class SpeedControl(QObject):
             # self.current_speed_edit.setText(f"{self.current_velocity * 2.23694:.2f} mph")
             # self.setpoint_speed_edit.clear()
             
-        self.power_class.power_command = self.power_class.update_power_command(self.current_velocity, self.desired_velocity)
+        self.power_class.update_power_command(self.current_velocity, self.desired_velocity)
         self.power_class.power_command_signal.emit(self.power_class.power_command)
         # Update the power command display
         # self.power_command_edit.setText(f"{self.power_command:.2f}")
@@ -296,6 +297,7 @@ class FailureModes(QObject):
     def handle_engine_failure(self, status: bool):
         if status == True:
             self.engine_fail = True
+            self.engine_failure_signal.emit(self.engine_fail)
             # Set current velocity to 0
             self.speed_control.desired_velocity = 0.0
             # self.current_speed_edit.setText(f"{self.current_velocity:.2f} mph")
@@ -305,10 +307,12 @@ class FailureModes(QObject):
             # QTimer.singleShot(3000, self.reset_emergency_brake_button_style)
         else:
             self.engine_fail = False
+            self.engine_failure_signal.emit(self.engine_fail)
 
     def handle_brake_failure(self, status: bool):
         if status == True:
             self.brake_fail = True
+            self.brake_failure_signal.emit(self.brake_fail)
             # Set current velocity to 0
             self.speed_control.desired_velocity = 0.0
             # self.current_speed_edit.setText(f"{self.current_velocity:.2f} mph")
@@ -318,10 +322,12 @@ class FailureModes(QObject):
             # QTimer.singleShot(3000, self.reset_emergency_brake_button_style)
         else:
             self.brake_fail = False
+            self.brake_failure_signal.emit(self.brake_fail)
     
     def handle_signal_failure(self, status: bool):
         if status == True:
             self.signal_fail = True
+            self.signal_failure_signal.emit(self.signal_fail)
             # Set current velocity to 0
             self.speed_control.desired_velocity = 0.0
             # self.current_speed_edit.setText(f"{self.current_velocity:.2f} mph")
@@ -331,17 +337,19 @@ class FailureModes(QObject):
             # QTimer.singleShot(3000, self.reset_emergency_brake_button_style)
         else:
             self.signal_fail = False
+            self.signal_failure_signal.emit(self.signal_fail)
         
 class Position(QObject):
     commanded_authority_signal = pyqtSignal(int)
     
     def __init__(self, doors: Doors, failure_modes: FailureModes, speed_control: SpeedControl, power_class: PowerCommand, communicator: Communicate):
         super().__init__()
-        self.commanded_authority = 0    # int
+        self.commanded_authority = 5    # int
         self.station_name = 'Shadyside' # string
         self.polarity = False   # boolean
         self.current_block = 0  # int
         self.signal_status = [0, 0, 0, 0]  # list of int
+        self.current_block_grade = 0.0
         # I need the block number of the station so that I can query into my infrastructure array and check what the station name is of that block
         self.communicator = communicator
         self.door = doors
@@ -353,6 +361,7 @@ class Position(QObject):
         self.green_station = []
         self.green_station_door = []
         self.green_speed_limit = []
+        self.green_grade = []
         
         # Load the track layout data from GreenLine.json file in Track Layouts folder
         with open('TrainController/Track Layouts/GreenLine.json', 'r') as file:
@@ -362,6 +371,12 @@ class Position(QObject):
                 self.green_station.append(entry['Infrastructure'])
                 self.green_station_door.append(entry['Station Side'])
                 self.green_speed_limit.append(entry['Speed Limit (Km/Hr)'])
+                self.green_grade.append(entry['Block Grade (%)'])
+                
+        self.send_current_block_grade()
+                
+    def send_current_block_grade(self):
+        self.current_block_grade = self.green_grade[self.current_block]
                 
     # Connect function for the Communicate class
     def handle_signal_status(self, signal_status: list):
@@ -404,7 +419,6 @@ class Position(QObject):
             elif "Left" in self.green_station_door[self.current_block] and  "Right" in self.green_station_door[self.current_block]:
                 self.door.open_left_door()
                 self.door.open_right_door()
-                self.door.right_door_update.emit(self.door.right_door)
                 print("Both doors opened")
             else:
                 self.door.close_left_door()
@@ -464,7 +478,7 @@ class Temperature(QObject):
     def __init__(self):
         super().__init__()
         self.current_temperature = 65.0
-        self.desired_temperature = 0.0
+        self.desired_temperature = 65.0
         
     # Use lambda function in the UI class to pass the temperature value
     def update_desired_temperature(self, temp):
@@ -500,8 +514,6 @@ class Temperature(QObject):
     def update_current_temp_display(self, current_temp):
         self.current_temperature = current_temp
         self.current_temperature_signal.emit(self.current_temperature)
-        # Update UI
-        # self.current_temp_edit.setText(f"{self.current_temperature:.2f} °F")
             
 class TrainEngineerUI(QWidget):
     def __init__(self, tuning: Tuning):
@@ -529,8 +541,8 @@ class TrainEngineerUI(QWidget):
         train_number_item.setFlags(train_number_item.flags() & ~Qt.ItemFlag.ItemIsEditable)  # Make non-editable
         self.table.setItem(0, 0, train_number_item)
         
-        self.table.setItem(0, 1, QTableWidgetItem(str(self.get_kp())))
-        self.table.setItem(0, 2, QTableWidgetItem(str(self.get_ki())))
+        self.table.setItem(0, 1, QTableWidgetItem(str(self.tuning.get_kp())))
+        self.table.setItem(0, 2, QTableWidgetItem(str(self.tuning.get_ki())))
         self.table.itemChanged.connect(self.update_values)
         
         # Hide the number column to the left of the train number column
@@ -589,23 +601,23 @@ class TrainEngineerUI(QWidget):
                 kp = float(item.text())
                 self.set_kp(kp)
             except ValueError:
-                item.setText(str(self.get_kp()))  # Reset to previous value if invalid
+                item.setText(str(self.tuning.get_kp()))  # Reset to previous value if invalid
         elif col == 2:  # Ki column
             try:
                 ki = float(item.text())
                 self.set_ki(ki)
             except ValueError:
-                item.setText(str(self.get_ki()))  # Reset to previous value if invalid
+                item.setText(str(self.tuning.get_ki()))  # Reset to previous value if invalid
         
 
 class TrainControllerUI(QWidget):
-    def __init__(self, communicator: Communicate, doors: Doors, tuning: Tuning, brake_status: BrakeStatus, power_class: PowerCommand, speed_control: SpeedControl, failure_modes: FailureModes, position: Position, lights: Lights, temperature: Temperature):
+    def __init__(self, communicator: Communicate, doors: Doors, tuning: Tuning, brake_class: BrakeStatus, power_class: PowerCommand, speed_control: SpeedControl, failure_modes: FailureModes, position: Position, lights: Lights, temperature: Temperature):
         super().__init__()
         
         # Make a copy of all sub-classes
         self.doors = doors
         self.tuning = tuning
-        self.brake_status = brake_status
+        self.brake_class = brake_class
         self.power_class = power_class
         self.speed_control = speed_control
         self.failure_modes = failure_modes
@@ -645,13 +657,13 @@ class TrainControllerUI(QWidget):
         # Right Door - Make a PYQTSIGNAL FOR THIS
         self.doors.right_door_update.connect(self.update_right_door)
         # Brake Status - Make a PYQTSIGNAL FOR THIS
-        self.brake_status.driver_brake_signal.connect(self.update_driver_brake_status)
+        self.brake_class.driver_brake_signal.connect(self.update_driver_brake_status)
         # Service Brake Command - Make a PYQTSIGNAL FOR THIS
-        self.brake_status.service_brake_signal.connect(self.update_service_brake_status)
+        self.brake_class.service_brake_signal.connect(self.update_service_brake_status)
         # Emergency Brake Command - Make a PYQTSIGNAL FOR THIS
-        self.brake_status.emergency_brake_signal.connect(self.update_emergency_brake_status)
+        self.brake_class.emergency_brake_signal.connect(self.update_emergency_brake_status)
         # Passenger Brake Status - PYQTSIGNAL
-        self.brake_status.passenger_brake_command_signal.connect(self.update_passenger_brake_status)
+        self.brake_class.passenger_brake_command_signal.connect(self.update_passenger_brake_status)
         
         # What changes the driver makes in the UI:
         # Setpoint Speed - QLineEdit
@@ -721,7 +733,7 @@ class TrainControllerUI(QWidget):
         
         # Displaying the commanded speed in UI
         self.commanded_speed_edit = QLineEdit(str(self.speed_control.commanded_speed))
-        self.commanded_speed_edit.setText(self.commanded_speed_edit.text() + " mph")
+        self.commanded_speed_edit.setText(f"{self.speed_control.commanded_speed * 2.23694:.2f} mph")
         self.commanded_speed_edit.setEnabled(False)
         self.commanded_speed_edit.setStyleSheet("background-color: lightgray; max-width: 100px; border-radius: 5px; color: black; border: 2px solid black; padding: 2px;")
         self.commanded_speed_box.addWidget(self.commanded_speed_label)
@@ -795,18 +807,18 @@ class TrainControllerUI(QWidget):
         self.brake_button.setStyleSheet("margin-top: 40px; background-color: yellow; font-size: 16px; border-radius: 10px; font-weight: bold; color: black; border: 3px solid black; padding-top: 20px; max-width: 150px; padding-bottom: 20px")
         self.brake_button.pressed.connect(self.divet_in_service_brake_button)
         self.brake_button.released.connect(self.reset_service_brake_button_style)
-        self.brake_button.pressed.connect(self.brake_status.apply_service_brake)
-        self.brake_button.released.connect(self.brake_status.no_apply_service_brake)
+        self.brake_button.pressed.connect(self.brake_class.apply_service_brake)
+        self.brake_button.released.connect(self.brake_class.no_apply_service_brake)
         main_grid.addWidget(self.brake_button, 8, 0)  # Ensure it spans across two columns
         
         
         # Emergency Brake Button
         self.emergency_brake_button = QPushButton("EMERGENCY BRAKE")
         self.emergency_brake_button.setStyleSheet("border: 3px solid black; margin-left: 40px; background-color: red; color: white; font-size: 20px; font-weight: bold; padding: 50px; border-radius: 10px;")
-        self.emergency_brake_button.pressed.connect(self.brake_status.apply_emergency_brake)
+        self.emergency_brake_button.pressed.connect(self.brake_class.apply_emergency_brake)
         self.emergency_brake_button.pressed.connect(self.divet_in_emergency_brake_buttons)
         self.emergency_brake_button.released.connect(self.reset_emergency_brake_button_style)
-        self.emergency_brake_button.released.connect(self.brake_status.no_apply_emergency_brake)
+        self.emergency_brake_button.released.connect(self.brake_class.no_apply_emergency_brake)
         main_grid.addWidget(self.emergency_brake_button, 8, 3)
         
         
@@ -873,7 +885,7 @@ class TrainControllerUI(QWidget):
         self.right_door_status_label.setStyleSheet("font-size: 14px; font-weight: bold; color: black; padding-left: 40px;")
         self.right_door_status = QPushButton("CLOSE")
         self.right_door_status.setStyleSheet("background-color: red; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
-        self.right_door_status.pressed.connect(self.doors.open_left_door)
+        self.right_door_status.pressed.connect(self.handle_right_door)
         self.right_door_layout.addWidget(self.right_door_status_label)
         self.right_door_layout.addWidget(self.right_door_status)
         self.right_door_layout.addSpacerItem(QSpacerItem(20, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum))
@@ -886,7 +898,7 @@ class TrainControllerUI(QWidget):
         self.left_door_status_label.setStyleSheet("font-size: 14px; font-weight: bold; color: black; padding-left: 40px;")
         self.left_door_status = QPushButton("CLOSE")
         self.left_door_status.setStyleSheet("background-color: red; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
-        self.left_door_status.pressed.connect(self.doors.open_left_door)
+        self.left_door_status.pressed.connect(self.handle_left_door)
         self.left_door_layout.addWidget(self.left_door_status_label)
         self.left_door_layout.addWidget(self.left_door_status)
         self.left_door_layout.addSpacerItem(QSpacerItem(20, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum))
@@ -1002,6 +1014,7 @@ class TrainControllerUI(QWidget):
         self.temp_input.setAlignment(Qt.AlignmentFlag.AlignLeft)
         self.temp_input.setPlaceholderText("Enter temperature (70°F to 100°F)")  # Optional placeholder text
         self.temp_input.editingFinished.connect(self.send_desired_temperature)
+        self.temp_input.editingFinished.connect(lambda: self.temperature.update_desired_temperature(float(self.temp_input.text())))
         self.desired_temp_box.addWidget(self.desired_temp_label)
         self.desired_temp_box.addWidget(self.temp_input)
         
@@ -1022,11 +1035,13 @@ class TrainControllerUI(QWidget):
         
         # MANUAL MODE BUTTON
         self.manual_button = QPushButton("Manual")
+        self.manual_button.setStyleSheet("margin-top: 10px; margin-left: 10px; background-color: green; color: white; max-width: 100px; border-radius: 5px; padding-top: 10px; padding-bottom: 10px; border: 2px solid black;")
         self.manual_button.clicked.connect(self.send_manual_mode)
         main_grid.addWidget(self.manual_button, 5, 0)
 
         # AUTOMATIC MODE BUTTON
         self.automatic_button = QPushButton("Automatic")
+        self.automatic_button.setStyleSheet("margin-top: 10px; margin-left: 10px; background-color: gray; color: white; max-width: 100px; border-radius: 5px; padding-top: 10px; padding-bottom: 10px; border: 2px solid black;")
         self.automatic_button.clicked.connect(self.send_automatic_mode)
         main_grid.addWidget(self.automatic_button, 6, 0)
         
@@ -1056,6 +1071,12 @@ class TrainControllerUI(QWidget):
         
         main_grid.addWidget(self.power_command_label, 4, 1, 1, 1, alignment=Qt.AlignmentFlag.AlignCenter)
         main_grid.addLayout(self.power_command_layout, 5, 1, 1, 1, Qt.AlignmentFlag.AlignCenter)
+        
+        # # Making a button to test passenger brake
+        # self.passenger_brake_button = QPushButton("Passenger Brake")
+        # self.passenger_brake_button.setStyleSheet("background-color: red; color: white; border: 2px solid black; padding: 5px; border-radius: 5px;")
+        # self.passenger_brake_button.pressed.connect(lambda: self.brake_class.handle_passenger_brake_command(True))
+        # main_grid.addWidget(self.passenger_brake_button, 7, 0)
 
         
         # Add Components to the Main Layout
@@ -1067,8 +1088,7 @@ class TrainControllerUI(QWidget):
         self.setLayout(main_layout)
         
         
-        
-        
+    
         
     ############################################
     # FUNCTIONS TO UPDATE THE UI OF THE DRIVER #
@@ -1099,6 +1119,20 @@ class TrainControllerUI(QWidget):
             self.right_door_status.setText("CLOSE")
             self.right_door_status.setStyleSheet("background-color: red; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
         
+    def handle_right_door(self):
+        if self.speed_control.current_velocity == 0:
+            if self.doors.right_door:
+                self.doors.close_right_door()
+            else:
+                self.doors.open_right_door()
+            
+    def handle_left_door(self):
+        if self.speed_control.current_velocity == 0:
+            if self.doors.left_door:
+                self.doors.close_left_door()
+            else:
+                self.doors.open_left_door()
+            
     def toggle_exterior_lights(self, lights_status: bool):
         if lights_status:
             self.exterior_lights_status.setText("ON")
@@ -1116,7 +1150,7 @@ class TrainControllerUI(QWidget):
             self.interior_lights_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
     
     def update_power_command(self, power_command: float):
-        self.power_command_edit.setText(str(power_command / 1000))
+        self.power_command_edit.setText(f"{power_command / 1000:.2f}")
     
     def update_engine_failure_status(self, failure: bool):
         if failure:
@@ -1137,7 +1171,9 @@ class TrainControllerUI(QWidget):
             self.signal_fail_indicator.setStyleSheet("background-color: green; border-radius: 20px; border: 2px solid black;")  # Green for no failure
                 
     def update_current_temperature(self, current_temperature: float):
-        self.current_temp_edit.setText(f"{current_temperature} °F")
+        self.current_temp_edit.setText(f"{current_temperature:.2f} °F")
+        if current_temperature == self.temperature.desired_temperature:
+            self.temp_input.clear()
     
     def update_passenger_brake_status(self, passenger_brake: bool):
         if passenger_brake:
@@ -1148,7 +1184,11 @@ class TrainControllerUI(QWidget):
             self.passenger_brake_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
             
     def send_setpoint_speed(self):
-        self.speed_control.desired_velocity = float(self.setpoint_speed_edit.text())
+        self.speed_control.desired_velocity = float(self.setpoint_speed_edit.text()) * 0.44704
+        if self.speed_control.desired_velocity > self.speed_control.max_speed:
+            # Set setpoint speed input to max speed value
+            self.setpoint_speed_edit.setText(f"{self.speed_control.max_speed * 2.23694:.2f}")
+            
         self.speed_control.update_setpoint_speed_calculations(self.speed_control.desired_velocity)
             
     def send_manual_mode(self):
@@ -1161,6 +1201,7 @@ class TrainControllerUI(QWidget):
     def send_automatic_mode(self):
         # Disable setpoint speed input
         self.setpoint_speed_edit.setEnabled(False)
+        # self.setpoint_speed_edit.clear()
         self.speed_control.set_auto_mode()
         self.automatic_button.setStyleSheet("margin-top: 10px; margin-left: 10px; background-color: green; color: white; max-width: 100px; border-radius: 5px; padding-top: 10px; padding-bottom: 10px; border: 2px solid black;")
         self.manual_button.setStyleSheet("margin-top: 10px; margin-left: 10px; background-color: gray; color: white; max-width: 100px; border-radius: 5px; padding-top: 10px; padding-bottom: 10px; border: 2px solid black;")
@@ -1177,20 +1218,26 @@ class TrainControllerUI(QWidget):
         if brake_status:
             self.brake_status.setText("ON")
             self.brake_status.setStyleSheet("background-color: #f5c842; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
+            # Divet in service break in UI
+            self.divet_in_service_brake_button()
         else:
             self.brake_status.setText("OFF")
             self.brake_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
+            self.reset_service_brake_button_style()
             
     def update_emergency_brake_status(self, brake_status: bool):
         if brake_status:
             self.brake_status.setText("ON")
             self.brake_status.setStyleSheet("background-color: #f5c842; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
+            self.divet_in_emergency_brake_buttons()
         else:
             self.brake_status.setText("OFF")
             self.brake_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
+            self.reset_emergency_brake_button_style()
         
     def send_desired_temperature(self):
         self.temperature.desired_temperature = float(self.temp_input.text())
+        print(f"Desired Temperature: {self.temperature.desired_temperature}")
         
         
     ####################################################################
@@ -1199,14 +1246,15 @@ class TrainControllerUI(QWidget):
     
     def write_to_train_model(self):
         self.communicator.power_command_signal.emit(self.power_class.power_command)
-        self.communicator.service_brake_command_signal.emit(self.brake_status.driver_service_brake_command)
-        self.communicator.emergency_brake_command_signal.emit(self.brake_status.driver_emergency_brake_command) 
+        self.communicator.service_brake_command_signal.emit(self.brake_class.driver_service_brake_command)
+        self.communicator.emergency_brake_command_signal.emit(self.brake_class.driver_emergency_brake_command) 
         self.communicator.desired_temperature_signal.emit(self.temperature.desired_temperature)
         self.communicator.exterior_lights_signal.emit(self.lights.interior_lights)
         self.communicator.interior_lights_signal.emit(self.lights.exterior_lights)
         self.communicator.left_door_signal.emit(self.doors.left_door)
         self.communicator.right_door_signal.emit(self.doors.right_door)
         self.communicator.announcement_signal.emit(self.position.station_name)
+        self.communicator.grade_signal.emit(self.position.current_block_grade)
     
     def read_from_train_model(self):
         self.communicator.current_velocity_signal.connect(self.speed_control.handle_current_velocity)
@@ -1215,45 +1263,41 @@ class TrainControllerUI(QWidget):
         self.communicator.engine_failure_signal.connect(self.failure_modes.handle_engine_failure)
         self.communicator.brake_failure_signal.connect(self.failure_modes.handle_brake_failure)
         self.communicator.signal_failure_signal.connect(self.failure_modes.handle_signal_failure)
-        self.communicator.passenger_brake_command_signal.connect(self.brake_status.handle_passenger_brake_command)
+        self.communicator.passenger_brake_command_signal.connect(self.brake_class.handle_passenger_brake_command)
         self.communicator.actual_temperature_signal.connect(self.temperature.update_current_temp_display)
         self.communicator.polarity_signal.connect(self.position.handle_polarity_change)
         self.communicator.signal_status_signal.connect(self.position.handle_signal_status)
-    
-    ##########################
-    # FAILURE MODE FUNCTIONS #
-    ##########################
         
 
-    ################################################
-    # BRAKE DIVET FUNCTIONS AND OTHER UI FUNCTIONS #
-    ################################################
+    ############################################
+    # BRAKE DIVET FUNCTIONS FOR USER INTERFACE #
+    ############################################
     
     def divet_in_service_brake_button(self):
         self.brake_button.setStyleSheet("margin-top: 40px; background-color: #B8860B; font-size: 16px; border-radius: 10px; font-weight: bold; color: black; border: 3px solid black; padding-top: 20px; max-width: 150px; padding-bottom: 20px;")
         # Put button status in UI to ON
         self.brake_status.setText("ON")
         self.brake_status.setStyleSheet("background-color: #f5c842; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
-        self.brake_button.released.connect(self.reset_brake_status)
 
     def reset_service_brake_button_style(self):
         self.brake_button.setStyleSheet("margin-top: 40px; background-color: yellow; font-size: 16px; border-radius: 10px; font-weight: bold; color: black; border: 3px solid black; padding-top: 20px; max-width: 150px; padding-bottom: 20px;")
         # Turn the brake status to OFF
         self.brake_status.setText("OFF")
         self.brake_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
+        self.reset_brake_status()
 
     def divet_in_emergency_brake_buttons(self):
         self.emergency_brake_button.setStyleSheet("border: 3px solid black; margin-left: 40px; background-color: darkred; color: white; font-size: 20px; font-weight: bold; padding: 50px; border-radius: 10px;")
         # Put button status in UI to ON
         self.brake_status.setText("ON")
         self.brake_status.setStyleSheet("background-color: #f5c842; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
-        self.emergency_brake_button.released.connect(self.reset_brake_status)
         
     def reset_emergency_brake_button_style(self):
         self.emergency_brake_button.setStyleSheet("border: 3px solid black; margin-left: 40px; background-color: red; color: white; font-size: 20px; font-weight: bold; padding: 50px; border-radius: 10px;")
         # Turn the brake status to OFF
         self.brake_status.setText("OFF")
         self.brake_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
+        self.reset_brake_status()
 
     def reset_brake_status(self):
         self.brake_status.setText("OFF")
@@ -1270,14 +1314,17 @@ if __name__ == "__main__":#
     communicator = Communicate()
     doors = Doors()
     tuning = Tuning()
-    brake_status = BrakeStatus()
+    brake_status = BrakeStatus(communicator)
     power_class = PowerCommand(brake_status, tuning)
-    speed_control = SpeedControl(power_class, brake_status)
+    speed_control = SpeedControl(power_class, brake_status, communicator)
     failure_modes = FailureModes(speed_control)
     lights = Lights(speed_control)
     temperature = Temperature()
     communicator = Communicate()
     position = Position(doors, failure_modes, speed_control, power_class, communicator)
-    window = TrainControllerUI(communicator, doors, Tuning(), brake_status, power_class, speed_control, failure_modes, position, lights, temperature)
+    window = TrainControllerUI(communicator, doors, tuning, brake_status, power_class, speed_control, failure_modes, position, lights, temperature)
     window.show()
+    # Show engineer window as well
+    engineer_window = TrainEngineerUI(tuning)
+    engineer_window.show()
     app.exec()
