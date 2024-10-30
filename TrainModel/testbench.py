@@ -12,16 +12,16 @@ from functools import partial
 from base_page import BasePage
 from announcement import AnnouncementDialog
 from power_dialog import SetCommandedPowerDialog  # Renamed to avoid conflict with power.py
-from train_data import TrainData
 
 
 class TestBenchPage(BasePage):
     """Page representing the Test Bench."""
 
-    def __init__(self, train_data, train_id_callback, communicate):
+    def __init__(self, train_data, train_id_callback, tc_communicate, tm_communicate):
         super().__init__("Test Bench", train_id_callback)
         self.train_data = train_data  # Store the train data
-        self.communicate = communicate
+        self.tc_communicate = tc_communicate
+        self.tm_communicate = tm_communicate
 
         # Create a scroll area
         scroll_area = QScrollArea()
@@ -357,25 +357,25 @@ class TestBenchPage(BasePage):
         if var_name == 'interior_light':
             self.train_data.set_value('interior_light_on', is_on)
             # Emit signal to Train Controller
-            self.communicate.interior_lights_signal.emit(is_on)
+            self.tc_communicate.interior_lights_signal.emit(is_on)
         elif var_name == 'exterior_light':
             self.train_data.set_value('exterior_light_on', is_on)
             # Emit signal to Train Controller
-            self.communicate.exterior_lights_signal.emit(is_on)
+            self.tc_communicate.exterior_lights_signal.emit(is_on)
         elif var_name == 'train_left_door':
             self.train_data.set_value('left_door_open', is_on)
             # Emit signal to Train Controller
-            self.communicate.door_command_signal.emit(is_on)
+            self.tc_communicate.left_door_signal.emit(is_on)
         elif var_name == 'train_right_door':
             self.train_data.set_value('right_door_open', is_on)
             # Emit signal to Train Controller
-            self.communicate.door_command_signal.emit(is_on)
+            self.tc_communicate.right_door_signal.emit(is_on)
         elif var_name == 'service_brake':
             # Emit signal to Train Controller
-            self.communicate.service_brake_signal.emit(is_on)
+            self.tc_communicate.service_brake_command_signal.emit(is_on)
         elif var_name == 'emergency_brake':
             # Emit signal to Train Controller
-            self.communicate.emergency_brake_signal.emit(is_on)
+            self.tc_communicate.emergency_brake_command_signal.emit(is_on)
             if not is_on:
                 # Reset passenger emergency brake when emergency brake is turned off
                 self.train_data.set_value('passenger_emergency_brake', False)
@@ -389,7 +389,7 @@ class TestBenchPage(BasePage):
             if new_power is not None:
                 self.train_data.set_value('commanded_power', new_power)
                 # Emit signal to Train Controller
-                self.communicate.power_command_signal.emit(new_power)
+                self.tc_communicate.power_command_signal.emit(new_power)
             else:
                 # Handle invalid input if necessary
                 pass
@@ -410,16 +410,16 @@ class TestBenchPage(BasePage):
             if var_name == 'commanded_speed_tc':
                 self.train_data.set_value('commanded_speed_tc', value)
                 # Emit signal to Train Controller
-                self.communicate.track_commanded_speed_signal.emit(value)
+                self.tm_communicate.commanded_speed_signal.emit(value)
             elif var_name == 'authority':
                 value_ft = float(value) * 3.28084
                 self.train_data.set_value('commanded_authority', value_ft)
                 # Emit signal to Train Controller
-                self.communicate.track_commanded_authority_signal.emit(value)
+                self.tm_communicate.commanded_authority_signal.emit(value)
             elif var_name == 'desired_temperature':
                 self.train_data.set_value('cabin_temperature', value)
                 # Emit signal to Train Controller
-                self.communicate.desired_temperature_signal.emit(value)
+                self.tc_communicate.desired_temperature_signal.emit(value)
         except ValueError:
             pass  # Handle invalid input as desired
 
@@ -431,11 +431,13 @@ class TestBenchPage(BasePage):
         """Update passenger boarding and add to passenger count."""
         try:
             value = int(edit_widget.text())
-            self.train_data.passenger_boarding = value
-            # Add passenger_boarding to passenger_count
-            self.train_data.passenger_count += self.train_data.passenger_boarding
-            self.train_data.passenger_boarding = 0  # Reset passenger_boarding to 0
-            self.train_data.update_train_weight()
+            if value < 0:
+                value = 0
+            self.train_data.set_value(var_name, value)
+            # Emit signal to Track Model
+            self.tm_communicate.number_passenger_boarding_signal.emit(value)
+            # Reset passenger boarding to 0 after processing
+            self.train_data.set_value('passenger_boarding', 0)
             self.update_display()
         except ValueError:
             pass  # Handle invalid input
@@ -446,16 +448,16 @@ class TestBenchPage(BasePage):
         self.train_data.set_value('beacon_station', station)
         self.train_data.set_value('beacon', beacon_text)
         # Emit signal to Train Controller
-        self.communicate.station_name_signal.emit(station)
+        self.tc_communicate.announcement_signal.emit(beacon_text)
 
     def open_announcement_dialog(self):
         """Open the dialog to set an announcement."""
         dialog = AnnouncementDialog(self)
         if dialog.exec() == QDialog.DialogCode.Accepted:
             announcement = dialog.get_announcement()
-            self.train_data.set_value('announcement', announcement)
+            self.train_data.set_value('announcement_text', announcement)
             # Emit signal to Train Controller
-            self.communicate.announcement_signal.emit(announcement)
+            self.tc_communicate.announcement_signal.emit(announcement)
 
     def update_button_states(self):
         """Initialize button states based on train_data."""

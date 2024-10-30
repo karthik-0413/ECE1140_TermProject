@@ -172,7 +172,7 @@ class TrainModelPage(BasePage):
         announcement_label.setStyleSheet("color: black;")
         announcement_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Centered above the text box
 
-        self.announcement_text = QLabel(self.train_data.announcement)
+        self.announcement_text = QLabel(self.train_data.announcement_text)
         self.announcement_text.setFont(QFont('Arial', 14))
         self.announcement_text.setWordWrap(True)
         self.announcement_text.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -267,20 +267,26 @@ class TrainModelPage(BasePage):
         # Connect data changed signal
         self.train_data.data_changed.connect(self.update_display)
 
+        # Connect signals to update UI elements
+        self.train_data.current_velocity_signal.connect(self.update_speed_display)
+        self.train_data.announcement.connect(self.update_announcement)
+
         # Initial display update
         self.update_display()
-        
-    # Keep the PYQT UI elements in this file, but use PQYTsignals from other file for when 
 
     def set_train_data(self, train_data):
         """Set the current train data and update connections."""
         # Disconnect previous train_data signal
         try:
             self.train_data.data_changed.disconnect(self.update_display)
+            self.train_data.current_velocity_signal.disconnect(self.update_speed_display)
+            self.train_data.announcement.disconnect(self.update_announcement)
         except TypeError:
             pass
         self.train_data = train_data
         self.train_data.data_changed.connect(self.update_display)
+        self.train_data.current_velocity_signal.connect(self.update_speed_display)
+        self.train_data.announcement.connect(self.update_announcement)
         self.update_display()
 
     def set_light_button_style(self, button, is_on, label, font, size):
@@ -334,15 +340,6 @@ class TrainModelPage(BasePage):
         return units.get(var_name, '')
 
     def update_display(self):
-        # Double check if these values are from the current train data file - Karthik Raja
-        # If it is, then add all of your connect functions here - Karthik Raja
-        # For example, if you have a speed variable in the train data file, you can connect it to a function that updates the speed in the UI - Karthik Raja
-        # If these values are not from the current train data file, then change this function to make it so that it is the values from the current train data file - Karthik Raja
-        # Add imports to each file that has the signal you want to connect to - Karthik Raja
-        # Make sure the data_changed signal in the train data file emits EVERYTIME ANY variables has been changed - Karthik Raja
-        # Every time an input is given to you, you can emit the data_changed signal - Karthik Raja
-        # This all can be done with your data_changed signal from the Train Data file - Karthik Raja
-        # If this is the case, then you can add one connect function that takes care of all of the UI updates for all displayed variables - Karthik Raja
         """Update the display based on the current train data."""
         # Update the data labels
         for var_name, label in self.value_labels.items():
@@ -365,7 +362,7 @@ class TrainModelPage(BasePage):
             label.setText(value_text)
 
         # Update the announcement text
-        self.announcement_text.setText(self.train_data.announcement)
+        self.announcement_text.setText(self.train_data.announcement_text)
 
         # Update the buttons
         button_font = QFont('Arial', 16, QFont.Weight.Bold)
@@ -393,7 +390,7 @@ class TrainModelPage(BasePage):
         is_on = self.passenger_emergency_brake_button.isChecked()
         self.train_data.set_value('passenger_emergency_brake', is_on)
         # Emit signal to Train Controller
-        self.tc_communicate.passenger_brake_signal.emit(is_on)
+        self.tc_communicate.passenger_brake_command_signal.emit(is_on)
         # Update button style based on state
         self.passenger_emergency_brake_button.setStyleSheet(f"""
             QPushButton {{
@@ -402,3 +399,11 @@ class TrainModelPage(BasePage):
                 font-weight: bold;
             }}
         """)
+
+    def update_speed_display(self, speed):
+        """Update the speed display when the current_velocity_signal is emitted."""
+        self.value_labels['current_speed'].setText(f"{speed:.2f} mph")
+
+    def update_announcement(self, text):
+        """Update the announcement text."""
+        self.announcement_text.setText(text)

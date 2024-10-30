@@ -3,26 +3,27 @@
 from PyQt6.QtCore import pyqtSignal, QObject
 
 class TrainControllerCommunicate(QObject):
-    # From Train Controller to Train Model
-    power_command_signal = pyqtSignal(float)
-    door_command_signal = pyqtSignal(bool)
-    light_command_signal = pyqtSignal(bool)
-    service_brake_signal = pyqtSignal(bool)
-    emergency_brake_signal = pyqtSignal(bool)
-    desired_temperature_signal = pyqtSignal(float)
-    announcement_signal = pyqtSignal(str)
-    station_name_signal = pyqtSignal(str)
 
-    # From Train Model to Train Controller
+    # Train Controller -> Train Model
+    power_command_signal = pyqtSignal(float)
+    service_brake_command_signal = pyqtSignal(bool)
+    emergency_brake_command_signal = pyqtSignal(bool)
+    desired_temperature_signal = pyqtSignal(float)
+    exterior_lights_signal = pyqtSignal(bool)  # 1 = On, 0 = Off
+    interior_lights_signal = pyqtSignal(bool)  # 1 = On, 0 = Off
+    left_door_signal = pyqtSignal(bool)        # 1 = Open, 0 = Closed
+    right_door_signal = pyqtSignal(bool)       # 1 = Open, 0 = Closed
+    announcement_signal = pyqtSignal(str)
+    grade_signal = pyqtSignal(float)
+
+    # Train Model -> Train Controller
+    current_velocity_signal = pyqtSignal(float)
     commanded_speed_signal = pyqtSignal(int)
     commanded_authority_signal = pyqtSignal(int)
-    current_temperature_signal = pyqtSignal(float)
-    signal_status_signal = pyqtSignal(bool, int)
-    current_velocity_signal = pyqtSignal(float)
-    polarity_signal = pyqtSignal(bool)
-    passenger_brake_signal = pyqtSignal(bool)
-
-    # Failure Signals
     engine_failure_signal = pyqtSignal(bool)
     brake_failure_signal = pyqtSignal(bool)
     signal_failure_signal = pyqtSignal(bool)
+    passenger_brake_command_signal = pyqtSignal(bool)
+    actual_temperature_signal = pyqtSignal(float)
+    polarity_signal = pyqtSignal(bool)  # If flipped, then train has moved onto next block - NEW
+    dispatch_train_signal = pyqtSignal(bool)  # 1 = Dispatch, 0 = Do not dispatch

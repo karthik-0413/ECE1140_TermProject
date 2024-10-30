@@ -14,6 +14,7 @@ from murphy import MurphyPage
 from train_data import TrainData
 from train_controller_communicate import TrainControllerCommunicate
 from track_model_communicate import TrackModelCommunicate
+from clock import TimerThread, TimerUI
 
 
 class MainWindow(QMainWindow):
@@ -23,7 +24,7 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         self.setWindowTitle("PyQt6 Train Control Application")
-        self.setGeometry(100, 100, 1000, 620)  # Increased window size
+        self.setGeometry(100, 100, 1200, 800)  # Increased window size for better visibility
 
         # Create communication instances
         self.tc_communicate = TrainControllerCommunicate()
@@ -98,14 +99,23 @@ class MainWindow(QMainWindow):
         self.stacked_widget.addWidget(self.murphy_page)       # Index 1
         self.stacked_widget.addWidget(self.test_bench_page)   # Index 2
 
-        # Initially show Murphy page
-        self.stacked_widget.setCurrentWidget(self.murphy_page)
+        # Initially show Train Model page
+        self.stacked_widget.setCurrentWidget(self.train_model_page)
 
         # Add stacked widget to main layout
         main_layout.addWidget(self.stacked_widget)
 
+        # Set central widget
         central_widget.setLayout(main_layout)
         self.setCentralWidget(central_widget)
+
+        # Initialize and start the clock
+        self.clock_thread = TimerThread()
+        self.clock_ui = TimerUI(self.clock_thread)
+        self.clock_ui.setFixedHeight(80)
+        main_layout.addWidget(self.clock_ui, alignment=Qt.AlignmentFlag.AlignCenter)
+        self.clock_thread.second_passed.connect(self.update_train_states)
+        self.clock_thread.start_clock()
 
     def train_id_changed(self, new_train_id):
         """Handle Train ID change."""
@@ -128,11 +138,18 @@ class MainWindow(QMainWindow):
 
     def show_test_bench(self):
         """Show the Test Bench page."""
+        self.test_bench_page.update_display()
         self.stacked_widget.setCurrentWidget(self.test_bench_page)
 
     def show_murphy(self):
         """Show the Murphy page."""
+        self.murphy_page.update_display()
         self.stacked_widget.setCurrentWidget(self.murphy_page)
+
+    def update_train_states(self, seconds_elapsed):
+        """Update train states based on clock ticks."""
+        for train_data in self.train_data_dict.values():
+            train_data.update_train_state(delta_t=1.0 / self.clock_thread.speed_multiplier)
 
 
 def main():

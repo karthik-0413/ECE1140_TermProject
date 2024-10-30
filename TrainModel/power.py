@@ -1,9 +1,9 @@
 # power.py
 
 import math
+from PyQt6.QtCore import QObject, pyqtSignal
 
 def calculate_train_speed(train_data, delta_t=1.0):
-    # current_velocity = pyqtsignal(float) - Karthik Raja
     """Calculate and update the train's speed, acceleration, and position."""
     mass = train_data.current_train_weight * 1000  # Convert to kg
 
@@ -53,8 +53,6 @@ def calculate_train_speed(train_data, delta_t=1.0):
 
     # Update speed
     new_speed_mps = current_speed_mps + acceleration * delta_t
-    # self.current_velocity_signal.emit(new_speed_mps * 2.23694)  # Convert m/s to mph
-    # Do the connect function in train_model.py, which calls a function that updates the speed in the UI
 
     if new_speed_mps < 0:
         new_speed_mps = 0
@@ -68,4 +66,5 @@ def calculate_train_speed(train_data, delta_t=1.0):
     train_data.current_acceleration = acceleration * 3.28084  # Convert m/s² to ft/s²
     train_data.current_speed = new_speed_mps * 2.23694  # Convert m/s back to mph
 
-    return train_data.current_speed
+    # Emit current velocity signal
+    train_data.current_velocity_signal.emit(train_data.current_speed)
