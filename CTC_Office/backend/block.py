@@ -9,104 +9,61 @@ class Signal(Enum):
 
 class Block():
     def __init__(self,
-                line:str,
                 section:str,
+                station_name:str,
                 block_number:str,
-                block_length:str,
-                block_grade:str,
                 speed_limit:str,
-                infrastructure:str,
-                elevation:str,
-                cummulative_elevation:str
+                infrastructure:str
                 ):
-        
-        
-        self.line = str(line)
+
         self.section = str(section)
+        self.station_name = str(station_name)
         self.block_number = int(block_number)
-        self.block_length = int(block_length)
-        self.block_grade = int(block_grade)
         self.speed_limit = int(speed_limit)
         self.infrastructure = str(infrastructure)
-        self.elevation = int(elevation)
-        self.cummulative_elevation = int(cummulative_elevation)
 
         self.occupied = False
-        self.damage = False
+        self.failure = False
+        self.maintenance = False
 
-        # Optional 
-        self.signal = None
-        self.crossing = None
-        self.switch = None
-        self.switch_states = list()
-        self.transponder = None
-        self.station = None
-        self.station_name = None
+        self.next_block_list = []
 
         # Choose which optional block characteristics to include
-        self.options = list()
 
         self.set_infrastructure()
 
 
     def set_infrastructure(self):
-        
-        # Check if block has a signal
-        if re.search("Light", self.infrastructure):
-            self.options.append(True)
-        else:
-            self.options.append(False)
-
-        # Check if block has a crossing
-        if re.search("RAILWAY CROSSING", self.infrastructure):
-            self.options.append(True)
-        else:
-            self.options.append(False)
-
-        # Check if block has a switch
-        if re.search("Switch", self.infrastructure):
-            # Find switch connections
-            pattern = r"Switch\s*\(\s*\d+\s*to\s*(\d+)\s*\)(?:\s*or\s*\(\s*\d+\s*to\s*(\d+)\s*\))?(?:;\s*Light)?"
-            match = re.search(pattern, self.infrastructure, re.IGNORECASE)
-            if match:
-                if match.group(2):
-                    self.options.append(True)
-                    self.switch_states.append(int(match.group(1))) 
-                    self.switch_states.append(int(match.group(2)))
-                else:
-                    self.options.append(False)
-                    self.switch_states.append(int(match.group(1)))
-        else:
-            self.options.append(False)
-
-         # Check if block has a transponder
-        if re.search("Transponder", self.infrastructure):
-            self.options.append(True)
-        else:
-            self.options.append(False)
-
-        # Check if block has a station
+        # Check the infrastructure column to see if block has a station
         if re.search("Station", self.infrastructure):
-            self.options.append(True)
             pattern = r"Station\s+([A-Za-z0-9]+)"
             match = re.search(pattern, self.infrastructure, re.IGNORECASE)
             if match:
                 self.station_name = match.group(1)
 
+    def update_occupancy(self, occupancy:bool):
+        self.occupied = occupancy
 
-        else:
-            self.options.append(False)
+    def update_failure(self, failure:bool):
+        self.failure = failure
 
+    def toggle_maintenance(self):
+        self.maintenance = not self.maintenance
+        
+    def next_block(self, prev_block):
+        """Return the next block to be traversed given the last value traversed."""
+
+        # if there is only one next block, then the train must go there.
+        if len(self.next_block_list) == 1:
+            return self.next_block_list[0]
+        # if there is more than one next block, then the train will go from low to high
+        elif prev_block < self.block_number:
+            return self.next_block_list[1]
+        # and from high to low
+        elif prev_block > self.block_number:
+            return self.next_block_list[0]
+        # prev_block should never be equal to self.block_number
         
 
-    def updateBlockInformation(self, signal, crossing, switch):
-        if self.options[0]:
-            self.signal = signal
-        if self.options[1]:
-            self.crossing = crossing
-        if self.options[2]:
-            self.switch = switch
-        
-        
     
     
