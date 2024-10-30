@@ -5,8 +5,24 @@ from typing import List, Dict
 from PyQt6 import QtWidgets, QtCore, QtGui
 from Track_Model_UI import Ui_TrackModel
 
+cmdSpeed: int
+cmdAuthority: int
+gradeValue: float
+elevationValue: float
+polarityValue: bool
+numPassengersEmbarking: int
+numPassengersDisembarking: int
+position: List[int]
+vacancy: int
+switchCmds = List[bool]
+crossingCmds = List[bool]
+signalCmds = List[bool]
+
+startBlock: int = 63
+endBlock: int = 57
+
 class Block:
-    def __init__(self, line: str, section: str, number: int, length: float, grade: float, speedLimit: float, infrastructure: str, elevation: float, cumulativeElevation: float, right: bool = False, left: bool = False, polarity: bool = False, functional: bool = True, occupied: bool = False):
+    def __init__(self, line: str, section: str, number: int, length: float, grade: float, speedLimit: float, infrastructure: str, elevation: float, cumulativeElevation: float, side = "N/A", polarity: bool = False, functional: bool = True, occupied: bool = False):
         self.line = line
         self.section = section
         self.number = number
@@ -14,8 +30,7 @@ class Block:
         self.grade = grade
         self.speedLimit = speedLimit
         self.infrastructure = infrastructure
-        self.right = right
-        self.left = left
+        self.side = side
         self.elevation = elevation
         self.cumulativeElevation = cumulativeElevation
         self.polarity = polarity
@@ -30,7 +45,7 @@ class Block:
     def createBlocks(cls, ui, layoutData: List[List[str]], lengthArray: List[float], position: int) -> Dict[str, List['Block']]:
         sections = {row[1]: [] for row in layoutData}
         for row in layoutData:
-            line, section, number, length, grade, speedLimit, infrastructure, elevation, cumulativeElevation = row[:9]
+            line, section, number, length, grade, speedLimit, infrastructure, side, elevation, cumulativeElevation = row[:10]
             block = cls(
                 line=line,
                 section=section,
@@ -39,11 +54,12 @@ class Block:
                 grade=float(grade),
                 speedLimit=float(speedLimit),
                 infrastructure=infrastructure,
+                side = side,
                 elevation=float(elevation),
                 cumulativeElevation=float(cumulativeElevation)
             )
             sections[section].append(block)
-        allBlocks = [block for blocks in sections.values() for block in blocks]
+        allBlocks = ([block for blocks in sections.values() for block in blocks])
         cls.setOccupancy(ui, allBlocks, lengthArray, position)
         cls.setPolarity(allBlocks)
         for section, blocks in sections.items():
@@ -184,9 +200,15 @@ class MainWindow(QtWidgets.QMainWindow):
         switchText = self.ui.switches.currentText()
         if switchText:
             joint = int(re.search(r'\d+', switchText).group())
-            switch = next(b for blocks in self.blocks.values() for b in blocks if b.number == joint)
-            leg1 = min(num for num in self.extractSwitchNumbers(switch.infrastructure) if num != joint)
-            leg2 = max(num for num in self.extractSwitchNumbers(switch.infrastructure) if num != joint)
+            switch = next((b for blocks in self.blocks.values() for b in blocks if b.number == joint), None)
+            if switch is None:
+                return "Switch not found"
+            switch_numbers = [num for num in self.extractSwitchNumbers(switch.infrastructure) if num != joint]
+            if switch_numbers:
+                leg1 = min(switch_numbers)
+                leg2 = max(switch_numbers)
+            else:
+                leg1 = leg2 = None
             if self.ui.switchToggle.isChecked():
                 self.setLightColor(leg2, 'green')
                 self.setLightColor(leg1, 'red')
@@ -195,6 +217,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.setLightColor(leg2, 'red')
                 self.setLightColor(leg1, 'green')
                 return f"{joint} to {leg1}"
+        return "No switch selected"
 
     def setLightColor(self, blockNum: int, color: str) -> None:
         for light in self.switchLightArray:
@@ -212,6 +235,7 @@ class MainWindow(QtWidgets.QMainWindow):
             for block in blocks:
                 if "RAILWAY CROSSING" in block.infrastructure:
                     self.crossingArray.append(block.number)
+                    self.setCrossingLights(block.number, 'green')
         self.ui.crossings.clear()
         for crossing in self.crossingArray:
             self.ui.crossings.addItem(f"Crossing at Block {crossing}")
@@ -224,7 +248,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.setCrossingLights(crossing, 'red')
                 return (f"Crossing at Block {crossing} is active.") 
             else:
-                self.setCrossingLights(crossing, 'lightgray')
+                self.setCrossingLights(crossing, 'green')
                 return (f"Crossing at Block {crossing} is clear.") 
             
     def setCrossingLights(self, blockNum: int, color: str) -> None:
@@ -234,7 +258,7 @@ class MainWindow(QtWidgets.QMainWindow):
             if color == 'red':
                 self.ui.blockTable.item(blockNum - 1, 2).setBackground(QtGui.QColor('red'))
             else:
-                self.ui.blockTable.item(blockNum - 1, 2).setBackground(QtGui.QColor('lightgray'))
+                self.ui.blockTable.item(blockNum - 1, 2).setBackground(QtGui.QColor('green'))
 
     def printPassInfo(self) -> None:
         rowCount = self.ui.passInfoTable.rowCount()
@@ -309,6 +333,20 @@ class MainWindow(QtWidgets.QMainWindow):
                 for col in range(len(headers)-1):
                     self.ui.blockTable.item(row, col).setBackground(QtGui.QColor('lightcoral'))
 
+        self.ui.blockTable.cellClicked.connect(self.handleCellClick)
+
+    def handleCellClick(self, row: int, column: int) -> None:
+        if column == 2: 
+            allBlocks = [block for blocks in self.blocks.values() for block in blocks]
+            selectedBlock = allBlocks[row]
+            for switch in self.switchArray:
+                if selectedBlock.number == switch['joint']:
+                    self.ui.switches.setCurrentText(f"Switch at Block {switch['joint']}")
+                    self.ui.switchToggle.setChecked(not self.ui.switchToggle.isChecked())
+                    switch_state = self.checkSwitch()
+                    self.ui.blockTable.item(row, column).setText(switch_state)
+                    break
+
     def printBlockInfo(self) -> None:
         selectedItems = self.ui.blockTable.selectedItems()
         if not selectedItems:
@@ -317,12 +355,11 @@ class MainWindow(QtWidgets.QMainWindow):
         allBlocks = [block for blocks in self.blocks.values() for block in blocks]
         selectedBlock = allBlocks[selectedRow]
 
-        self.ui.blockInfo.setRowCount(12)
+        self.ui.blockInfo.setRowCount(11)
         self.ui.blockInfo.setColumnCount(1)
         self.ui.blockInfo.setVerticalHeaderLabels([
             "Line", "Section", "Number", "Length", "Grade", "Speed Limit", 
-            "Infrastructure", "Elevation", "Cumulative Elevation", "Right", 
-            "Left", "Polarity"
+            "Infrastructure", "Elevation", "Cumulative Elevation", "Side", "Polarity"
         ])
         self.ui.blockInfo.setItem(0, 0, QtWidgets.QTableWidgetItem(selectedBlock.line))
         self.ui.blockInfo.setItem(1, 0, QtWidgets.QTableWidgetItem(selectedBlock.section))
@@ -333,9 +370,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.blockInfo.setItem(6, 0, QtWidgets.QTableWidgetItem(selectedBlock.infrastructure))
         self.ui.blockInfo.setItem(7, 0, QtWidgets.QTableWidgetItem(str(selectedBlock.elevation)))
         self.ui.blockInfo.setItem(8, 0, QtWidgets.QTableWidgetItem(str(selectedBlock.cumulativeElevation)))
-        self.ui.blockInfo.setItem(9, 0, QtWidgets.QTableWidgetItem(str(selectedBlock.right)))
-        self.ui.blockInfo.setItem(10, 0, QtWidgets.QTableWidgetItem(str(selectedBlock.left)))
-        self.ui.blockInfo.setItem(11, 0, QtWidgets.QTableWidgetItem(str(selectedBlock.polarity)))
+        self.ui.blockInfo.setItem(9, 0, QtWidgets.QTableWidgetItem(str(selectedBlock.side)))
+        self.ui.blockInfo.setItem(10, 0, QtWidgets.QTableWidgetItem(str(selectedBlock.polarity)))
 
     def updateOccupancy(self) -> None:
         position = self.ui.positionValue.value()

@@ -1,16 +1,16 @@
-﻿Line,Section,Number,Length,Grade,Speed Limit,Infrastructure,Elevation,Cumulative Elevation
-Blue,A,1,50,0,50,,0,0
-Blue,A,2,50,0,50,,0,0
-Blue,A,3,50,0,50,RAILWAY CROSSING,0,0
-Blue,A,4,50,0,50,,0,0
-Blue,A,5,50,0,50,SWITCH (5-6; 5-11),0,0
-Blue,B,6,50,0,50,Light,0,0
-Blue,B,7,50,0,50,,0,0
+﻿Line,Section,Number,Length,Grade,Speed Limit,Infrastructure,Side,Elevation,Cumulative Elevation
+Blue,A,1,50,0,50,,Left/Right,0,0
+Blue,A,2,50,0,50,,,0,0
+Blue,A,3,50,0,50,RAILWAY CROSSING,,0,0
+Blue,A,4,50,0,50,,,0,0
+Blue,A,5,50,0,50,SWITCH (5-6; 5-11),,0,0
+Blue,B,6,50,0,50,,,0,0
+Blue,B,7,50,0,50,,,0,0
 Blue,B,8,50,0,50,,0,0
-Blue,B,9,50,0,50,Transponder,0,0
-Blue,B,10,50,0,50,Station B,0,0
-Blue,C,11,50,0,50,Light,0,0
-Blue,C,12,50,0,50,,0,0
-Blue,C,13,50,0,50,,0,0
-Blue,C,14,50,0,50,Transponder,0,0
-Blue,C,15,50,0,50,Station C,0,0
+Blue,B,9,50,0,50,Transponder,,0,0
+Blue,B,10,50,0,50,Station B,,0,0
+Blue,C,11,50,0,50,,,0,0
+Blue,C,12,50,0,50,,,0,0
+Blue,C,13,50,0,50,,,0,0
+Blue,C,14,50,0,50,Transponder,,0,0
+Blue,C,15,50,0,50,Station C,,0,0
