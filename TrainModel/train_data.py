@@ -10,11 +10,12 @@ class TrainData(QObject):
     announcement = pyqtSignal(str)
     current_velocity_signal = pyqtSignal(float)
 
-    def __init__(self, tc_communicate, tm_communicate):
+    def __init__(self, tc_communicate, tm_communicate, ctc_communicate):
         super().__init__()
 
         self.tc_communicate = tc_communicate
         self.tm_communicate = tm_communicate
+        self.ctc_communicate = ctc_communicate
 
         # Variables for the data values
         self.cabin_temperature = 78  # degrees Fahrenheit (Actual Temperature)
@@ -35,6 +36,7 @@ class TrainData(QObject):
         self.single_car_tare_weight = 40.9  # tons
 
         self.announcement_text = "RED ALERT"
+        dispatch_train = 0
 
         # Train Control Input Variables
         self.commanded_power = 90  # kW
@@ -117,6 +119,14 @@ class TrainData(QObject):
         self.tm_communicate.block_elevation_signal.connect(self.set_block_elevation)
         self.tm_communicate.polarity_signal.connect(self.set_track_polarity)
         self.tm_communicate.number_passenger_boarding_signal.connect(self.set_passenger_boarding)
+
+        #connect incoming signals from CTC
+        self.ctc_communicate.dispatch_train_signal.connect(self.set_dispatch_train)
+        #GPT
+    def set_dispatch_train(self, number):
+        # Train should only start moving if this signal is received
+        self.dispatch_train = number
+        pass
 
     def write_to_trainController_trackModel(self):
         self.update_train_state()
@@ -239,6 +249,7 @@ class TrainData(QObject):
         self.tc_communicate.polarity_signal.emit(True)  # Example value
         self.tc_communicate.commanded_speed_signal.emit(self.commanded_speed_tc)
         self.tc_communicate.commanded_authority_signal.emit(self.authority)
+        self.tc_communicate.dispatch_train_signal.emit(self.dispatch_train)
 
         # Send failure signals
         self.tc_communicate.engine_failure_signal.emit(self.engine_failure)

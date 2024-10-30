@@ -58,7 +58,7 @@ class TrainModelPage(BasePage):
             ("Total Car Weight", "total_car_weight", "t"),
             # Removed 'Train Length', 'Train Height', 'Train Width' from Dynamic Information
             ("Number of Cars", "number_of_cars", ""),
-            ("Single Car Tare Weight", "single_car_tare_weight", "t"),
+            ("Single Car Empty Weight", "single_car_tare_weight", "t"),
             ("Current Acceleration", "current_acceleration", "ft/s²"),
             ("Commanded Speed", "commanded_speed", "mph"),
             ("Commanded Authority", "commanded_authority", "ft"),

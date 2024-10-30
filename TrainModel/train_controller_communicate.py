@@ -26,4 +26,4 @@ class TrainControllerCommunicate(QObject):
     passenger_brake_command_signal = pyqtSignal(bool)
     actual_temperature_signal = pyqtSignal(float)
     polarity_signal = pyqtSignal(bool)  # If flipped, then train has moved onto next block - NEW
-    dispatch_train_signal = pyqtSignal(bool)  # 1 = Dispatch, 0 = Do not dispatch
+    dispatch_train_signal = pyqtSignal(int)  # 1 = Dispatch, 0 = Do not dispatch
