@@ -339,29 +339,66 @@ class FailureModes(QObject):
             self.signal_fail = False
             self.signal_failure_signal.emit(self.signal_fail)
         
+class Lights(QObject):
+    exterior_lights_signal = pyqtSignal(bool)
+    interior_lights_signal = pyqtSignal(bool)
+    
+    def __init__(self, speed_control: SpeedControl):
+        super().__init__()
+        self.exterior_lights = False
+        self.interior_lights = False
+        self.speed_control = speed_control
+            
+    def turn_on_exterior_lights(self):
+        self.exterior_lights = True
+        self.exterior_lights_signal.emit(self.exterior_lights)
+        print("Exterior Lights: ON")
+        
+    def turn_off_exterior_lights(self):
+        self.exterior_lights = False
+        self.exterior_lights_signal.emit(self.exterior_lights)
+        print("Exterior Lights: OFF")
+        
+    def turn_on_interior_lights(self):
+        self.interior_lights = True
+        self.interior_lights_signal.emit(self.interior_lights)
+        print("Interior Lights: ON")
+        
+    def turn_off_interior_lights(self):
+        self.interior_lights = False
+        self.interior_lights_signal.emit(self.interior_lights)
+        print("Interior Lights: OFF")
+            
 class Position(QObject):
     commanded_authority_signal = pyqtSignal(int)
     
-    def __init__(self, doors: Doors, failure_modes: FailureModes, speed_control: SpeedControl, power_class: PowerCommand, communicator: Communicate):
+    def __init__(self, doors: Doors, failure_modes: FailureModes, speed_control: SpeedControl, power_class: PowerCommand, communicator: Communicate, lights: Lights):
         super().__init__()
         self.commanded_authority = 5    # int
         self.station_name = 'Shadyside' # string
+        self.announcement = 'Welcome to Shadyside Station' # string
         self.polarity = False   # boolean
-        self.current_block = 0  # int
-        self.signal_status = [0, 0, 0, 0]  # list of int
-        self.current_block_grade = 0.0
         # I need the block number of the station so that I can query into my infrastructure array and check what the station name is of that block
         self.communicator = communicator
         self.door = doors
         self.failure_modes = failure_modes
         self.speed_control = speed_control
         self.power_class = power_class
+        self.light = lights
         
         # Variables needed for the Track Layouts (GREEN LINE)
         self.green_station = []
         self.green_station_door = []
         self.green_speed_limit = []
-        self.green_grade = []
+        self.green_underground = []
+        self.default_path_blocks = [
+            63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100,
+            85, 84, 83, 82, 81, 80, 79, 78, 77, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124,
+            125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 29, 28, 27, 26, 25, 24, 23,
+            22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
+            32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57
+        ]
+        self.current_block = self.default_path_blocks[0]  # int
         
         # Load the track layout data from GreenLine.json file in Track Layouts folder
         with open('TrainController/Track Layouts/GreenLine.json', 'r') as file:
@@ -369,25 +406,10 @@ class Position(QObject):
             
             for entry in data:
                 self.green_station.append(entry['Infrastructure'])
+                self.green_underground.append(entry['Infrastructure'])
                 self.green_station_door.append(entry['Station Side'])
                 self.green_speed_limit.append(entry['Speed Limit (Km/Hr)'])
-                self.green_grade.append(entry['Block Grade (%)'])
-                
-        self.send_current_block_grade()
-                
-    def send_current_block_grade(self):
-        self.current_block_grade = self.green_grade[self.current_block]
-                
-    # Connect function for the Communicate class
-    def handle_signal_status(self, signal_status: list):
-        self.signal_status = signal_status
         
-    def update_signal_status(self):
-        if self.signal_status[1] == 1:
-            self.current_block = self.signal_status[0]
-        elif self.signal_status[3] == 1:
-            self.current_block = self.signal_status[2]
-    
     # Connect function for the Communicate class
     def handle_commanded_authority(self, authority: int):
         self.commanded_authority = authority
@@ -400,12 +422,30 @@ class Position(QObject):
         self.speed_control.update_speed_limit(self.green_speed_limit[self.current_block])
         self.commanded_authority -= 1
         self.commanded_authority_signal.emit(self.commanded_authority)
-        self.update_signal_status()
-        self.current_block += 1
+        
+        # Looping around the green line of the track
+        if self.current_block == 57:
+            self.current_block = 63
+        else:
+            current_index = self.default_path_blocks.index(self.current_block)
+            self.current_block = self.default_path_blocks[current_index + 1]
+            
         self.check_current_block()
+        self.check_block_underground()
         self.calculate_desired_speed()
         print(f"Polarity: {self.polarity}")
         
+    def check_block_underground(self):
+        if "UNDERGROUND" in self.green_underground[self.current_block]:
+            self.light.turn_on_exterior_lights()
+            self.light.turn_on_interior_lights()
+            print("Underground Block")
+        elif "UNDERGROUND" not in self.green_underground[self.current_block]:
+            self.light.turn_off_exterior_lights()
+            self.light.turn_off_interior_lights()
+            print("Above Ground Block")
+            
+            
     def check_current_block(self):
         print(f"Current Block: {self.current_block}")
         if self.commanded_authority == 0:
@@ -449,28 +489,8 @@ class Position(QObject):
         
         # Split the remaining part at the semicolon and take the first part
         self.station_name = after_space.split(';', 1)[1].split(';')[0].strip()
-            
-class Lights(QObject):
-    exterior_lights_signal = pyqtSignal(bool)
-    interior_lights_signal = pyqtSignal(bool)
-    
-    def __init__(self, speed_control: SpeedControl):
-        super().__init__()
-        self.exterior_lights = False
-        self.interior_lights = False
-        self.speed_control = speed_control
         
-    def toggle_exterior_lights(self):
-        if self.speed_control.operation_mode == 1:
-            self.exterior_lights = not self.exterior_lights
-            self.exterior_lights_signal.emit(self.exterior_lights)
-            print(f"Exterior Lights: {'ON' if self.exterior_lights else 'OFF'}")
-        
-    def toggle_interior_lights(self):
-        if self.speed_control.operation_mode == 1:
-            self.interior_lights = not self.interior_lights
-            self.interior_lights_signal.emit(self.interior_lights)
-            print(f"Interior Lights: {'ON' if self.interior_lights else 'OFF'}")
+        self.announcement = f"Welcome to {self.station_name} Station"
    
 class Temperature(QObject):
     current_temperature_signal = pyqtSignal(float)
@@ -649,9 +669,9 @@ class TrainControllerUI(QWidget):
         # Power Command - Make a PYQTSIGNAL FOR THIS
         self.power_class.power_command_signal.connect(self.update_power_command)
         # Exterior Lights - Make a PYQTSIGNAL FOR THIS
-        self.lights.exterior_lights_signal.connect(self.toggle_exterior_lights)
+        self.lights.exterior_lights_signal.connect(self.update_exterior_lights)
         # Interior Lights - Make a PYQTSIGNAL FOR THIS
-        self.lights.interior_lights_signal.connect(self.toggle_interior_lights)
+        self.lights.interior_lights_signal.connect(self.update_interior_lights)
         # Left Door - Make a PYQTSIGNAL FOR THIS
         self.doors.left_door_update.connect(self.update_left_door)
         # Right Door - Make a PYQTSIGNAL FOR THIS
@@ -832,9 +852,9 @@ class TrainControllerUI(QWidget):
         self.interior_lights_layout = QHBoxLayout()
         self.interior_lights_label = QLabel("Interior Lights Status:")
         self.interior_lights_label.setStyleSheet("font-size: 14px; font-weight: bold; color: black; padding-left: 40px;")
-        self.interior_lights_status = QPushButton("ON")
-        self.interior_lights_status.setStyleSheet("background-color: #f5c842; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
-        self.interior_lights_status.pressed.connect(self.lights.toggle_interior_lights)
+        self.interior_lights_status = QPushButton("OFF")
+        self.interior_lights_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
+        self.interior_lights_status.pressed.connect(self.handle_interior_lights)
         self.interior_lights_layout.addWidget(self.interior_lights_label)
         self.interior_lights_layout.addWidget(self.interior_lights_status)
         self.interior_lights_layout.addSpacerItem(QSpacerItem(20, 20))
@@ -847,7 +867,7 @@ class TrainControllerUI(QWidget):
         self.exterior_lights_label.setStyleSheet("font-size: 14px; font-weight: bold; color: black; padding-left: 40px;")
         self.exterior_lights_status = QPushButton("OFF")
         self.exterior_lights_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
-        self.exterior_lights_status.pressed.connect(self.lights.toggle_exterior_lights)
+        self.exterior_lights_status.pressed.connect(self.handle_exterior_lights)
         self.exterior_lights_layout.addWidget(self.exterior_lights_label)
         self.exterior_lights_layout.addWidget(self.exterior_lights_status)
         self.exterior_lights_layout.addSpacerItem(QSpacerItem(20, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum))
@@ -1133,7 +1153,19 @@ class TrainControllerUI(QWidget):
             else:
                 self.doors.open_left_door()
             
-    def toggle_exterior_lights(self, lights_status: bool):
+    def handle_interior_lights(self):
+        if self.lights.interior_lights:
+            self.lights.turn_off_interior_lights()
+        else:
+            self.lights.turn_on_interior_lights()
+            
+    def handle_exterior_lights(self):
+        if self.lights.exterior_lights:
+            self.lights.turn_off_exterior_lights()
+        else:
+            self.lights.turn_on_exterior_lights()
+            
+    def update_exterior_lights(self, lights_status: bool):
         if lights_status:
             self.exterior_lights_status.setText("ON")
             self.exterior_lights_status.setStyleSheet("background-color: #f5c842; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
@@ -1141,7 +1173,7 @@ class TrainControllerUI(QWidget):
             self.exterior_lights_status.setText("OFF")
             self.exterior_lights_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
             
-    def toggle_interior_lights(self, lights_status: bool):
+    def update_interior_lights(self, lights_status: bool):
         if lights_status:
             self.interior_lights_status.setText("ON")
             self.interior_lights_status.setStyleSheet("background-color: #f5c842; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
@@ -1253,8 +1285,7 @@ class TrainControllerUI(QWidget):
         self.communicator.interior_lights_signal.emit(self.lights.exterior_lights)
         self.communicator.left_door_signal.emit(self.doors.left_door)
         self.communicator.right_door_signal.emit(self.doors.right_door)
-        self.communicator.announcement_signal.emit(self.position.station_name)
-        self.communicator.grade_signal.emit(self.position.current_block_grade)
+        self.communicator.announcement_signal.emit(self.position.announcement)
     
     def read_from_train_model(self):
         self.communicator.current_velocity_signal.connect(self.speed_control.handle_current_velocity)
@@ -1266,7 +1297,6 @@ class TrainControllerUI(QWidget):
         self.communicator.passenger_brake_command_signal.connect(self.brake_class.handle_passenger_brake_command)
         self.communicator.actual_temperature_signal.connect(self.temperature.update_current_temp_display)
         self.communicator.polarity_signal.connect(self.position.handle_polarity_change)
-        self.communicator.signal_status_signal.connect(self.position.handle_signal_status)
         
 
     ############################################
@@ -1321,7 +1351,7 @@ if __name__ == "__main__":#
     lights = Lights(speed_control)
     temperature = Temperature()
     communicator = Communicate()
-    position = Position(doors, failure_modes, speed_control, power_class, communicator)
+    position = Position(doors, failure_modes, speed_control, power_class, lights, communicator)
     window = TrainControllerUI(communicator, doors, tuning, brake_status, power_class, speed_control, failure_modes, position, lights, temperature)
     window.show()
     # Show engineer window as well

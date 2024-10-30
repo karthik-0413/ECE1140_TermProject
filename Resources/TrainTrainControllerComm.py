@@ -12,7 +12,6 @@ class TrainTrainController(QObject):
     left_door_signal = pyqtSignal(bool)        # 1 = Open, 0 = Closed
     right_door_signal = pyqtSignal(bool)       # 1 = Open, 0 = Closed
     announcement_signal = pyqtSignal(str)
-    grade_signal = pyqtSignal(float)
     
     # Train Model -> Train Controller
     current_velocity_signal = pyqtSignal(float)
@@ -24,5 +23,4 @@ class TrainTrainController(QObject):
     passenger_brake_command_signal = pyqtSignal(bool)
     actual_temperature_signal = pyqtSignal(float)
     polarity_signal = pyqtSignal(bool)                 # If flipped, then train has moved onto next block - NEW
-    signal_status_signal = pyqtSignal(list)       # [6, 1, 2, 0] - First and Third = A block that the switch connects, Second and Fourth = Status of that block
-    dispatch_train_signal = pyqtSignal(bool)           # 1 = Dispatch, 0 = Do not dispatch
+    dispatch_train_signal = pyqtSignal(int)           # 1 = Dispatch, 0 = Do not dispatch

@@ -28,7 +28,7 @@ class TimerThread(QThread):
             # Sleeping based on the adjusted simulation speed
             time.sleep(1.0 / adjusted_speed)
             self.seconds_elapsed += 1
-            # print(self.seconds_elapsed)
+            print(self.seconds_elapsed)
             self.second_passed.emit(self.seconds_elapsed)
 
     def start_clock(self):
