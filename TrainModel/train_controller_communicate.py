@@ -9,10 +9,10 @@ class TrainControllerCommunicate(QObject):
     service_brake_command_signal = pyqtSignal(bool)
     emergency_brake_command_signal = pyqtSignal(bool)
     desired_temperature_signal = pyqtSignal(float)
-    exterior_lights_signal = pyqtSignal(bool)  # 1 = On, 0 = Off
-    interior_lights_signal = pyqtSignal(bool)  # 1 = On, 0 = Off
-    left_door_signal = pyqtSignal(bool)        # 1 = Open, 0 = Closed
-    right_door_signal = pyqtSignal(bool)       # 1 = Open, 0 = Closed
+    exterior_lights_signal = pyqtSignal(bool)  # True = On, False = Off
+    interior_lights_signal = pyqtSignal(bool)  # True = On, False = Off
+    left_door_signal = pyqtSignal(bool)        # True = Open, False = Closed
+    right_door_signal = pyqtSignal(bool)       # True = Open, False = Closed
     announcement_signal = pyqtSignal(str)
     grade_signal = pyqtSignal(float)
 
@@ -26,4 +26,4 @@ class TrainControllerCommunicate(QObject):
     passenger_brake_command_signal = pyqtSignal(bool)
     actual_temperature_signal = pyqtSignal(float)
     polarity_signal = pyqtSignal(bool)  # If flipped, then train has moved onto next block - NEW
-    dispatch_train_signal = pyqtSignal(int)  # 1 = Dispatch, 0 = Do not dispatch
+    dispatch_train_signal = pyqtSignal(bool)  # True = Dispatch, False = Do not dispatch

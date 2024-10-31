@@ -14,7 +14,7 @@ from murphy import MurphyPage
 from train_data import TrainData
 from train_controller_communicate import TrainControllerCommunicate
 from track_model_communicate import TrackModelCommunicate
-from clock import TimerThread, TimerUI
+from CTC_communicate import CTCTrain
 
 
 class MainWindow(QMainWindow):
@@ -24,17 +24,18 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         self.setWindowTitle("PyQt6 Train Control Application")
-        self.setGeometry(100, 100, 1200, 800)  # Increased window size for better visibility
+        self.setGeometry(100, 100, 1200, 800)  # Adjusted window size
 
         # Create communication instances
         self.tc_communicate = TrainControllerCommunicate()
         self.tm_communicate = TrackModelCommunicate()
+        self.ctc_communicate = CTCTrain()
 
         # Create TrainData instances for each Train ID
         self.train_data_dict = {
-            '1': TrainData(self.tc_communicate, self.tm_communicate),
-            '2': TrainData(self.tc_communicate, self.tm_communicate),
-            '3': TrainData(self.tc_communicate, self.tm_communicate)
+            '1': TrainData(self.tc_communicate, self.tm_communicate, self.ctc_communicate),
+            '2': TrainData(self.tc_communicate, self.tm_communicate, self.ctc_communicate),
+            '3': TrainData(self.tc_communicate, self.tm_communicate, self.ctc_communicate)
         }
         self.current_train_id = '1'
         self.current_train_data = self.train_data_dict[self.current_train_id]
@@ -109,14 +110,6 @@ class MainWindow(QMainWindow):
         central_widget.setLayout(main_layout)
         self.setCentralWidget(central_widget)
 
-        # Initialize and start the clock
-        self.clock_thread = TimerThread()
-        self.clock_ui = TimerUI(self.clock_thread)
-        self.clock_ui.setFixedHeight(80)
-        main_layout.addWidget(self.clock_ui, alignment=Qt.AlignmentFlag.AlignCenter)
-        self.clock_thread.second_passed.connect(self.update_train_states)
-        self.clock_thread.start_clock()
-
     def train_id_changed(self, new_train_id):
         """Handle Train ID change."""
         self.current_train_id = new_train_id
@@ -145,11 +138,6 @@ class MainWindow(QMainWindow):
         """Show the Murphy page."""
         self.murphy_page.update_display()
         self.stacked_widget.setCurrentWidget(self.murphy_page)
-
-    def update_train_states(self, seconds_elapsed):
-        """Update train states based on clock ticks."""
-        for train_data in self.train_data_dict.values():
-            train_data.update_train_state(delta_t=1.0 / self.clock_thread.speed_multiplier)
 
 
 def main():

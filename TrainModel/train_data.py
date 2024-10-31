@@ -23,7 +23,7 @@ class TrainData(QObject):
         self.passenger_count = 100
         self.crew_count = 2
         self.maximum_speed = 50  # mph
-        self.current_speed = 40  # mph
+        self.current_speed = 0  # mph, initially stationary
         self.total_car_weight = 40.9  # tons (empty train weight)
 
         self.train_length_m = 32.2  # meters
@@ -35,14 +35,13 @@ class TrainData(QObject):
         self.number_of_cars = 1  # variable
         self.single_car_tare_weight = 40.9  # tons
 
-        self.announcement_text = "RED ALERT"
-        dispatch_train = 0
+        self.announcement_text = "Welcome aboard!"
 
         # Train Control Input Variables
-        self.commanded_power = 90  # kW
-        self.commanded_speed_tc = 80  # km/h
+        self.commanded_power = 0  # kW, starts at 0 until dispatched
+        self.commanded_speed_tc = 0  # km/h, starts at 0 until dispatched
         self.commanded_speed = self.commanded_speed_tc * 0.621371  # mph (converted)
-        self.authority = 15  # number of blocks
+        self.authority = 0  # number of blocks, starts at 0 until dispatched
         self.commanded_authority = self.authority * 3.28084  # ft (converted)
         self.service_brake = False
         self.exterior_light = True
@@ -66,7 +65,7 @@ class TrainData(QObject):
         self.passenger_emergency_brake = False
 
         # Added variables for dynamic information
-        self.current_acceleration = 0.3  # ft/s²
+        self.current_acceleration = 0.0  # ft/s², starts at 0
         self.available_seats = self.maximum_capacity - self.passenger_count
         self.current_train_weight = 40.9  # t (will be updated based on passengers)
 
@@ -93,11 +92,14 @@ class TrainData(QObject):
         self.brake_failure = False
         self.signal_failure = False
 
+        # Dispatch Control
+        self.dispatch_train = False  # Train should only start when dispatched
+
         # Read from Train Controller and Track Model
         self.read_from_trainController_trackModel()
 
-        # Variable to indicate if the train is at a station
-        self.at_station = False
+        # Read from CTC
+        self.read_from_ctc()
 
     def read_from_trainController_trackModel(self):
         # Connect incoming signals from Train Controller
@@ -111,6 +113,7 @@ class TrainData(QObject):
         self.tc_communicate.right_door_signal.connect(self.set_right_door)
         self.tc_communicate.announcement_signal.connect(self.set_announcement)
         self.tc_communicate.grade_signal.connect(self.set_grade)
+        self.tc_communicate.emergency_brake_command_signal.connect(self.set_emergency_brake_from_tc)
 
         # Connect incoming signals from Track Model
         self.tm_communicate.commanded_speed_signal.connect(self.set_track_commanded_speed)
@@ -120,16 +123,30 @@ class TrainData(QObject):
         self.tm_communicate.polarity_signal.connect(self.set_track_polarity)
         self.tm_communicate.number_passenger_boarding_signal.connect(self.set_passenger_boarding)
 
-        #connect incoming signals from CTC
+        # Update display at the end
+        self.update_display()
+
+    def read_from_ctc(self):
+        # Connect incoming signals from CTC
         self.ctc_communicate.dispatch_train_signal.connect(self.set_dispatch_train)
-        #GPT
-    def set_dispatch_train(self, number):
-        # Train should only start moving if this signal is received
-        self.dispatch_train = number
-        pass
 
     def write_to_trainController_trackModel(self):
-        self.update_train_state()
+        # Send signals to Train Controller
+        self.tc_communicate.current_velocity_signal.emit(self.current_speed)
+        self.tc_communicate.actual_temperature_signal.emit(self.cabin_temperature)
+        self.tc_communicate.passenger_brake_command_signal.emit(self.passenger_emergency_brake)
+        self.tc_communicate.polarity_signal.emit(True)  # Example value
+        self.tc_communicate.commanded_speed_signal.emit(self.commanded_speed_tc)
+        self.tc_communicate.commanded_authority_signal.emit(self.authority)
+
+        # Send failure signals
+        self.tc_communicate.engine_failure_signal.emit(self.engine_failure)
+        self.tc_communicate.brake_failure_signal.emit(self.brake_failure)
+        self.tc_communicate.signal_failure_signal.emit(self.signal_failure)
+
+        # Send signals to Track Model
+        self.tm_communicate.position_signal.emit(self.current_position)
+        self.tm_communicate.seat_vacancy_signal.emit(self.available_seats)
 
     # Handler methods for incoming signals from Train Controller
     def set_power_command(self, power):
@@ -139,6 +156,9 @@ class TrainData(QObject):
         self.set_value('service_brake', state)
 
     def set_emergency_brake(self, state):
+        self.set_value('emergency_brake', state)
+
+    def set_emergency_brake_from_tc(self, state):
         self.set_value('emergency_brake', state)
 
     def set_desired_temperature(self, temp):
@@ -186,6 +206,18 @@ class TrainData(QObject):
         if self.passenger_count > self.maximum_capacity:
             self.passenger_count = self.maximum_capacity
         self.update_train_weight()
+
+    # Handler for dispatch signal from CTC
+    def set_dispatch_train(self, number):
+        # Train should only start moving if this signal is received
+        self.dispatch_train = number > 0  # Assume number > 0 means dispatch
+        if self.dispatch_train:
+            self.commanded_power = 100  # Set some initial power when dispatched
+            self.commanded_speed_tc = 70  # Set some initial speed when dispatched
+            self.authority = 10  # Set some initial authority when dispatched
+            self.set_value('commanded_speed_tc', self.commanded_speed_tc)
+            self.set_value('commanded_power', self.commanded_power)
+            self.set_value('authority', self.authority)
         self.data_changed.emit()
 
     def update_train_weight(self):
@@ -219,14 +251,20 @@ class TrainData(QObject):
             self.commanded_speed = value * 0.621371
         if var_name == 'passenger_count':
             self.update_train_weight()
+        # Emit data_changed signal
         self.data_changed.emit()
 
-    def update_train_state(self, delta_t=1.0):
+    def update_train_state(self):
         """Update the train's state."""
-        # Call the calculate_train_speed function
-        calculate_train_speed(self, delta_t)
+        if self.dispatch_train:
+            # Call the calculate_train_speed function
+            calculate_train_speed(self)
+        else:
+            # Train is not dispatched; it remains stationary
+            self.current_speed = 0
+            self.current_acceleration = 0
 
-        # Determine if the train is at a station (for simplicity, let's assume position modulo some value)
+        # Determine if the train is at a station (simplified logic)
         if int(self.current_position) % 1000 < 5:
             self.at_station = True
         else:
@@ -242,23 +280,13 @@ class TrainData(QObject):
                 # Emit signal to Track Model
                 self.tm_communicate.number_passenger_leaving_signal.emit(passengers_leaving)
 
-        # Send signals to Train Controller
-        self.tc_communicate.current_velocity_signal.emit(self.current_speed)
-        self.tc_communicate.actual_temperature_signal.emit(self.cabin_temperature)
-        self.tc_communicate.passenger_brake_command_signal.emit(self.passenger_emergency_brake)
-        self.tc_communicate.polarity_signal.emit(True)  # Example value
-        self.tc_communicate.commanded_speed_signal.emit(self.commanded_speed_tc)
-        self.tc_communicate.commanded_authority_signal.emit(self.authority)
-        self.tc_communicate.dispatch_train_signal.emit(self.dispatch_train)
+        # Send updates to Train Controller and Track Model
+        self.write_to_trainController_trackModel()
 
-        # Send failure signals
-        self.tc_communicate.engine_failure_signal.emit(self.engine_failure)
-        self.tc_communicate.brake_failure_signal.emit(self.brake_failure)
-        self.tc_communicate.signal_failure_signal.emit(self.signal_failure)
-
-        # Send signals to Track Model
-        self.tm_communicate.position_signal.emit(self.current_position)
-        self.tm_communicate.number_passenger_leaving_signal.emit(passengers_leaving)
-        self.tm_communicate.seat_vacancy_signal.emit(self.available_seats)
-
+        # Emit data_changed signal
         self.data_changed.emit()
+
+    def update_display(self):
+        """Placeholder for UI update logic."""
+        # This method can be connected to update UI elements if needed
+        pass
