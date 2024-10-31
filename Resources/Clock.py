@@ -1,10 +1,9 @@
 import sys
 import time
-from PyQt6.QtCore import QThread, pyqtSignal, QMutex, QWaitCondition, pyqtSlot, Qt
+from PyQt6.QtCore import QThread, pyqtSignal, QMutex, QWaitCondition, pyqtSlot, Qt, QTimer
 from PyQt6.QtWidgets import QApplication, QLabel, QWidget, QSlider, QHBoxLayout
 
 class TimerThread(QThread):
-
     second_passed = pyqtSignal(int)
 
     def __init__(self):
@@ -49,6 +48,7 @@ class TimerThread(QThread):
 
     def modify_speed(self, multiplier: float):
         self.speed_multiplier = multiplier
+        print(f"Speed multiplier set to {multiplier}")
 
     def terminate_clock(self):
         self.active = False
@@ -60,7 +60,17 @@ class TimerUI(QWidget):
     def __init__(self, timer: TimerThread):
         super().__init__()
         self.timer = timer
-        self.timer.second_passed.connect(self.refresh_display)
+        self.speed_multiplier = 1.0
+        self.start_time = time.time()
+        
+        # Timer to update display based on speed multiplier
+        self.display_timer = QTimer()
+        self.display_timer.timeout.connect(self.update_elapsed_time)
+        
+        # Start the display timer to refresh every second (real time)
+        self.display_timer.start(1000)
+        
+        self.seconds_elapsed = 0
         self.setup_ui()
 
     def setup_ui(self):
@@ -85,7 +95,7 @@ class TimerUI(QWidget):
         slider_layout = QHBoxLayout()
 
         self.speed_slider = QSlider(Qt.Orientation.Horizontal)
-        self.speed_slider.setMinimum(0)
+        self.speed_slider.setMinimum(1)
         self.speed_slider.setMaximum(20)
         self.speed_slider.setValue(1)
         self.speed_slider.setTickPosition(QSlider.TickPosition.TicksBelow)
@@ -128,27 +138,28 @@ class TimerUI(QWidget):
         layout.setContentsMargins(15, 15, 15, 15)
         self.setLayout(layout)
 
-    @pyqtSlot(int)
-    def refresh_display(self, seconds):
-        hrs = seconds // 3600
-        mins = (seconds % 3600) // 60
-        secs = seconds % 60
+    @pyqtSlot()
+    def update_elapsed_time(self):
+        # Increase elapsed time based on speed multiplier
+        self.seconds_elapsed += self.speed_multiplier
+        hrs = int(self.seconds_elapsed // 3600)
+        mins = int((self.seconds_elapsed % 3600) // 60)
+        secs = int(self.seconds_elapsed % 60)
 
-        hrs_str = str(hrs).zfill(2)
-        mins_str = str(mins).zfill(2)
-        secs_str = str(secs).zfill(2)
-
-        self.time_display.setText(f"{hrs_str}:{mins_str}:{secs_str}")
+        # Update the display label with the formatted time
+        self.time_display.setText(f"{hrs:02}:{mins:02}:{secs:02}")
 
     @pyqtSlot(int)
     def update_speed(self, multiplier: int):
-        if multiplier == 0:
-            self.timer.halt_clock()
-            self.speed_display.setText("Paused")
-        else:
-            self.timer.continue_clock()
-            self.timer.modify_speed(multiplier)
-            self.speed_display.setText(f"{multiplier:.1f}x")
+        # Update speed multiplier and display text
+        self.speed_multiplier = multiplier
+        self.speed_display.setText(f"{multiplier:.1f}x")
+        print(f"Speed multiplier set to {multiplier}")
+        self.timer.modify_speed(multiplier)
+        
+        # Adjust display update interval based on speed multiplier
+        if multiplier > 0:
+            self.display_timer.start(int(1000 / multiplier))
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

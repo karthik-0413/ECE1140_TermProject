@@ -44,7 +44,7 @@ class TrainSystem:
         failure_modes = FailureModes(speed_control)
         lights = Lights(speed_control)
         temperature = Temperature()
-        position = Position(doors, failure_modes, speed_control, power_class, self.train_trainControllerComm)
+        position = Position(doors, failure_modes, speed_control, power_class, self.train_trainControllerComm, lights)
         
         # Instantiate the UI components
         self.train_controller_window = TrainControllerUI(self.train_trainControllerComm, doors, tuning, brake_status, power_class, speed_control, failure_modes, position, lights, temperature)
@@ -77,6 +77,7 @@ def main():
 
     # Show the TrainControllerUI and EngineerUI
     train_system.show_TrainControllerUI()
+    # In order to get more trains just call the function above again with a different train_trainControllerComm
 
     # Show the Clock UI
     train_system.show_ClockUI()

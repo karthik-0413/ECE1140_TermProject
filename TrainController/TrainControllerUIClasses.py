@@ -401,7 +401,7 @@ class Position(QObject):
         self.current_block = self.default_path_blocks[0]  # int
         
         # Load the track layout data from GreenLine.json file in Track Layouts folder
-        with open('TrainController/Track Layouts/GreenLine.json', 'r') as file:
+        with open(os.path.join(os.path.dirname(__file__), 'Track Layouts', 'GreenLine.json'), 'r') as file:
             data = json.load(file)
             
             for entry in data:
