@@ -2,26 +2,24 @@
 
 from PyQt6.QtGui import QFont
 from PyQt6.QtWidgets import (
-    QWidget, QPushButton, QLabel, QLineEdit,
-    QVBoxLayout, QHBoxLayout, QGridLayout, QComboBox,
-    QScrollArea, QDialog
+    QLabel, QVBoxLayout, QHBoxLayout, QGridLayout,
+    QScrollArea, QPushButton, QLineEdit, QComboBox, QWidget
 )
 from PyQt6.QtCore import Qt
-from functools import partial
 
 from base_page import BasePage
-from announcement import AnnouncementDialog
-from power_dialog import SetCommandedPowerDialog  # Renamed to avoid conflict with power.py
-
+from announcement import AnnouncementDialog  # Import the updated AnnouncementDialog
 
 class TestBenchPage(BasePage):
-    """Page representing the Test Bench."""
+    """Page representing the Test Bench for Train Control Inputs."""
 
-    def __init__(self, train_data, train_id_callback, tc_communicate, tm_communicate):
-        super().__init__("Test Bench", train_id_callback)
+    def __init__(self, train_data, tc_communicate, tm_communicate):
+        super().__init__("Test Bench", self.train_id_changed)
         self.train_data = train_data  # Store the train data
         self.tc_communicate = tc_communicate
         self.tm_communicate = tm_communicate
+
+        self.current_train_index = 0  # Default to first train
 
         # Create a scroll area
         scroll_area = QScrollArea()
@@ -31,480 +29,244 @@ class TestBenchPage(BasePage):
         content_widget = QWidget()
         content_widget.setStyleSheet("background-color: #F5F5F5;")
 
-        main_vertical_layout = QVBoxLayout()
-        main_vertical_layout.setContentsMargins(10, 0, 10, 10)
-        main_vertical_layout.setSpacing(5)
-        main_vertical_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        main_layout = QVBoxLayout()
+        main_layout.setContentsMargins(20, 20, 20, 20)
+        main_layout.setSpacing(10)
 
-        self.font_label = QFont('Arial', 13)  # Increased by 1
-        self.font_label.setBold(True)
-        self.font_value = QFont('Arial', 13)  # Increased by 1
+        # Control Inputs Label
+        control_inputs_label = QLabel("Train Control Inputs")
+        control_inputs_label.setFont(QFont('Arial', 16, QFont.Weight.Bold))
+        control_inputs_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        control_inputs_label.setStyleSheet("color: black;")
 
-        self.tc_edit_fields = {}
-        self.cabin_edit_fields = {}
+        main_layout.addWidget(control_inputs_label)
 
-        # Main horizontal layout to place tables side by side
-        main_horizontal_layout = QHBoxLayout()
-        main_horizontal_layout.setSpacing(20)
+        # Control Inputs Grid
+        control_inputs_layout = QGridLayout()
+        control_inputs_layout.setHorizontalSpacing(20)
+        control_inputs_layout.setVerticalSpacing(10)
 
-        # Train Control Input Section
-        tc_section_layout = QVBoxLayout()
-        tc_section_layout.setSpacing(5)
-
-        tc_title = QLabel("Train Control Input")
-        tc_title.setFont(QFont('Arial', 17, QFont.Weight.Bold))
-        tc_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        tc_title.setStyleSheet("color: black;")
-
-        tc_input_layout = QGridLayout()
-        tc_input_layout.setSpacing(5)
-        tc_input_layout.setHorizontalSpacing(10)
-        tc_input_layout.setContentsMargins(0, 0, 0, 0)
-
-        tc_data_items = [
-            ("Commanded Power(kw)", "commanded_power"),
-            ("Commanded Speed(km/h)", "commanded_speed_tc"),
-            ("Authority(m)", "authority"),
-            ("Service Brake", "service_brake"),
-            ("Exterior Light", "exterior_light"),
-            ("Interior Light", "interior_light"),
-            ("Emergency Brake", "emergency_brake"),
-            ("Beacon", "beacon"),
+        # List of control inputs
+        control_inputs = [
+            ("Power Command (kW):", "commanded_power", self.set_commanded_power),
+            ("Service Brake:", "service_brake", self.toggle_service_brake),
+            ("Emergency Brake:", "emergency_brake", self.toggle_emergency_brake),
+            ("Desired Temperature (°F):", "desired_temperature", self.set_desired_temperature),
+            ("Exterior Lights:", "exterior_light", self.toggle_exterior_light),
+            ("Interior Lights:", "interior_light", self.toggle_interior_light),
+            ("Left Door:", "train_left_door", self.toggle_left_door),
+            ("Right Door:", "train_right_door", self.toggle_right_door),
+            ("Announcement:", "announcement_text", self.open_announcement_dialog),
         ]
 
-        for i, (label_text, var_name, *rest) in enumerate(tc_data_items):
+        self.input_widgets = {}
+
+        for i, (label_text, var_name, callback) in enumerate(control_inputs):
             label = QLabel(label_text)
-            label.setFont(self.font_label)
+            label.setFont(QFont('Arial', 14))
             label.setStyleSheet("color: black;")
+            control_inputs_layout.addWidget(label, i, 0, alignment=Qt.AlignmentFlag.AlignRight)
 
-            if var_name in ["service_brake", "exterior_light", "interior_light", "emergency_brake"]:
-                # Use a button for ON/OFF
-                button = QPushButton("OFF")
-                button.setCheckable(True)
-                button.setFont(self.font_value)
-                button.setFixedWidth(80)
-                button.clicked.connect(partial(self.toggle_on_off, var_name, button))
-                tc_input_layout.addWidget(label, i, 0, alignment=Qt.AlignmentFlag.AlignLeft)
-                tc_input_layout.addWidget(button, i, 1, alignment=Qt.AlignmentFlag.AlignLeft)
-                unit_label = QLabel(rest[0] if rest else "")
-                unit_label.setFont(self.font_label)
-                unit_label.setStyleSheet("color: black;")
-                tc_input_layout.addWidget(unit_label, i, 2, alignment=Qt.AlignmentFlag.AlignLeft)
-                self.tc_edit_fields[var_name] = button
-            elif var_name == "beacon":
-                # Use a combo box for beacon with "We are approaching"
-                station_combo = QComboBox()
-                station_combo.addItems(["Station Alpha", "Station Beta", "Station Delta"])
-                station_combo.setCurrentText(self.train_data.beacon_station)
-                station_combo.setFont(self.font_value)
-                station_combo.setStyleSheet("color: black;")
-                station_combo.currentTextChanged.connect(self.update_beacon)
-                tc_input_layout.addWidget(label, i, 0, alignment=Qt.AlignmentFlag.AlignLeft)
-
-                beacon_layout = QHBoxLayout()
-                beacon_layout.setContentsMargins(0, 0, 0, 0)
-                beacon_layout.setSpacing(5)
-                prefix_label = QLabel("We are approaching")
-                prefix_label.setFont(self.font_value)
-                prefix_label.setStyleSheet("color: black;")
-                beacon_layout.addWidget(prefix_label)
-                beacon_layout.addWidget(station_combo)
-
-                tc_input_layout.addLayout(beacon_layout, i, 1)
-                unit_label = QLabel("")
-                tc_input_layout.addWidget(unit_label, i, 2, alignment=Qt.AlignmentFlag.AlignLeft)
-                self.tc_edit_fields["beacon_station"] = station_combo
-            elif var_name == "commanded_power":
-                # Replace QLineEdit and OK button with a single button to open a popup
-                set_power_button = QPushButton("Set Commanded Power")
-                set_power_button.setFont(self.font_value)
-                set_power_button.setFixedWidth(200)
-                set_power_button.setStyleSheet("""
-                    QPushButton {
-                        background-color: #2196F3;
-                        color: white;
-                        border-radius: 5px;
-                        padding: 5px 10px;
-                    }
-                    QPushButton:hover {
-                        background-color: #0b7dda;
-                    }
-                """)
-                set_power_button.clicked.connect(self.open_set_commanded_power_dialog)
-                tc_input_layout.addWidget(label, i, 0, alignment=Qt.AlignmentFlag.AlignLeft)
-                tc_input_layout.addWidget(set_power_button, i, 1, alignment=Qt.AlignmentFlag.AlignLeft)
-                unit_label = QLabel(rest[0] if rest else "")
-                unit_label.setFont(self.font_label)
-                unit_label.setStyleSheet("color: black;")
-                tc_input_layout.addWidget(unit_label, i, 2, alignment=Qt.AlignmentFlag.AlignLeft)
-                self.tc_edit_fields[var_name] = set_power_button
+            if var_name in ["commanded_power", "desired_temperature"]:
+                # Line edit for numerical inputs
+                line_edit = QLineEdit()
+                line_edit.setFont(QFont('Arial', 14))
+                line_edit.setFixedWidth(200)
+                control_inputs_layout.addWidget(line_edit, i, 1, alignment=Qt.AlignmentFlag.AlignLeft)
+                self.input_widgets[var_name] = line_edit
+                line_edit.returnPressed.connect(callback)
+            elif var_name == "announcement_text":
+                # Button to open announcement dialog
+                button = QPushButton("Set Announcement")
+                button.setFont(QFont('Arial', 14))
+                button.setFixedWidth(200)
+                control_inputs_layout.addWidget(button, i, 1, alignment=Qt.AlignmentFlag.AlignLeft)
+                self.input_widgets[var_name] = button
+                button.clicked.connect(callback)
             else:
-                # Numeric inputs
-                value = getattr(self.train_data, var_name)
-                value_edit = QLineEdit(str(value))
-                value_edit.setFont(self.font_value)
-                value_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Centered text
-                value_edit.setMaximumWidth(80)
-                value_edit.setStyleSheet("color: black;")
-                value_edit.editingFinished.connect(partial(self.update_train_data, var_name, value_edit))
-                tc_input_layout.addWidget(label, i, 0, alignment=Qt.AlignmentFlag.AlignLeft)
-                tc_input_layout.addWidget(value_edit, i, 1, alignment=Qt.AlignmentFlag.AlignLeft)
-                unit_label = QLabel(rest[0] if rest else "")
-                unit_label.setFont(self.font_label)
-                unit_label.setStyleSheet("color: black;")
-                tc_input_layout.addWidget(unit_label, i, 2, alignment=Qt.AlignmentFlag.AlignLeft)
-                self.tc_edit_fields[var_name] = value_edit
+                # Toggle button for booleans
+                button = QPushButton()
+                button.setFont(QFont('Arial', 14))
+                button.setFixedWidth(200)
+                control_inputs_layout.addWidget(button, i, 1, alignment=Qt.AlignmentFlag.AlignLeft)
+                self.input_widgets[var_name] = button
+                button.clicked.connect(callback)
 
-        tc_section_layout.addWidget(tc_title)
-        tc_section_layout.addLayout(tc_input_layout)
+        main_layout.addLayout(control_inputs_layout)
 
-        # Train Control Input Widget
-        tc_input_widget = QWidget()
-        tc_input_widget.setLayout(tc_section_layout)
-
-        # Cabin Control Section
-        cabin_section_layout = QVBoxLayout()
-        cabin_section_layout.setSpacing(5)
-
-        cabin_title = QLabel("Cabin Control")
-        cabin_title.setFont(QFont('Arial', 17, QFont.Weight.Bold))
-        cabin_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        cabin_title.setStyleSheet("color: black;")
-
-        cabin_control_layout = QGridLayout()
-        cabin_control_layout.setSpacing(5)
-        cabin_control_layout.setHorizontalSpacing(10)
-        cabin_control_layout.setContentsMargins(0, 0, 0, 0)
-
-        cabin_data_items = [
-            ("Desired Temperature", "desired_temperature", "°F"),
-            ("Train Left Door", "train_left_door"),
-            ("Train Right Door", "train_right_door"),
-            ("Advertisement", "advertisement", ["Picture1", "Picture2", "Picture3"]),
-            ("Passenger Boarding", "passenger_boarding", ""),
-        ]
-
-        for i, (label_text, var_name, *rest) in enumerate(cabin_data_items):
-            label = QLabel(label_text)
-            label.setFont(self.font_label)
-            label.setStyleSheet("color: black;")
-
-            if var_name in ["train_left_door", "train_right_door"]:
-                # Use a button for ON/OFF
-                button = QPushButton("OFF")
-                button.setCheckable(True)
-                button.setFont(self.font_value)
-                button.setFixedWidth(80)
-                button.clicked.connect(partial(self.toggle_on_off, var_name, button))
-                cabin_control_layout.addWidget(label, i, 0, alignment=Qt.AlignmentFlag.AlignLeft)
-                cabin_control_layout.addWidget(button, i, 1, alignment=Qt.AlignmentFlag.AlignLeft)
-                unit_label = QLabel("")
-                cabin_control_layout.addWidget(unit_label, i, 2)
-                self.cabin_edit_fields[var_name] = button
-            elif var_name == "advertisement":
-                # Use a combo box for advertisement
-                options = rest[0]
-                combo_box = QComboBox()
-                combo_box.addItems(options)
-                combo_box.setCurrentText(getattr(self.train_data, var_name))
-                combo_box.setFont(self.font_value)
-                combo_box.setStyleSheet("color: black;")
-                combo_box.currentTextChanged.connect(partial(self.update_train_data_direct, var_name))
-                cabin_control_layout.addWidget(label, i, 0, alignment=Qt.AlignmentFlag.AlignLeft)
-                cabin_control_layout.addWidget(combo_box, i, 1, alignment=Qt.AlignmentFlag.AlignLeft)
-                unit_label = QLabel("")
-                cabin_control_layout.addWidget(unit_label, i, 2)
-                self.cabin_edit_fields[var_name] = combo_box
-            elif var_name == "passenger_boarding":
-                # Numeric input with OK button
-                value = getattr(self.train_data, var_name)
-                value_edit = QLineEdit(str(value))
-                value_edit.setFont(self.font_value)
-                value_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)
-                value_edit.setMaximumWidth(80)
-                value_edit.setStyleSheet("color: black;")
-                # Do not connect editingFinished
-                cabin_control_layout.addWidget(label, i, 0, alignment=Qt.AlignmentFlag.AlignLeft)
-
-                # Create a horizontal layout for input field and OK button
-                input_layout = QHBoxLayout()
-                input_layout.setContentsMargins(0, 0, 0, 0)
-                input_layout.setSpacing(5)
-                input_layout.addWidget(value_edit)
-
-                ok_button = QPushButton("OK")
-                ok_button.setFont(self.font_value)
-                ok_button.setFixedWidth(50)
-                ok_button.setStyleSheet("""
-                    QPushButton {
-                        color: black;
-                        border: 2px solid black;
-                        font-weight: bold;
-                    }
-                    QPushButton:hover {
-                        background-color: #E0E0E0;
-                    }
-                """)
-                ok_button.clicked.connect(partial(self.update_passenger_boarding, var_name, value_edit))
-                input_layout.addWidget(ok_button)
-
-                cabin_control_layout.addLayout(input_layout, i, 1)
-
-                unit_label = QLabel(rest[0] if rest else "")
-                unit_label.setFont(self.font_label)
-                unit_label.setStyleSheet("color: black;")
-                cabin_control_layout.addWidget(unit_label, i, 2, alignment=Qt.AlignmentFlag.AlignLeft)
-                self.cabin_edit_fields[var_name] = value_edit
-            else:
-                # Numeric inputs with unit label next to input field
-                value = getattr(self.train_data, var_name)
-                value_edit = QLineEdit(str(value))
-                value_edit.setFont(self.font_value)
-                value_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)
-                value_edit.setMaximumWidth(80)
-                value_edit.setStyleSheet("color: black;")
-                value_edit.editingFinished.connect(partial(self.update_train_data, var_name, value_edit))
-                cabin_control_layout.addWidget(label, i, 0, alignment=Qt.AlignmentFlag.AlignLeft)
-
-                # Create a horizontal layout for input field and unit label
-                input_layout = QHBoxLayout()
-                input_layout.setContentsMargins(0, 0, 0, 0)
-                input_layout.setSpacing(5)
-                input_layout.addWidget(value_edit)
-
-                unit_label = QLabel(rest[0] if rest else "")
-                unit_label.setFont(self.font_label)
-                unit_label.setStyleSheet("color: black;")
-                input_layout.addWidget(unit_label)
-
-                cabin_control_layout.addLayout(input_layout, i, 1)
-                self.cabin_edit_fields[var_name] = value_edit
-
-        cabin_section_layout.addWidget(cabin_title)
-        cabin_section_layout.addLayout(cabin_control_layout)
-
-        # Cabin Control Widget
-        cabin_control_widget = QWidget()
-        cabin_control_widget.setLayout(cabin_section_layout)
-
-        # Add both widgets to the horizontal layout
-        main_horizontal_layout.addWidget(tc_input_widget)
-        main_horizontal_layout.addWidget(cabin_control_widget)
-
-        main_vertical_layout.addLayout(main_horizontal_layout)
-
-        # Announcement Button (moved below the tables)
-        announcement_button = QPushButton("Announcement")
-        announcement_button.setFont(QFont('Arial', 15, QFont.Weight.Bold))
-        announcement_button.setFixedSize(200, 50)
-        announcement_button.setStyleSheet("""
-            QPushButton {
-                border: 2px solid black;
-                background-color: #F0F0F0;
-                color: black;
-            }
-            QPushButton:hover {
-                background-color: #E0E0E0;
-            }
-        """)
-        announcement_button.clicked.connect(self.open_announcement_dialog)
-
-        # Center the Announcement button
-        announcement_layout = QHBoxLayout()
-        announcement_layout.addStretch()
-        announcement_layout.addWidget(announcement_button)
-        announcement_layout.addStretch()
-
-        main_vertical_layout.addLayout(announcement_layout)
+        # Spacer
+        main_layout.addStretch()
 
         # Set content widget layout
-        content_widget.setLayout(main_vertical_layout)
+        content_widget.setLayout(main_layout)
         scroll_area.setWidget(content_widget)
 
         # Add scroll area to content_layout
         self.content_layout.addWidget(scroll_area)
 
-        # Initialize button states
-        self.update_button_states()
-
-        # Update the displays when data changes
+        # Connect data changed signal
         self.train_data.data_changed.connect(self.update_display)
 
-    def set_train_data(self, train_data):
-        """Set the current train data and update connections."""
-        # Disconnect previous train_data signal
-        try:
-            self.train_data.data_changed.disconnect(self.update_display)
-        except TypeError:
-            pass
-        self.train_data = train_data
-        self.train_data.data_changed.connect(self.update_display)
-        self.update_button_states()
+        # Initial display update
+        self.update_display()
 
-    def toggle_on_off(self, var_name, button):
-        """Toggle the ON/OFF state of a button and update train data."""
-        is_on = button.isChecked()
-        button.setText("ON" if is_on else "OFF")
-        button.setStyleSheet(f"""
-            QPushButton {{
-                background-color: {'green' if is_on else 'lightgray'};
-                color: black;
-                font-weight: bold;
-            }}
-        """)
-        self.train_data.set_value(var_name, is_on)
-        # Map variables with different names
-        if var_name == 'interior_light':
-            self.train_data.set_value('interior_light_on', is_on)
-            # Emit signal to Train Controller
-            self.tc_communicate.interior_lights_signal.emit(is_on)
-        elif var_name == 'exterior_light':
-            self.train_data.set_value('exterior_light_on', is_on)
-            # Emit signal to Train Controller
-            self.tc_communicate.exterior_lights_signal.emit(is_on)
-        elif var_name == 'train_left_door':
-            self.train_data.set_value('left_door_open', is_on)
-            # Emit signal to Train Controller
-            self.tc_communicate.left_door_signal.emit(is_on)
-        elif var_name == 'train_right_door':
-            self.train_data.set_value('right_door_open', is_on)
-            # Emit signal to Train Controller
-            self.tc_communicate.right_door_signal.emit(is_on)
-        elif var_name == 'service_brake':
-            # Emit signal to Train Controller
-            self.tc_communicate.service_brake_command_signal.emit(is_on)
-        elif var_name == 'emergency_brake':
-            # Emit signal to Train Controller
-            self.tc_communicate.emergency_brake_command_signal.emit(is_on)
-            if not is_on:
-                # Reset passenger emergency brake when emergency brake is turned off
-                self.train_data.set_value('passenger_emergency_brake', False)
-        # No need to update display here; it will be updated via data_changed signal
-
-    def open_set_commanded_power_dialog(self):
-        """Open the dialog to set commanded power."""
-        dialog = SetCommandedPowerDialog(self, current_power=self.train_data.commanded_power)
-        if dialog.exec() == QDialog.DialogCode.Accepted:
-            new_power = dialog.get_commanded_power()
-            if new_power is not None:
-                self.train_data.set_value('commanded_power', new_power)
-                # Emit signal to Train Controller
-                self.tc_communicate.power_command_signal.emit(new_power)
+    def update_train_id_list(self, train_ids):
+        """Update the train ID combo box with the new list."""
+        current_id = self.train_id_combo.currentText()
+        self.train_id_combo.blockSignals(True)
+        self.train_id_combo.clear()
+        self.train_id_combo.addItems(train_ids)
+        if current_id in train_ids:
+            self.train_id_combo.setCurrentText(current_id)
+            self.current_train_index = int(current_id) - 1
+        else:
+            if train_ids:
+                self.train_id_combo.setCurrentIndex(0)
+                self.current_train_index = 0
             else:
-                # Handle invalid input if necessary
-                pass
+                self.current_train_index = None
+        self.train_id_combo.blockSignals(False)
+        self.update_display()
 
-    def update_train_data(self, var_name, edit_widget):
-        """Update the train data based on input fields."""
-        try:
-            value = edit_widget.text()
-            # Convert to appropriate type
-            if var_name in ['commanded_speed_tc', 'authority', 'desired_temperature', 'passenger_boarding']:
-                current_value = getattr(self.train_data, var_name)
-                if isinstance(current_value, int):
-                    value = int(value)
-                elif isinstance(current_value, float):
-                    value = float(value)
-            self.train_data.set_value(var_name, value)
-            # Map variables with different names and perform unit conversions
-            if var_name == 'commanded_speed_tc':
-                self.train_data.set_value('commanded_speed_tc', value)
-                # Emit signal to Train Controller
-                self.tm_communicate.commanded_speed_signal.emit(value)
-            elif var_name == 'authority':
-                value_ft = float(value) * 3.28084
-                self.train_data.set_value('commanded_authority', value_ft)
-                # Emit signal to Train Controller
-                self.tm_communicate.commanded_authority_signal.emit(value)
-            elif var_name == 'desired_temperature':
-                self.train_data.set_value('cabin_temperature', value)
-                # Emit signal to Train Controller
-                self.tc_communicate.desired_temperature_signal.emit(value)
-        except ValueError:
-            pass  # Handle invalid input as desired
-
-    def update_train_data_direct(self, var_name, value):
-        """Directly update the variable without conversion."""
-        self.train_data.set_value(var_name, value)
-
-    def update_passenger_boarding(self, var_name, edit_widget):
-        """Update passenger boarding and add to passenger count."""
-        try:
-            value = int(edit_widget.text())
-            if value < 0:
-                value = 0
-            self.train_data.set_value(var_name, value)
-            # Emit signal to Track Model
-            self.tm_communicate.number_passenger_boarding_signal.emit(value)
-            # Reset passenger boarding to 0 after processing
-            self.train_data.set_value('passenger_boarding', 0)
+    def train_id_changed(self, new_train_id):
+        """Handle Train ID change."""
+        if new_train_id:
+            self.current_train_index = int(new_train_id) - 1
             self.update_display()
-        except ValueError:
-            pass  # Handle invalid input
-
-    def update_beacon(self, station):
-        """Update the beacon message based on the selected station."""
-        beacon_text = f"We are approaching {station}"
-        self.train_data.set_value('beacon_station', station)
-        self.train_data.set_value('beacon', beacon_text)
-        # Emit signal to Train Controller
-        self.tc_communicate.announcement_signal.emit(beacon_text)
-
-    def open_announcement_dialog(self):
-        """Open the dialog to set an announcement."""
-        dialog = AnnouncementDialog(self)
-        if dialog.exec() == QDialog.DialogCode.Accepted:
-            announcement = dialog.get_announcement()
-            self.train_data.set_value('announcement_text', announcement)
-            # Emit signal to Train Controller
-            self.tc_communicate.announcement_signal.emit(announcement)
-
-    def update_button_states(self):
-        """Initialize button states based on train_data."""
-        for var_name, button in self.tc_edit_fields.items():
-            if var_name in ["service_brake", "exterior_light", "interior_light", "emergency_brake"]:
-                is_on = getattr(self.train_data, var_name)
-                button.setChecked(is_on)
-                button.setText("ON" if is_on else "OFF")
-                button.setStyleSheet(f"""
-                    QPushButton {{
-                        background-color: {'green' if is_on else 'lightgray'};
-                        color: black;
-                        font-weight: bold;
-                    }}
-                """)
-        for var_name, button in self.cabin_edit_fields.items():
-            if var_name in ["train_left_door", "train_right_door"]:
-                is_on = getattr(self.train_data, var_name)
-                button.setChecked(is_on)
-                button.setText("ON" if is_on else "OFF")
-                button.setStyleSheet(f"""
-                    QPushButton {{
-                        background-color: {'green' if is_on else 'lightgray'};
-                        color: black;
-                        font-weight: bold;
-                    }}
-                """)
 
     def update_display(self):
         """Update the display based on the current train data."""
-        # Update the state of the brake buttons
-        for var_name in ['service_brake', 'emergency_brake']:
-            button = self.tc_edit_fields.get(var_name)
-            if button:
-                if var_name == 'emergency_brake':
-                    # Display as ON if either emergency_brake or passenger_emergency_brake is True
-                    is_on = self.train_data.emergency_brake or self.train_data.passenger_emergency_brake
-                else:
-                    is_on = getattr(self.train_data, var_name)
-                button.blockSignals(True)  # Prevent recursive signals
-                button.setChecked(is_on)
-                button.blockSignals(False)
-                button.setText("ON" if is_on else "OFF")
-                button.setStyleSheet(f"""
-                    QPushButton {{
-                        background-color: {'green' if is_on else 'lightgray'};
-                        color: black;
-                        font-weight: bold;
-                    }}
-                """)
+        index = self.current_train_index
+        if index is None or index >= self.train_data.train_count:
+            # No valid train selected
+            for widget in self.input_widgets.values():
+                widget.setEnabled(False)
+            return
+        else:
+            for widget in self.input_widgets.values():
+                widget.setEnabled(True)
+
+        # Update input widgets with current values
+        # Update line edits
+        self.input_widgets['commanded_power'].setText(str(self.train_data.commanded_power[index]))
+        self.input_widgets['desired_temperature'].setText(str(self.train_data.desired_temperature[index]))
+
+        # Update buttons
+        self.update_button(self.input_widgets['service_brake'], self.train_data.service_brake[index], "Service Brake")
+        self.update_button(self.input_widgets['emergency_brake'], self.train_data.emergency_brake[index], "Emergency Brake")
+        self.update_button(self.input_widgets['exterior_light'], self.train_data.exterior_light[index], "Exterior Light")
+        self.update_button(self.input_widgets['interior_light'], self.train_data.interior_light[index], "Interior Light")
+        self.update_button(self.input_widgets['train_left_door'], self.train_data.train_left_door[index], "Left Door")
+        self.update_button(self.input_widgets['train_right_door'], self.train_data.train_right_door[index], "Right Door")
+
+    def update_button(self, button, is_on, label):
+        """Update the button text and style based on state."""
+        button.setText(f"{label}: {'On' if is_on else 'Off'}")
+        if is_on:
+            button.setStyleSheet("background-color: green; color: black; font-weight: bold;")
+        else:
+            button.setStyleSheet("background-color: red; color: black; font-weight: bold;")
+
+    def set_commanded_power(self):
+        """Set the commanded power."""
+        index = self.current_train_index
+        try:
+            power = float(self.input_widgets['commanded_power'].text())
+            self.train_data.commanded_power[index] = power
+            # Emit signal to Train Model
+            self.tc_communicate.power_command_signal.emit(index, power)
+            self.train_data.data_changed.emit()
+        except ValueError:
+            pass  # Invalid input, ignore
+
+    def toggle_service_brake(self):
+        """Toggle the service brake."""
+        index = self.current_train_index
+        current_state = self.train_data.service_brake[index]
+        new_state = not current_state
+        self.train_data.service_brake[index] = new_state
+        self.update_button(self.input_widgets['service_brake'], new_state, "Service Brake")
+        # Emit signal to Train Model
+        self.tc_communicate.service_brake_command_signal.emit(index, new_state)
+        self.train_data.data_changed.emit()
+
+    def toggle_emergency_brake(self):
+        """Toggle the emergency brake."""
+        index = self.current_train_index
+        current_state = self.train_data.emergency_brake[index]
+        new_state = not current_state
+        self.train_data.emergency_brake[index] = new_state
+        self.update_button(self.input_widgets['emergency_brake'], new_state, "Emergency Brake")
+        # Emit signal to Train Model
+        self.tc_communicate.emergency_brake_command_signal.emit(index, new_state)
+        self.train_data.data_changed.emit()
+
+    def set_desired_temperature(self):
+        """Set the desired temperature."""
+        index = self.current_train_index
+        try:
+            temp = float(self.input_widgets['desired_temperature'].text())
+            self.train_data.desired_temperature[index] = temp
+            # Emit signal to Train Model
+            self.tc_communicate.desired_temperature_signal.emit(index, temp)
+            self.train_data.data_changed.emit()
+        except ValueError:
+            pass  # Invalid input, ignore
+
+    def toggle_exterior_light(self):
+        """Toggle the exterior light."""
+        index = self.current_train_index
+        current_state = self.train_data.exterior_light[index]
+        new_state = not current_state
+        self.train_data.exterior_light[index] = new_state
+        self.update_button(self.input_widgets['exterior_light'], new_state, "Exterior Light")
+        # Emit signal to Train Model
+        self.tc_communicate.exterior_lights_signal.emit(index, new_state)
+        self.train_data.data_changed.emit()
+
+    def toggle_interior_light(self):
+        """Toggle the interior light."""
+        index = self.current_train_index
+        current_state = self.train_data.interior_light[index]
+        new_state = not current_state
+        self.train_data.interior_light[index] = new_state
+        self.update_button(self.input_widgets['interior_light'], new_state, "Interior Light")
+        # Emit signal to Train Model
+        self.tc_communicate.interior_lights_signal.emit(index, new_state)
+        self.train_data.data_changed.emit()
+
+    def toggle_left_door(self):
+        """Toggle the left door."""
+        index = self.current_train_index
+        current_state = self.train_data.train_left_door[index]
+        new_state = not current_state
+        self.train_data.train_left_door[index] = new_state
+        self.update_button(self.input_widgets['train_left_door'], new_state, "Left Door")
+        # Emit signal to Train Model
+        self.tc_communicate.left_door_signal.emit(index, new_state)
+        self.train_data.data_changed.emit()
+
+    def toggle_right_door(self):
+        """Toggle the right door."""
+        index = self.current_train_index
+        current_state = self.train_data.train_right_door[index]
+        new_state = not current_state
+        self.train_data.train_right_door[index] = new_state
+        self.update_button(self.input_widgets['train_right_door'], new_state, "Right Door")
+        # Emit signal to Train Model
+        self.tc_communicate.right_door_signal.emit(index, new_state)
+        self.train_data.data_changed.emit()
+
+    def open_announcement_dialog(self):
+        """Open the announcement dialog to set the announcement text."""
+        index = self.current_train_index
+
+        # Create and display the announcement dialog
+        dialog = AnnouncementDialog(index, self)
+        if dialog.exec():
+            text = dialog.get_announcement()
+            train_index = dialog.get_train_index()
+            self.train_data.announcement_text[train_index] = text
+            # Emit signal to Train Model
+            self.tc_communicate.announcement_signal.emit(train_index, text)
+            self.train_data.data_changed.emit()

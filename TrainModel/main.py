@@ -31,14 +31,11 @@ class MainWindow(QMainWindow):
         self.tm_communicate = TrackModelCommunicate()
         self.ctc_communicate = CTCTrain()
 
-        # Create TrainData instances for each Train ID
-        self.train_data_dict = {
-            '1': TrainData(self.tc_communicate, self.tm_communicate, self.ctc_communicate),
-            '2': TrainData(self.tc_communicate, self.tm_communicate, self.ctc_communicate),
-            '3': TrainData(self.tc_communicate, self.tm_communicate, self.ctc_communicate)
-        }
-        self.current_train_id = '1'
-        self.current_train_data = self.train_data_dict[self.current_train_id]
+        # Create TrainData instance
+        self.train_data = TrainData(self.tc_communicate, self.tm_communicate, self.ctc_communicate)
+
+        # Start periodic train state updates
+        self.train_data.start_train_updates()
 
         # Central widget and main layout
         central_widget = QWidget()
@@ -91,9 +88,9 @@ class MainWindow(QMainWindow):
         self.stacked_widget = QStackedWidget()
 
         # Pages
-        self.train_model_page = TrainModelPage(self.current_train_data, self.train_id_changed, self.tc_communicate, self.tm_communicate)
-        self.test_bench_page = TestBenchPage(self.current_train_data, self.train_id_changed, self.tc_communicate, self.tm_communicate)
-        self.murphy_page = MurphyPage(self.current_train_data, self.train_id_changed, self.tc_communicate, self.tm_communicate)
+        self.train_model_page = TrainModelPage(self.train_data, self.tc_communicate, self.tm_communicate)
+        self.test_bench_page = TestBenchPage(self.train_data, self.tc_communicate, self.tm_communicate)
+        self.murphy_page = MurphyPage(self.train_data, self.tc_communicate, self.tm_communicate)
 
         # Add pages to stacked widget in the new order
         self.stacked_widget.addWidget(self.train_model_page)  # Index 0
@@ -110,19 +107,11 @@ class MainWindow(QMainWindow):
         central_widget.setLayout(main_layout)
         self.setCentralWidget(central_widget)
 
-    def train_id_changed(self, new_train_id):
-        """Handle Train ID change."""
-        self.current_train_id = new_train_id
-        self.current_train_data = self.train_data_dict[self.current_train_id]
-        # Update the pages with the new train data
-        self.train_model_page.set_train_data(self.current_train_data)
-        self.test_bench_page.set_train_data(self.current_train_data)
-        self.murphy_page.set_train_data(self.current_train_data)
+        # Connect data_changed signal
+        self.train_data.data_changed.connect(self.update_train_id_list)
 
-        # Update the train ID combo boxes in each page
-        self.train_model_page.set_train_id_combo(new_train_id)
-        self.test_bench_page.set_train_id_combo(new_train_id)
-        self.murphy_page.set_train_id_combo(new_train_id)
+        # Simulate initial train dispatch
+        self.ctc_communicate.dispatch_train_signal.emit(self.train_data.train_count)
 
     def show_train_model(self):
         """Show the Train Model page."""
@@ -138,6 +127,13 @@ class MainWindow(QMainWindow):
         """Show the Murphy page."""
         self.murphy_page.update_display()
         self.stacked_widget.setCurrentWidget(self.murphy_page)
+
+    def update_train_id_list(self):
+        """Update the train ID list in the UI when train count changes."""
+        train_ids = [str(i + 1) for i in range(self.train_data.train_count)]
+        self.train_model_page.update_train_id_list(train_ids)
+        self.test_bench_page.update_train_id_list(train_ids)
+        self.murphy_page.update_train_id_list(train_ids)
 
 
 def main():

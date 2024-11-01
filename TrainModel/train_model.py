@@ -3,7 +3,7 @@
 from PyQt6.QtGui import QFont, QPixmap, QImage
 from PyQt6.QtWidgets import (
     QWidget, QLabel, QVBoxLayout, QHBoxLayout, QGridLayout,
-    QScrollArea, QSizePolicy, QFrame, QPushButton
+    QScrollArea, QSizePolicy, QFrame, QPushButton, QComboBox
 )
 from PyQt6.QtCore import Qt
 
@@ -13,11 +13,13 @@ from base_page import BasePage
 class TrainModelPage(BasePage):
     """Page representing the Train Model."""
 
-    def __init__(self, train_data, train_id_callback, tc_communicate, tm_communicate):
-        super().__init__("Train Model", train_id_callback)
+    def __init__(self, train_data, tc_communicate, tm_communicate):
+        super().__init__("Train Model", self.train_id_changed)
         self.train_data = train_data  # Store the train data
         self.tc_communicate = tc_communicate
         self.tm_communicate = tm_communicate
+
+        self.current_train_index = 0  # Default to first train
 
         # Create a scroll area
         scroll_area = QScrollArea()
@@ -56,9 +58,8 @@ class TrainModelPage(BasePage):
             ("Maximum Speed", "maximum_speed", "mph"),
             ("Current Speed", "current_speed", "mph"),
             ("Total Car Weight", "total_car_weight", "t"),
-            # Removed 'Train Length', 'Train Height', 'Train Width' from Dynamic Information
             ("Number of Cars", "number_of_cars", ""),
-            ("Single Car Empty Weight", "single_car_tare_weight", "t"),
+            ("Single Car Tare Weight", "single_car_tare_weight", "t"),
             ("Current Acceleration", "current_acceleration", "ft/s²"),
             ("Commanded Speed", "commanded_speed", "mph"),
             ("Commanded Authority", "commanded_authority", "ft"),
@@ -172,7 +173,7 @@ class TrainModelPage(BasePage):
         announcement_label.setStyleSheet("color: black;")
         announcement_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Centered above the text box
 
-        self.announcement_text = QLabel(self.train_data.announcement_text)
+        self.announcement_text = QLabel()
         self.announcement_text.setFont(QFont('Arial', 14))
         self.announcement_text.setWordWrap(True)
         self.announcement_text.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -227,10 +228,10 @@ class TrainModelPage(BasePage):
         button_size = (440, 80)
 
         # Set button styles according to the variables
-        self.set_light_button_style(self.interior_light_button, self.train_data.interior_light_on, "Interior Light", button_font, button_size)
-        self.set_light_button_style(self.exterior_light_button, self.train_data.exterior_light_on, "Exterior Light", button_font, button_size)
-        self.set_door_button_style(self.left_door_button, self.train_data.left_door_open, "Left Door", button_font, button_size)
-        self.set_door_button_style(self.right_door_button, self.train_data.right_door_open, "Right Door", button_font, button_size)
+        self.set_light_button_style(self.interior_light_button, False, "Interior Light", button_font, button_size)
+        self.set_light_button_style(self.exterior_light_button, False, "Exterior Light", button_font, button_size)
+        self.set_door_button_style(self.left_door_button, False, "Left Door", button_font, button_size)
+        self.set_door_button_style(self.right_door_button, False, "Right Door", button_font, button_size)
 
         # Add buttons to grid layout (2x2)
         buttons_layout.addWidget(self.interior_light_button, 0, 0)
@@ -267,47 +268,28 @@ class TrainModelPage(BasePage):
         # Connect data changed signal
         self.train_data.data_changed.connect(self.update_display)
 
-        # Connect signals to update UI elements
-        self.train_data.current_velocity_signal.connect(self.update_speed_display)
-        self.train_data.announcement.connect(self.update_announcement)
-
         # Initial display update
         self.update_display()
 
-    def set_train_data(self, train_data):
-        """Set the current train data and update connections."""
-        # Disconnect previous train_data signal
-        try:
-            self.train_data.data_changed.disconnect(self.update_display)
-            self.train_data.current_velocity_signal.disconnect(self.update_speed_display)
-            self.train_data.announcement.disconnect(self.update_announcement)
-        except TypeError:
-            pass
-        self.train_data = train_data
-        self.train_data.data_changed.connect(self.update_display)
-        self.train_data.current_velocity_signal.connect(self.update_speed_display)
-        self.train_data.announcement.connect(self.update_announcement)
+    def update_train_id_list(self, train_ids):
+        """Update the train ID combo box with the new list."""
+        current_id = self.train_id_combo.currentText()
+        self.train_id_combo.blockSignals(True)
+        self.train_id_combo.clear()
+        self.train_id_combo.addItems(train_ids)
+        if current_id in train_ids:
+            self.train_id_combo.setCurrentText(current_id)
+            self.current_train_index = int(current_id) - 1
+        else:
+            self.train_id_combo.setCurrentIndex(0)
+            self.current_train_index = 0
+        self.train_id_combo.blockSignals(False)
         self.update_display()
 
-    def set_light_button_style(self, button, is_on, label, font, size):
-        """Set the style of a light control button."""
-        button.setText(f"{label}: {'On' if is_on else 'Off'}")
-        button.setFont(font)
-        button.setFixedSize(*size)
-        if is_on:
-            button.setStyleSheet("background-color: yellow; color: black; font-weight: bold;")
-        else:
-            button.setStyleSheet("background-color: gray; color: black; font-weight: bold;")
-
-    def set_door_button_style(self, button, is_open, label, font, size):
-        """Set the style of a door control button."""
-        button.setText(f"{label}: {'Open' if is_open else 'Closed'}")
-        button.setFont(font)
-        button.setFixedSize(*size)
-        if is_open:
-            button.setStyleSheet("background-color: green; color: black; font-weight: bold;")
-        else:
-            button.setStyleSheet("background-color: red; color: black; font-weight: bold;")
+    def train_id_changed(self, new_train_id):
+        """Handle Train ID change."""
+        self.current_train_index = int(new_train_id) - 1
+        self.update_display()
 
     def get_unit(self, var_name):
         """Get the unit associated with a variable."""
@@ -341,9 +323,11 @@ class TrainModelPage(BasePage):
 
     def update_display(self):
         """Update the display based on the current train data."""
+        index = self.current_train_index
         # Update the data labels
         for var_name, label in self.value_labels.items():
-            value = getattr(self.train_data, var_name)
+            value_list = getattr(self.train_data, var_name)
+            value = value_list[index]
             unit = self.get_unit(var_name)
             if isinstance(value, int):
                 value_text = f"{value} {unit}".strip()
@@ -353,7 +337,8 @@ class TrainModelPage(BasePage):
 
         # Update static information
         for var_name, label in self.static_value_labels.items():
-            value = getattr(self.train_data, var_name)
+            value_list = getattr(self.train_data, var_name)
+            value = value_list[index]
             unit = self.get_unit(var_name)
             if isinstance(value, int):
                 value_text = f"{value} {unit}".strip()
@@ -362,18 +347,18 @@ class TrainModelPage(BasePage):
             label.setText(value_text)
 
         # Update the announcement text
-        self.announcement_text.setText(self.train_data.announcement_text)
+        self.announcement_text.setText(self.train_data.announcement_text[index])
 
         # Update the buttons
         button_font = QFont('Arial', 16, QFont.Weight.Bold)
         button_size = (240, 80)
-        self.set_light_button_style(self.interior_light_button, self.train_data.interior_light_on, "Interior Light", button_font, button_size)
-        self.set_light_button_style(self.exterior_light_button, self.train_data.exterior_light_on, "Exterior Light", button_font, button_size)
-        self.set_door_button_style(self.left_door_button, self.train_data.left_door_open, "Left Door", button_font, button_size)
-        self.set_door_button_style(self.right_door_button, self.train_data.right_door_open, "Right Door", button_font, button_size)
+        self.set_light_button_style(self.interior_light_button, self.train_data.interior_light_on[index], "Interior Light", button_font, button_size)
+        self.set_light_button_style(self.exterior_light_button, self.train_data.exterior_light_on[index], "Exterior Light", button_font, button_size)
+        self.set_door_button_style(self.left_door_button, self.train_data.left_door_open[index], "Left Door", button_font, button_size)
+        self.set_door_button_style(self.right_door_button, self.train_data.right_door_open[index], "Right Door", button_font, button_size)
 
         # Update the Passenger Emergency Brake button
-        is_on = self.train_data.passenger_emergency_brake
+        is_on = self.train_data.passenger_emergency_brake[index]
         self.passenger_emergency_brake_button.blockSignals(True)  # Block signals to prevent recursion
         self.passenger_emergency_brake_button.setChecked(is_on)
         self.passenger_emergency_brake_button.blockSignals(False)  # Re-enable signals
@@ -387,10 +372,11 @@ class TrainModelPage(BasePage):
 
     def passenger_emergency_brake_pressed(self):
         """Handle the passenger emergency brake being pressed."""
+        index = self.current_train_index
         is_on = self.passenger_emergency_brake_button.isChecked()
-        self.train_data.set_value('passenger_emergency_brake', is_on)
+        self.train_data.passenger_emergency_brake[index] = is_on
         # Emit signal to Train Controller
-        self.tc_communicate.passenger_brake_command_signal.emit(is_on)
+        self.tc_communicate.passenger_brake_command_signal.emit(index, is_on)
         # Update button style based on state
         self.passenger_emergency_brake_button.setStyleSheet(f"""
             QPushButton {{
@@ -400,10 +386,22 @@ class TrainModelPage(BasePage):
             }}
         """)
 
-    def update_speed_display(self, speed):
-        """Update the speed display when the current_velocity_signal is emitted."""
-        self.value_labels['current_speed'].setText(f"{speed:.2f} mph")
+    def set_light_button_style(self, button, is_on, label, font, size):
+        """Set the style of a light control button."""
+        button.setText(f"{label}: {'On' if is_on else 'Off'}")
+        button.setFont(font)
+        button.setFixedSize(*size)
+        if is_on:
+            button.setStyleSheet("background-color: yellow; color: black; font-weight: bold;")
+        else:
+            button.setStyleSheet("background-color: gray; color: black; font-weight: bold;")
 
-    def update_announcement(self, text):
-        """Update the announcement text."""
-        self.announcement_text.setText(text)
+    def set_door_button_style(self, button, is_open, label, font, size):
+        """Set the style of a door control button."""
+        button.setText(f"{label}: {'Open' if is_open else 'Closed'}")
+        button.setFont(font)
+        button.setFixedSize(*size)
+        if is_open:
+            button.setStyleSheet("background-color: green; color: black; font-weight: bold;")
+        else:
+            button.setStyleSheet("background-color: red; color: black; font-weight: bold;")

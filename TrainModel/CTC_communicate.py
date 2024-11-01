@@ -1,10 +1,10 @@
+# CTC_communicate.py
+
 from PyQt6.QtCore import pyqtSignal, QObject
 
 class CTCTrain(QObject):
-    
+    """Communication class for CTC and Train Model."""
+
     # CTC -> Train Model
-    # Param is int instead of bool that represents how many trains are on the tracks
-    dispatch_train_signal = pyqtSignal(int)    # Number of trains on track
-
-
-    
+    # Parameter is int representing the current train count
+    dispatch_train_signal = pyqtSignal(int)    # Current train count

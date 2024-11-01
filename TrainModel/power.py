@@ -1,70 +1,58 @@
 # power.py
 
-import math
-from PyQt6.QtCore import QObject, pyqtSignal
+def calculate_train_speed(train_data, index):
+    """
+    Calculate the train's speed based on the commanded power, current speed, and other factors.
 
-def calculate_train_speed(train_data, delta_t=1.0):
-    """Calculate and update the train's speed, acceleration, and position."""
-    mass = train_data.current_train_weight * 1000  # Convert to kg
+    Parameters:
+    - train_data: TrainData instance containing all trains' data.
+    - index: Integer index of the train to calculate speed for.
+    """
+    # Constants
+    GRAVITY = 9.80665  # m/s^2
+    TRAIN_MASS = train_data.current_train_weight[index] * 1000  # Convert tonnes to kg
+    MAX_ACCELERATION = 0.5  # m/s^2, maximum allowed acceleration
 
-    # Convert current speed from mph to m/s
-    current_speed_mps = train_data.current_speed * 0.44704  # mph to m/s
+    # Get the necessary data for the current train
+    power = train_data.commanded_power[index] * 1000  # Convert kW to W
+    current_speed_mps = train_data.current_speed[index] * 0.44704  # Convert mph to m/s
+    grade = train_data.grade[index] / 100  # Convert percentage to decimal
 
-    power_command_w = train_data.commanded_power * 1000  # Convert kW to W
-    max_power_w = 120000  # 120 kW in watts
-
-    # If emergency brake is engaged, turn off service brake
-    if train_data.emergency_brake or train_data.passenger_emergency_brake:
-        train_data.service_brake = False
-        train_data.auto_service_brake = False
-
-    # Check for brakes
-    if train_data.emergency_brake or train_data.passenger_emergency_brake:
-        acceleration = -2.73  # m/s²
-        power_command_w = 0
-    elif train_data.service_brake or train_data.auto_service_brake:
-        acceleration = -1.2  # m/s²
-        power_command_w = 0
+    # Calculate the tractive effort
+    if current_speed_mps > 0:
+        tractive_effort = power / current_speed_mps
     else:
-        # Normal operation
-        if current_speed_mps == 0:
-            force = max_power_w / 19.44  # Use 19.44 m/s when speed is zero
-        else:
-            force = power_command_w / current_speed_mps
+        tractive_effort = power / 0.1  # Avoid division by zero
 
-        # Frictional force
-        frictional_force = 0.002 * mass * 9.8
+    # Calculate the grade resistance
+    grade_resistance = TRAIN_MASS * GRAVITY * grade
 
-        # Grade calculations
-        slope_angle = math.atan(train_data.grade / 100)  # Convert grade percentage to angle in radians
-        grade_force = mass * 9.8 * math.sin(slope_angle)
-        print(f"Grade Force: {grade_force:.2f} N")
+    # Calculate the net force
+    net_force = tractive_effort - grade_resistance
 
-        # Adjust force with friction and grade
-        net_force = force - frictional_force - grade_force
-        print(f"Net Force: {net_force:.2f} N")
+    # Calculate acceleration
+    acceleration = net_force / TRAIN_MASS
 
-        acceleration = net_force / mass
-        print(f"Acceleration: {acceleration:.2f} m/s^2")
+    # Limit acceleration to maximum allowed
+    if acceleration > MAX_ACCELERATION:
+        acceleration = MAX_ACCELERATION
+    elif acceleration < -MAX_ACCELERATION:
+        acceleration = -MAX_ACCELERATION
 
-        # Cap positive acceleration to +0.5 m/s²
-        if acceleration > 0.5:
-            acceleration = 0.5
+    # Update the train's acceleration
+    train_data.current_acceleration[index] = acceleration * 3.28084  # Convert m/s^2 to ft/s^2
 
-    # Update speed
-    new_speed_mps = current_speed_mps + acceleration * delta_t
+    # Update the speed
+    delta_time = 1  # Assuming time step of 1 second
+    new_speed_mps = current_speed_mps + acceleration * delta_time
 
+    # Ensure speed doesn't go negative
     if new_speed_mps < 0:
         new_speed_mps = 0
-        acceleration = 0  # If speed is zero, acceleration cannot be negative
 
-    # Update position
-    new_position = train_data.current_position + (delta_t * new_speed_mps)
-    train_data.current_position = new_position
+    # Update the train's current speed
+    train_data.current_speed[index] = new_speed_mps * 2.23694  # Convert m/s to mph
 
-    # Update train_data
-    train_data.current_acceleration = acceleration * 3.28084  # Convert m/s² to ft/s²
-    train_data.current_speed = new_speed_mps * 2.23694  # Convert m/s back to mph
-
-    # Emit current velocity signal
-    train_data.current_velocity_signal.emit(train_data.current_speed)
+    # Update the train's position
+    new_position = train_data.current_position[index] + new_speed_mps * delta_time
+    train_data.current_position[index] = new_position
