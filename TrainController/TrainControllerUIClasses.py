@@ -104,6 +104,11 @@ class BrakeStatus(QObject):
             self.passenger_brake_command_signal.emit(self.driver_emergency_brake_command)
             print("Passenger Brake Applied")
             self.communicator.passenger_brake_command_signal.emit(True)
+        elif not status:
+            self.driver_emergency_brake_command = False
+            self.passenger_brake_command_signal.emit(self.driver_emergency_brake_command)
+            print("Passenger Brake Released")
+            self.communicator.passenger_brake_command_signal.emit(False)
         
 class PowerCommand(QObject):
     power_command_signal = pyqtSignal(float)
@@ -122,7 +127,7 @@ class PowerCommand(QObject):
         self.ki = tuning.get_ki()
         
     def update_power_command(self, current_velocity: float, desired_velocity: float):
-        if round(desired_velocity, 2) == round(current_velocity, 2):
+        if round(desired_velocity, 2) == round(current_velocity, 2) or current_velocity == 0:
             self.power_command = 0
             self.power_command_signal.emit(self.power_command)
             # Put Brake Status has OFF
@@ -217,11 +222,13 @@ class SpeedControl(QObject):
             
             
         self.current_velocity = speed
+        self.power_class.update_power_command(self.current_velocity, self.desired_velocity)
         self.current_velocity_signal.emit(self.current_velocity)
         print(f"Current Speed: {self.current_velocity:.2f} m/s")
         
     def handle_commanded_speed(self, speed: float):
         self.commanded_speed = speed
+        self.find_max_speed()
         self.commanded_speed_signal.emit(self.commanded_speed)
         print(f"Commanded Speed: {self.commanded_speed:.2f} m/s")
     
@@ -287,12 +294,13 @@ class FailureModes(QObject):
     brake_failure_signal = pyqtSignal(bool)
     signal_failure_signal = pyqtSignal(bool)
     
-    def __init__(self, speed_control: SpeedControl):
+    def __init__(self, speed_control: SpeedControl, power_class: PowerCommand):
         super().__init__()
         self.engine_fail = False
         self.brake_fail = False
         self.signal_fail = False
         self.speed_control = speed_control
+        self.power_class = power_class
         
     def handle_engine_failure(self, status: bool):
         if status == True:
@@ -300,6 +308,7 @@ class FailureModes(QObject):
             self.engine_failure_signal.emit(self.engine_fail)
             # Set current velocity to 0
             self.speed_control.desired_velocity = 0.0
+            self.power_class.update_power_command(self.speed_control.current_velocity, self.speed_control.desired_velocity)
             # self.current_speed_edit.setText(f"{self.current_velocity:.2f} mph")
             # Divet in Emergency Brake
             # self.apply_emergency_brake()
@@ -315,6 +324,7 @@ class FailureModes(QObject):
             self.brake_failure_signal.emit(self.brake_fail)
             # Set current velocity to 0
             self.speed_control.desired_velocity = 0.0
+            self.power_class.update_power_command(self.speed_control.current_velocity, self.speed_control.desired_velocity)
             # self.current_speed_edit.setText(f"{self.current_velocity:.2f} mph")
             # Divet in Emergency Brake
             # self.apply_emergency_brake()
@@ -330,6 +340,7 @@ class FailureModes(QObject):
             self.signal_failure_signal.emit(self.signal_fail)
             # Set current velocity to 0
             self.speed_control.desired_velocity = 0.0
+            self.power_class.update_power_command(self.speed_control.current_velocity, self.speed_control.desired_velocity)
             # self.current_speed_edit.setText(f"{self.current_velocity:.2f} mph")
             # Divet in Emergency Brake
             # self.apply_emergency_brake()
@@ -629,7 +640,6 @@ class TrainEngineerUI(QWidget):
             except ValueError:
                 item.setText(str(self.tuning.get_ki()))  # Reset to previous value if invalid
         
-
 class TrainControllerUI(QWidget):
     def __init__(self, communicator: Communicate, doors: Doors, tuning: Tuning, brake_class: BrakeStatus, power_class: PowerCommand, speed_control: SpeedControl, failure_modes: FailureModes, position: Position, lights: Lights, temperature: Temperature):
         super().__init__()
@@ -1354,6 +1364,7 @@ if __name__ == "__main__":#
     position = Position(doors, failure_modes, speed_control, power_class, lights, communicator)
     window = TrainControllerUI(communicator, doors, tuning, brake_status, power_class, speed_control, failure_modes, position, lights, temperature)
     window.show()
+    
     # Show engineer window as well
     engineer_window = TrainEngineerUI(tuning)
     engineer_window.show()

@@ -88,7 +88,7 @@ def main():
     # Use QTimer to trigger `handle_clock_tick` every second
     timer = QTimer()
     timer.timeout.connect(lambda: train_system.handle_clock_tick(train_controller))
-    timer.start(1)  # Update every millisecond
+    timer.start(100)  # Update every millisecond
 
     # Execute the application event loop
     app.exec()
