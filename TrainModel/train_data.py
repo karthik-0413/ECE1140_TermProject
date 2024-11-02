@@ -104,7 +104,7 @@ class TrainData(QObject):
         self.dispatch_train = []
 
         # Variable to indicate if the train is at a station
-        self.at_station = []
+        # (Removed station determination logic as per your request)
 
     def update_train_count(self, new_train_count):
         """Update the number of trains based on the count received from the CTC."""
@@ -130,7 +130,7 @@ class TrainData(QObject):
         self.maximum_capacity.append(222)
         self.passenger_count.append(100)
         self.crew_count.append(2)
-        self.maximum_speed.append(50)
+        self.maximum_speed.append(70)
         self.current_speed.append(0)
         self.total_car_weight.append(40.9)
 
@@ -193,9 +193,6 @@ class TrainData(QObject):
 
         # Dispatch Control
         self.dispatch_train.append(True)  # Set to True to simulate a dispatched train
-
-        # At Station
-        self.at_station.append(False)
 
     def remove_earliest_train(self):
         """Remove data for the first train (front of the list)."""
@@ -267,9 +264,6 @@ class TrainData(QObject):
 
             # Dispatch Control
             self.dispatch_train.pop(0)
-
-            # At Station
-            self.at_station.pop(0)
 
     def read_from_trainController_trackModel(self):
         # Connect incoming signals from Train Controller
@@ -415,20 +409,9 @@ class TrainData(QObject):
                 self.current_speed[index] = 0
                 self.current_acceleration[index] = 0
 
-            # Determine if the train is at a station (simplified logic)
-            if int(self.current_position[index]) % 1000 < 5:
-                self.at_station[index] = True
-            else:
-                self.at_station[index] = False
-
-            # Generate random number of passengers leaving if doors are open and at station
-            passengers_leaving = 0
-            if self.at_station[index] and (self.left_door_open[index] or self.right_door_open[index]):
-                if self.passenger_count[index] > 0:
-                    passengers_leaving = random.randint(1, self.passenger_count[index])
-                    self.passenger_count[index] -= passengers_leaving
-                    self.update_train_weight(index)
-            passengers_leaving_list[index] = passengers_leaving
+            # Removed station determination logic as per your request
+            # Set passengers_leaving to 0 or handle differently if needed
+            passengers_leaving_list[index] = 0
 
         # After updating all trains, emit updated lists to Train Controller and Track Model
         self.write_to_trainController_trackModel(passengers_leaving_list)

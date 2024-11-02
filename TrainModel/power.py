@@ -2,57 +2,53 @@
 
 def calculate_train_speed(train_data, index):
     """
-    Calculate the train's speed based on the commanded power, current speed, and other factors.
-
-    Parameters:
-    - train_data: TrainData instance containing all trains' data.
-    - index: Integer index of the train to calculate speed for.
+    Calculate the train's speed based on the commanded power and other factors.
+    Updates the train's current speed and acceleration.
     """
-    # Constants
-    GRAVITY = 9.80665  # m/s^2
-    TRAIN_MASS = train_data.current_train_weight[index] * 1000  # Convert tonnes to kg
-    MAX_ACCELERATION = 0.5  # m/s^2, maximum allowed acceleration
+    # Extract necessary variables
+    power_command = train_data.commanded_power[index]  # in Watts
+    current_velocity = train_data.current_speed[index]  # in m/s
+    mass = train_data.current_train_weight[index] * 1000  # Convert ton to kg
+    max_power = 120000.0  # Max power in Watts (120 kW)
+    delta_t = 5.0  # Time step in seconds (assuming update every 5 seconds)
 
-    # Get the necessary data for the current train
-    power = train_data.commanded_power[index] * 1000  # Convert kW to W
-    current_speed_mps = train_data.current_speed[index] * 0.44704  # Convert mph to m/s
-    grade = train_data.grade[index] / 100  # Convert percentage to decimal
-
-    # Calculate the tractive effort
-    if current_speed_mps > 0:
-        tractive_effort = power / current_speed_mps
+    # Start power calculation
+    if current_velocity == 0:
+        # Use the exact logic you provided
+        force = max_power / 19.44
     else:
-        tractive_effort = power / 0.1  # Avoid division by zero
+        # Calculate force using power command and current velocity
+        force = power_command / current_velocity
 
-    # Calculate the grade resistance
-    grade_resistance = TRAIN_MASS * GRAVITY * grade
+        # Frictional force (assuming coefficient of friction is negligible as per your logic)
+        frictional_force = 0.00 * mass * 9.8
 
-    # Calculate the net force
-    net_force = tractive_effort - grade_resistance
+        if force < frictional_force:
+            # If the force is less than friction, the train stops moving
+            force = 0
+            print(f"Train {index+1} has stopped moving due to insufficient force.")
+        else:
+            # Subtract frictional force from the applied force
+            force -= frictional_force
 
     # Calculate acceleration
-    acceleration = net_force / TRAIN_MASS
+    acceleration = force / mass
 
-    # Limit acceleration to maximum allowed
-    if acceleration > MAX_ACCELERATION:
-        acceleration = MAX_ACCELERATION
-    elif acceleration < -MAX_ACCELERATION:
-        acceleration = -MAX_ACCELERATION
+    # Limit acceleration to a maximum value (e.g., 0.5 m/s^2)
+    if acceleration > 0.5:
+        acceleration = 0.5
 
-    # Update the train's acceleration
-    train_data.current_acceleration[index] = acceleration * 3.28084  # Convert m/s^2 to ft/s^2
+    # Update velocity
+    new_velocity = current_velocity + acceleration * delta_t
 
-    # Update the speed
-    delta_time = 1  # Assuming time step of 1 second
-    new_speed_mps = current_speed_mps + acceleration * delta_time
+    # Ensure velocity doesn't go negative
+    if new_velocity < 0:
+        new_velocity = 0
 
-    # Ensure speed doesn't go negative
-    if new_speed_mps < 0:
-        new_speed_mps = 0
+    # Update the train data
+    train_data.current_speed[index] = new_velocity  # in m/s
+    train_data.current_acceleration[index] = acceleration  # in m/s^2
 
-    # Update the train's current speed
-    train_data.current_speed[index] = new_speed_mps * 2.23694  # Convert m/s to mph
-
-    # Update the train's position
-    new_position = train_data.current_position[index] + new_speed_mps * delta_time
-    train_data.current_position[index] = new_position
+    # Update position
+    new_position = train_data.current_position[index] + current_velocity * delta_t + 0.5 * acceleration * delta_t ** 2
+    train_data.current_position[index] = new_position  # in meters
