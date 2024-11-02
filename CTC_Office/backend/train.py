@@ -17,6 +17,7 @@ class Train():
 
         self.to_yard = False
         
+        
 
     def dispatch_train(self):
         """Send message to Train Model to create a new train"""
@@ -35,8 +36,11 @@ class Train():
 
     def remove_destination(self, destination):
         """Remove a destination from the train"""
-        index = self.destinations.index(destination)
-        self.destinations.pop(index)
-        self.destination_strings.pop(index)
-        if len(self.destinations) == 0:
-            self.to_yard = True
+        if self.to_yard == False:
+            index = self.destinations.index(destination)
+            self.destinations.pop(index)
+            self.destination_strings.pop(index)
+            if len(self.destinations) == 0:
+                self.to_yard = True
+                self.destinations.append(0)
+                self.destination_strings.append("Yard")

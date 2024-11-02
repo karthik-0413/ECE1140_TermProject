@@ -6,6 +6,7 @@ class Line():
         self.layout = [Block]
         self.train_list = [Train]
         self.throughput = 0
+        self.elapsed_time = 1
 
     def read_excel_layout():
         pass
@@ -56,21 +57,10 @@ class Line():
     def on_correct_path():
         pass
 
-#    def at_speed_limit():
-#        pass
-
-    def send_authority():
-        pass
-
-    def send_speed():
-        pass
-
     def toggle_block_maintenance(self, block_number):
         self.layout[block_number].update_maintenance()
 
-    def update_block_occupancy():
-        pass
-
-    def calculate_line_throughput():
-        
-        pass
+    def calculate_line_throughput(self):
+        for train in self.train_list:
+            stops = len(train.destinations)
+            
