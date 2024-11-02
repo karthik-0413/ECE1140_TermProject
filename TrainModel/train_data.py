@@ -17,9 +17,24 @@ class TrainData(QObject):
         self.ctc_communicate = ctc_communicate
 
         # List to store data for each train
-        self.train_count = 0  # Initial train count
+        self.train_count = 0  # Initial train count is 0 (no trains on the tracks)
 
         # Initialize lists for train data
+        self.initialize_train_lists()
+
+        # Connect signals from CTC
+        self.ctc_communicate.current_train_count_signal.connect(self.update_train_count)
+
+        # Read from Train Controller and Track Model
+        self.read_from_trainController_trackModel()
+
+        # Start periodic train updates
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.update_train_state)
+        self.timer.start(1000)  # Update every second
+
+    def initialize_train_lists(self):
+        """Initialize the lists that hold per-train data."""
         self.cabin_temperature = []
         self.maximum_capacity = []
         self.passenger_count = []
@@ -78,6 +93,7 @@ class TrainData(QObject):
         self.current_position = []
         self.grade = []
         self.elevation = []
+        self.polarity = []
 
         # Failure Modes
         self.engine_failure = []
@@ -90,17 +106,25 @@ class TrainData(QObject):
         # Variable to indicate if the train is at a station
         self.at_station = []
 
-        # Read from Train Controller and Track Model
-        self.read_from_trainController_trackModel()
+    def update_train_count(self, new_train_count):
+        """Update the number of trains based on the count received from the CTC."""
+        if new_train_count > self.train_count:
+            # Add new trains
+            for _ in range(new_train_count - self.train_count):
+                self.add_new_train()
+        elif new_train_count < self.train_count:
+            # Remove trains from the left (earliest trains)
+            for _ in range(self.train_count - new_train_count):
+                self.remove_earliest_train()
+        # Update the train count
+        self.train_count = new_train_count
+        # Emit data changed signal
+        self.data_changed.emit()
+        # Send current train count to Train Controller
+        self.tc_communicate.train_count_signal.emit(self.train_count)
 
-        # Read from CTC
-        self.read_from_ctc()
-
-        # Initialize an initial train
-        self.initialize_train()
-
-    def initialize_train(self):
-        """Initialize data for a new train."""
+    def add_new_train(self):
+        """Add a new train to the data lists."""
         # Default values for a new train
         self.cabin_temperature.append(78)
         self.maximum_capacity.append(222)
@@ -160,6 +184,7 @@ class TrainData(QObject):
         self.current_position.append(0.0)
         self.grade.append(0.0)
         self.elevation.append(0.0)
+        self.polarity.append(True)
 
         # Failure Modes
         self.engine_failure.append(False)
@@ -172,13 +197,7 @@ class TrainData(QObject):
         # At Station
         self.at_station.append(False)
 
-        # Update train count
-        self.train_count += 1
-
-        # Emit data_changed signal
-        self.data_changed.emit()
-
-    def remove_train(self):
+    def remove_earliest_train(self):
         """Remove data for the first train (front of the list)."""
         if self.train_count > 0:
             self.cabin_temperature.pop(0)
@@ -239,6 +258,7 @@ class TrainData(QObject):
             self.current_position.pop(0)
             self.grade.pop(0)
             self.elevation.pop(0)
+            self.polarity.pop(0)
 
             # Failure Modes
             self.engine_failure.pop(0)
@@ -250,12 +270,6 @@ class TrainData(QObject):
 
             # At Station
             self.at_station.pop(0)
-
-            # Update train count
-            self.train_count -= 1
-
-            # Emit data_changed signal
-            self.data_changed.emit()
 
     def read_from_trainController_trackModel(self):
         # Connect incoming signals from Train Controller
@@ -281,26 +295,6 @@ class TrainData(QObject):
         self.tm_communicate.block_elevation_signal.connect(self.set_block_elevation)
         self.tm_communicate.polarity_signal.connect(self.set_track_polarity)
         self.tm_communicate.number_passenger_boarding_signal.connect(self.set_passenger_boarding)
-
-    def read_from_ctc(self):
-        # Connect incoming signals from CTC
-        self.ctc_communicate.dispatch_train_signal.connect(self.update_train_list)
-
-    def update_train_list(self, ctc_train_count):
-        current_train_count = self.train_count
-        if ctc_train_count > current_train_count:
-            # Add new trains
-            for _ in range(ctc_train_count - current_train_count):
-                self.initialize_train()
-        elif ctc_train_count < current_train_count:
-            # Remove trains from the front
-            for _ in range(current_train_count - ctc_train_count):
-                self.remove_train()
-        # Emit data_changed signal
-        self.data_changed.emit()
-
-        # Send current train count to Train Controller
-        self.tc_communicate.train_count_signal.emit(self.train_count)
 
     # Handler methods for incoming signals from Train Controller
     def set_power_command(self, power_list):
@@ -385,7 +379,7 @@ class TrainData(QObject):
         self.data_changed.emit()
 
     def set_track_polarity(self, polarity_list):
-        # Handle polarity if needed
+        self.polarity = polarity_list
         self.data_changed.emit()
 
     def set_passenger_boarding(self, boarding_list):
@@ -447,7 +441,7 @@ class TrainData(QObject):
         self.tc_communicate.current_velocity_signal.emit(self.current_speed)
         self.tc_communicate.actual_temperature_signal.emit(self.cabin_temperature)
         self.tc_communicate.passenger_brake_command_signal.emit(self.passenger_emergency_brake)
-        self.tc_communicate.polarity_signal.emit([True] * self.train_count)  # Example values
+        self.tc_communicate.polarity_signal.emit(self.polarity)
         self.tc_communicate.commanded_speed_signal.emit(self.commanded_speed_tc)
         self.tc_communicate.commanded_authority_signal.emit(self.authority)
 

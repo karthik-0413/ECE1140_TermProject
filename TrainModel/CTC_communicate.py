@@ -6,5 +6,4 @@ class CTCTrain(QObject):
     """Communication class for CTC and Train Model."""
 
     # CTC -> Train Model
-    # Parameter is int representing the current train count
-    dispatch_train_signal = pyqtSignal(int)    # Current train count
+    current_train_count_signal = pyqtSignal(int)    # Current train count (int)
