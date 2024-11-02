@@ -7,8 +7,7 @@ import random
 class TrainData(QObject):
     """Class representing the data and state of all trains."""
     data_changed = pyqtSignal()
-    announcement = pyqtSignal(int, str)  # Updated to include train index
-    current_velocity_signal = pyqtSignal()
+    announcement = pyqtSignal(list)  # List of announcements for all trains
 
     def __init__(self, tc_communicate, tm_communicate, ctc_communicate):
         super().__init__()
@@ -273,6 +272,7 @@ class TrainData(QObject):
         self.tc_communicate.engine_failure_signal.connect(self.set_engine_failure_from_tc)
         self.tc_communicate.brake_failure_signal.connect(self.set_brake_failure_from_tc)
         self.tc_communicate.signal_failure_signal.connect(self.set_signal_failure_from_tc)
+        self.tc_communicate.passenger_brake_command_signal.connect(self.set_passenger_emergency_brake)
 
         # Connect incoming signals from Track Model
         self.tm_communicate.commanded_speed_signal.connect(self.set_track_commanded_speed)
@@ -303,94 +303,98 @@ class TrainData(QObject):
         self.tc_communicate.train_count_signal.emit(self.train_count)
 
     # Handler methods for incoming signals from Train Controller
-    def set_power_command(self, index, power):
-        self.commanded_power[index] = power
+    def set_power_command(self, power_list):
+        self.commanded_power = power_list
         self.data_changed.emit()
 
-    def set_service_brake(self, index, state):
-        self.service_brake[index] = state
+    def set_service_brake(self, state_list):
+        self.service_brake = state_list
         self.data_changed.emit()
 
-    def set_emergency_brake(self, index, state):
-        self.emergency_brake[index] = state
+    def set_emergency_brake(self, state_list):
+        self.emergency_brake = state_list
         self.data_changed.emit()
 
-    def set_desired_temperature(self, index, temp):
-        self.desired_temperature[index] = temp
-        self.cabin_temperature[index] = temp
+    def set_desired_temperature(self, temp_list):
+        self.desired_temperature = temp_list
+        self.cabin_temperature = temp_list
         self.data_changed.emit()
 
-    def set_exterior_light(self, index, state):
-        self.exterior_light[index] = state
-        self.exterior_light_on[index] = state
+    def set_exterior_light(self, state_list):
+        self.exterior_light = state_list
+        self.exterior_light_on = state_list
         self.data_changed.emit()
 
-    def set_interior_light(self, index, state):
-        self.interior_light[index] = state
-        self.interior_light_on[index] = state
+    def set_interior_light(self, state_list):
+        self.interior_light = state_list
+        self.interior_light_on = state_list
         self.data_changed.emit()
 
-    def set_left_door(self, index, state):
-        self.train_left_door[index] = state
-        self.left_door_open[index] = state
+    def set_left_door(self, state_list):
+        self.train_left_door = state_list
+        self.left_door_open = state_list
         self.data_changed.emit()
 
-    def set_right_door(self, index, state):
-        self.train_right_door[index] = state
-        self.right_door_open[index] = state
+    def set_right_door(self, state_list):
+        self.train_right_door = state_list
+        self.right_door_open = state_list
         self.data_changed.emit()
 
-    def set_announcement(self, index, announcement):
-        self.announcement_text[index] = announcement
-        self.announcement.emit(index, announcement)
+    def set_announcement(self, announcement_list):
+        self.announcement_text = announcement_list
+        self.announcement.emit(announcement_list)
         self.data_changed.emit()
 
-    def set_grade(self, index, grade):
-        self.grade[index] = grade
+    def set_grade(self, grade_list):
+        self.grade = grade_list
         self.data_changed.emit()
 
-    def set_engine_failure_from_tc(self, index, state):
-        self.engine_failure[index] = state
+    def set_engine_failure_from_tc(self, state_list):
+        self.engine_failure = state_list
         self.data_changed.emit()
 
-    def set_brake_failure_from_tc(self, index, state):
-        self.brake_failure[index] = state
+    def set_brake_failure_from_tc(self, state_list):
+        self.brake_failure = state_list
         self.data_changed.emit()
 
-    def set_signal_failure_from_tc(self, index, state):
-        self.signal_failure[index] = state
+    def set_signal_failure_from_tc(self, state_list):
+        self.signal_failure = state_list
+        self.data_changed.emit()
+
+    def set_passenger_emergency_brake(self, state_list):
+        self.passenger_emergency_brake = state_list
         self.data_changed.emit()
 
     # Handler methods for incoming signals from Track Model
-    def set_track_commanded_speed(self, index, speed):
-        self.commanded_speed_tc[index] = speed
-        self.commanded_speed[index] = speed * 0.621371  # Convert km/h to mph
+    def set_track_commanded_speed(self, speed_list):
+        self.commanded_speed_tc = speed_list
+        self.commanded_speed = [speed * 0.621371 for speed in speed_list]  # Convert km/h to mph
         self.data_changed.emit()
 
-    def set_track_commanded_authority(self, index, authority):
-        self.authority[index] = authority
-        self.commanded_authority[index] = authority * 3.28084  # Convert meters to feet
+    def set_track_commanded_authority(self, authority_list):
+        self.authority = authority_list
+        self.commanded_authority = [auth * 3.28084 for auth in authority_list]  # Convert meters to feet
         self.data_changed.emit()
 
-    def set_block_grade(self, index, grade):
-        self.grade[index] = grade
+    def set_block_grade(self, grade_list):
+        self.grade = grade_list
         self.data_changed.emit()
 
-    def set_block_elevation(self, index, elevation):
-        self.elevation[index] = elevation
+    def set_block_elevation(self, elevation_list):
+        self.elevation = elevation_list
         self.data_changed.emit()
 
-    def set_track_polarity(self, index, polarity):
+    def set_track_polarity(self, polarity_list):
         # Handle polarity if needed
         self.data_changed.emit()
 
-    def set_passenger_boarding(self, index, number):
-        self.passenger_boarding[index] = number
-        # Update passenger count and train weight when passengers board
-        self.passenger_count[index] += number
-        if self.passenger_count[index] > self.maximum_capacity[index]:
-            self.passenger_count[index] = self.maximum_capacity[index]
-        self.update_train_weight(index)
+    def set_passenger_boarding(self, boarding_list):
+        self.passenger_boarding = boarding_list
+        for index, number in enumerate(boarding_list):
+            self.passenger_count[index] += number
+            if self.passenger_count[index] > self.maximum_capacity[index]:
+                self.passenger_count[index] = self.maximum_capacity[index]
+            self.update_train_weight(index)
         self.data_changed.emit()
 
     def update_train_weight(self, index):
@@ -405,6 +409,9 @@ class TrainData(QObject):
 
     def update_train_state(self):
         """Update the state of all trains."""
+        # Prepare lists to collect data for signals that need them
+        passengers_leaving_list = [0] * self.train_count
+
         for index in range(self.train_count):
             if self.dispatch_train[index]:
                 # Call the calculate_train_speed function
@@ -427,32 +434,32 @@ class TrainData(QObject):
                     passengers_leaving = random.randint(1, self.passenger_count[index])
                     self.passenger_count[index] -= passengers_leaving
                     self.update_train_weight(index)
-                    # Emit signal to Track Model
-                    self.tm_communicate.number_passenger_leaving_signal.emit(index, passengers_leaving)
+            passengers_leaving_list[index] = passengers_leaving
 
-            # Send updates to Train Controller and Track Model
-            self.write_to_trainController_trackModel(index)
+        # After updating all trains, emit updated lists to Train Controller and Track Model
+        self.write_to_trainController_trackModel(passengers_leaving_list)
 
         # Emit data_changed signal
         self.data_changed.emit()
 
-    def write_to_trainController_trackModel(self, index):
+    def write_to_trainController_trackModel(self, passengers_leaving_list):
         # Send signals to Train Controller
-        self.tc_communicate.current_velocity_signal.emit(index, self.current_speed[index])
-        self.tc_communicate.actual_temperature_signal.emit(index, self.cabin_temperature[index])
-        self.tc_communicate.passenger_brake_command_signal.emit(index, self.passenger_emergency_brake[index])
-        self.tc_communicate.polarity_signal.emit(index, True)  # Example value
-        self.tc_communicate.commanded_speed_signal.emit(index, self.commanded_speed_tc[index])
-        self.tc_communicate.commanded_authority_signal.emit(index, self.authority[index])
+        self.tc_communicate.current_velocity_signal.emit(self.current_speed)
+        self.tc_communicate.actual_temperature_signal.emit(self.cabin_temperature)
+        self.tc_communicate.passenger_brake_command_signal.emit(self.passenger_emergency_brake)
+        self.tc_communicate.polarity_signal.emit([True] * self.train_count)  # Example values
+        self.tc_communicate.commanded_speed_signal.emit(self.commanded_speed_tc)
+        self.tc_communicate.commanded_authority_signal.emit(self.authority)
 
         # Send failure signals
-        self.tc_communicate.engine_failure_signal.emit(index, self.engine_failure[index])
-        self.tc_communicate.brake_failure_signal.emit(index, self.brake_failure[index])
-        self.tc_communicate.signal_failure_signal.emit(index, self.signal_failure[index])
+        self.tc_communicate.engine_failure_signal.emit(self.engine_failure)
+        self.tc_communicate.brake_failure_signal.emit(self.brake_failure)
+        self.tc_communicate.signal_failure_signal.emit(self.signal_failure)
 
         # Send signals to Track Model
-        self.tm_communicate.position_signal.emit(index, self.current_position[index])
-        self.tm_communicate.seat_vacancy_signal.emit(index, self.available_seats[index])
+        self.tm_communicate.position_signal.emit(self.current_position)
+        self.tm_communicate.seat_vacancy_signal.emit(self.available_seats)
+        self.tm_communicate.number_passenger_leaving_signal.emit(passengers_leaving_list)
 
     def set_value(self, var_list, index, value):
         """Set the value in the list at the given index and emit data_changed signal."""

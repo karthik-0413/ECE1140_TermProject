@@ -1,78 +1,85 @@
 # murphy.py
 
 from PyQt6.QtGui import QFont
-from PyQt6.QtWidgets import (
-    QWidget, QLabel, QVBoxLayout, QHBoxLayout,
-    QScrollArea, QComboBox, QCheckBox, QPushButton
-)
+from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QPushButton, QSizePolicy
 from PyQt6.QtCore import Qt
 
 from base_page import BasePage
 
+
 class MurphyPage(BasePage):
-    """Page representing the Murphy controls (failure modes)."""
+    """Page representing the Murphy interface for simulating failures."""
 
     def __init__(self, train_data, tc_communicate, tm_communicate):
-        super().__init__("Murphy", self.train_id_changed)
-        self.train_data = train_data  # Store the train data
+        super().__init__("                                    Murphy", self.train_id_changed)
+        self.train_data = train_data
         self.tc_communicate = tc_communicate
         self.tm_communicate = tm_communicate
 
         self.current_train_index = 0  # Default to first train
 
-        # Create a scroll area
-        scroll_area = QScrollArea()
-        scroll_area.setWidgetResizable(True)
+        # Adjust margins to make the page as big as other pages
+        main_content_layout = QVBoxLayout()
+        main_content_layout.setContentsMargins(10, 10, 10, 10)  # Adjusted margins
+        main_content_layout.setSpacing(20)  # Increased spacing for better layout
 
-        # Main content widget and vertical layout inside scroll area
-        content_widget = QWidget()
-        content_widget.setStyleSheet("background-color: #F5F5F5;")
+        # Container for failure sections
+        failures_container = QWidget()
+        failures_layout = QVBoxLayout()
+        failures_layout.setContentsMargins(20, 20, 20, 20)  # Adjusted margins
+        failures_layout.setSpacing(30)  # Increased spacing between failure types
+        failures_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the elements
 
-        main_layout = QVBoxLayout()
-        main_layout.setContentsMargins(20, 20, 20, 20)
-        main_layout.setSpacing(10)
+        # Define failure types with ":" appended
+        failure_types = ["Signal Pickup Failure:", "Train Engine Failure:", "Brake Failure:"]
+        self.failure_buttons = {}
 
-        # Failure Modes Label
-        failure_modes_label = QLabel("Failure Modes")
-        failure_modes_label.setFont(QFont('Arial', 16, QFont.Weight.Bold))
-        failure_modes_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        failure_modes_label.setStyleSheet("color: black;")
+        for i, failure in enumerate(failure_types):
+            failure_layout = QHBoxLayout()
+            failure_layout.setContentsMargins(0, 0, 0, 0)
+            failure_layout.setSpacing(10)  # Adjusted spacing for closer elements
 
-        main_layout.addWidget(failure_modes_label)
+            label = QLabel(failure)
+            label.setFont(QFont('Arial', 24, QFont.Weight.Bold))  # Increased font size
+            label.setStyleSheet("color: black;")
+            label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
 
-        # Failure Modes Checkboxes
-        self.engine_failure_checkbox = QCheckBox("Engine Failure")
-        self.brake_failure_checkbox = QCheckBox("Brake Failure")
-        self.signal_pickup_failure_checkbox = QCheckBox("Signal Pickup Failure")
+            button = QPushButton("Inactive")
+            button.setCheckable(True)
+            button.setFont(QFont('Arial', 20, QFont.Weight.Bold))  # Increased font size
+            button.setFixedSize(220, 80)  # Enlarged button size
+            button.setStyleSheet("""
+                QPushButton {
+                    background-color: green;
+                    color: black;
+                    border-radius: 10px;
+                    font-weight: bold;
+                }
+                QPushButton:checked {
+                    background-color: #8B0000;
+                    color: black;
+                }
+            """)
+            # Map the button to its corresponding failure
+            if i == 0:
+                button.clicked.connect(self.toggle_signal_failure)
+            elif i == 1:
+                button.clicked.connect(self.toggle_engine_failure)
+            elif i == 2:
+                button.clicked.connect(self.toggle_brake_failure)
+            self.failure_buttons[failure] = button
 
-        # Set font and styles
-        checkbox_font = QFont('Arial', 14)
-        self.engine_failure_checkbox.setFont(checkbox_font)
-        self.brake_failure_checkbox.setFont(checkbox_font)
-        self.signal_pickup_failure_checkbox.setFont(checkbox_font)
+            failure_layout.addWidget(label)
+            failure_layout.addWidget(button)
+            failure_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center each row
 
-        # Connect signals
-        self.engine_failure_checkbox.stateChanged.connect(self.update_engine_failure)
-        self.brake_failure_checkbox.stateChanged.connect(self.update_brake_failure)
-        self.signal_pickup_failure_checkbox.stateChanged.connect(self.update_signal_pickup_failure)
+            failures_layout.addLayout(failure_layout)
 
-        # Add checkboxes to layout
-        checkboxes_layout = QVBoxLayout()
-        checkboxes_layout.addWidget(self.engine_failure_checkbox)
-        checkboxes_layout.addWidget(self.brake_failure_checkbox)
-        checkboxes_layout.addWidget(self.signal_pickup_failure_checkbox)
+        failures_container.setLayout(failures_layout)
+        main_content_layout.addWidget(failures_container)
 
-        main_layout.addLayout(checkboxes_layout)
-
-        # Spacer
-        main_layout.addStretch()
-
-        # Set content widget layout
-        content_widget.setLayout(main_layout)
-        scroll_area.setWidget(content_widget)
-
-        # Add scroll area to content_layout
-        self.content_layout.addWidget(scroll_area)
+        # Add main content layout to content_layout
+        self.content_layout.addLayout(main_content_layout)
 
         # Connect data changed signal
         self.train_data.data_changed.connect(self.update_display)
@@ -80,66 +87,69 @@ class MurphyPage(BasePage):
         # Initial display update
         self.update_display()
 
-    def update_train_id_list(self, train_ids):
-        """Update the train ID combo box with the new list."""
-        current_id = self.train_id_combo.currentText()
-        self.train_id_combo.blockSignals(True)
-        self.train_id_combo.clear()
-        self.train_id_combo.addItems(train_ids)
-        if current_id in train_ids:
-            self.train_id_combo.setCurrentText(current_id)
-            self.current_train_index = int(current_id) - 1
-        else:
-            self.train_id_combo.setCurrentIndex(0)
-            self.current_train_index = 0
-        self.train_id_combo.blockSignals(False)
-        self.update_display()
-
     def train_id_changed(self, new_train_id):
         """Handle Train ID change."""
-        self.current_train_index = int(new_train_id) - 1
-        self.update_display()
+        if new_train_id:
+            self.current_train_index = int(new_train_id) - 1
+            self.update_display()
+
+    def toggle_signal_failure(self):
+        index = self.current_train_index
+        current_state = self.train_data.signal_failure[index]
+        new_state = not current_state
+        self.train_data.signal_failure[index] = new_state
+        self.update_failure_button("Signal Pickup Failure:", new_state)
+        # Emit signal with the updated list
+        self.tc_communicate.signal_failure_signal.emit(self.train_data.signal_failure)
+        self.train_data.data_changed.emit()
+
+    def toggle_engine_failure(self):
+        index = self.current_train_index
+        current_state = self.train_data.engine_failure[index]
+        new_state = not current_state
+        self.train_data.engine_failure[index] = new_state
+        self.update_failure_button("Train Engine Failure:", new_state)
+        # Emit signal with the updated list
+        self.tc_communicate.engine_failure_signal.emit(self.train_data.engine_failure)
+        self.train_data.data_changed.emit()
+
+    def toggle_brake_failure(self):
+        index = self.current_train_index
+        current_state = self.train_data.brake_failure[index]
+        new_state = not current_state
+        self.train_data.brake_failure[index] = new_state
+        self.update_failure_button("Brake Failure:", new_state)
+        # Emit signal with the updated list
+        self.tc_communicate.brake_failure_signal.emit(self.train_data.brake_failure)
+        self.train_data.data_changed.emit()
+
+    def update_failure_button(self, failure_name, is_active):
+        button = self.failure_buttons[failure_name]
+        if is_active:
+            button.setText("Active")
+            # Set bloody red color
+            button.setStyleSheet("""
+                QPushButton {
+                    background-color: #8B0000;
+                    color: black;
+                    border-radius: 10px;
+                    font-weight: bold;
+                }
+            """)
+        else:
+            button.setText("Inactive")
+            button.setStyleSheet("""
+                QPushButton {
+                    background-color: green;
+                    color: black;
+                    border-radius: 10px;
+                    font-weight: bold;
+                }
+            """)
 
     def update_display(self):
-        """Update the display based on the current train data."""
+        # Update the state of the failure buttons
         index = self.current_train_index
-
-        # Update the checkboxes based on the train data
-        self.engine_failure_checkbox.blockSignals(True)
-        self.engine_failure_checkbox.setChecked(self.train_data.engine_failure[index])
-        self.engine_failure_checkbox.blockSignals(False)
-
-        self.brake_failure_checkbox.blockSignals(True)
-        self.brake_failure_checkbox.setChecked(self.train_data.brake_failure[index])
-        self.brake_failure_checkbox.blockSignals(False)
-
-        self.signal_pickup_failure_checkbox.blockSignals(True)
-        self.signal_pickup_failure_checkbox.setChecked(self.train_data.signal_failure[index])
-        self.signal_pickup_failure_checkbox.blockSignals(False)
-
-    def update_engine_failure(self, state):
-        """Update engine failure status for the current train."""
-        index = self.current_train_index
-        is_checked = self.engine_failure_checkbox.isChecked()
-        self.train_data.engine_failure[index] = is_checked
-        # Emit signal to Train Controller
-        self.tc_communicate.engine_failure_signal.emit(index, is_checked)
-        self.train_data.data_changed.emit()
-
-    def update_brake_failure(self, state):
-        """Update brake failure status for the current train."""
-        index = self.current_train_index
-        is_checked = self.brake_failure_checkbox.isChecked()
-        self.train_data.brake_failure[index] = is_checked
-        # Emit signal to Train Controller
-        self.tc_communicate.brake_failure_signal.emit(index, is_checked)
-        self.train_data.data_changed.emit()
-
-    def update_signal_pickup_failure(self, state):
-        """Update signal pickup failure status for the current train."""
-        index = self.current_train_index
-        is_checked = self.signal_pickup_failure_checkbox.isChecked()
-        self.train_data.signal_failure[index] = is_checked
-        # Emit signal to Train Controller
-        self.tc_communicate.signal_failure_signal.emit(index, is_checked)
-        self.train_data.data_changed.emit()
+        self.update_failure_button("Signal Pickup Failure:", self.train_data.signal_failure[index])
+        self.update_failure_button("Train Engine Failure:", self.train_data.engine_failure[index])
+        self.update_failure_button("Brake Failure:", self.train_data.brake_failure[index])

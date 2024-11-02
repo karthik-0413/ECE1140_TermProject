@@ -10,6 +10,7 @@ from PyQt6.QtCore import Qt
 
 from train_model import TrainModelPage
 from testbench import TestBenchPage
+# If 'murphy.py' exists, import MurphyPage; otherwise, remove the import and related code
 from murphy import MurphyPage
 from train_data import TrainData
 from train_controller_communicate import TrainControllerCommunicate
