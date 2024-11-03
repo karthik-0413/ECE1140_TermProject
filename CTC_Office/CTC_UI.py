@@ -1,6 +1,6 @@
 from backend.line import Line
 
-class CTC_UI():
+class CTC_logic():
     def __init__(self):
         self.line = Line()
         self.automatic = False
@@ -12,7 +12,11 @@ class CTC_UI():
         pass
 
     def add_new_train_to_line(self, line_name:str, destination:int, destination_station:str):
-        self.lines[line_name].create_train(destination, destination_station)
+        
+        # Add destinations to the train object 
+        #self.lines[line_name].create_train(destination, destination_station)
+        pass
+
 
     def change_train_destination_on_line(self, line_name:str, train_id:int, old_destination:int, new_destination:int, station_name:str):
         self.lines[line_name].change_train_destination(train_id, old_destination, new_destination, station_name)
