@@ -94,7 +94,10 @@ class TestBenchPage(BasePage):
                 # Use a combo box for beacon with "We are approaching"
                 station_combo = QComboBox()
                 station_combo.addItems(["Station Alpha", "Station Beta", "Station Delta"])
-                station_combo.setCurrentText(self.train_data.beacon_station[self.current_train_index])
+                if self.train_data.train_count > 0:
+                    station_combo.setCurrentText(self.train_data.beacon_station[self.current_train_index] if self.train_data.beacon_station else "Station Alpha")
+                else:
+                    station_combo.setCurrentText("Station Alpha")
                 station_combo.setFont(self.font_value)
                 station_combo.setStyleSheet("color: black;")
                 station_combo.currentTextChanged.connect(self.update_beacon)
@@ -178,7 +181,7 @@ class TestBenchPage(BasePage):
                 self.tc_edit_fields[var_name] = value_edit
             else:
                 # Numeric inputs
-                value = getattr(self.train_data, var_name)[self.current_train_index]
+                value = getattr(self.train_data, var_name)[self.current_train_index] if getattr(self.train_data, var_name) else 0
                 value_edit = QLineEdit(str(value))
                 value_edit.setFont(self.font_value)
                 value_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Centered text
@@ -187,7 +190,7 @@ class TestBenchPage(BasePage):
                 value_edit.editingFinished.connect(lambda var=var_name, edit=value_edit: self.update_train_data(var, edit.text()))
                 tc_input_layout.addWidget(label, i, 0, alignment=Qt.AlignmentFlag.AlignLeft)
                 tc_input_layout.addWidget(value_edit, i, 1, alignment=Qt.AlignmentFlag.AlignLeft)
-                unit_label = QLabel("")
+                unit_label = QLabel(rest[0] if rest else "")
                 unit_label.setFont(self.font_label)
                 unit_label.setStyleSheet("color: black;")
                 tc_input_layout.addWidget(unit_label, i, 2, alignment=Qt.AlignmentFlag.AlignLeft)
@@ -247,7 +250,10 @@ class TestBenchPage(BasePage):
                 options = rest[0]
                 combo_box = QComboBox()
                 combo_box.addItems(options)
-                combo_box.setCurrentText(getattr(self.train_data, var_name)[self.current_train_index])
+                if self.train_data.train_count > 0:
+                    combo_box.setCurrentText(self.train_data.advertisement[self.current_train_index] if self.train_data.advertisement else options[0])
+                else:
+                    combo_box.setCurrentText(options[0])
                 combo_box.setFont(self.font_value)
                 combo_box.setStyleSheet("color: black;")
                 combo_box.currentTextChanged.connect(lambda text, var=var_name: self.update_train_data(var, text))
@@ -260,13 +266,12 @@ class TestBenchPage(BasePage):
                 self.cabin_edit_fields[var_name] = combo_box
             elif var_name == "passenger_boarding":
                 # Numeric input with OK button
-                value = getattr(self.train_data, var_name)[self.current_train_index]
+                value = self.train_data.passenger_boarding[self.current_train_index] if self.train_data.passenger_boarding else 0
                 value_edit = QLineEdit(str(value))
                 value_edit.setFont(self.font_value)
                 value_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Centered text
                 value_edit.setMaximumWidth(80)
                 value_edit.setStyleSheet("color: black;")  # Ensuring black font color
-                # Do not connect editingFinished
                 cabin_control_layout.addWidget(label, i, 0, alignment=Qt.AlignmentFlag.AlignLeft)
 
                 # Create a horizontal layout for input field and OK button
@@ -300,7 +305,7 @@ class TestBenchPage(BasePage):
                 self.cabin_edit_fields[var_name] = value_edit
             else:
                 # Numeric inputs with unit label next to input field
-                value = getattr(self.train_data, var_name)[self.current_train_index]
+                value = self.train_data.desired_temperature[self.current_train_index] if self.train_data.desired_temperature else 0
                 value_edit = QLineEdit(str(value))
                 value_edit.setFont(self.font_value)
                 value_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Centered text
@@ -380,6 +385,24 @@ class TestBenchPage(BasePage):
             self.current_train_index = int(new_train_id) - 1
             self.update_display()
 
+    def update_train_id_list(self, train_ids):
+        """Update the train ID combo box with the new list."""
+        current_id = self.train_id_combo.currentText()
+        self.train_id_combo.blockSignals(True)
+        self.train_id_combo.clear()
+        self.train_id_combo.addItems(train_ids)
+        if current_id in train_ids:
+            self.train_id_combo.setCurrentText(current_id)
+            self.current_train_index = int(current_id) - 1
+        else:
+            if train_ids:
+                self.train_id_combo.setCurrentIndex(0)
+                self.current_train_index = 0
+            else:
+                self.current_train_index = None
+        self.train_id_combo.blockSignals(False)
+        self.update_display()
+
     def toggle_on_off(self, var_name, button):
         is_on = button.isChecked()
         button.setText("ON" if is_on else "OFF")
@@ -392,11 +415,16 @@ class TestBenchPage(BasePage):
             }}
         """)
         index = self.current_train_index
+        if index is None or index >= self.train_data.train_count:
+            return
         getattr(self.train_data, var_name)[index] = is_on
         self.train_data.data_changed.emit()
 
     def open_set_commanded_power_dialog(self):
-        current_power = self.train_data.commanded_power[self.current_train_index]
+        if self.current_train_index is not None and self.current_train_index < self.train_data.train_count:
+            current_power = self.train_data.commanded_power[self.current_train_index]
+        else:
+            current_power = 0
         dialog = SetCommandedPowerDialog(self, current_power=current_power)
         if dialog.exec() == QDialog.DialogCode.Accepted:
             new_power = dialog.get_commanded_power()
@@ -408,6 +436,8 @@ class TestBenchPage(BasePage):
     def update_train_data(self, var_name, value):
         index = self.current_train_index
         try:
+            if index is None or index >= self.train_data.train_count:
+                return
             if var_name in ['commanded_speed_tc', 'authority', 'desired_temperature']:
                 current_value = getattr(self.train_data, var_name)[index]
                 if isinstance(current_value, int):
@@ -422,6 +452,8 @@ class TestBenchPage(BasePage):
     def update_passenger_boarding(self, var_name, value):
         index = self.current_train_index
         try:
+            if index is None or index >= self.train_data.train_count:
+                return
             value = int(value)
             self.train_data.passenger_boarding[index] = value
             self.train_data.passenger_count[index] += value
@@ -433,11 +465,15 @@ class TestBenchPage(BasePage):
 
     def update_beacon(self, station):
         index = self.current_train_index
+        if index is None or index >= self.train_data.train_count:
+            return
         self.train_data.beacon_station[index] = station
         self.train_data.data_changed.emit()
 
     def open_announcement_dialog(self):
         index = self.current_train_index
+        if index is None or index >= self.train_data.train_count:
+            return
         dialog = AnnouncementDialog(index, self)
         if dialog.exec() == QDialog.DialogCode.Accepted:
             announcement = dialog.get_announcement()
@@ -446,6 +482,19 @@ class TestBenchPage(BasePage):
 
     def update_button_states(self):
         index = self.current_train_index
+        if index is None or index >= self.train_data.train_count:
+            # Disable buttons and inputs if no train is selected
+            for widget in self.tc_edit_fields.values():
+                widget.setEnabled(False)
+            for widget in self.cabin_edit_fields.values():
+                widget.setEnabled(False)
+            return
+
+        for widget in self.tc_edit_fields.values():
+            widget.setEnabled(True)
+        for widget in self.cabin_edit_fields.values():
+            widget.setEnabled(True)
+
         for var_name, button in self.tc_edit_fields.items():
             if var_name in ["service_brake", "exterior_light", "interior_light", "emergency_brake"]:
                 is_on = getattr(self.train_data, var_name)[index]
@@ -473,8 +522,19 @@ class TestBenchPage(BasePage):
 
     def update_display(self):
         index = self.current_train_index
-        if index >= self.train_data.train_count:
+        if index is None or index >= self.train_data.train_count:
+            # Disable inputs if no valid train is selected
+            for widget in self.tc_edit_fields.values():
+                widget.setEnabled(False)
+            for widget in self.cabin_edit_fields.values():
+                widget.setEnabled(False)
             return
+        else:
+            for widget in self.tc_edit_fields.values():
+                widget.setEnabled(True)
+            for widget in self.cabin_edit_fields.values():
+                widget.setEnabled(True)
+
         # Update the state of the buttons and input fields
         self.update_button_states()
         # Update numeric input fields
@@ -492,7 +552,7 @@ class TestBenchPage(BasePage):
                 edit.setStyleSheet("color: black;")  # Ensure black font
         # Update beacon station
         station_combo = self.tc_edit_fields.get('beacon_station')
-        if station_combo:
+        if station_combo and self.train_data.train_count > 0:
             station_combo.setCurrentText(self.train_data.beacon_station[index])
         # Update train count field
         train_count_edit = self.tc_edit_fields.get('train_count')
@@ -505,16 +565,8 @@ class TestBenchPage(BasePage):
             value = int(value)
             if value < 0:
                 return
-            # Update train count in train data
-            current_count = self.train_data.train_count
-            if value > current_count:
-                # Add new trains
-                for _ in range(value - current_count):
-                    self.train_data.initialize_train()
-            elif value < current_count:
-                # Remove trains
-                for _ in range(current_count - value):
-                    self.train_data.remove_train()
-            self.train_data.data_changed.emit()
+            # Emit the new train count to the CTC
+            self.train_data.ctc_communicate.current_train_count_signal.emit(value)
+            # The TrainData instance will handle adding or removing trains
         except ValueError:
             pass  # Handle invalid input

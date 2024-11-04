@@ -1,14 +1,16 @@
 # murphy.py
 
 from PyQt6.QtGui import QFont
-from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QPushButton, QSizePolicy
+from PyQt6.QtWidgets import (
+    QWidget, QLabel, QVBoxLayout, QHBoxLayout, QPushButton, QSizePolicy
+)
 from PyQt6.QtCore import Qt
 
 from base_page import BasePage
 
 
 class MurphyPage(BasePage):
-    """Page representing the Murphy interface for simulating failures."""
+    """Page representing Murphy's interface for simulating failures."""
 
     def __init__(self, train_data, tc_communicate, tm_communicate):
         super().__init__("                                    Murphy", self.train_id_changed)
@@ -34,7 +36,7 @@ class MurphyPage(BasePage):
         failure_types = ["Signal Pickup Failure:", "Train Engine Failure:", "Brake Failure:"]
         self.failure_buttons = {}
 
-        for i, failure in enumerate(failure_types):
+        for failure in failure_types:
             failure_layout = QHBoxLayout()
             failure_layout.setContentsMargins(0, 0, 0, 0)
             failure_layout.setSpacing(10)  # Adjusted spacing for closer elements
@@ -61,11 +63,11 @@ class MurphyPage(BasePage):
                 }
             """)
             # Map the button to its corresponding failure
-            if i == 0:
+            if failure.startswith("Signal"):
                 button.clicked.connect(self.toggle_signal_failure)
-            elif i == 1:
+            elif failure.startswith("Train Engine"):
                 button.clicked.connect(self.toggle_engine_failure)
-            elif i == 2:
+            elif failure.startswith("Brake"):
                 button.clicked.connect(self.toggle_brake_failure)
             self.failure_buttons[failure] = button
 
@@ -94,6 +96,7 @@ class MurphyPage(BasePage):
             self.update_display()
 
     def toggle_signal_failure(self):
+        """Toggle the Signal Pickup Failure state for the current train."""
         index = self.current_train_index
         current_state = self.train_data.signal_failure[index]
         new_state = not current_state
@@ -104,6 +107,7 @@ class MurphyPage(BasePage):
         self.train_data.data_changed.emit()
 
     def toggle_engine_failure(self):
+        """Toggle the Train Engine Failure state for the current train."""
         index = self.current_train_index
         current_state = self.train_data.engine_failure[index]
         new_state = not current_state
@@ -114,6 +118,7 @@ class MurphyPage(BasePage):
         self.train_data.data_changed.emit()
 
     def toggle_brake_failure(self):
+        """Toggle the Brake Failure state for the current train."""
         index = self.current_train_index
         current_state = self.train_data.brake_failure[index]
         new_state = not current_state
@@ -124,6 +129,7 @@ class MurphyPage(BasePage):
         self.train_data.data_changed.emit()
 
     def update_failure_button(self, failure_name, is_active):
+        """Update the appearance and text of a failure button based on its state."""
         button = self.failure_buttons[failure_name]
         if is_active:
             button.setText("Active")
@@ -148,8 +154,31 @@ class MurphyPage(BasePage):
             """)
 
     def update_display(self):
-        # Update the state of the failure buttons
+        """Update the display of failure buttons based on the current train's failure states."""
         index = self.current_train_index
-        self.update_failure_button("Signal Pickup Failure:", self.train_data.signal_failure[index])
-        self.update_failure_button("Train Engine Failure:", self.train_data.engine_failure[index])
-        self.update_failure_button("Brake Failure:", self.train_data.brake_failure[index])
+
+        # Check if the current_train_index is within the valid range
+        if index < 0 or index >= self.train_data.train_count:
+            # If no trains are present, disable all failure buttons
+            for failure_name, button in self.failure_buttons.items():
+                button.setEnabled(False)
+                button.setText("Inactive")
+                button.setStyleSheet("""
+                    QPushButton {
+                        background-color: green;
+                        color: black;
+                        border-radius: 10px;
+                        font-weight: bold;
+                    }
+                """)
+            return
+        else:
+            # Enable all failure buttons
+            for failure_name, button in self.failure_buttons.items():
+                button.setEnabled(True)
+
+        # Update each failure button based on the current train's state
+        self.update_failure_button("Signal Pickup Failure:", self.train_data.signal_failure[index+1])
+        self.update_failure_button("Train Engine Failure:", self.train_data.engine_failure[index+1])
+        self.update_failure_button("Brake Failure:", self.train_data.brake_failure[index+1])
+        print(f"In MurphyPage: Updated display for Train {index+1}")
