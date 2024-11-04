@@ -5,13 +5,14 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 
 from CTC_Office.line import Line
 
-from TrainModel.CTC_communicate import CTCTrain
+from TrainModel.CTC_communicate import CTC_Train_Model_Communicate
 
 class CTC_logic():
-    def __init__(self, train_model_communicate: CTCTrain):
+    def __init__(self, train_model_communicate: CTC_Train_Model_Communicate):
         self.line = Line("Green")
         self.automatic = False
         self.train_model_communicate = train_model_communicate
+        self.num_trains = None
 
     def upload_layout_to_line():
         pass
@@ -23,8 +24,10 @@ class CTC_logic():
         
         # Add destinations to the train object 
         #self.lines[line_name].create_train(destination, destination_station)
-
-        self.train_model_communicate.current_train_count_signal.emit(len(self.line.train_list))
+        print("Adding train")
+        self.num_trains = len(self.line.train_list)
+        print(self.num_trains)
+        self.train_model_communicate.current_train_count_signal.emit(self.num_trains)
 
 
     def change_train_destination_on_line(self, line_name:str, train_id:int, old_destination:int, new_destination:int, station_name:str):

@@ -1,7 +1,7 @@
 # train_data.py
 
 from PyQt6.QtCore import QObject, pyqtSignal, QTimer
-from power import calculate_train_speed
+from TrainModel.power import calculate_train_speed
 import random
 
 class TrainData(QObject):
@@ -367,6 +367,7 @@ class TrainData(QObject):
 
     def update_train_list(self, ctc_train_count):
         """Update train data lists based on current train count from CTC."""
+        print("COMMUNCIATION WORKS")
         current_train_count = self.train_count
         if ctc_train_count > current_train_count:
             # Add new trains
@@ -559,6 +560,9 @@ class TrainData(QObject):
         self.data_changed.emit()
 
     def write_to_trainController_trackModel(self, passengers_leaving_list):
+        pass
+        """
+
         # Send signals to Train Controller
         self.tc_communicate.current_velocity_signal.emit(self.current_speed)
         self.tc_communicate.actual_temperature_signal.emit(self.cabin_temperature)
@@ -575,7 +579,7 @@ class TrainData(QObject):
         # Send signals to Track Model
         self.tm_communicate.position_signal.emit(self.current_position)
         self.tm_communicate.seat_vacancy_signal.emit(self.available_seats)
-        self.tm_communicate.number_passenger_leaving_signal.emit(passengers_leaving_list)
+        self.tm_communicate.number_passenger_leaving_signal.emit(passengers_leaving_list)"""
 
     def set_value(self, var_list, index, value):
         """Set the value in the list at the given index and emit data_changed signal."""
@@ -587,3 +591,6 @@ class TrainData(QObject):
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_train_state)
         self.timer.start(1000)  # Update every 1 second
+
+    def update_failure_button(self):
+        pass

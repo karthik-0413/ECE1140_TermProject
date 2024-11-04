@@ -4,13 +4,13 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 
 from CTC_Office.CTC_UI import CTC_logic
-from TrainModel.CTC_communicate import CTCTrain
+from TrainModel.CTC_communicate import CTC_Train_Model_Communicate
 
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtWidgets import QApplication
 
 class CTC_frontend(object):
-    def __init__(self, ctc_train_communicate: CTCTrain):
+    def __init__(self, ctc_train_communicate: CTC_Train_Model_Communicate):
         self.test_int = 0
         self.ctc = CTC_logic(ctc_train_communicate)
 
@@ -1318,7 +1318,7 @@ class CTC_frontend(object):
         self.pagetab.setTabToolTip(self.pagetab.indexOf(self.TestTab), _translate("mainwindow", "Test I/O operation"))
 
     def dispatch_train(self):
-        #self.ctc.add_new_train_to_line("fake_line", 69, "fake_destination")
+        self.ctc.add_new_train_to_line("fake_line", 69, "fake_destination")
         print(f"self.test_int = {self.test_int}")
         self.test_int = self.test_int + 1
 
@@ -1349,7 +1349,7 @@ if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
 
-    comm = CTCTrain
+    comm = CTC_Train_Model_Communicate()
 
     ui = CTC_frontend(comm)
     ui.setupUi(MainWindow)
