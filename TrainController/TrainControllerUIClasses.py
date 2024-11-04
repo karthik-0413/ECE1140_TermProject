@@ -4,13 +4,18 @@ import sys
 import os
 from PyQt6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QLineEdit,
-    QPushButton, QSizePolicy, QSpacerItem, QMessageBox, QApplication, QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem, QHeaderView, QLabel
+    QPushButton, QSizePolicy, QSpacerItem, QApplication, QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem, QHeaderView, QLabel, QComboBox
 )
-from PyQt6.QtCore import Qt, QElapsedTimer, QTimer, QCoreApplication, pyqtSignal, QObject
-# use sys to get files from .. away
+from PyQt6.QtCore import Qt, QCoreApplication, pyqtSignal, QObject
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from Resources.TrainTrainControllerComm import TrainTrainController as Communicate
 
+class TrainID(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.train_id_signal = pyqtSignal(int)
+        self.train_id = 0
 
 class Doors(QObject):
     right_door_update = pyqtSignal(bool)
@@ -127,7 +132,7 @@ class PowerCommand(QObject):
         self.ki = tuning.get_ki()
         
     def update_power_command(self, current_velocity: float, desired_velocity: float):
-        if round(desired_velocity, 2) == round(current_velocity, 2) or current_velocity == 0:
+        if round(desired_velocity, 2) == round(current_velocity, 2):
             self.power_command = 0
             self.power_command_signal.emit(self.power_command)
             # Put Brake Status has OFF
@@ -218,7 +223,7 @@ class SpeedControl(QObject):
             self.brake_status.driver_brake_status = False
             self.brake_status.driver_service_brake_command = False
             self.brake_status.driver_emergency_brake_command = False
-            self.communicator.passenger_brake_command_signal.emit(False)
+            self.communicator.passenger_brake_command_signal.emit(False)    
             
             
         self.current_velocity = speed
@@ -641,8 +646,11 @@ class TrainEngineerUI(QWidget):
                 item.setText(str(self.tuning.get_ki()))  # Reset to previous value if invalid
         
 class TrainControllerUI(QWidget):
-    def __init__(self, communicator: Communicate, doors: Doors, tuning: Tuning, brake_class: BrakeStatus, power_class: PowerCommand, speed_control: SpeedControl, failure_modes: FailureModes, position: Position, lights: Lights, temperature: Temperature):
+    def __init__(self, communicator: Communicate, doors: Doors, tuning: Tuning, brake_class: BrakeStatus, power_class: PowerCommand, speed_control: SpeedControl, failure_modes: FailureModes, position: Position, lights: Lights, temperature: Temperature, train_id: TrainID):
         super().__init__()
+        
+        # Train ID Variable
+        self.train_id = 1
         
         # Make a copy of all sub-classes
         self.doors = doors
@@ -654,6 +662,7 @@ class TrainControllerUI(QWidget):
         self.position = position
         self.lights = lights
         self.temperature = temperature
+        self.train_id = train_id
         
         # PyqtSignal Class to communicate with the Train Model
         self.communicator = communicator
@@ -714,22 +723,43 @@ class TrainControllerUI(QWidget):
         main_layout = QVBoxLayout()
         main_layout.setContentsMargins(30, 15, 30, 10)
 
-        # Title Label
+        # Title Banner Layout
         title_banner = QHBoxLayout()
         title_banner.setSpacing(0)
+
+        # Title Label
         title_label = QLabel("Train Controller")
         title_label.setStyleSheet("font: Times New Roman; font-size: 30px; font-weight: bold; color: white; background-color: blue; border-radius: 10px; padding: 10px;")
         title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        # Add the title label to the banner layout
         title_banner.addWidget(title_label)
+
+        # Dropdown (ComboBox)
+        self.dropdown = QComboBox()
+        self.dropdown.addItems(["Train 1", "Train 2", "Train 3"])  # Add your options here
+        self.dropdown.setStyleSheet("font: Times New Roman; font-size: 20px; padding: 5px; margin-left: 10px; border: 2px solid black;")  # Style the dropdown with black border
+        self.dropdown.setFixedWidth(150)  # Set a fixed width for the dropdown if desired
+        self.dropdown.currentIndexChanged.connect(self.save_dropdown_selection)  # Connect to a method to save the selection
+
+        # Add dropdown to the title banner layout
+        title_banner.addWidget(self.dropdown)
 
         # Title Container
         title_container = QWidget()
         title_container.setLayout(title_banner)
+        title_container.setStyleSheet("background-color: blue; border-radius: 10px;")  # Set background color and border radius
         title_container.setContentsMargins(0, 0, 0, 0)
+
+        # Add the title container to the main layout
         main_layout.addWidget(title_container)
 
         # Main Grid Layout for UI Elements
         main_grid = QGridLayout()
+        # Add your UI elements to the main_grid layout as needed
+
+        # Example of adding the main grid to the main layout
+        main_layout.addLayout(main_grid)
         
         
         
@@ -1281,6 +1311,11 @@ class TrainControllerUI(QWidget):
         self.temperature.desired_temperature = float(self.temp_input.text())
         print(f"Desired Temperature: {self.temperature.desired_temperature}")
         
+    def save_dropdown_selection(self):
+        self.train_id.train_id_signal.emit(self.dropdown.currentText())
+        self.train_id.train_id = self.dropdown.currentText()
+        print(f"Selected Train ID: {self.train_id.train_id}")
+        
         
     ####################################################################
     # FUNCTIONS TO HANDLE THE BACKEND LOGIC OF TRAIN CONTROLLER MODULE #
@@ -1351,18 +1386,19 @@ class TrainControllerUI(QWidget):
 
 if __name__ == "__main__":#
     app = QApplication([])
+    train_id = TrainID()
     communicator = Communicate()
     doors = Doors()
     tuning = Tuning()
     brake_status = BrakeStatus(communicator)
     power_class = PowerCommand(brake_status, tuning)
     speed_control = SpeedControl(power_class, brake_status, communicator)
-    failure_modes = FailureModes(speed_control)
+    failure_modes = FailureModes(speed_control, power_class)
     lights = Lights(speed_control)
     temperature = Temperature()
     communicator = Communicate()
     position = Position(doors, failure_modes, speed_control, power_class, lights, communicator)
-    window = TrainControllerUI(communicator, doors, tuning, brake_status, power_class, speed_control, failure_modes, position, lights, temperature)
+    window = TrainControllerUI(communicator, doors, tuning, brake_status, power_class, speed_control, failure_modes, position, lights, temperature, train_id)
     window.show()
     
     # Show engineer window as well
