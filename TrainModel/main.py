@@ -14,8 +14,7 @@ from base_page import BasePage
 # Communication classes
 from train_controller_communicate import TrainControllerCommunicate
 from track_model_communicate import TrackModelCommunicate
-from CTC_communicate import CTCTrain
-
+from CTC_communicate import CTCCommunicate  # Renamed file
 
 class MainWindow(QMainWindow):
     """Main window of the application."""
@@ -29,7 +28,7 @@ class MainWindow(QMainWindow):
         # Create communication instances
         self.tc_communicate = TrainControllerCommunicate()
         self.tm_communicate = TrackModelCommunicate()
-        self.ctc_communicate = CTCTrain()
+        self.ctc_communicate = CTCCommunicate()  # Updated class name
 
         # Create TrainData instance
         self.train_data = TrainData(self.tc_communicate, self.tm_communicate, self.ctc_communicate)
@@ -54,8 +53,40 @@ class MainWindow(QMainWindow):
         # Connect data changed signal to update Train IDs when train count changes
         self.train_data.data_changed.connect(self.update_train_id_lists)
 
-        # Emit initial train count (0 trains)
-        self.ctc_communicate.current_train_count_signal.emit(0)
+        # Connect CTC to update train counts (simulate receiving train counts)
+        # For testing, let's simulate the CTC sending train counts
+        self.simulate_ctc_train_counts()
+
+    def simulate_ctc_train_counts(self):
+        """Simulate CTC sending train counts at intervals."""
+        from PyQt6.QtCore import QTimer
+
+        self.train_counts = [1, 2, 3, 2, 1, 0]  # Example train counts
+        self.ctc_timer = QTimer()
+        self.ctc_timer.timeout.connect(self.send_next_train_count)
+        self.ctc_timer.start(5000)  # Every 5 seconds
+
+    def send_next_train_count(self):
+        if self.train_counts:
+            next_count = self.train_counts.pop(0)
+            self.ctc_communicate.update_current_train_count(next_count)
+        else:
+            self.ctc_timer.stop()
+
+    def show_train_model(self):
+        """Show the Train Model page."""
+        self.train_model_page.update_display()
+        self.stacked_widget.setCurrentWidget(self.train_model_page)
+
+    def show_test_bench(self):
+        """Show the Test Bench page."""
+        self.test_bench_page.update_display()
+        self.stacked_widget.setCurrentWidget(self.test_bench_page)
+
+    def show_murphy(self):
+        """Show the Murphy page."""
+        self.murphy_page.update_display()
+        self.stacked_widget.setCurrentWidget(self.murphy_page)
 
     def update_train_id_lists(self):
         """Update Train ID combo boxes in all pages when train count changes."""
@@ -63,18 +94,14 @@ class MainWindow(QMainWindow):
         self.testbench_page.update_train_id_list(train_ids)
         self.murphy_page.update_train_id_list(train_ids)
         self.train_model_page.update_train_id_list(train_ids)
-
-    def train_id_changed(self, new_train_id):
-        """Handle Train ID change (if needed)."""
-        pass  # Implement if necessary
-
+        self.test_bench_page.update_train_id_list(train_ids)
+        self.murphy_page.update_train_id_list(train_ids)
 
 def main():
     app = QApplication(sys.argv)
     window = MainWindow()
     window.show()
     sys.exit(app.exec())
-
 
 if __name__ == "__main__":
     main()

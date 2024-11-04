@@ -48,6 +48,6 @@ def calculate_train_speed(train_data, index):
     train_data.current_speed[index] = new_velocity  # in m/s
     train_data.current_acceleration[index] = acceleration  # in m/s^2
 
-    # Update position
-    new_position = train_data.current_position[index] + current_velocity * delta_t + 0.5 * acceleration * (delta_t ** 2)
-    train_data.current_position[index] = new_position  # in meters
+    # Update the train's position
+    new_position = train_data.current_position[index] + new_velocity * delta_t
+    train_data.current_position[index] = new_position
