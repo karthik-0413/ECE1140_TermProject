@@ -1,9 +1,17 @@
-from backend.line import Line
+import sys
+import os
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
+
+from CTC_Office.line import Line
+
+from TrainModel.CTC_communicate import CTCTrain
 
 class CTC_logic():
-    def __init__(self):
-        self.line = Line()
+    def __init__(self, train_model_communicate: CTCTrain):
+        self.line = Line("Green")
         self.automatic = False
+        self.train_model_communicate = train_model_communicate
 
     def upload_layout_to_line():
         pass
@@ -15,7 +23,8 @@ class CTC_logic():
         
         # Add destinations to the train object 
         #self.lines[line_name].create_train(destination, destination_station)
-        pass
+
+        self.train_model_communicate.current_train_count_signal.emit(len(self.line.train_list))
 
 
     def change_train_destination_on_line(self, line_name:str, train_id:int, old_destination:int, new_destination:int, station_name:str):
@@ -69,3 +78,4 @@ class CTC_logic():
 
     def toggle_automatic_manual(self):
         self.automatic = not self.automatic
+        print("Toggled")

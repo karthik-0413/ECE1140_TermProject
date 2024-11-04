@@ -1,4 +1,9 @@
-from block import Block
+import sys
+import os
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
+
+from CTC_Office.block import Block
 import datetime as dt
 
 
