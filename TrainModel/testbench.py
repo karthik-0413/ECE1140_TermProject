@@ -7,9 +7,9 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import Qt, pyqtSlot
 
-from base_page import BasePage
-from announcement import AnnouncementDialog
-from power_dialog import SetCommandedPowerDialog
+from TrainModel.base_page import BasePage
+from TrainModel.announcement import AnnouncementDialog
+from TrainModel.power_dialog import SetCommandedPowerDialog
 
 class TestBenchPage(BasePage):
     def __init__(self, train_data, tc_communicate, tm_communicate):

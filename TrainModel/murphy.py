@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import Qt
 
-from base_page import BasePage
+from TrainModel.base_page import BasePage
 
 class MurphyPage(BasePage):
     def __init__(self, train_data, tc_communicate, tm_communicate):
@@ -143,6 +143,7 @@ class MurphyPage(BasePage):
     def update_display(self):
         # Update the state of the failure buttons
         index = self.current_train_index
-        self.update_failure_button("Signal Pickup Failure:", self.train_data.signal_failure[index])
-        self.update_failure_button("Train Engine Failure:", self.train_data.engine_failure[index])
-        self.update_failure_button("Brake Failure:", self.train_data.brake_failure[index])
+        if (len(self.train_data.signal_failure) > 0):
+            self.train_data.update_failure_button("Signal Pickup Failure:", self.train_data.signal_failure[index])
+            self.train_data.update_failure_button("Train Engine Failure:", self.train_data.engine_failure[index])
+            self.train_data.update_failure_button("Brake Failure:", self.train_data.brake_failure[index])

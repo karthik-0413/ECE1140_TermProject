@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import Qt
 
-from base_page import BasePage
+from TrainModel.base_page import BasePage
 
 class TrainModelPage(BasePage):
     def __init__(self, train_data, tc_communicate, tm_communicate):
@@ -185,10 +185,12 @@ class TrainModelPage(BasePage):
         button_size = (440, 80)
 
         # Set button styles according to the variables
-        self.set_light_button_style(self.interior_light_button, self.train_data.interior_light_on[self.current_train_index], "Interior Light", button_font, button_size)
-        self.set_light_button_style(self.exterior_light_button, self.train_data.exterior_light_on[self.current_train_index], "Exterior Light", button_font, button_size)
-        self.set_door_button_style(self.left_door_button, self.train_data.left_door_open[self.current_train_index], "Left Door", button_font, button_size)
-        self.set_door_button_style(self.right_door_button, self.train_data.right_door_open[self.current_train_index], "Right Door", button_font, button_size)
+        
+        if (len(self.train_data.interior_light_on) > 0):
+            self.set_light_button_style(self.interior_light_button, self.train_data.interior_light_on[self.current_train_index], "Interior Light", button_font, button_size)
+            self.set_light_button_style(self.exterior_light_button, self.train_data.exterior_light_on[self.current_train_index], "Exterior Light", button_font, button_size)
+            self.set_door_button_style(self.left_door_button, self.train_data.left_door_open[self.current_train_index], "Left Door", button_font, button_size)
+            self.set_door_button_style(self.right_door_button, self.train_data.right_door_open[self.current_train_index], "Right Door", button_font, button_size)
 
         # Passenger Emergency Brake button (blood red background)
         self.passenger_emergency_brake_button.setStyleSheet("""
