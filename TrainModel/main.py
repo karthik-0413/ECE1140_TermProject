@@ -5,21 +5,21 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QTabWidget
 from PyQt6.QtCore import Qt
 
 # Import custom modules
-from train_data import TrainData
-from testbench import TestBenchPage
-from murphy import MurphyPage
-from train_model import TrainModelPage
-from base_page import BasePage
+from TrainModel.train_data import TrainData
+from TrainModel.testbench import TestBenchPage
+from TrainModel.murphy import MurphyPage
+from TrainModel.train_model import TrainModelPage
+from TrainModel.base_page import BasePage
 
 # Communication classes
-from train_controller_communicate import TrainControllerCommunicate
-from track_model_communicate import TrackModelCommunicate
-from CTC_communicate import CTC_Train_Model_Communicate  
+from TrainModel.train_controller_communicate import TrainControllerCommunicate
+from TrainModel.track_model_communicate import TrackModelCommunicate
+from TrainModel.CTC_communicate import CTC_Train_Model_Communicate  # Renamed file
 
 class MainWindow(QMainWindow):
     """Main window of the application."""
 
-    def __init__(self):
+    def __init__(self, ctc_train_comumunicate: CTC_Train_Model_Communicate):
         super().__init__()
 
         self.setWindowTitle("Train Control Application")
@@ -28,7 +28,7 @@ class MainWindow(QMainWindow):
         # Create communication instances
         self.tc_communicate = TrainControllerCommunicate()
         self.tm_communicate = TrackModelCommunicate()
-        self.ctc_communicate = CTC_Train_Model_Communicate()  # Updated class name
+        self.ctc_communicate = ctc_train_comumunicate  # Updated class name
 
         # Create TrainData instance
         self.train_data = TrainData(self.tc_communicate, self.tm_communicate, self.ctc_communicate)
@@ -38,7 +38,7 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.tabs)
 
         # Create pages
-        self.testbench_page = TestBenchPage(self.train_data,self.tc_communicate, self.tm_communicate)
+        self.testbench_page = TestBenchPage(self.train_data, self.tc_communicate, self.tm_communicate)
         self.murphy_page = MurphyPage(self.train_data, self.tc_communicate, self.tm_communicate)
         self.train_model_page = TrainModelPage(self.train_data, self.tc_communicate, self.tm_communicate)
 
@@ -80,8 +80,8 @@ class MainWindow(QMainWindow):
 
     def show_test_bench(self):
         """Show the Test Bench page."""
-        self.test_bench_page.update_display()
-        self.stacked_widget.setCurrentWidget(self.test_bench_page)
+        self.testbench_page.update_display()
+        self.stacked_widget.setCurrentWidget(self.testbench_page)
 
     def show_murphy(self):
         """Show the Murphy page."""

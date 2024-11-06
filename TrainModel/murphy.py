@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import Qt
 
-from base_page import BasePage
+from TrainModel.base_page import BasePage
 
 class MurphyPage(BasePage):
     def __init__(self, train_data, tc_communicate, tm_communicate):

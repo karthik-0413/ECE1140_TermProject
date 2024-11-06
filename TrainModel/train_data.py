@@ -1,7 +1,7 @@
 # train_data.py
 
 from PyQt6.QtCore import QObject, pyqtSignal, QTimer
-from power import calculate_train_speed
+from TrainModel.power import calculate_train_speed
 import random
 
 class TrainData(QObject):
