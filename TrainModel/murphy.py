@@ -143,7 +143,10 @@ class MurphyPage(BasePage):
     def update_display(self):
         # Update the state of the failure buttons
         index = self.current_train_index
-        if (len(self.train_data.signal_failure) > 0):
-            self.train_data.update_failure_button("Signal Pickup Failure:", self.train_data.signal_failure[index])
-            self.train_data.update_failure_button("Train Engine Failure:", self.train_data.engine_failure[index])
-            self.train_data.update_failure_button("Brake Failure:", self.train_data.brake_failure[index])
+        if len(self.train_data.signal_failure) > 0:
+            self.failure_buttons["Signal Pickup Failure:"].setChecked(self.train_data.signal_failure[index])
+            self.failure_buttons["Signal Pickup Failure:"].setText("Active" if self.train_data.signal_failure[index] else "Inactive")
+            self.failure_buttons["Train Engine Failure:"].setChecked(self.train_data.engine_failure[index])
+            self.failure_buttons["Train Engine Failure:"].setText("Active" if self.train_data.engine_failure[index] else "Inactive")
+            self.failure_buttons["Brake Failure:"].setChecked(self.train_data.brake_failure[index])
+            self.failure_buttons["Brake Failure:"].setText("Active" if self.train_data.brake_failure[index] else "Inactive")

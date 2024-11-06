@@ -15,9 +15,9 @@ class TrainData(QObject):
         self.tc_communicate = tc_communicate
         self.tm_communicate = tm_communicate
         self.ctc_communicate = ctc_communicate
-
+        
         # List to store data for each train
-        self.train_count = 1  # Initial train count
+        self.train_count = 0  # Initial train count
         
         # Initialize lists for train data
         self.cabin_temperature = []
@@ -368,6 +368,7 @@ class TrainData(QObject):
     def update_train_list(self, ctc_train_count):
         """Update train data lists based on current train count from CTC."""
         print("COMMUNCIATION WORKS")
+        print("CTC count=" + str(ctc_train_count))
         current_train_count = self.train_count
         if ctc_train_count > current_train_count:
             # Add new trains
@@ -377,11 +378,18 @@ class TrainData(QObject):
             # Remove earliest trains
             for _ in range(current_train_count - ctc_train_count):
                 self.remove_train()
-        # Emit data_changed signal
-        self.data_changed.emit()
 
+        
+        
         # Send current train count to Train Controller
         self.tc_communicate.train_count_signal.emit(self.train_count)
+
+        if self.train_count > 0:
+
+            # Emit data_changed signal
+            self.data_changed.emit()
+
+
 
     # Handler methods for incoming signals from Train Controller
     def set_power_command(self, power_list):
@@ -541,17 +549,18 @@ class TrainData(QObject):
         passengers_leaving_list = [0] * self.train_count
 
         for index in range(self.train_count):
-            if self.dispatch_train[index]:
-                # Call the calculate_train_speed function
-                calculate_train_speed(self, index)
-            else:
-                # Train is not dispatched; it remains stationary
-                self.current_speed[index] = 0
-                self.current_acceleration[index] = 0
+            if len(self.dispatch_train) > 0:
+                if self.dispatch_train[index]:
+                    # Call the calculate_train_speed function
+                    calculate_train_speed(self, index)
+                else:
+                    # Train is not dispatched; it remains stationary
+                    self.current_speed[index] = 0
+                    self.current_acceleration[index] = 0
 
             # Removed station determination logic as per your request
             # Set passengers_leaving to 0 or handle differently if needed
-            passengers_leaving_list[index] = 0
+                passengers_leaving_list[index] = 0
 
         # After updating all trains, emit updated lists to Train Controller and Track Model
         self.write_to_trainController_trackModel(passengers_leaving_list)
@@ -592,5 +601,14 @@ class TrainData(QObject):
         self.timer.timeout.connect(self.update_train_state)
         self.timer.start(1000)  # Update every 1 second
 
-    def update_failure_button(self):
-        pass
+        
+    def update_failure_button(self, label, state):
+        """Update the failure status based on the label."""
+        if label == "Signal Pickup Failure:":
+            self.signal_failure[self.current_train_index] = state
+        elif label == "Train Engine Failure:":
+            self.engine_failure[self.current_train_index] = state
+        elif label == "Brake Failure:":
+            self.brake_failure[self.current_train_index] = state
+        self.data_changed.emit()
+

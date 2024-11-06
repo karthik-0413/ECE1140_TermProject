@@ -55,10 +55,10 @@ class MainWindow(QMainWindow):
 
         # Connect CTC to update train counts (simulate receiving train counts)
         # For testing, let's simulate the CTC sending train counts
-        self.simulate_ctc_train_counts()
-
+        #self.simulate_ctc_train_counts()
+        """
     def simulate_ctc_train_counts(self):
-        """Simulate CTC sending train counts at intervals."""
+        #Simulate CTC sending train counts at intervals.
         from PyQt6.QtCore import QTimer
 
         self.train_counts = [1, 2, 3, 2, 1, 0]  # Example train counts
@@ -72,7 +72,7 @@ class MainWindow(QMainWindow):
             self.ctc_communicate.update_current_train_count(next_count)
         else:
             self.ctc_timer.stop()
-
+        """
     def show_train_model(self):
         """Show the Train Model page."""
         self.train_model_page.update_display()
