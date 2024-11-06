@@ -25,7 +25,7 @@ class TrainControllerShell:
         
         # Calling all of the necessary __init__ functions
         self.read_from_train_model()
-        self.create_and_add_train_controller_ui()
+        self.create_and_add_train_controller_and_engineer_ui()
         self.connect_signals()
         self.train_controller_list[self.current_train_id - 1].train_id_signal.emit(self.handle_train_id)
         
@@ -53,14 +53,6 @@ class TrainControllerShell:
             
         # Making sure to update UI
         self.update_UI()
-        
-    def handle_kp_change(self, kp: float):
-        print(f"KP: {kp}")
-        self.train_controller_list[self.current_train_id - 1].update_kp(kp)
-        
-    def handle_ki_change(self, ki: float):
-        print(f"KI: {ki}")
-        self.train_controller_list[self.current_train_id - 1].update_ki(ki)
           
     def update_UI(self):
         # This function should be using the trainControllerUI instance to update the UI
@@ -104,7 +96,7 @@ class TrainControllerShell:
             self.train_controller_list.remove(train_controller_ui)
             self.train_engineer_list.remove(train_engineer_ui)
 
-    def create_and_add_train_controller_ui(self):
+    def create_and_add_train_controller_and_engineer_ui(self):
         new_train_controller_ui, new_train_engineer_ui = self.create_new_train_controller_and_engineer_ui()
         self.train_controller_list.append(new_train_controller_ui)
         self.train_engineer_list.append(new_train_engineer_ui)
@@ -275,7 +267,13 @@ class TrainControllerShell:
     def handle_desired_temperature(self, desired_temperature: float):
         self.train_controller_list[self.train_id - 1].temperature.desired_temperature = desired_temperature
         
+    def handle_kp_change(self, kp: float):
+        print(f"KP: {kp}")
+        self.train_controller_list[self.current_train_id - 1].update_kp(kp)
         
+    def handle_ki_change(self, ki: float):
+        print(f"KI: {ki}")
+        self.train_controller_list[self.current_train_id - 1].update_ki(ki)
         
         
         

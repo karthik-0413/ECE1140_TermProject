@@ -1350,14 +1350,7 @@ class TrainControllerUI(QWidget):
     def reset_brake_status(self):
         self.brake_status.setText("OFF")
         self.brake_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
-    
-    def update_kp(self, kp: float):
-        self.power_class.kp = kp
-        print(f"New Kp Value: {self.power_class.kp}")
-        
-    def update_ki(self, ki: float):
-        self.power_class.ki = ki
-        print(f"New Ki Value: {self.power_class.ki}")
+
     
 #################
 # MAIN FUNCTION #
