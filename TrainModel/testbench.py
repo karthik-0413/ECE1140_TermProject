@@ -467,28 +467,30 @@ class TestBenchPage(BasePage):
 
         for var_name, button in self.tc_edit_fields.items():
             if var_name in ["service_brake", "exterior_light", "interior_light", "emergency_brake"]:
-                is_on = getattr(self.train_data, var_name)[index]
-                button.setChecked(is_on)
-                button.setText("ON" if is_on else "OFF")
-                button.setStyleSheet(f"""
-                    QPushButton {{
-                        background-color: {'green' if is_on else 'lightgray'};
-                        color: black;
-                        font-weight: bold;
-                    }}
-                """)
+                if len(getattr(self.train_data, var_name)) >0: 
+                    is_on = getattr(self.train_data, var_name)[index]
+                    button.setChecked(is_on)
+                    button.setText("ON" if is_on else "OFF")
+                    button.setStyleSheet(f"""
+                        QPushButton {{
+                            background-color: {'green' if is_on else 'lightgray'};
+                            color: black;
+                            font-weight: bold;
+                        }}
+                    """)
         for var_name, button in self.cabin_edit_fields.items():
             if var_name in ["train_left_door", "train_right_door"]:
-                is_on = getattr(self.train_data, var_name)[index]
-                button.setChecked(is_on)
-                button.setText("ON" if is_on else "OFF")
-                button.setStyleSheet(f"""
-                    QPushButton {{
-                        background-color: {'green' if is_on else 'lightgray'};
-                        color: black;
-                        font-weight: bold;
-                    }}
-                """)
+                if len(getattr(self.train_data, var_name)) >0: 
+                    is_on = getattr(self.train_data, var_name)[index]
+                    button.setChecked(is_on)
+                    button.setText("ON" if is_on else "OFF")
+                    button.setStyleSheet(f"""
+                        QPushButton {{
+                            background-color: {'green' if is_on else 'lightgray'};
+                            color: black;
+                            font-weight: bold;
+                        }}
+                    """)
 
     @pyqtSlot()
     def update_display(self):
@@ -513,18 +515,21 @@ class TestBenchPage(BasePage):
         for var_name in ['commanded_speed_tc', 'authority']:
             edit = self.tc_edit_fields.get(var_name)
             if edit and isinstance(edit, QLineEdit):
-                value = getattr(self.train_data, var_name)[index]
-                edit.setText(str(value))
-                edit.setStyleSheet("color: black;")  # Ensure black font
+                if len(getattr(self.train_data, var_name)) >0:
+                    value = getattr(self.train_data, var_name)[index]
+                    edit.setText(str(value))
+                    edit.setStyleSheet("color: black;")  # Ensure black font
         for var_name in ['desired_temperature']:
             edit = self.cabin_edit_fields.get(var_name)
             if edit and isinstance(edit, QLineEdit):
-                value = getattr(self.train_data, var_name)[index]
-                edit.setText(str(value))
-                edit.setStyleSheet("color: black;")  # Ensure black font
+                if len(getattr(self.train_data,var_name)) >0:
+            
+                    value = getattr(self.train_data, var_name)[index]
+                    edit.setText(str(value))
+                    edit.setStyleSheet("color: black;")  # Ensure black font
         # Update beacon station
         station_combo = self.tc_edit_fields.get('beacon_station')
-        if station_combo and isinstance(station_combo, QComboBox):
+        if station_combo and isinstance(station_combo, QComboBox)and len(self.train_data.beacon_station) >0:
             station_combo.setCurrentText(self.train_data.beacon_station[index])
 
     def update_train_id_list(self, train_ids):

@@ -322,35 +322,39 @@ class TrainModelPage(BasePage):
         # Update the data labels
         for var_name, label in self.value_labels.items():
             value_list = getattr(self.train_data, var_name)
-            value = value_list[index]
-            unit = self.get_unit(var_name)
-            if isinstance(value, int):
-                value_text = f"{value} {unit}".strip()
-            else:
-                value_text = f"{value:.2f} {unit}".strip()
-            label.setText(value_text)
+            if len(getattr(self.train_data, var_name)) >0: 
+                value = value_list[index]
+                unit = self.get_unit(var_name)
+                if isinstance(value, int):
+                    value_text = f"{value} {unit}".strip()
+                else:
+                    value_text = f"{value:.2f} {unit}".strip()
+                label.setText(value_text)
 
         # Update static information
         for var_name, label in self.static_value_labels.items():
             value_list = getattr(self.train_data, var_name)
-            value = value_list[index]
-            unit = self.get_unit(var_name)
-            if isinstance(value, int):
-                value_text = f"{value} {unit}".strip()
-            else:
-                value_text = f"{value:.2f} {unit}".strip()
-            label.setText(value_text)
+            if len(getattr(self.train_data, var_name)) >0: 
+                value = value_list[index]
+                unit = self.get_unit(var_name)
+                if isinstance(value, int):
+                    value_text = f"{value} {unit}".strip()
+                else:
+                    value_text = f"{value:.2f} {unit}".strip()
+                label.setText(value_text)
 
         # Update the announcement text
-        self.announcement_text.setText(self.train_data.announcement_text[index])
+        if len(getattr(self.train_data, var_name)) >0: 
+            self.announcement_text.setText(self.train_data.announcement_text[index])
 
         # Update the buttons
         button_font = QFont('Arial', 14, QFont.Weight.Bold)
         button_size = (440, 80)
-        self.set_light_button_style(self.interior_light_button, self.train_data.interior_light_on[index], "Interior Light", button_font, button_size)
-        self.set_light_button_style(self.exterior_light_button, self.train_data.exterior_light_on[index], "Exterior Light", button_font, button_size)
-        self.set_door_button_style(self.left_door_button, self.train_data.left_door_open[index], "Left Door", button_font, button_size)
-        self.set_door_button_style(self.right_door_button, self.train_data.right_door_open[index], "Right Door", button_font, button_size)
+        if len(getattr(self.train_data, var_name)) >0: 
+            self.set_light_button_style(self.interior_light_button, self.train_data.interior_light_on[index], "Interior Light", button_font, button_size)
+            self.set_light_button_style(self.exterior_light_button, self.train_data.exterior_light_on[index], "Exterior Light", button_font, button_size)
+            self.set_door_button_style(self.left_door_button, self.train_data.left_door_open[index], "Left Door", button_font, button_size)
+            self.set_door_button_style(self.right_door_button, self.train_data.right_door_open[index], "Right Door", button_font, button_size)
 
     def passenger_emergency_brake_pressed(self):
         index = self.current_train_index

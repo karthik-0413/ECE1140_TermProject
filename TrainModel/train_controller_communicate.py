@@ -15,7 +15,6 @@ class TrainControllerCommunicate(QObject):
     right_door_signal = pyqtSignal(list)
     announcement_signal = pyqtSignal(list)
     grade_signal = pyqtSignal(list)
-    passenger_brake_command_signal = pyqtSignal(list)
     train_count_signal = pyqtSignal(int)  # Total number of trains
 
     # Train Model -> Train Controller
@@ -27,3 +26,4 @@ class TrainControllerCommunicate(QObject):
     signal_failure_signal = pyqtSignal(list)
     actual_temperature_signal = pyqtSignal(list)
     polarity_signal = pyqtSignal(list)
+    passenger_brake_command_signal = pyqtSignal(list)
