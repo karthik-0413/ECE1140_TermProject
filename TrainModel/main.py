@@ -14,7 +14,7 @@ from base_page import BasePage
 # Communication classes
 from train_controller_communicate import TrainControllerCommunicate
 from track_model_communicate import TrackModelCommunicate
-from CTC_communicate import CTCCommunicate  # Renamed file
+from CTC_communicate import CTC_Train_Model_Communicate  
 
 class MainWindow(QMainWindow):
     """Main window of the application."""
@@ -28,7 +28,7 @@ class MainWindow(QMainWindow):
         # Create communication instances
         self.tc_communicate = TrainControllerCommunicate()
         self.tm_communicate = TrackModelCommunicate()
-        self.ctc_communicate = CTCCommunicate()  # Updated class name
+        self.ctc_communicate = CTC_Train_Model_Communicate()  # Updated class name
 
         # Create TrainData instance
         self.train_data = TrainData(self.tc_communicate, self.tm_communicate, self.ctc_communicate)
@@ -38,7 +38,7 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.tabs)
 
         # Create pages
-        self.testbench_page = TestBenchPage(self.train_data, self.train_id_changed)
+        self.testbench_page = TestBenchPage(self.train_data,self.tc_communicate, self.tm_communicate)
         self.murphy_page = MurphyPage(self.train_data, self.tc_communicate, self.tm_communicate)
         self.train_model_page = TrainModelPage(self.train_data, self.tc_communicate, self.tm_communicate)
 
@@ -94,7 +94,7 @@ class MainWindow(QMainWindow):
         self.testbench_page.update_train_id_list(train_ids)
         self.murphy_page.update_train_id_list(train_ids)
         self.train_model_page.update_train_id_list(train_ids)
-        self.test_bench_page.update_train_id_list(train_ids)
+        self.testbench_page.update_train_id_list(train_ids)
         self.murphy_page.update_train_id_list(train_ids)
 
 def main():

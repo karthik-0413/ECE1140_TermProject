@@ -20,7 +20,7 @@ def calculate_train_speed(train_data, index):
         force = power_command / current_velocity
         print(f"Train {index+1} - Force: {force:.2f} N")
 
-        frictional_force = 0.00 * mass * 9.8  # Adjust coefficient as needed
+        frictional_force = 0.002 * mass * 9.8  # Adjust coefficient as needed
 
         if force < frictional_force:
             print(f"Train {index+1} has stopped moving due to insufficient force.")
