@@ -48,8 +48,6 @@ class TrainControllerShell:
             train_controller.brake_class.service_brake_signal.connect(self.handle_service_brake_status)
             train_controller.brake_class.emergency_brake_signal.connect(self.handle_emergency_brake_status)
             train_controller.brake_class.passenger_brake_command_signal.connect(self.handle_passenger_brake_status)
-            train_controller.tuning.kp_changed.connect(self.handle_kp_change)
-            train_controller.tuning.ki_changed.connect(self.handle_ki_change)
             
         # Making sure to update UI
         self.update_UI()
@@ -265,16 +263,7 @@ class TrainControllerShell:
         self.train_controller_list[self.current_train_id - 1].update_current_speed(current_speed)
         
     def handle_desired_temperature(self, desired_temperature: float):
-        self.train_controller_list[self.train_id - 1].temperature.desired_temperature = desired_temperature
-        
-    def handle_kp_change(self, kp: float):
-        print(f"KP: {kp}")
-        self.train_controller_list[self.current_train_id - 1].update_kp(kp)
-        
-    def handle_ki_change(self, ki: float):
-        print(f"KI: {ki}")
-        self.train_controller_list[self.current_train_id - 1].update_ki(ki)
-        
+        self.train_controller_list[self.current_train_id - 1].temperature.desired_temperature = desired_temperature
         
         
 # Add main function here
