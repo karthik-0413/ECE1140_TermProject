@@ -1,12 +1,10 @@
-import time
 from PyQt6.QtWidgets import QApplication
-from PyQt6.QtCore import QCoreApplication
 from Resources.Clock import *
 from Resources.TrainTrainControllerComm import TrainTrainController
-from TrainController.TrainControllerUIClasses import *
+from ECE1140_TermProject.TrainController.TrainController import *
 
 class TrainSystem:
-    def __init__(self, train_trainControllerComm: TrainTrainController, clock: TimerThread):
+    def __init__(self, train_trainControllerComm: TrainTrainController, clock: StopwatchEngine):
         self.train_trainControllerComm = train_trainControllerComm
         self.clock = clock
         self.CTC_window = None
@@ -19,7 +17,7 @@ class TrainSystem:
 
     def show_ClockUI(self):
         # Create and show the clock UI
-        self.clock_UI = TimerUI(self.clock)
+        self.clock_UI = ClockDisplay(self.clock)
         self.clock_UI.show()
         
     def show_CTCUI(self):
@@ -56,7 +54,7 @@ class TrainSystem:
 
     # Function to be triggered by clock tick
     def handle_clock_tick(self, train_controller: TrainControllerUI):
-        if self.clock.seconds_elapsed % 2 == 0:
+        if self.clock.time_updated % 2 == 0:
             train_controller.write_to_train_model()
         else:
             train_controller.read_from_train_model()    # Do not need since already in constructor of my UI class, but just for placeholder
@@ -66,7 +64,7 @@ def main():
 
     # Instantiate the controller and the clock
     train_trainControllerComm = TrainTrainController()
-    clock = TimerThread()
+    clock = StopwatchEngine()
     
     # Start the clock
     clock.start_clock()

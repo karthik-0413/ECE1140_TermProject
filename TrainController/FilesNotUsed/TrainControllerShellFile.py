@@ -1,4 +1,4 @@
-from TrainControllerUIClasses import *
+from ECE1140_TermProject.TrainController.TrainController import *
 import sys
 import os
 

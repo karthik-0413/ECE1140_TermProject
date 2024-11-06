@@ -1,6 +1,10 @@
-from TrainControllerUIClasses import *
 import sys
 import os
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+from ECE1140_TermProject.TrainController.TrainController import *
+import os
+from PyQt6.QtWidgets import QApplication
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from Resources.TrainTrainControllerComm import TrainTrainController as Communicate
@@ -9,59 +13,60 @@ class TrainControllerShell:
     def __init__(self, communicator: Communicate, trainControllerUI: TrainControllerUI):
         # Making a list of needed Train Controller UI instances
         self.train_controller_list: list[TrainControllerUI] = []
-        self.engineer_controller_list: list[TrainEngineerUI] = []
+        self.train_engineer_list: list[TrainEngineerUI] = []
         
         # Setting up the parameters
         self.communicator = communicator
         self.trainControllerUI = trainControllerUI
-        # self.trainControllerUI.show()
         
         # Initializing the variables needed
         self.current_train_id = 1
-        self.train_count = 2
+        self.train_count = 1
         
         # Calling all of the necessary __init__ functions
         self.read_from_train_model()
         self.create_and_add_train_controller_ui()
-        self.create_and_add_train_controller_ui()
+        self.connect_signals()
         self.train_controller_list[self.current_train_id - 1].train_id_signal.emit(self.handle_train_id)
         
     
-    
-    #######################
-    # QUESTIONS TO ANSWER #
-    #######################
-    # 1. Is the connect_signals function supposed to only handle one TrainController instance or all of them?
-    # 2. Is the update_UI function supposed to be trainControllerUI or train_controller_list? - I set self.trainControllerUI = self.train_controller_list[self.current_train_id - 1]
-    
-    
-    
     def connect_signals(self):
-        self.trainControllerUI.speed_control.current_velocity_signal.connect(self.update_current_speed)
-        self.trainControllerUI.speed_control.commanded_speed_signal.connect(self.update_commanded_speed)
-        self.trainControllerUI.position.commanded_authority_signal.connect(self.update_commanded_authority)
-        self.trainControllerUI.temperature.current_temperature_signal.connect(self.update_current_temperature)
-        self.trainControllerUI.failure_modes.engine_failure_signal.connect(self.update_engine_failure_status)
-        self.trainControllerUI.failure_modes.brake_failure_signal.connect(self.update_brake_failure_status)
-        self.trainControllerUI.failure_modes.signal_failure_signal.connect(self.update_signal_failure_status)
-        self.trainControllerUI.power_class.power_command_signal.connect(self.update_power_command)
-        self.trainControllerUI.lights.exterior_lights_signal.connect(self.update_exterior_lights)
-        self.trainControllerUI.lights.interior_lights_signal.connect(self.update_interior_lights)
-        self.trainControllerUI.doors.left_door_update.connect(self.update_left_door)
-        self.trainControllerUI.doors.right_door_update.connect(self.update_right_door)
-        self.trainControllerUI.brake_class.driver_brake_signal.connect(self.update_driver_brake_status)
-        self.trainControllerUI.brake_class.service_brake_signal.connect(self.update_service_brake_status)
-        self.trainControllerUI.brake_class.emergency_brake_signal.connect(self.update_emergency_brake_status)
-        self.trainControllerUI.brake_class.passenger_brake_command_signal.connect(self.update_passenger_brake_status)
-        self.trainControllerUI.desired_temperature_signal.connect(self.handle_desired_temperature)
+        for train_controller in self.train_controller_list:
+            train_controller.speed_control.current_velocity_signal.connect(self.handle_current_speed)
+            train_controller.speed_control.commanded_speed_signal.connect(self.handle_commanded_speed)
+            train_controller.position.commanded_authority_signal.connect(self.handle_commanded_authority)
+            train_controller.temperature.current_temperature_signal.connect(self.handle_current_temperature)
+            train_controller.failure_modes.engine_failure_signal.connect(self.handle_engine_failure_status)
+            train_controller.failure_modes.brake_failure_signal.connect(self.handle_brake_failure_status)
+            train_controller.failure_modes.signal_failure_signal.connect(self.handle_signal_failure_status)
+            train_controller.power_class.power_command_signal.connect(self.handle_power_command)
+            train_controller.lights.exterior_lights_signal.connect(self.handle_exterior_lights)
+            train_controller.lights.interior_lights_signal.connect(self.handle_interior_lights)
+            train_controller.doors.left_door_update.connect(self.handle_left_door)
+            train_controller.doors.right_door_update.connect(self.handle_right_door)
+            train_controller.brake_class.driver_brake_signal.connect(self.handle_driver_brake_status)
+            train_controller.brake_class.service_brake_signal.connect(self.handle_service_brake_status)
+            train_controller.brake_class.emergency_brake_signal.connect(self.handle_emergency_brake_status)
+            train_controller.brake_class.passenger_brake_command_signal.connect(self.handle_passenger_brake_status)
+            train_controller.tuning.kp_changed.connect(self.handle_kp_change)
+            train_controller.tuning.ki_changed.connect(self.handle_ki_change)
+            
+        # Making sure to update UI
+        self.update_UI()
         
+    def handle_kp_change(self, kp: float):
+        print(f"KP: {kp}")
+        self.train_controller_list[self.current_train_id - 1].update_kp(kp)
         
+    def handle_ki_change(self, ki: float):
+        print(f"KI: {ki}")
+        self.train_controller_list[self.current_train_id - 1].update_ki(ki)
+          
     def update_UI(self):
         # This function should be using the trainControllerUI instance to update the UI
         self.trainControllerUI.update_current_speed(self.train_controller_list[self.current_train_id - 1].speed_control.current_velocity)
         self.trainControllerUI.update_commanded_speed(self.train_controller_list[self.current_train_id - 1].speed_control.commanded_speed)
         self.trainControllerUI.update_commanded_authority(self.train_controller_list[self.current_train_id - 1].position.commanded_authority)
-        print(f"Power commanddddd: {self.train_controller_list[self.current_train_id - 1].power_class.power_command}")
         self.trainControllerUI.update_power_command(self.train_controller_list[self.current_train_id - 1].power_class.power_command)
         self.trainControllerUI.update_engine_failure_status(self.train_controller_list[self.current_train_id - 1].failure_modes.engine_fail)
         self.trainControllerUI.update_brake_failure_status(self.train_controller_list[self.current_train_id - 1].failure_modes.brake_fail)
@@ -76,8 +81,7 @@ class TrainControllerShell:
         self.trainControllerUI.update_driver_brake_status(self.train_controller_list[self.current_train_id - 1].brake_class.driver_brake_status)
         self.trainControllerUI.update_passenger_brake_status(self.train_controller_list[self.current_train_id - 1].brake_class.passenger_brake)
         
-        
-        
+    
     ############################
     # TRAIN ID HANDLE FROM CTC #
     ############################
@@ -85,25 +89,30 @@ class TrainControllerShell:
     def handle_train_id(self, train_id: int):
         print(f"Train ID: {train_id}")
         self.current_train_id = train_id
+        
         # Set self.trainControllerUI to the current train controller UI in the list
         self.trainControllerUI = self.train_controller_list[self.current_train_id - 1]
+        self.update_UI()
         
         
     ###########################################################
     # IMPLEMENT ADD/REMOVE TRAIN CONTROLLER UI FUNCTIONS HERE #
     ###########################################################
 
-    def remove_train_controller_ui(self, train_controller_ui: TrainControllerUI):
-        if train_controller_ui in self.train_controller_list:
+    def remove_train_controller_and_engineer_ui(self, train_controller_ui: TrainControllerUI, train_engineer_ui: TrainEngineerUI):
+        if train_controller_ui in self.train_controller_list and train_engineer_ui in self.train_engineer_list:
             self.train_controller_list.remove(train_controller_ui)
+            self.train_engineer_list.remove(train_engineer_ui)
 
     def create_and_add_train_controller_ui(self):
-        new_train_controller_ui = self.create_train_controller_ui()
+        new_train_controller_ui, new_train_engineer_ui = self.create_new_train_controller_and_engineer_ui()
         self.train_controller_list.append(new_train_controller_ui)
-        # if len(self.train_controller_list) == 1:
-        #     new_train_controller_ui.show()
-
-    def create_new_train_controller_ui(self):
+        self.train_engineer_list.append(new_train_engineer_ui)
+        if len(self.train_controller_list) == 1:
+            new_train_controller_ui.show()
+            new_train_engineer_ui.show()
+            
+    def create_new_train_controller_and_engineer_ui(self):
         doors = Doors()
         tuning = Tuning()
         brake_status = BrakeStatus(self.communicator)
@@ -114,9 +123,11 @@ class TrainControllerShell:
         temperature = Temperature()
         position = Position(doors, failure_modes, speed_control, power_class, self.communicator, lights)
         
-        return TrainControllerUI(self.communicator, doors, tuning, brake_status, power_class, speed_control, failure_modes, position, lights, temperature)
-        
-        
+        train_controller_ui = TrainControllerUI(self.communicator, doors, tuning, brake_status, power_class, speed_control, failure_modes, position, lights, temperature)
+        train_engineer_ui = TrainEngineerUI(tuning, power_class)
+        return train_controller_ui, train_engineer_ui
+    
+    
     ########################################################
     # IMPLEMENT READ/WRITE TRAIN CONTROLLER FUNCTIONS HERE #
     ########################################################
@@ -209,11 +220,60 @@ class TrainControllerShell:
         self.train_count = train_count
         
         
+    ################################################################
+    # IMPLEMENT CONNECT UI CHANGES TRAIN CONTROLLER FUNCTIONS HERE #
+    ################################################################
         
+    def handle_commanded_speed(self, commanded_speed: float):
+        self.train_controller_list[self.current_train_id - 1].update_commanded_speed(commanded_speed)
+
+    def handle_commanded_authority(self, commanded_authority: float):
+        self.train_controller_list[self.current_train_id - 1].update_commanded_authority(commanded_authority)
+
+    def handle_current_temperature(self, current_temperature: float):
+        self.train_controller_list[self.current_train_id - 1].update_current_temperature(current_temperature)
+
+    def handle_engine_failure_status(self, engine_failure: bool):
+        self.train_controller_list[self.current_train_id - 1].update_engine_failure_status(engine_failure)
+
+    def handle_brake_failure_status(self, brake_failure: bool):
+        self.train_controller_list[self.current_train_id - 1].update_brake_failure_status(brake_failure)
+
+    def handle_signal_failure_status(self, signal_failure: bool):
+        self.train_controller_list[self.current_train_id - 1].update_signal_failure_status(signal_failure)
+
+    def handle_power_command(self, power_command: float):
+        self.train_controller_list[self.current_train_id - 1].update_power_command(power_command)
+
+    def handle_exterior_lights(self, exterior_lights: bool):
+        self.train_controller_list[self.current_train_id - 1].update_exterior_lights(exterior_lights)
+
+    def handle_interior_lights(self, interior_lights: bool):
+        self.train_controller_list[self.current_train_id - 1].update_interior_lights(interior_lights)
+
+    def handle_left_door(self, left_door: bool):
+        self.train_controller_list[self.current_train_id - 1].update_left_door(left_door)
+
+    def handle_right_door(self, right_door: bool):
+        self.train_controller_list[self.current_train_id - 1].update_right_door(right_door)
+
+    def handle_driver_brake_status(self, driver_brake_status: bool):
+        self.train_controller_list[self.current_train_id - 1].update_driver_brake_status(driver_brake_status)
+
+    def handle_service_brake_status(self, service_brake_status: bool):
+        self.train_controller_list[self.current_train_id - 1].update_service_brake_status(service_brake_status)
+
+    def handle_emergency_brake_status(self, emergency_brake_status: bool):
+        self.train_controller_list[self.current_train_id - 1].update_emergency_brake_status(emergency_brake_status)
+
+    def handle_passenger_brake_status(self, passenger_brake_status: bool):
+        self.train_controller_list[self.current_train_id - 1].update_passenger_brake_status(passenger_brake_status)
+         
+    def handle_current_speed(self, current_speed: float):
+        self.train_controller_list[self.current_train_id - 1].update_current_speed(current_speed)
         
-        
-        
-        
+    def handle_desired_temperature(self, desired_temperature: float):
+        self.train_controller_list[self.train_id - 1].temperature.desired_temperature = desired_temperature
         
         
         
@@ -234,7 +294,6 @@ if __name__ == "__main__":
     position = Position(doors, failure_modes, speed_control, power_class, train_trainControllerComm, lights)
     
     trainControllerUI = TrainControllerUI(train_trainControllerComm, doors, tuning, brake_status, power_class, speed_control, failure_modes, position, lights, temperature)
-    # trainControllerUI.show()
+
     trainControllerShell = TrainControllerShell(train_trainControllerComm, trainControllerUI)
     sys.exit(app.exec())
-        
