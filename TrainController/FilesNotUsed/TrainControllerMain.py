@@ -3,7 +3,7 @@ import sys
 from PyQt6.QtWidgets import QApplication
 from TrainControllerUI import TrainControllerUI
 from TrainControllerEngineer import TrainEngineerUI
-from TrainControllerTestBench import TrainControllerTestBenchUI
+from ECE1140_TermProject.TrainController.FilesNotUsed.TrainControllerTestBench import TrainControllerTestBenchUI
 from TrainControllerCommunicateSignals import Communicate
 
 def main():

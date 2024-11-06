@@ -23,5 +23,4 @@ class TrainTrainController(QObject):
     passenger_brake_command_signal = pyqtSignal(list)   # bool
     actual_temperature_signal = pyqtSignal(list)   # float
     polarity_signal = pyqtSignal(list)                 # bool
-    dispatch_train_signal = pyqtSignal(list)           # int
     train_count_signal = pyqtSignal(int)  # Total number of trains

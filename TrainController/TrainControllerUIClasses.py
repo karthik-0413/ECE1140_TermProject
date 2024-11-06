@@ -6,16 +6,11 @@ from PyQt6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QLineEdit,
     QPushButton, QSizePolicy, QSpacerItem, QApplication, QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem, QHeaderView, QLabel, QComboBox
 )
-from PyQt6.QtCore import Qt, QCoreApplication, pyqtSignal, QObject
+from PyQt6.QtCore import Qt, QCoreApplication, pyqtSignal, QObject, QTimer
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from Resources.TrainTrainControllerComm import TrainTrainController as Communicate
 
-class TrainID(QWidget):
-    def __init__(self):
-        super().__init__()
-        self.train_id_signal = pyqtSignal(int)
-        self.train_id = 0
 
 class Doors(QObject):
     right_door_update = pyqtSignal(bool)
@@ -225,7 +220,6 @@ class SpeedControl(QObject):
             self.brake_status.driver_emergency_brake_command = False
             self.communicator.passenger_brake_command_signal.emit(False)    
             
-            
         self.current_velocity = speed
         self.power_class.update_power_command(self.current_velocity, self.desired_velocity)
         self.current_velocity_signal.emit(self.current_velocity)
@@ -392,7 +386,7 @@ class Position(QObject):
         super().__init__()
         self.commanded_authority = 5    # int
         self.station_name = 'Shadyside' # string
-        self.announcement = 'Welcome to Shadyside Station' # string
+        self.announcement = '' # string
         self.polarity = False   # boolean
         # I need the block number of the station so that I can query into my infrastructure array and check what the station name is of that block
         self.communicator = communicator
@@ -646,9 +640,31 @@ class TrainEngineerUI(QWidget):
                 item.setText(str(self.tuning.get_ki()))  # Reset to previous value if invalid
         
 class TrainControllerUI(QWidget):
-    def __init__(self, communicator: Communicate, doors: Doors, tuning: Tuning, brake_class: BrakeStatus, power_class: PowerCommand, speed_control: SpeedControl, failure_modes: FailureModes, position: Position, lights: Lights, temperature: Temperature, train_id: TrainID):
+    # Pyqtsignals for UI Changes for Shell Class depending on the Train ID Selected
+    current_velocity_signal = pyqtSignal(float)
+    commanded_speed_signal = pyqtSignal(float)
+    commanded_authority_signal = pyqtSignal(int)
+    operation_mode_signal = pyqtSignal(int)
+    setpoint_speed_signal = pyqtSignal(float)
+    power_command_signal = pyqtSignal(float)
+    engine_failure_signal = pyqtSignal(bool)
+    brake_failure_signal = pyqtSignal(bool)
+    signal_failure_signal = pyqtSignal(bool)
+    service_brake_signal = pyqtSignal(bool)
+    emergency_brake_signal = pyqtSignal(bool)
+    desired_temperature_signal = pyqtSignal(float)
+    actual_temperature_signal = pyqtSignal(float)
+    exterior_lights_signal = pyqtSignal(bool)
+    interior_lights_signal = pyqtSignal(bool)
+    left_door_signal = pyqtSignal(bool)
+    right_door_signal = pyqtSignal(bool)
+    driver_brake_signal = pyqtSignal(bool)
+    passenger_brake_command_signal = pyqtSignal(bool)
+    train_id_signal = pyqtSignal(int)
+    
+    def __init__(self, communicator: Communicate, doors: Doors, tuning: Tuning, brake_class: BrakeStatus, power_class: PowerCommand, speed_control: SpeedControl, failure_modes: FailureModes, position: Position, lights: Lights, temperature: Temperature):
         super().__init__()
-        
+    
         # Train ID Variable
         self.train_id = 1
         
@@ -662,47 +678,69 @@ class TrainControllerUI(QWidget):
         self.position = position
         self.lights = lights
         self.temperature = temperature
-        self.train_id = train_id
         
         # PyqtSignal Class to communicate with the Train Model
         self.communicator = communicator
         
-        self.read_from_train_model()
+        # This is done in the Shell Class
+        # self.read_from_train_model()
         
+        # Connect Functions for the PyqtSignals in the Shell Class - These are the same connect functions as the ones below from the separate classes
+        # self.current_velocity_signal.connect(self.update_current_speed)
+        # self.commanded_speed_signal.connect(self.update_commanded_speed)
+        # self.commanded_authority_signal.connect(self.update_commanded_authority)
         
-        # Dynamic things I shall display in my UI - ALREADY DONE BY write_to_train_model() FUNCTION
-        # Current Speed - PYQTSIGNAL
-        self.speed_control.current_velocity_signal.connect(self.update_current_speed)
-        # Commanded Speed - PYQTSIGNAL
-        self.speed_control.commanded_speed_signal.connect(self.update_commanded_speed)
-        # Commanded Authority - PYQTSIGNAL
-        self.position.commanded_authority_signal.connect(self.update_commanded_authority)
-        # Current Temperature - PYQTSIGNAL
-        self.temperature.current_temperature_signal.connect(self.update_current_temperature)
-        # Engine Failure - PYQTSIGNAL
-        self.failure_modes.engine_failure_signal.connect(self.update_engine_failure_status)
-        # Brake Failure - PYQTSIGNAL
-        self.failure_modes.brake_failure_signal.connect(self.update_brake_failure_status)
-        # Signal Failure - PYQTSIGNAL
-        self.failure_modes.signal_failure_signal.connect(self.update_signal_failure_status)
-        # Power Command - Make a PYQTSIGNAL FOR THIS
-        self.power_class.power_command_signal.connect(self.update_power_command)
-        # Exterior Lights - Make a PYQTSIGNAL FOR THIS
-        self.lights.exterior_lights_signal.connect(self.update_exterior_lights)
-        # Interior Lights - Make a PYQTSIGNAL FOR THIS
-        self.lights.interior_lights_signal.connect(self.update_interior_lights)
-        # Left Door - Make a PYQTSIGNAL FOR THIS
-        self.doors.left_door_update.connect(self.update_left_door)
-        # Right Door - Make a PYQTSIGNAL FOR THIS
-        self.doors.right_door_update.connect(self.update_right_door)
-        # Brake Status - Make a PYQTSIGNAL FOR THIS
-        self.brake_class.driver_brake_signal.connect(self.update_driver_brake_status)
-        # Service Brake Command - Make a PYQTSIGNAL FOR THIS
-        self.brake_class.service_brake_signal.connect(self.update_service_brake_status)
-        # Emergency Brake Command - Make a PYQTSIGNAL FOR THIS
-        self.brake_class.emergency_brake_signal.connect(self.update_emergency_brake_status)
-        # Passenger Brake Status - PYQTSIGNAL
-        self.brake_class.passenger_brake_command_signal.connect(self.update_passenger_brake_status)
+        # self.power_command_signal.connect(self.update_power_command)
+        # self.engine_failure_signal.connect(self.update_engine_failure_status)
+        # self.brake_failure_signal.connect(self.update_brake_failure_status)
+        # self.signal_failure_signal.connect(self.update_signal_failure_status)
+        # self.service_brake_signal.connect(self.update_service_brake_status)
+        # self.emergency_brake_signal.connect(self.update_emergency_brake_status)
+        
+        # self.actual_temperature_signal.connect(self.update_current_temperature)
+        # # self.exterior_lights_signal.connect(self.update_exterior_lights)
+        # # self.interior_lights_signal.connect(self.update_interior_lights)
+        # self.left_door_signal.connect(self.update_left_door)
+        # self.right_door_signal.connect(self.update_right_door)
+        # self.driver_brake_signal.connect(self.update_driver_brake_status)
+        # self.passenger_brake_command_signal.connect(self.update_passenger_brake_status)
+        
+        # Emit functions for the PyqtSignals in the Shell Class
+        self.desired_temperature_signal.emit(self.temperature.desired_temperature)  # I need this!!
+        
+        # # Dynamic things I shall display in my UI - ALREADY DONE BY write_to_train_model() FUNCTION
+        # # Current Speed - PYQTSIGNAL
+        # self.speed_control.current_velocity_signal.connect(self.update_current_speed)
+        # # Commanded Speed - PYQTSIGNAL
+        # self.speed_control.commanded_speed_signal.connect(self.update_commanded_speed)
+        # # Commanded Authority - PYQTSIGNAL
+        # self.position.commanded_authority_signal.connect(self.update_commanded_authority)
+        # # Current Temperature - PYQTSIGNAL
+        # self.temperature.current_temperature_signal.connect(self.update_current_temperature)
+        # # Engine Failure - PYQTSIGNAL
+        # self.failure_modes.engine_failure_signal.connect(self.update_engine_failure_status)
+        # # Brake Failure - PYQTSIGNAL
+        # self.failure_modes.brake_failure_signal.connect(self.update_brake_failure_status)
+        # # Signal Failure - PYQTSIGNAL
+        # self.failure_modes.signal_failure_signal.connect(self.update_signal_failure_status)
+        # # Power Command - Make a PYQTSIGNAL FOR THIS
+        # self.power_class.power_command_signal.connect(self.update_power_command)
+        # # Exterior Lights - Make a PYQTSIGNAL FOR THIS
+        # self.lights.exterior_lights_signal.connect(self.update_exterior_lights)
+        # # Interior Lights - Make a PYQTSIGNAL FOR THIS
+        # self.lights.interior_lights_signal.connect(self.update_interior_lights)
+        # # Left Door - Make a PYQTSIGNAL FOR THIS
+        # self.doors.left_door_update.connect(self.update_left_door)
+        # # Right Door - Make a PYQTSIGNAL FOR THIS
+        # self.doors.right_door_update.connect(self.update_right_door)
+        # # Brake Status - Make a PYQTSIGNAL FOR THIS
+        # self.brake_class.driver_brake_signal.connect(self.update_driver_brake_status)
+        # # Service Brake Command - Make a PYQTSIGNAL FOR THIS
+        # self.brake_class.service_brake_signal.connect(self.update_service_brake_status)
+        # # Emergency Brake Command - Make a PYQTSIGNAL FOR THIS
+        # self.brake_class.emergency_brake_signal.connect(self.update_emergency_brake_status)
+        # # Passenger Brake Status - PYQTSIGNAL
+        # self.brake_class.passenger_brake_command_signal.connect(self.update_passenger_brake_status)
         
         # What changes the driver makes in the UI:
         # Setpoint Speed - QLineEdit
@@ -740,6 +778,7 @@ class TrainControllerUI(QWidget):
         self.dropdown.addItems(["Train 1", "Train 2", "Train 3"])  # Add your options here
         self.dropdown.setStyleSheet("font: Times New Roman; font-size: 20px; padding: 5px; margin-left: 10px; border: 2px solid black;")  # Style the dropdown with black border
         self.dropdown.setFixedWidth(150)  # Set a fixed width for the dropdown if desired
+        self.dropdown.setEnabled(False)  # Enable the dropdown
         self.dropdown.currentIndexChanged.connect(self.save_dropdown_selection)  # Connect to a method to save the selection
 
         # Add dropdown to the title banner layout
@@ -1158,10 +1197,10 @@ class TrainControllerUI(QWidget):
         self.current_speed_edit.setText(f"{current_speed:.2f} mph")
     
     def update_commanded_speed(self, commanded_speed: float):
-        self.commanded_speed_edit.setText(str(commanded_speed))
+        self.commanded_speed_edit.setText(f"{commanded_speed:.2f} mph")
     
     def update_commanded_authority(self, commanded_authority: float):
-        self.commanded_authority_edit.setText(str(commanded_authority))
+        self.commanded_authority_edit.setText(f"{commanded_authority} blocks")
         
     def update_left_door(self, door_status: bool):
         if door_status:
@@ -1197,6 +1236,7 @@ class TrainControllerUI(QWidget):
         if self.lights.interior_lights:
             self.lights.turn_off_interior_lights()
         else:
+            print("Turning on interior lights")
             self.lights.turn_on_interior_lights()
             
     def handle_exterior_lights(self):
@@ -1222,6 +1262,7 @@ class TrainControllerUI(QWidget):
             self.interior_lights_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
     
     def update_power_command(self, power_command: float):
+        print(f"Power Commandddd: {power_command}")
         self.power_command_edit.setText(f"{power_command / 1000:.2f}")
     
     def update_engine_failure_status(self, failure: bool):
@@ -1312,9 +1353,9 @@ class TrainControllerUI(QWidget):
         print(f"Desired Temperature: {self.temperature.desired_temperature}")
         
     def save_dropdown_selection(self):
-        self.train_id.train_id_signal.emit(self.dropdown.currentText())
-        self.train_id.train_id = self.dropdown.currentText()
-        print(f"Selected Train ID: {self.train_id.train_id}")
+        self.train_id_signal.emit(self.dropdown.currentIndex() + 1)
+        self.train_id = self.dropdown.currentIndex() + 1
+        print(f"Selected Train ID: {self.train_id}")
         
         
     ####################################################################
@@ -1386,7 +1427,6 @@ class TrainControllerUI(QWidget):
 
 if __name__ == "__main__":#
     app = QApplication([])
-    train_id = TrainID()
     communicator = Communicate()
     doors = Doors()
     tuning = Tuning()
@@ -1398,7 +1438,7 @@ if __name__ == "__main__":#
     temperature = Temperature()
     communicator = Communicate()
     position = Position(doors, failure_modes, speed_control, power_class, lights, communicator)
-    window = TrainControllerUI(communicator, doors, tuning, brake_status, power_class, speed_control, failure_modes, position, lights, temperature, train_id)
+    window = TrainControllerUI(communicator, doors, tuning, brake_status, power_class, speed_control, failure_modes, position, lights, temperature)
     window.show()
     
     # Show engineer window as well
