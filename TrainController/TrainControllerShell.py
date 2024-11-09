@@ -280,7 +280,6 @@ class TrainControllerShell:
         
     def handle_desired_temperature(self, desired_temperature: float):
         self.train_controller_list[self.current_train_id - 1].temperature.desired_temperature = desired_temperature
-
         
         
 # Add main function here
