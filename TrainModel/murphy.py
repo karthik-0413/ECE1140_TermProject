@@ -1,5 +1,3 @@
-# murphy.py
-
 from PyQt6.QtGui import QFont
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QLabel, QHBoxLayout, QPushButton, QSizePolicy
@@ -34,7 +32,6 @@ class MurphyPage(BasePage):
 
         self.failure_buttons = {}
 
-
         for failure in failure_types:
             failure_layout = QHBoxLayout()
             failure_layout.setContentsMargins(0, 0, 0, 0)
@@ -49,6 +46,7 @@ class MurphyPage(BasePage):
             button.setCheckable(True)
             button.setFont(QFont('Arial', 14, QFont.Weight.Bold))
             button.setFixedSize(160, 60)
+            button.setEnabled(False)  # Disable the button to prevent interaction
             button.setStyleSheet("""
                 QPushButton {
                     background-color: green;
@@ -61,7 +59,6 @@ class MurphyPage(BasePage):
                     color: black;
                 }
             """)
-            button.clicked.connect(lambda checked, btn=button, failure=failure: self.toggle_button(btn, failure))
 
             failure_layout.addWidget(label)
             failure_layout.addWidget(button)
@@ -82,46 +79,6 @@ class MurphyPage(BasePage):
 
         # Initial display update
         self.update_display()
-
-    def toggle_button(self, button, failure):
-        index = self.current_train_index
-        if button.isChecked():
-            button.setText("Active")
-            # Set bloody red color
-            button.setStyleSheet("""
-                QPushButton {
-                    background-color: #8B0000;
-                    color: black;
-                    border-radius: 5px;
-                    font-weight: bold;
-                }
-            """)
-            # Implement failure activation logic here
-            if failure == "Signal Pickup Failure:":
-                self.train_data.signal_failure[index] = True
-            elif failure == "Train Engine Failure:":
-                self.train_data.engine_failure[index] = True
-            elif failure == "Brake Failure:":
-                self.train_data.brake_failure[index] = True
-        else:
-            button.setText("Inactive")
-            button.setStyleSheet("""
-                QPushButton {
-                    background-color: green;
-                    color: black;
-                    border-radius: 5px;
-                    font-weight: bold;
-                }
-            """)
-            # Implement failure deactivation logic here
-            if failure == "Signal Pickup Failure:":
-                self.train_data.signal_failure[index] = False
-            elif failure == "Train Engine Failure:":
-                self.train_data.engine_failure[index] = False
-            elif failure == "Brake Failure:":
-                self.train_data.brake_failure[index] = False
-        # Emit data_changed signal
-        self.train_data.data_changed.emit()
 
     def train_id_changed(self, new_train_id):
         """Handle Train ID change."""

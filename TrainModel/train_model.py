@@ -1,5 +1,3 @@
-# train_model.py
-
 from PyQt6.QtGui import QFont, QPixmap, QImage
 from PyQt6.QtWidgets import (
     QLabel, QVBoxLayout, QHBoxLayout, QGridLayout,
@@ -176,33 +174,18 @@ class TrainModelPage(BasePage):
         self.exterior_light_button = QPushButton("Exterior Light: Off")
         self.left_door_button = QPushButton("Left Door: Closed")
         self.right_door_button = QPushButton("Right Door: Closed")
-        self.passenger_emergency_brake_button = QPushButton("Passenger\nEmergency\nBrake")
+
         # Increased font size of buttons
         button_font = QFont('Arial', 14, QFont.Weight.Bold)
-        self.passenger_emergency_brake_button.setFont(button_font)
 
         # Increase button sizes
         button_size = (440, 80)
 
-        # Set button styles according to the variables
-        
-        if (len(self.train_data.interior_light_on) > 0):
-            self.set_light_button_style(self.interior_light_button, self.train_data.interior_light_on[self.current_train_index], "Interior Light", button_font, button_size)
-            self.set_light_button_style(self.exterior_light_button, self.train_data.exterior_light_on[self.current_train_index], "Exterior Light", button_font, button_size)
-            self.set_door_button_style(self.left_door_button, self.train_data.left_door_open[self.current_train_index], "Left Door", button_font, button_size)
-            self.set_door_button_style(self.right_door_button, self.train_data.right_door_open[self.current_train_index], "Right Door", button_font, button_size)
-
-        # Passenger Emergency Brake button (blood red background)
-        self.passenger_emergency_brake_button.setStyleSheet("""
-            QPushButton {
-                background-color: #8B0000;
-                color: black;
-                font-weight: bold;
-            }
-        """)
-        self.passenger_emergency_brake_button.setFixedSize(440, 190)  # Made the panic button bigger
-        self.passenger_emergency_brake_button.setEnabled(True)
-        self.passenger_emergency_brake_button.clicked.connect(self.passenger_emergency_brake_pressed)
+        # Disable the buttons to prevent user interaction
+        self.interior_light_button.setEnabled(False)
+        self.exterior_light_button.setEnabled(False)
+        self.left_door_button.setEnabled(False)
+        self.right_door_button.setEnabled(False)
 
         # Add buttons to vertical layout
         buttons_layout.addWidget(self.interior_light_button)
@@ -238,9 +221,6 @@ class TrainModelPage(BasePage):
         announcement_layout.addWidget(self.announcement_text)
 
         right_layout.addLayout(announcement_layout)
-
-        # Add panic button separately
-        right_layout.addWidget(self.passenger_emergency_brake_button, alignment=Qt.AlignmentFlag.AlignCenter)
 
         # Add right_layout to main_layout
         main_layout.addLayout(right_layout)
@@ -316,74 +296,97 @@ class TrainModelPage(BasePage):
         return units.get(var_name, '')
 
     def update_display(self):
-        index = self.current_train_index
-        if index >= self.train_data.train_count:
-            return
+        if self.train_data.train_count == 0:
+            index = 0
+        else:
+            index = min(self.current_train_index, self.train_data.train_count - 1)
+
         # Update the data labels
         for var_name, label in self.value_labels.items():
             value_list = getattr(self.train_data, var_name)
-            if len(getattr(self.train_data, var_name)) >0: 
+            if len(value_list) > index:
                 value = value_list[index]
-                unit = self.get_unit(var_name)
-                if isinstance(value, int):
-                    value_text = f"{value} {unit}".strip()
-                else:
-                    value_text = f"{value:.2f} {unit}".strip()
-                label.setText(value_text)
+            else:
+                value = 0  # Default value when list is empty or index out of range
+            unit = self.get_unit(var_name)
+            if isinstance(value, int):
+                value_text = f"{value} {unit}".strip()
+            else:
+                value_text = f"{value:.2f} {unit}".strip()
+            label.setText(value_text)
 
         # Update static information
         for var_name, label in self.static_value_labels.items():
             value_list = getattr(self.train_data, var_name)
-            if len(getattr(self.train_data, var_name)) >0: 
+            if len(value_list) > index:
                 value = value_list[index]
-                unit = self.get_unit(var_name)
-                if isinstance(value, int):
-                    value_text = f"{value} {unit}".strip()
-                else:
-                    value_text = f"{value:.2f} {unit}".strip()
-                label.setText(value_text)
+            else:
+                value = 0  # Default value
+            unit = self.get_unit(var_name)
+            if isinstance(value, int):
+                value_text = f"{value} {unit}".strip()
+            else:
+                value_text = f"{value:.2f} {unit}".strip()
+            label.setText(value_text)
 
         # Update the announcement text
-        if len(getattr(self.train_data, var_name)) >0: 
+        if len(self.train_data.announcement_text) > index:
             self.announcement_text.setText(self.train_data.announcement_text[index])
+        else:
+            self.announcement_text.setText("No announcements.")
 
         # Update the buttons
         button_font = QFont('Arial', 14, QFont.Weight.Bold)
         button_size = (440, 80)
-        if len(getattr(self.train_data, var_name)) >0: 
-            self.set_light_button_style(self.interior_light_button, self.train_data.interior_light_on[index], "Interior Light", button_font, button_size)
-            self.set_light_button_style(self.exterior_light_button, self.train_data.exterior_light_on[index], "Exterior Light", button_font, button_size)
-            self.set_door_button_style(self.left_door_button, self.train_data.left_door_open[index], "Left Door", button_font, button_size)
-            self.set_door_button_style(self.right_door_button, self.train_data.right_door_open[index], "Right Door", button_font, button_size)
 
-    def passenger_emergency_brake_pressed(self):
-        index = self.current_train_index
-        # Update the passenger emergency brake state
-        self.train_data.passenger_emergency_brake[index] = True
-        # Emit signal to notify change
-        self.tc_communicate.passenger_brake_command_signal.emit(self.train_data.passenger_emergency_brake)
-        # Darken the color of the button
-        self.passenger_emergency_brake_button.setStyleSheet("""
-            QPushButton {
-                background-color: #550000;  /* Darker red */
-                color: black;
-                font-weight: bold;
-            }
-        """)
+        # Interior Light
+        if len(self.train_data.interior_light_on) > index:
+            interior_light_on = self.train_data.interior_light_on[index]
+        else:
+            interior_light_on = False  # Default to 'Off'
+
+        # Exterior Light
+        if len(self.train_data.exterior_light_on) > index:
+            exterior_light_on = self.train_data.exterior_light_on[index]
+        else:
+            exterior_light_on = False  # Default to 'Off'
+
+        # Left Door
+        if len(self.train_data.left_door_open) > index:
+            left_door_open = self.train_data.left_door_open[index]
+        else:
+            left_door_open = False  # Default to 'Closed'
+
+        # Right Door
+        if len(self.train_data.right_door_open) > index:
+            right_door_open = self.train_data.right_door_open[index]
+        else:
+            right_door_open = False  # Default to 'Closed'
+
+        self.set_light_button_style(self.interior_light_button, interior_light_on, "Interior Light", button_font, button_size)
+        self.set_light_button_style(self.exterior_light_button, exterior_light_on, "Exterior Light", button_font, button_size)
+        self.set_door_button_style(self.left_door_button, left_door_open, "Left Door", button_font, button_size)
+        self.set_door_button_style(self.right_door_button, right_door_open, "Right Door", button_font, button_size)
 
     def train_id_changed(self, new_train_id):
         """Handle Train ID change."""
-        if new_train_id:
+        if new_train_id and new_train_id != "N/A":
             self.current_train_index = int(new_train_id) - 1
-            self.update_display()
+        else:
+            self.current_train_index = 0
+        self.update_display()
 
     def update_train_id_list(self, train_ids):
         """Update the train ID combo box."""
         self.train_id_combo.blockSignals(True)
         self.train_id_combo.clear()
-        self.train_id_combo.addItems(train_ids)
-        self.train_id_combo.setCurrentIndex(0)
+        if train_ids:
+            self.train_id_combo.addItems(train_ids)
+            self.train_id_combo.setCurrentIndex(0)
+            self.current_train_index = 0
+        else:
+            self.train_id_combo.addItem("N/A")
+            self.train_id_combo.setCurrentIndex(0)
+            self.current_train_index = 0
         self.train_id_combo.blockSignals(False)
-        # Update current train index
-        self.current_train_index = 0
         self.update_display()
