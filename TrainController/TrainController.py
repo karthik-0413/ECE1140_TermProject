@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QLineEdit,
     QPushButton, QSizePolicy, QSpacerItem, QApplication, QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem, QHeaderView, QLabel, QComboBox
 )
-from PyQt6.QtCore import Qt, QCoreApplication, pyqtSignal, QObject, QTimer
+from PyQt6.QtCore import Qt, QCoreApplication, pyqtSignal, QObject
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from Resources.TrainTrainControllerComm import TrainTrainController as Communicate
@@ -108,12 +108,10 @@ class BrakeStatus(QObject):
             self.driver_emergency_brake_command = True
             self.passenger_brake_command_signal.emit(self.driver_emergency_brake_command)
             print("Passenger Brake Applied")
-            self.communicator.passenger_brake_command_signal.emit(True)
         elif not status:
             self.driver_emergency_brake_command = False
             self.passenger_brake_command_signal.emit(self.driver_emergency_brake_command)
             print("Passenger Brake Released")
-            self.communicator.passenger_brake_command_signal.emit(False)
         
 class PowerCommand(QObject):
     power_command_signal = pyqtSignal(float)
@@ -136,6 +134,9 @@ class PowerCommand(QObject):
     def update_ki(self, ki):
         self.tuning.ki = ki
         print(f"Ki set to {self.tuning.ki} in Power Command Class")
+        
+    # def hardware_update_power_command(self, power: float):
+        
         
     def update_power_command(self, current_velocity: float, desired_velocity: float):
         if round(desired_velocity, 2) == round(current_velocity, 2):
@@ -194,6 +195,7 @@ class PowerCommand(QObject):
             self.brake_status.no_apply_emergency_brake()
             
         self.power_command_signal.emit(self.power_command)
+        print(f"Power Command in Train Controller: {self.power_command}")
     
 class SpeedControl(QObject):
     commanded_speed_signal = pyqtSignal(float)
@@ -216,6 +218,7 @@ class SpeedControl(QObject):
         
     def find_max_speed(self):
         self.max_speed = min(self.speed_limit, self.commanded_speed)
+        print(f"Max Speed: {self.max_speed}")
         
     def update_speed_limit(self, speed: float):
         self.speed_limit = speed
@@ -229,7 +232,7 @@ class SpeedControl(QObject):
             self.brake_status.driver_brake_status = False
             self.brake_status.driver_service_brake_command = False
             self.brake_status.driver_emergency_brake_command = False
-            self.communicator.passenger_brake_command_signal.emit(False)    
+            # self.communicator.passenger_brake_command_signal.emit(False)    
             
         self.current_velocity = speed
         self.power_class.update_power_command(self.current_velocity, self.desired_velocity)
@@ -265,7 +268,7 @@ class SpeedControl(QObject):
     def update_setpoint_speed_calculations(self, speed: float):  
         # Put the setpoint speed input in a variable in m/s even though it is in mph
         self.max_speed = min(self.speed_limit, self.commanded_speed)
-        print(f"Min Speed: {self.max_speed}")
+        print(f"Max Speed: {self.max_speed}")
         
         self.desired_velocity = speed * 0.44704
         
@@ -413,7 +416,7 @@ class Position(QObject):
         self.green_speed_limit = []
         self.green_underground = []
         self.default_path_blocks = [
-            63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100,
+            0, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100,
             85, 84, 83, 82, 81, 80, 79, 78, 77, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124,
             125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 29, 28, 27, 26, 25, 24, 23,
             22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
@@ -531,7 +534,8 @@ class Temperature(QObject):
             else:
                 self.desired_temperature -= 0.01
             self.reach_temperature()
-        else:
+        # else:
+            
             print("Temperature out of range. Please enter a value between 60°F and 75.")
 
     def reach_temperature(self, k=0.3, time_step=0.5):
@@ -678,6 +682,8 @@ class TrainControllerUI(QWidget):
         
         # PyqtSignal Class to communicate with the Train Model
         self.communicator = communicator
+        
+        self.power_class.power_command_signal.connect(self.change_power_UI)
         
         ###############################
         # User Interface STARTS HERE  #
@@ -1229,12 +1235,13 @@ class TrainControllerUI(QWidget):
             self.passenger_brake_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
             
     def send_setpoint_speed(self):
-        self.speed_control.desired_velocity = float(self.setpoint_speed_edit.text()) * 0.44704
-        if self.speed_control.desired_velocity > self.speed_control.max_speed:
-            # Set setpoint speed input to max speed value
-            self.setpoint_speed_edit.setText(f"{self.speed_control.max_speed * 2.23694:.2f}")
+        # self.speed_control.desired_velocity = float(self.setpoint_speed_edit.text()) * 0.44704
+        # print(f"Setpoint Speed: {self.speed_control.desired_velocity}")
+        # if self.speed_control.desired_velocity > self.speed_control.max_speed:
+        #     # Set setpoint speed input to max speed value
+        #     self.setpoint_speed_edit.setText(f"{self.speed_control.max_speed * 2.23694:.2f}")
             
-        self.speed_control.update_setpoint_speed_calculations(self.speed_control.desired_velocity)
+        self.speed_control.update_setpoint_speed_calculations(float(self.setpoint_speed_edit.text()) * 0.44704)
             
     def send_manual_mode(self):
         # Enable setpoint speed input
@@ -1350,29 +1357,32 @@ class TrainControllerUI(QWidget):
     def reset_brake_status(self):
         self.brake_status.setText("OFF")
         self.brake_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
+        
+    def change_power_UI(self):
+        self.power_command_edit.setText(f"{self.power_class.power_command / 1000:.2f}")
 
     
 #################
 # MAIN FUNCTION #
 #################
 
-if __name__ == "__main__":#
-    app = QApplication([])
-    communicator = Communicate()
-    doors = Doors()
-    tuning = Tuning()
-    brake_status = BrakeStatus(communicator)
-    power_class = PowerCommand(brake_status, tuning)
-    speed_control = SpeedControl(power_class, brake_status, communicator)
-    failure_modes = FailureModes(speed_control, power_class)
-    lights = Lights(speed_control)
-    temperature = Temperature()
-    communicator = Communicate()
-    position = Position(doors, failure_modes, speed_control, power_class, lights, communicator)
-    window = TrainControllerUI(communicator, doors, tuning, brake_status, power_class, speed_control, failure_modes, position, lights, temperature)
-    window.show()
+# if __name__ == "__main__":#
+#     app = QApplication([])
+#     communicator = Communicate()
+#     doors = Doors()
+#     tuning = Tuning()
+#     brake_status = BrakeStatus(communicator)
+#     power_class = PowerCommand(brake_status, tuning)
+#     speed_control = SpeedControl(power_class, brake_status, communicator)
+#     failure_modes = FailureModes(speed_control, power_class)
+#     lights = Lights(speed_control)
+#     temperature = Temperature()
+#     communicator = Communicate()
+#     position = Position(doors, failure_modes, speed_control, power_class, lights, communicator)
+#     window = TrainControllerUI(communicator, doors, tuning, brake_status, power_class, speed_control, failure_modes, position, lights, temperature)
+#     window.show()
     
-    # Show engineer window as well
-    engineer_window = TrainEngineerUI(tuning)
-    engineer_window.show()
-    app.exec()
+#     # Show engineer window as well
+#     engineer_window = TrainEngineerUI(tuning)
+#     engineer_window.show()
+#     app.exec()

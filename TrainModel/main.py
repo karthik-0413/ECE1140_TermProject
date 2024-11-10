@@ -9,26 +9,28 @@ from TrainModel.train_model import TrainModelPage
 from TrainModel.base_page import BasePage
 
 # Communication classes
-from TrainModel.train_controller_communicate import TrainControllerCommunicate
+# from TrainModel.train_controller_communicate import TrainControllerCommunicate
+from Resources.TrainTrainControllerComm import TrainTrainController
 from TrainModel.track_model_communicate import TrackModelCommunicate
 from TrainModel.CTC_communicate import CTC_Train_Model_Communicate
 
 class MainWindow(QMainWindow):
     """Main window of the application."""
 
-    def __init__(self, ctc_train_communicate: CTC_Train_Model_Communicate):
+    def __init__(self, ctc_train_communicate: CTC_Train_Model_Communicate, tc_communicate: TrainTrainController):
         super().__init__()
 
         self.setWindowTitle("Train Control Application")
         self.setGeometry(100, 100, 1200, 800)  # Adjusted window size
 
         # Create communication instances
-        self.tc_communicate = TrainControllerCommunicate()
+        self.tc_communicate = tc_communicate
         self.tm_communicate = TrackModelCommunicate()
         self.ctc_communicate = ctc_train_communicate
 
         # Create TrainData instance
         self.train_data = TrainData(self.tc_communicate, self.tm_communicate, self.ctc_communicate)
+        print("TrainData instance created")
 
         # Create tab widget
         self.tabs = QTabWidget()
@@ -47,6 +49,8 @@ class MainWindow(QMainWindow):
 
         # Connect data changed signal to update Train IDs when train count changes
         self.train_data.data_changed.connect(self.update_train_id_lists)
+        
+        
 
     def update_train_id_lists(self):
         """Update Train ID combo boxes in all pages when train count changes."""
@@ -57,7 +61,8 @@ class MainWindow(QMainWindow):
 def main():
     app = QApplication(sys.argv)
     ctc_communicate = CTC_Train_Model_Communicate()
-    window = MainWindow(ctc_communicate)
+    tc_communicate = TrainTrainController()
+    window = MainWindow(ctc_communicate, tc_communicate)
     window.show()
     sys.exit(app.exec())
 
