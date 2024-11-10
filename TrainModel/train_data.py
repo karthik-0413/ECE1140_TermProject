@@ -29,6 +29,7 @@ class TrainData(QObject):
         self.crew_count = []
         self.maximum_speed = []
         self.current_speed = []  # in m/s for calculations
+        self.current_speed_UI = []  # in mph for UI
         self.total_car_weight = []
 
         self.train_length = []
@@ -117,6 +118,7 @@ class TrainData(QObject):
         self.crew_count.append(2)
         self.maximum_speed.append(70)  # mph
         self.current_speed.append(0.0)   # m/s
+        self.current_speed_UI.append(0.0) # mph
         self.total_car_weight.append(40.9)  # tons
 
         self.train_length.append(32.2)  # meters
@@ -130,10 +132,10 @@ class TrainData(QObject):
         # Train Control Input Variables
         self.commanded_power.append(20)  # kW
         self.commanded_speed_tc.append(20)  # km/h from Track Model
-        self.commanded_speed.append(20 * (1000/3600))     # Convert km/h to m/s
-        self.commanded_speed_UI.append(20 * 0.621371)  # Convert km/h to mph
-        self.authority.append(20)           # authority in meters
-        self.commanded_authority.append(20 * 3.28084) # Convert meters to feet
+        self.commanded_speed.append(20)     # Convert km/h to m/s
+        self.commanded_speed_UI.append(20)  # Convert km/h to mph
+        self.authority.append(20)           # authority in blocks
+        self.commanded_authority.append(20) # Blocks
         self.service_brake.append(False)
         self.exterior_light.append(False)
         self.interior_light.append(False)
@@ -211,6 +213,7 @@ class TrainData(QObject):
             self.crew_count.pop(0)
             self.maximum_speed.pop(0)
             self.current_speed.pop(0)
+            self.current_speed_UI.pop(0)
             self.total_car_weight.pop(0)
 
             self.train_length.pop(0)
@@ -398,7 +401,7 @@ class TrainData(QObject):
             speed_list = speed_list + [0] * (max(1, self.train_count) - len(speed_list))
         self.commanded_speed_tc = speed_list
         # Convert km/h to m/s for calculations
-        self.commanded_speed = [speed * (1000/3600) for speed in speed_list]
+        self.commanded_speed = [speed for speed in speed_list]
         # Convert m/s to mph for UI
         self.commanded_speed_UI = [speed * 2.23694 for speed in self.commanded_speed]
         self.data_changed.emit()
@@ -503,7 +506,7 @@ class TrainData(QObject):
         # Send data to Train Controller
         self.tc_communicate.commanded_speed_signal.emit(self.commanded_speed_UI)  # mph for UI
         self.tc_communicate.commanded_authority_signal.emit(self.commanded_authority)
-        self.tc_communicate.current_velocity_signal.emit([speed * 2.23694 for speed in self.current_speed])  # Convert m/s to mph
+        self.tc_communicate.current_velocity_signal.emit(self.current_speed)  # Convert m/s to mph
         self.tc_communicate.engine_failure_signal.emit(self.engine_failure)
         self.tc_communicate.brake_failure_signal.emit(self.brake_failure)
         self.tc_communicate.signal_failure_signal.emit(self.signal_failure)

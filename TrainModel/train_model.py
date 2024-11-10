@@ -53,7 +53,7 @@ class TrainModelPage(BasePage):
             ("Passenger Count", "passenger_count", ""),
             ("Crew Count", "crew_count", ""),
             ("Maximum Speed", "maximum_speed", "mph"),
-            ("Current Speed", "current_speed", "mph"),
+            ("Current Speed", "current_speed_UI", "mph"),
             ("Total Car Weight", "total_car_weight", "tons"),
             # Removed 'Train Length', 'Train Height', 'Train Width' from Dynamic Information
             ("Number of Cars", "number_of_cars", ""),

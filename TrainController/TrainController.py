@@ -145,7 +145,7 @@ class PowerCommand(QObject):
             # Put Brake Status has OFF
             self.brake_status.no_apply_service_brake()
             self.brake_status.no_apply_emergency_brake()
-            return self.power_command
+            self.power_command_signal.emit(self.power_command)
 
         print(f"Desired Speed: {desired_velocity:.2f} m/s, Current Speed: {current_velocity:.2f} m/s")
         
@@ -182,7 +182,7 @@ class PowerCommand(QObject):
             self.brake_status.driver_brake_status = True
             self.brake_status.driver_emergency_brake_command = False
             print("Service Brake Applied")
-            self.brake_status.apply_service_brake()
+            self.brake_status.no_apply_service_brake()
             self.brake_status.no_apply_emergency_brake()
             
         else:
