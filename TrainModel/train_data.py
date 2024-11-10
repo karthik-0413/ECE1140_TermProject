@@ -135,7 +135,7 @@ class TrainData(QObject):
         self.authority.append(20)           # authority in meters
         self.commanded_authority.append(20 * 3.28084) # Convert meters to feet
         self.service_brake.append(False)
-        self.exterior_light.append(False)  # Edited to False
+        self.exterior_light.append(False)
         self.interior_light.append(False)
         self.emergency_brake.append(False)
         self.beacon.append("")  # Initialize beacon message
@@ -391,6 +391,27 @@ class TrainData(QObject):
         self.announcement.emit(announcement_list)
         self.data_changed.emit()
 
+    # Handler methods for incoming signals from Track Model
+    def set_track_commanded_speed(self, speed_list):
+        # Ensure the list is long enough
+        if len(speed_list) < max(1, self.train_count):
+            speed_list = speed_list + [0] * (max(1, self.train_count) - len(speed_list))
+        self.commanded_speed_tc = speed_list
+        # Convert km/h to m/s for calculations
+        self.commanded_speed = [speed * (1000/3600) for speed in speed_list]
+        # Convert m/s to mph for UI
+        self.commanded_speed_UI = [speed * 2.23694 for speed in self.commanded_speed]
+        self.data_changed.emit()
+
+    def set_track_commanded_authority(self, authority_list):
+        # Ensure the list is long enough
+        if len(authority_list) < max(1, self.train_count):
+            authority_list = authority_list + [0] * (max(1, self.train_count) - len(authority_list))
+        self.authority = authority_list
+        # Convert meters to feet
+        self.commanded_authority = [auth * 3.28084 for auth in authority_list]
+        self.data_changed.emit()
+
     def set_block_grade(self, grade_list):
         if len(grade_list) < max(1, self.train_count):
             grade_list = grade_list + [0.0] * (max(1, self.train_count) - len(grade_list))
@@ -416,7 +437,6 @@ class TrainData(QObject):
         self.passenger_boarding = boarding_list
         self.data_changed.emit()
 
-
     def update_train_state(self):
         """Update the state of all trains."""
         # Prepare lists to collect data for signals that need them
@@ -432,7 +452,7 @@ class TrainData(QObject):
 
             if door_open_now and not door_open_prev:
                 # Door has just been opened
-                # Generate a random number of passengers to unboard (<= current passengers)
+                # Generate a random number of passengers to alight (<= current passengers)
                 if self.passenger_count[index] > 0:
                     passengers_alighting = random.randint(0, self.passenger_count[index])
                 else:
@@ -448,23 +468,15 @@ class TrainData(QObject):
                 # Ensure passenger count does not exceed maximum capacity
                 if self.passenger_count[index] > self.maximum_capacity[index]:
                     self.passenger_count[index] = self.maximum_capacity[index]
-                # Update train weight
-                self.update_train_weight(index)
 
             # Update previous door states
             self.previous_left_door_open[index] = self.left_door_open[index]
             self.previous_right_door_open[index] = self.right_door_open[index]
 
-    def update_train_weight(self, index):
-        """Update the train's weight based on passenger count."""
-        empty_train_weight_kg = self.static_empty_train_weight[index] * 1000  # Empty train weight in kg
-        passenger_weight_kg = self.passenger_count[index] * 68.0388  # Each passenger weighs 68.0388 kg
-        total_weight_kg = empty_train_weight_kg + passenger_weight_kg
-        self.current_train_weight[index] = total_weight_kg / 1000  # Convert back to tons
-        self.total_car_weight[index] = self.current_train_weight[index]  # Update total car weight
-        self.available_seats[index] = self.maximum_capacity[index] - self.passenger_count[index]  # Update available seats
-        self.data_changed.emit()
-####################################################################################################
+        # After all passenger calculations, update train weights
+        for index in range(self.train_count):
+            self.update_train_weight(index)
+
         # After updating all trains, emit updated lists to Train Controller and Track Model
         self.write_to_trainController_trackModel()
 
@@ -474,6 +486,16 @@ class TrainData(QObject):
                 self.passenger_emergency_brake[index] = False
 
         # Emit data_changed signal
+        self.data_changed.emit()
+
+    def update_train_weight(self, index):
+        """Update the train's weight based on passenger count."""
+        empty_train_weight_kg = self.static_empty_train_weight[index] * 1000  # Empty train weight in kg
+        passenger_weight_kg = self.passenger_count[index] * 68.0388  # Each passenger weighs 68.0388 kg
+        total_weight_kg = empty_train_weight_kg + passenger_weight_kg
+        self.current_train_weight[index] = total_weight_kg / 1000  # Convert back to tons
+        self.total_car_weight[index] = self.current_train_weight[index]  # Update total car weight
+        self.available_seats[index] = self.maximum_capacity[index] - self.passenger_count[index]  # Update available seats
         self.data_changed.emit()
 
     def write_to_trainController_trackModel(self):
