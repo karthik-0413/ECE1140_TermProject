@@ -3,26 +3,126 @@ import csv
 import re
 from typing import List, Dict
 from PyQt6 import QtWidgets, QtCore, QtGui
+from PyQt6.QtCore import (Qt, QObject, pyqtSignal)
 from Track_Model_UI import Ui_TrackModel
+import random
 
-cmdSpeed: int
-cmdAuthority: int
-gradeValue: float
-elevationValue: float
-polarityValue: bool
-numPassengersEmbarking: int
-numPassengersDisembarking: int
-position: List[int]
-vacancy: int
-switchCmds = List[bool]
-crossingCmds = List[bool]
-signalCmds = List[bool]
+cmdSpeed: List[int] = []
+cmdAuthority: List[int] = []
+gradeValue: List[float] = []
+elevationValue: List[float] = []
+polarityValue: List[bool] = []
+numPassengersEmbarking: List[int] = []
+numPassengersDisembarking: List[int] = []
+positions: List[float] = [50, 1000, 2000, 7000]
+direction: bool = False
+vacancy: int = 0
+switchCmds: List[bool] = []
+crossingCmds: List[bool] = []
+signalCmds: List[bool] = []
 
-startBlock: int = 63
-endBlock: int = 57
+defaultRedPath = [
+    0, 9, 8, 7, 6, 5, 4, 3, 2, 1, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 76, 75,
+    74, 73, 72, 33, 34, 35, 36, 37, 38, 71, 70, 69, 68, 67, 44, 45, 46, 47, 48, 49, 50, 51,
+    52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 52, 51, 50, 49, 48, 47, 46,
+    45, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35, 34, 33, 32, 31, 30, 29, 28, 27, 26, 25, 24,
+    23, 22, 21, 20, 19, 18, 17, 16, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0
+]
+defaultGreenPath = [
+    0, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100,
+    85, 84, 83, 82, 81, 80, 79, 78, 77, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124,
+    125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 29, 28, 27, 26, 25, 24, 23,
+    22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
+    32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 0
+]
+
+switchDict = {
+    "green": {
+        "13": [["1", "12"]],
+        "28": [["150", "29"]],
+        "57": [["58", "0"]],
+        "63": [["0", "62"]],
+        "77": [["76", "101"]],
+        "85": [["100", "86"]]
+    }
+}
+
+class Track(QObject):
+    def __init__(self, line, totBlocks, trackType):
+        self.line = line
+        self.totBlocks = totBlocks
+        self.trackType = trackType
+        self.heater = False
+        self.switches = []
+        self.stations = []
+        self.blocks = []
+        self.path = {}
+        self.layoutData = []
+        self.lenghtArray = []
+        self.occupancies = []
+
+    def getBlock(self, blockNum):
+        return self.blocks[blockNum - 1]
+
+    def addBlock(self, block):
+        self.blocks.append(block)
+
+    def toggleHeater(self, tempStatus):
+        self.heater = tempStatus
+
+    def getStations(self, stationName):
+        for i in self.stations:
+            if i.stationName == stationName:
+                return i.blocks
+        return 0
+
+class Station:
+    def __init__(self, stationName, side):
+        self.stationName = stationName
+        self.side = side
+        self.vacancy = 0
+        self.numPassengersEmbarking = 0
+        self.numPassengersDisembarking = 0
+        self.numPassengersAtStation = 0
+        self.blocks = []
+
+    def getVacancy(self, vacancy):
+        self.vacancy = vacancy
+        return vacancy
+
+    def getPassengersAtStation(self, numPassengersAtStation):
+        delta = self.numPassengersDisembarking - self.numPassengersEmbarking
+        numPassengersAtStation += delta
+        return numPassengersAtStation
+
+    def getPassengersEmbarking(self, numPassengersEmbarking):
+        self.numPassengersEmbarking = random.randint(0, self.vacancy)
+        return numPassengersEmbarking
+
+    def getPassengersDisembarking(self, numPassengersDisembarking):
+        self.numPassengersDisembarking = numPassengersDisembarking
+        return numPassengersDisembarking
+
+class Switch:
+    def __init__(self, joint, leg1, leg2):
+        self.joint = joint
+        if leg1 > leg2:
+            temp = leg1
+            leg1 = leg2
+            leg2 = temp
+
+        self.leg1 = leg1
+        self.leg2 = leg2
+        self.thisSwitch = self.leg1
+
+    def setSwtich(self, switchCmd):
+        if switchCmd:
+            self.thisSwitch = self.leg2
+        else:
+            self.thisSwitch = self.leg1
 
 class Block:
-    def __init__(self, line: str, section: str, number: int, length: float, grade: float, speedLimit: float, infrastructure: str, elevation: float, cumulativeElevation: float, side = "N/A", polarity: bool = False, functional: bool = True, occupied: bool = False):
+    def __init__(self, line, section: str, number: int, length: float, grade: float, speedLimit: float, infrastructure: str, elevation: float, cumulativeElevation: float, side, polarity: bool = False, functional: bool = True, occupied: bool = False):
         self.line = line
         self.section = section
         self.number = number
@@ -54,25 +154,30 @@ class Block:
                 grade=float(grade),
                 speedLimit=float(speedLimit),
                 infrastructure=infrastructure,
-                side = side,
+                side=side,
                 elevation=float(elevation),
                 cumulativeElevation=float(cumulativeElevation)
             )
             sections[section].append(block)
-        allBlocks = ([block for blocks in sections.values() for block in blocks])
+        allBlocks = [block for blocks in sections.values() for block in blocks]
         cls.setOccupancy(ui, allBlocks, lengthArray, position)
         cls.setPolarity(allBlocks)
-        for section, blocks in sections.items():
-            print(f"Section: {section}")
-            for block in blocks:
-                print(f"Block {block.number}")
         return sections
+
+    # def setPath(blocks: Dict[str, List['Block']], pathOrder: List[int]) -> Dict[int, 'Block']:
+    #     path = {}
+    #     for num in pathOrder:
+    #         for blockList in blocks.values():
+    #             for block in blockList:
+    #                 if block.number == num:
+    #                     path[block.number] = block
+    #                     break
+    #     return path
 
     @staticmethod
     def setOccupancy(ui, blocks: List['Block'], lengthArray: List[float], x: int) -> List[bool]:
         occupancies = []
         blockStart = 0
-
         for i, (length, block) in enumerate(zip(lengthArray, blocks)):
             blockEnd = blockStart + length
             if block.functional:
@@ -88,7 +193,8 @@ class Block:
     @staticmethod
     def setPolarity(blocks: List['Block']) -> None:
         for i, block in enumerate(blocks):
-            block.polarity = i % 2 == 0
+            if block.number in defaultGreenPath:
+                block.polarity = defaultGreenPath.index(block.number) % 2 == 0
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
@@ -108,6 +214,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.timer.start(1000)
         self.tempIncreaseTimer = QtCore.QTimer(self)
         self.tempIncreaseTimer.timeout.connect(self.increaseTemp)
+        # Block.setPath(self.blocks, defaultGreenPath)
 
     def setupConnections(self) -> None:
         self.ui.uploadButton.clicked.connect(self.uploadFile)
@@ -120,6 +227,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.blockTable.itemSelectionChanged.connect(self.printBlockInfo)
 
     def uploadFile(self) -> None:
+        self.switchArray.clear()
+        self.switchLightArray.clear()
         fileDialog = QtWidgets.QFileDialog()
         filePath, _ = fileDialog.getOpenFileName(self, "Open CSV File", "", "CSV Files (*.csv)")
         if filePath:
@@ -144,10 +253,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.positionValue.setMaximum(totLen)
         position = self.ui.positionValue.value()
         self.blocks = Block.createBlocks(self.ui, self.layoutData, self.lengthArray, position)
+        # self.path = Block.setPath(self.blocks, self.path)
         self.occupancies = Block.setOccupancy(self.ui, [block for blocks in self.blocks.values() for block in blocks], self.lengthArray, position)
         self.updateBlockTable()
-        self.createSwitches()
+        self.setSwitches()
         self.createCrossings()
+        self.createStaions()
+
 
     def checkTemp(self) -> None:
         temp = self.ui.tempStepper.value()
@@ -176,22 +288,23 @@ class MainWindow(QtWidgets.QMainWindow):
         for blocks in self.blocks.values():
             for block in blocks:
                 if "STATION" in block.infrastructure:
-                    self.crossingArray.append(block.number)
+                    self.stations.append(block.number)
+        print(self.stations)
 
     @staticmethod
-    def extractSwitchNumbers(infrastructure: str) -> List[int]:
+    def getSwitchNums(infrastructure: str) -> List[int]:
         return list(map(int, re.findall(r'\d+', infrastructure)))
     
-    def createSwitches(self) -> None:
+    def setSwitches(self) -> None:
         for blocks in self.blocks.values():
             for block in blocks:
                 if "SWITCH" in block.infrastructure:
-                    switchNums = self.extractSwitchNumbers(block.infrastructure)
-                    joint = next(num for num in switchNums if switchNums.count(num) == 2)
+                    switchNums = self.getSwitchNums(block.infrastructure)
+                    joint = block.number
                     leg1 = min(num for num in switchNums if num != joint)
                     leg2 = max(num for num in switchNums if num != joint)
                     self.switchArray.append({'joint': joint, 'leg1': leg1, 'leg2': leg2})
-                    self.switchLightArray.append({'leg1': leg1, 'leg2': leg2})
+                    self.switchLightArray.append({'joint': joint, 'leg1': leg1, 'leg2': leg2})
         self.ui.switches.clear()
         for switch in self.switchArray:
             self.ui.switches.addItem(f"Switch at Block {switch['joint']}")
@@ -203,7 +316,7 @@ class MainWindow(QtWidgets.QMainWindow):
             switch = next((b for blocks in self.blocks.values() for b in blocks if b.number == joint), None)
             if switch is None:
                 return "Switch not found"
-            switch_numbers = [num for num in self.extractSwitchNumbers(switch.infrastructure) if num != joint]
+            switch_numbers = [num for num in self.getSwitchNums(switch.infrastructure) if num != joint]
             if switch_numbers:
                 leg1 = min(switch_numbers)
                 leg2 = max(switch_numbers)
@@ -223,11 +336,9 @@ class MainWindow(QtWidgets.QMainWindow):
         for light in self.switchLightArray:
             if light['leg1'] == blockNum or light['leg2'] == blockNum:
                 if color == 'green':
-                    self.ui.blockTable.item(blockNum - 1, 2).setBackground(QtGui.QColor('green'))
+                    self.ui.blockTable.item(blockNum , 2).setBackground(QtGui.QColor('green'))
                 elif color == 'red':
-                    self.ui.blockTable.item(blockNum - 1, 2).setBackground(QtGui.QColor('red'))
-                elif color == 'yellow':
-                    self.ui.blockTable.item(blockNum - 1, 2).setBackground(QtGui.QColor('yellow'))
+                    self.ui.blockTable.item(blockNum , 2).setBackground(QtGui.QColor('red'))
 
     def createCrossings(self) -> None:
         self.crossingArray = []
@@ -317,20 +428,26 @@ class MainWindow(QtWidgets.QMainWindow):
             functional_item = QtWidgets.QTableWidgetItem(str(block.functional))
             occupancy_item = QtWidgets.QTableWidgetItem(str(block.occupied))
             switch_item = QtWidgets.QTableWidgetItem("")
+            passeneger_item = QtWidgets.QTableWidgetItem("")
 
             for switch in self.switchArray:
                 if block.number == switch['joint']:
                     switch_item.setText(self.checkSwitch())
 
+            for station in self.stations:
+                if block.number == station:
+                    passeneger_item.setText("Passenger Station")
+
             self.ui.blockTable.setItem(row, 0, functional_item)
             self.ui.blockTable.setItem(row, 1, occupancy_item)
             self.ui.blockTable.setItem(row, 2, switch_item)
+            self.ui.blockTable.setItem(row, 3, passeneger_item)
 
             if block.occupied:
-                for col in range(len(headers)-1):
+                for col in range(len(headers)-2):
                     self.ui.blockTable.item(row, col).setBackground(QtGui.QColor('lightblue'))
             if not block.functional:
-                for col in range(len(headers)-1):
+                for col in range(len(headers)-2):
                     self.ui.blockTable.item(row, col).setBackground(QtGui.QColor('lightcoral'))
 
         self.ui.blockTable.cellClicked.connect(self.handleCellClick)

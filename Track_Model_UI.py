@@ -169,6 +169,7 @@ class Ui_TrackModel(object):
         self.verticalLayout_9 = QtWidgets.QVBoxLayout()
         self.verticalLayout_9.setObjectName("verticalLayout_9")
         self.passInfoTable = QtWidgets.QTableWidget(parent=self.tab_2)
+        self.blockTable.setRowCount(0)
         self.passInfoTable.setStyleSheet("font: 14pt \"Times New Roman\";\n"
 "color: rgb(0, 0, 0);")
         self.passInfoTable.setObjectName("passInfoTable")
