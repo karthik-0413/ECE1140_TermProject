@@ -2,23 +2,44 @@ from CTC_Office.CTC_frontend import CTC_frontend
 from TrainModel.main import MainWindow
 from TrainModel.CTC_communicate import CTC_Train_Model_Communicate
 from PyQt6.QtWidgets import QApplication, QMainWindow
+from PyQt6.QtCore import Qt, QTimer
 from Resources.CTCTrain import CTCTrain
+from Resources.Clock import *
 from Resources.TrainTrainControllerComm import TrainTrainController
 from TrainController.TrainController import *
 from TrainController.TrainControllerShell import TrainControllerShell
+from TrainModel.train_data import TrainData
 
 import sys
 
+
+# Function to be triggered by clock tick
+def handle_clock_tick(seconds, train_controller_shell: TrainControllerShell, train_model_data: MainWindow):
+    print(f"Clock tick {seconds} seconds")
+    # if seconds % 2 == 0:
+    train_model_data.train_data.write_to_trainController_trackModel()
+    train_controller_shell.write_to_train_model()
+    # Create a QTimer to call handle_clock_tick every second
+    # else:
+    #     pass
+
+
+def get_seconds_elapsed(seconds):
+    print(f"Elapsed time: {seconds} seconds")
+    return seconds
+
 if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    
     # CTC Setup
-    ctc_app = QApplication(sys.argv)
+    ctc_window = QMainWindow()
     ctc_window = QMainWindow()
 
     # Train Model Setup
-    tm_app = QApplication(sys.argv)
+    # (No need to create another QApplication)
     
     # Train Controller Setup
-    tc_app = QApplication(sys.argv)
+    # (No need to create another QApplication)
 
     # CTC -> Train Model Communication
     comm1 = CTC_Train_Model_Communicate()
@@ -32,7 +53,7 @@ if __name__ == '__main__':
     ctc_ui.setupUi(ctc_window)
 
     # Train Model
-    tm_window = MainWindow(comm1)
+    tm_window = MainWindow(comm1, comm5)
     
     # Train Controller
     doors = Doors()
@@ -51,9 +72,23 @@ if __name__ == '__main__':
 
     ctc_window.show()
     tm_window.show()
-    sys.exit(tm_app.exec())
-
-
-    sys.exit(ctc_app.exec())
     
+    # Clock Setup
+    clock = StopwatchEngine()
+    clock.initiate()
+    
+    
+    timer = QTimer()
+    timer.timeout.connect(lambda: handle_clock_tick(clock.elapsed_seconds, tc_shell_window, tm_window))
+    timer.start(100)
+    
+    clockUI = ClockDisplay(clock)
+    clockUI.show()
+    
+    # Timer to update every 
+    # Use QTimer to trigger `handle_clock_tick` every second
+    # while True:
+    #     handle_clock_tick(tc_shell_window, tm_window, clock)
 
+
+    sys.exit(app.exec())

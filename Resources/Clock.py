@@ -103,10 +103,10 @@ class ClockDisplay(QWidget):
             self.speed_label.setText(f"{multiplier:.1f}x")
 
 # Example usage
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    engine = StopwatchEngine()
-    interface = ClockDisplay(engine)
-    engine.initiate()
-    interface.show()
-    sys.exit(app.exec())
+# if __name__ == "__main__":
+#     app = QApplication(sys.argv)
+#     engine = StopwatchEngine()
+#     interface = ClockDisplay(engine)
+#     engine.initiate()
+#     interface.show()
+#     sys.exit(app.exec())

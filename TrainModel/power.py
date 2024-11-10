@@ -1,53 +1,60 @@
-# power.py
-
-def calculate_train_speed(train_data, index):
+def calculate_train_speed(train_data, index, brake_deceleration=0.0):
     """
     Calculate the train's speed based on the commanded power and other factors.
     Updates the train's current speed and acceleration.
+    
+    Parameters:
+    train_data (TrainData): The train data object containing information on power, speed, weight, etc.
+    index (int): The index of the train data to use for calculation.
+    brake_deceleration (float): The braking deceleration value (default is 0.0).
     """
-    # Extract necessary variables
-    power_command = train_data.commanded_power[index]  # in Watts
+    # Extract necessary variables from the train data
+    power_command_kw = train_data.commanded_power[index]  # in kW
+    power_command = power_command_kw * 1000  # Convert kW to Watts
     current_velocity = train_data.current_speed[index]  # in m/s
     mass = train_data.current_train_weight[index] * 1000  # Convert tonnes to kg
-    max_power = 120000.0  # Max power in Watts (120 kW)
-    delta_t = 5.0  # Time step in seconds (assuming update every 5 seconds)
+    delta_t = 1.0  # Time step in seconds
 
-    # Start power calculation
-    if current_velocity == 0:
-        force = max_power / 19.44
-        print(f"Train {index+1} is stationary. Force: {force:.2f} N")
+    # Calculate force from power (F = P / v), with protection against low speeds
+    if current_velocity <= 0.1:  # Prevent division by zero and handle very low speeds
+        force = power_command / 1.0  # Assume initial force at very low speed
     else:
-        force = power_command / current_velocity
-        print(f"Train {index+1} - Force: {force:.2f} N")
+        force = power_command / current_velocity  # F = P / v
 
-        frictional_force = 0.002 * mass * 9.8  # Adjust coefficient as needed
+    # Calculate frictional force (simplified model)
+    frictional_force = 0.002 * mass * 9.81  # F_friction = coefficient * mass * gravity
 
-        if force < frictional_force:
-            print(f"Train {index+1} has stopped moving due to insufficient force.")
-            force = 0
-        else:
-            force -= frictional_force
-            print(f"Train {index+1} - Frictional Force: {frictional_force:.2f} N")
+    # Calculate braking force (F_brake = a_brake * m)
+    brake_force = brake_deceleration * mass
 
-    # Calculate acceleration
-    acceleration = force / mass
-    print(f"Train {index+1} - Acceleration: {acceleration:.2f} m/s^2")
+    # Net force: power-based force minus friction and braking force
+    net_force = force - frictional_force - brake_force
 
-    # Limit acceleration to a maximum value (e.g., 0.5 m/s^2)
-    if acceleration > 0.5:
-        acceleration = 0.5
+    # Calculate acceleration (a = F / m)
+    acceleration = net_force / mass
 
-    # Update velocity
+    # Limit acceleration to realistic values (max acceleration and deceleration)
+    max_acceleration = 0.5  # m/s²
+    max_deceleration = -3.0  # m/s² (e.g., emergency braking)
+
+    if acceleration > max_acceleration:
+        acceleration = max_acceleration
+    elif acceleration < max_deceleration:
+        acceleration = max_deceleration
+
+    # Update the train data with the calculated acceleration
+    train_data.current_acceleration[index] = acceleration
+
+    # Update velocity (new_velocity = current_velocity + acceleration * delta_t)
     new_velocity = current_velocity + acceleration * delta_t
 
     # Ensure velocity doesn't go negative
     if new_velocity < 0:
-        new_velocity = 0
+        new_velocity = 0.0
 
-    # Update the train data
+    # Update the train data with the new velocity
     train_data.current_speed[index] = new_velocity  # in m/s
-    train_data.current_acceleration[index] = acceleration  # in m/s^2
 
-    # Update the train's position
+    # Update position (new_position = current_position + velocity * delta_t)
     new_position = train_data.current_position[index] + new_velocity * delta_t
     train_data.current_position[index] = new_position

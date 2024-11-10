@@ -1,12 +1,13 @@
 from PyQt6.QtCore import QObject, pyqtSignal, QTimer
 from TrainModel.power import calculate_train_speed
+from Resources.TrainTrainControllerComm import TrainTrainController
 
 class TrainData(QObject):
     """Class representing the data and state of all trains."""
     data_changed = pyqtSignal()
     announcement = pyqtSignal(list)  # List of announcements for all trains
 
-    def __init__(self, tc_communicate, tm_communicate, ctc_communicate):
+    def __init__(self, tc_communicate: TrainTrainController, tm_communicate, ctc_communicate):
         super().__init__()
 
         self.tc_communicate = tc_communicate
@@ -15,6 +16,8 @@ class TrainData(QObject):
 
         # List to store data for each train
         self.train_count = 0  # Initial train count
+        
+        self.passengers_leaving_list = []  # List to store passengers leaving at each station
 
         # Initialize lists for train data
         self.cabin_temperature = []
@@ -97,7 +100,7 @@ class TrainData(QObject):
         # Start periodic train updates
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_train_state)
-        self.timer.start(1000)  # Update every second
+        self.timer.start(100)  # Update every second
 
         # Start train updates
         self.start_train_updates()
@@ -122,11 +125,11 @@ class TrainData(QObject):
         self.announcement_text.append("Welcome aboard!")
 
         # Train Control Input Variables
-        self.commanded_power.append(0)  # kW
-        self.commanded_speed_tc.append(0)  # km/h from Track Model
-        self.commanded_speed.append(0)     # mph converted
-        self.authority.append(0)           # authority in block
-        self.commanded_authority.append(0) # feet converted
+        self.commanded_power.append(20)  # kW
+        self.commanded_speed_tc.append(20)  # km/h from Track Model
+        self.commanded_speed.append(20)     # mph converted
+        self.authority.append(20)           # authority in block
+        self.commanded_authority.append(20) # feet converted
         self.service_brake.append(False)
         self.exterior_light.append(False)#edit
         self.interior_light.append(False)
@@ -309,15 +312,20 @@ class TrainData(QObject):
 
         # Update train count
         self.train_count = ctc_train_count
+        print("Train Count:", self.train_count) # Print for debugging
 
         # Send current train count to Train Controller
         self.tc_communicate.train_count_signal.emit(self.train_count)
+        
+        self.write_to_trainController_trackModel()
 
         # Emit data_changed signal
         self.data_changed.emit()
 
     # Handler methods for incoming signals from Train Controller
     def set_power_command(self, power_list):
+        # Print power_list for debugging
+        print("Power Command List in Train Model:", power_list)
         if len(power_list) < max(1, self.train_count):
             # Ensure the list is long enough
             power_list = power_list + [0] * (max(1, self.train_count) - len(power_list))
@@ -474,7 +482,7 @@ class TrainData(QObject):
     def update_train_state(self):
         """Update the state of all trains."""
         # Prepare lists to collect data for signals that need them
-        passengers_leaving_list = [0] * self.train_count
+        self.passengers_leaving_list = [0] * self.train_count
 
         for index in range(self.train_count):
             if len(self.dispatch_train) > index and self.dispatch_train[index]:
@@ -490,18 +498,18 @@ class TrainData(QObject):
                 # Example: 10% of passengers leave at each station stop
                 passengers_leaving = int(0.1 * self.passenger_count[index])
                 self.passenger_count[index] -= passengers_leaving
-                passengers_leaving_list[index] = passengers_leaving
+                self.passengers_leaving_list[index] = passengers_leaving
                 self.update_train_weight(index)
             else:
-                passengers_leaving_list[index] = 0
+                self.passengers_leaving_list[index] = 0
 
         # After updating all trains, emit updated lists to Train Controller and Track Model
-        self.write_to_trainController_trackModel(passengers_leaving_list)
+        # self.write_to_trainController_trackModel(passengers_leaving_list)
 
         # Emit data_changed signal
         self.data_changed.emit()
 
-    def write_to_trainController_trackModel(self, passengers_leaving_list):
+    def write_to_trainController_trackModel(self):
         """Send updated data to Train Controller and Track Model via communication classes."""
         # Send data to Train Controller
         self.tc_communicate.commanded_speed_signal.emit(self.commanded_speed)  # km/h
@@ -517,7 +525,7 @@ class TrainData(QObject):
 
         # Send data to Track Model
         self.tm_communicate.position_signal.emit(self.current_position)  # meters
-        self.tm_communicate.number_passenger_leaving_signal.emit(passengers_leaving_list)
+        self.tm_communicate.number_passenger_leaving_signal.emit(self.passengers_leaving_list)
         self.tm_communicate.seat_vacancy_signal.emit(self.available_seats)
 
     def set_value(self, var_list, index, value):
