@@ -46,7 +46,7 @@ class MurphyPage(BasePage):
             button.setCheckable(True)
             button.setFont(QFont('Arial', 14, QFont.Weight.Bold))
             button.setFixedSize(160, 60)
-            button.setEnabled(False)  # Disable the button to prevent interaction
+            button.setEnabled(True)  # Enable the button to allow interaction
             button.setStyleSheet("""
                 QPushButton {
                     background-color: green;
@@ -59,6 +59,9 @@ class MurphyPage(BasePage):
                     color: black;
                 }
             """)
+
+            # Connect the button's toggled signal to a handler
+            button.toggled.connect(lambda checked, ft=failure: self.failure_button_toggled(checked, ft))
 
             failure_layout.addWidget(label)
             failure_layout.addWidget(button)
@@ -79,6 +82,11 @@ class MurphyPage(BasePage):
 
         # Initial display update
         self.update_display()
+
+    def failure_button_toggled(self, checked, failure_type):
+        """Handle the toggling of failure buttons."""
+        # Update the failure status in train_data
+        self.train_data.update_failure_button(self.current_train_index, failure_type, checked)
 
     def train_id_changed(self, new_train_id):
         """Handle Train ID change."""

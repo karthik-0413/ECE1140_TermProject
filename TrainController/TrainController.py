@@ -1130,7 +1130,7 @@ class TrainControllerUI(QWidget):
     ############################################
     
     def update_current_speed(self, current_speed: float):
-        self.current_speed_edit.setText(f"{current_speed:.2f} mph")
+        self.current_speed_edit.setText(f"{current_speed * 2.23 * 2.23:.2f} mph")
     
     def update_commanded_speed(self, commanded_speed: float):
         self.commanded_speed_edit.setText(f"{commanded_speed:.2f} mph")

@@ -2,7 +2,7 @@ import sys
 import os
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
-from ECE1140_TermProject.TrainController.TrainController import *
+from TrainController.TrainController import *
 import os
 from PyQt6.QtWidgets import QApplication
 

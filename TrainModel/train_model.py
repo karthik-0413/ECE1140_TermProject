@@ -55,7 +55,6 @@ class TrainModelPage(BasePage):
             ("Maximum Speed", "maximum_speed", "mph"),
             ("Current Speed", "current_speed_UI", "mph"),
             ("Total Car Weight", "total_car_weight", "tons"),
-            # Removed 'Train Length', 'Train Height', 'Train Width' from Dynamic Information
             ("Number of Cars", "number_of_cars", ""),
             ("Single Car Tare Weight", "single_car_tare_weight", "tons"),
             ("Current Acceleration", "current_acceleration", "ft/s²"),
@@ -173,7 +172,7 @@ class TrainModelPage(BasePage):
         buttons_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         # Emergency Brake Button
-        self.emergency_brake_button = QPushButton("Emergency Brake")
+        self.emergency_brake_button = QPushButton("Passenger Emergency Brake")
         # Set font and size
         emergency_button_font = QFont('Arial', 16, QFont.Weight.Bold)
         self.emergency_brake_button.setFont(emergency_button_font)
@@ -308,7 +307,7 @@ class TrainModelPage(BasePage):
             'passenger_count': '',
             'crew_count': '',
             'maximum_speed': 'mph',
-            'current_speed': 'mph',
+            'current_speed_UI': 'mph', #UUU
             'total_car_weight': 'tons',
             'number_of_cars': '',
             'single_car_tare_weight': 'tons',
