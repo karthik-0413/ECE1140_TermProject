@@ -395,13 +395,18 @@ class wayside_shell_class:
 
     def write(self):
 
+        ####################################
+        #     Green Line Emit Signals
+        ####################################
+
         # CTC Office
         self.ctc_wayside_comm_object.block_occupancy_signal.emit(self.write_block_occupancy)
 
         # Track Model
 
-
-        # Update Wayside user interface table
+        ####################################
+        #    Green Line Update UI
+        ####################################
 
         # Commanded Speed
         self.ui.green_line_cmd_speed = self.write_cmd_speed
@@ -425,8 +430,7 @@ class wayside_shell_class:
         self.ui.update_table()
 
         # Update Wayside user interface update log
-        self.ui.update_log_array()
-        self.ui.update_log_entries()
+        self.ui.update_log()
 
     ####################################################################################################
     #

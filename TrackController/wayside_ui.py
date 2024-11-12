@@ -1604,7 +1604,6 @@ class Ui_MainWindow(QWidget):
         ####################
 
         # Variables
-        log_entries = []
         past_sugg_speed = [None] * 151
         past_sugg_authority = [None] * 151
         past_sw_cmd = [None] * 6
@@ -1612,7 +1611,7 @@ class Ui_MainWindow(QWidget):
         past_cross_cmd = [None] * 2
 
         # Update Log
-        def update_log_array(self):
+        def update_log(self):
                 
                 # Variables
                 new_sugg_speed_entry = ''
@@ -1635,7 +1634,7 @@ class Ui_MainWindow(QWidget):
                                         new_sugg_speed_entry += "Suggested speed rejected"
 
                                 # Add entry to log
-                                self.log_entries.append(new_sugg_speed_entry)
+                                self.add_log_entry(new_sugg_speed_entry)
 
                 # Traverse through sugg authorities
                 for i in range(self.green_line_sugg_auth):
@@ -1651,7 +1650,7 @@ class Ui_MainWindow(QWidget):
                                         new_sugg_auth_entry += "Suggested authority rejected"
 
                                 # Add entry to log
-                                self.log_entries.append(new_sugg_auth_entry)
+                                self.add_log_entry(new_sugg_auth_entry)
 
                 # Traverse through switch commands
                 for i in range(self.green_line_sw_cmd):
@@ -1686,7 +1685,7 @@ class Ui_MainWindow(QWidget):
                                         new_sw_cmd_entry == f"Switch N2: {"N2 <-- Q" if self.green_line_sw_cmd[i] else "N2 --> O"}"
 
                                 # Add entry to log
-                                self.log_entries.append(new_sw_cmd_entry)
+                                self.add_log_entry(new_sw_cmd_entry)
 
                 # Traverse through signal commands
                 for i in range(self.green_line_sig_cmd):
@@ -1741,7 +1740,7 @@ class Ui_MainWindow(QWidget):
                                         new_sig_cmd_entry == f"Signal Yard: {"Red" if self.green_line_sig_cmd[i] else "Green"}"
 
                                 # Add entry to log
-                                self.log_entries.append(new_sig_cmd_entry)
+                                self.add_log_entry(new_sig_cmd_entry)
 
                 # Traverse through crossing commands
                 for i in range(self.green_line_cross_cmd):
@@ -1760,18 +1759,17 @@ class Ui_MainWindow(QWidget):
                                         new_cross_cmd_entry == f"Crossing T: {"Closed" if self.green_line_cross_cmd[i] else "Open"}"
 
                                 # Add entry to log
-                                self.log_entries.append(new_cross_cmd_entry)
+                                self.add_log_entry(new_cross_cmd_entry)
 
 
         # Add log entry to Update Log
-        def update_log_entries(self):
+        def add_log_entry(self, entry):
 
-                # Clear log table
-                self.UpdateLog.clear()
+                # Insert new row
+                self.UpdateLog.insertRow(0)
 
-                # Add log entries to log table
-                for entry in reversed(self.log_entries):
-                        self.UpdateLog.addItem(entry)
+                # Add log entry to new row
+                self.UpdateLog.setItem(0, 0, QtWidgets.QTableWidgetItem(entry))
                 
                 
 
