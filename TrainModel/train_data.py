@@ -130,10 +130,10 @@ class TrainData(QObject):
         self.announcement_text.append("Welcome aboard!")
 
         # Train Control Input Variables
-        self.commanded_power.append(20)  # kW
-        self.commanded_speed_tc.append(20)  # km/h from Track Model
-        self.commanded_speed.append(20)     # Convert km/h to m/s
-        self.commanded_speed_UI.append(20)  # Convert km/h to mph
+        self.commanded_power.append(0)  # kW
+        self.commanded_speed_tc.append(40)  # km/h from Track Model
+        self.commanded_speed.append(40)     # Convert km/h to m/s
+        self.commanded_speed_UI.append(40)  # Convert km/h to mph
         self.authority.append(20)           # authority in blocks
         self.commanded_authority.append(20) # Blocks
         self.service_brake.append(False)
@@ -323,9 +323,9 @@ class TrainData(QObject):
         # print("Train Count:", self.train_count)  # # print for debugging
 
         # Send current train count to Train Controller
-        self.tc_communicate.train_count_signal.emit(self.train_count)
+        # self.tc_communicate.train_count_signal.emit(self.train_count)
 
-        self.write_to_trainController_trackModel()
+        # self.write_to_trainController_trackModel()
 
         # Emit data_changed signal
         self.data_changed.emit()
@@ -343,19 +343,20 @@ class TrainData(QObject):
 
     def set_service_brake(self, state_list):
         """Handle service brake signals from Train Controller."""
+        # print("Service Brake List in Train Model:", state_list)
         if len(state_list) < max(1, self.train_count):
             state_list = state_list + [False] * (max(1, self.train_count) - len(state_list))
         self.service_brake = state_list
         self.data_changed.emit()
 
-    def set_emergency_brake(self, state_list):
+    def set_emergency_brake(self, state_list: list):
         """Handle emergency brake signals from Train Controller."""
         # if True in state_list:
-        print("Emergency Brake List in Train Model:", state_list)
-            # self.passenger_emergency_brake = state_list
         # print("Emergency Brake List in Train Model:", state_list)
-        if len(state_list) < max(1, self.train_count):
-            state_list = state_list + [False] * (max(1, self.train_count) - len(state_list))
+            # self.passenger_emergency_brake = state_list
+        print("Emergency Brake List in Train Model:", state_list)
+        # if len(state_list) < max(1, self.train_count):
+        #     state_list = state_list + [False] * (max(1, self.train_count) - len(state_list))
         self.emergency_brake = state_list
         self.data_changed.emit()
 
@@ -463,8 +464,11 @@ class TrainData(QObject):
         """Update the state of all trains."""
         # Prepare lists to collect data for signals that need them
         self.passengers_leaving_list = [0] * self.train_count
+            
 
         for index in range(self.train_count):
+            if self.emergency_brake[index] and self.current_speed[0] == 0.0:
+                self.emergency_brake[index] = False
             # Calculate train speed; brake logic is handled in power.py
             calculate_train_speed(self, index)
 
@@ -503,9 +507,9 @@ class TrainData(QObject):
         self.write_to_trainController_trackModel()
 
         # After emitting the data, reset passenger_emergency_brake entries
-        for index in range(self.train_count):
-            if self.passenger_emergency_brake[index]:
-                self.passenger_emergency_brake[index] = False
+        # for index in range(self.train_count):
+        #     if self.passenger_emergency_brake[index] and self.current_speed[index] == 0:
+        #         self.passenger_emergency_brake[index] = False
 
         # Emit data_changed signal
         self.data_changed.emit()
@@ -525,14 +529,14 @@ class TrainData(QObject):
         # Send data to Train Controller
         self.tc_communicate.commanded_speed_signal.emit(self.commanded_speed)  # mph for UI
         self.tc_communicate.commanded_authority_signal.emit(self.commanded_authority)
-        self.tc_communicate.current_velocity_signal.emit(self.current_speed)  # Convert m/s to mph
+        self.tc_communicate.current_velocity_signal.emit(self.current_speed)  # m/s
         self.tc_communicate.engine_failure_signal.emit(self.engine_failure)
         self.tc_communicate.brake_failure_signal.emit(self.brake_failure)
         self.tc_communicate.signal_failure_signal.emit(self.signal_failure)
         self.tc_communicate.actual_temperature_signal.emit(self.cabin_temperature)  # Fahrenheit
         self.tc_communicate.polarity_signal.emit(self.polarity)  # Pass polarity to Train Controller
         self.tc_communicate.passenger_brake_command_signal.emit(self.passenger_emergency_brake)
-        self.tc_communicate.train_count_signal.emit(self.train_count)
+        # self.tc_communicate.train_count_signal.emit(self.train_count)
 
         # Send data to Track Model
         self.tm_communicate.position_signal.emit(self.current_position)  # meters

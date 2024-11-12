@@ -273,14 +273,18 @@ class TrainModelPage(BasePage):
         index = self.current_train_index
         # Set passenger_emergency_brake for current train to True
         if len(self.train_data.passenger_emergency_brake) > index:
-            self.train_data.passenger_emergency_brake[index] = True
-            # Optionally, provide feedback
-            self.emergency_brake_button.setText("Emergency Brake Activated")
-            # Optionally, disable the button if you want to prevent multiple presses
-            # self.emergency_brake_button.setEnabled(False)
-        else:
-            # Handle case where index is out of range
-            pass
+            if self.train_data.passenger_emergency_brake[index]:
+                self.train_data.passenger_emergency_brake[index] = False
+                self.emergency_brake_button.setText("Passenger Emergency Brake")
+            elif not self.train_data.passenger_emergency_brake[index]:
+                self.train_data.passenger_emergency_brake[index] = True
+                # Optionally, provide feedback
+                self.emergency_brake_button.setText("Emergency Brake Activated")
+                # Optionally, disable the button if you want to prevent multiple presses
+                # self.emergency_brake_button.setEnabled(False)
+            else:
+                # Handle case where index is out of range
+                pass
 
     def set_light_button_style(self, button, is_on, label, font, size):
         button.setText(f"{label}: {'On' if is_on else 'Off'}")

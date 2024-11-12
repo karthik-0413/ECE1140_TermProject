@@ -6,7 +6,8 @@ from PyQt6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QLineEdit,
     QPushButton, QSizePolicy, QSpacerItem, QApplication, QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem, QHeaderView, QLabel, QComboBox
 )
-from PyQt6.QtCore import Qt, QCoreApplication, pyqtSignal, QObject
+from PyQt6.QtCore import Qt, QCoreApplication, pyqtSignal, QObject, QTimer
+from PyQt6.QtGui import QDoubleValidator
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from Resources.TrainTrainControllerComm import TrainTrainController as Communicate
@@ -71,9 +72,6 @@ class BrakeStatus(QObject):
     emergency_brake_signal = pyqtSignal(bool)
     passenger_brake_command_signal = pyqtSignal(bool)
     driver_brake_signal = pyqtSignal(bool)
-
-    pressed_emergency_brake = pyqtSignal(bool)
-    pressed_service_brake = pyqtSignal(bool)
     
     def __init__(self, communicator: Communicate):
         super().__init__()
@@ -82,50 +80,43 @@ class BrakeStatus(QObject):
         self.driver_brake_status = False
         self.passenger_brake = False
         self.communicator = communicator
-        self.pressed_emergency_brake.connect(self.apply_ebrake)
-
-    def apply_ebrake(self, status: bool):
-        counter = 0
-        while status:
-            counter = counter + 1
-            print(f"Emergency Brake Activated! {counter}")
-            self.driver_emergency_brake_command = True
-            self.emergency_brake_signal.emit(self.driver_emergency_brake_command)
-            self.communicator.emergency_brake_command_signal.emit([self.driver_emergency_brake_command])
-            print("Emergency Brake Activated!")
-
-    def toggle_emergency_brake(self):
-        self.driver_emergency_brake_command = not self.driver_emergency_brake_command
-        self.emergency_brake_signal.emit(self.driver_emergency_brake_command)
-        self.communicator.emergency_brake_command_signal.emit([self.driver_emergency_brake_command])
-        print("Emergency Brake Toggled!")
         
     def apply_emergency_brake(self):
         self.driver_emergency_brake_command = True
         self.emergency_brake_signal.emit(self.driver_emergency_brake_command)
+        # self.speed_control.desired_velocity = 0.0
+        # self.power_class.update_power_command(self.speed_control.current_velocity, self.speed_control.desired_velocity)
         # self.communicator.emergency_brake_command_signal.emit(self.driver_emergency_brake_command)
-        self.communicator.emergency_brake_command_signal.emit([self.driver_emergency_brake_command])
+        # self.communicator.emergency_brake_command_signal.emit([self.driver_emergency_brake_command])
         print("Emergency Brake Activated!")
         
     def apply_service_brake(self):
         self.driver_service_brake_command = True
         self.service_brake_signal.emit(self.driver_service_brake_command)
-        self.communicator.service_brake_command_signal.emit([self.driver_service_brake_command])
         # print("Service Brake Applied.")
         
     def no_apply_emergency_brake(self):
         self.driver_emergency_brake_command = False
         self.emergency_brake_signal.emit(self.driver_emergency_brake_command)
-        self.communicator.emergency_brake_command_signal.emit([self.driver_emergency_brake_command])
+        # self.communicator.emergency_brake_command_signal.emit([self.driver_emergency_brake_command])
         # self.send_emergency_brake_command(self.driver_emergency_brake_command)
-        # print("Emergency Brake Dectivated!")
+        print("Emergency Brake Dectivated!")
         
     def no_apply_service_brake(self):
         self.driver_service_brake_command = False
         self.service_brake_signal.emit(self.driver_service_brake_command)
-        self.communicator.service_brake_command_signal.emit([self.driver_service_brake_command])
         # self.send_service_brake_command(self.driver_service_brake_command)
         # print("Service Brake Released.")
+    
+    def handle_emergency_brake_command(self, status: bool):
+        if not status:
+            self.driver_emergency_brake_command = True
+            self.emergency_brake_signal.emit(self.driver_emergency_brake_command)
+            # print("Emergency Brake Applied")
+        elif status:
+            self.driver_emergency_brake_command = False
+            self.emergency_brake_signal.emit(self.driver_emergency_brake_command)
+            # print("Emergency Brake Released")
         
     def handle_passenger_brake_command(self, status: bool):
         if status:
@@ -137,7 +128,7 @@ class BrakeStatus(QObject):
             self.driver_emergency_brake_command = False
             self.passenger_brake_command_signal.emit(self.driver_emergency_brake_command)
             # print("Passenger Brake Released")
-        
+    
 class PowerCommand(QObject):
     power_command_signal = pyqtSignal(float)
     
@@ -164,14 +155,24 @@ class PowerCommand(QObject):
         
         
     def update_power_command(self, current_velocity: float, desired_velocity: float):
-        if round(desired_velocity, 2) == round(current_velocity, 2):
+        # if manual mode is selected, then brakes should be applied whenever it is pressed
+        # if self.speed_control.operation_mode == 0:
+        if self.brake_status.driver_service_brake_command and current_velocity < desired_velocity:
+            self.brake_status.no_apply_service_brake()
+            
+        elif round(desired_velocity, 2) == round(current_velocity, 2):
+            self.power_command = 0
+            # Put Brake Status has OFF
+            self.brake_status.no_apply_service_brake()
+            self.power_command_signal.emit(self.power_command)
+            
+        elif current_velocity > desired_velocity: 
             self.power_command = 0
             self.power_command_signal.emit(self.power_command)
-            # Put Brake Status has OFF
+            self.brake_status.apply_service_brake()
+            
+        elif current_velocity < desired_velocity:
             # self.brake_status.no_apply_service_brake()
-            # self.brake_status.no_apply_emergency_brake()
-            self.power_command_signal.emit(self.power_command)
-        else:
             # print(f"Desired Speed: {desired_velocity:.2f} m/s, Current Speed: {current_velocity:.2f} m/s")
             
             # Finding the velocity error
@@ -179,7 +180,7 @@ class PowerCommand(QObject):
             
             # Using the different cases from lecture slides
             if self.power_command < self.max_power:
-                self.uk_current = self.uk_previous + (1.0 / 2) * (self.ek_current + self.ek_previous)
+                self.uk_current = self.uk_previous + (0.25 / 2) * (self.ek_current + self.ek_previous)
             else:
                 self.uk_current = self.uk_previous
             
@@ -193,45 +194,120 @@ class PowerCommand(QObject):
             # Power command bound
             if self.power_command > self.max_power:
                 self.power_command = self.max_power
+                self.power_command_signal.emit(self.power_command)
                 # Put Brake Status has OFF
-                self.brake_status.driver_brake_status = False
-                self.brake_status.driver_service_brake_command = False
-                self.brake_status.driver_brake_status = False
-                self.brake_status.driver_emergency_brake_command = False
+                # self.brake_status.driver_brake_status = False
+                # self.brake_status.driver_service_brake_command = False
+                # self.brake_status.driver_brake_status = False
+                # self.brake_status.driver_emergency_brake_command = False
                 # self.brake_status.no_apply_service_brake()
                 # self.brake_status.no_apply_emergency_brake()
                 
             elif self.power_command <= 0:
+                self.power_command_signal.emit(self.power_command)
+                print("NEGAIVE POWER COMMAND")
+                # Brake until current velocity is equal to desired velocity, so until power_command = 0
                 self.power_command = 0
-                self.brake_status.driver_service_brake_command = True
-                self.brake_status.driver_brake_status = True
-                self.brake_status.driver_emergency_brake_command = False
+                # self.brake_status.driver_service_brake_command = True
+                # self.brake_status.driver_brake_status = True
+                # self.brake_status.driver_emergency_brake_command = False
                 # print("Service Brake Applied")
                 # self.brake_status.no_apply_service_brake()
                 # self.brake_status.no_apply_emergency_brake()
                 
             else:
                 self.power_command = self.power_command
+                self.power_command_signal.emit(self.power_command)
                 # self.reset_service_brake_button_style()
-                self.brake_status.driver_service_brake_command = False
-                self.brake_status.driver_brake_status = False
-                self.brake_status.driver_emergency_brake_command = False
+                # self.brake_status.driver_service_brake_command = False
+                # self.brake_status.driver_brake_status = False
+                # self.brake_status.driver_emergency_brake_command = False
                 # self.brake_status.no_apply_service_brake()
                 # self.brake_status.no_apply_emergency_brake()
+                    
+                # self.power_command_signal.emit(self.power_command)
+                # print(f"Power Command in Train Controller: {self.power_command}")
+        # elif self.speed_control.operation_mode == 1:
+        #     if self.brake_status.driver_service_brake_command:
+        #         self.brake_status.apply_service_brake()
+        #     if round(desired_velocity, 2) == round(current_velocity, 2):
+        #         self.power_command = 0
+        #         # Put Brake Status has OFF
+        #         self.brake_status.no_apply_service_brake()
+        #         self.power_command_signal.emit(self.power_command)
                 
-            self.power_command_signal.emit(self.power_command)
-            # print(f"Power Command in Train Controller: {self.power_command}")
-    
+        #     elif current_velocity > desired_velocity: 
+        #         self.power_command = 0
+        #         self.power_command_signal.emit(self.power_command)
+        #         self.brake_status.apply_service_brake()
+                
+        #     elif current_velocity < desired_velocity:
+        #         self.brake_status.no_apply_service_brake()
+        #         print(f"Desired Speed: {desired_velocity:.2f} m/s, Current Speed: {current_velocity:.2f} m/s")
+                
+        #         # Finding the velocity error
+        #         self.ek_current = desired_velocity - current_velocity
+                
+        #         # Using the different cases from lecture slides
+        #         if self.power_command < self.max_power:
+        #             self.uk_current = self.uk_previous + (0.25 / 2) * (self.ek_current + self.ek_previous)
+        #         else:
+        #             self.uk_current = self.uk_previous
+                
+        #         # Finding the power command
+        #         self.power_command = self.tuning.kp * self.ek_current + self.tuning.ki * self.uk_current
+
+        #         # Updating the previous variables for the next iteration
+        #         self.ek_previous = self.ek_current
+        #         self.uk_previous = self.uk_current
+                
+        #         # Power command bound
+        #         if self.power_command > self.max_power:
+        #             self.power_command = self.max_power
+        #             self.power_command_signal.emit(self.power_command)
+        #             # Put Brake Status has OFF
+        #             # self.brake_status.driver_brake_status = False
+        #             # self.brake_status.driver_service_brake_command = False
+        #             # self.brake_status.driver_brake_status = False
+        #             # self.brake_status.driver_emergency_brake_command = False
+        #             # self.brake_status.no_apply_service_brake()
+        #             # self.brake_status.no_apply_emergency_brake()
+                    
+        #         elif self.power_command <= 0:
+        #             self.power_command_signal.emit(self.power_command)
+        #             print("NEGAIVE POWER COMMAND")
+        #             # Brake until current velocity is equal to desired velocity, so until power_command = 0
+        #             self.power_command = 0
+        #             # self.brake_status.driver_service_brake_command = True
+        #             # self.brake_status.driver_brake_status = True
+        #             # self.brake_status.driver_emergency_brake_command = False
+        #             # print("Service Brake Applied")
+        #             # self.brake_status.no_apply_service_brake()
+        #             # self.brake_status.no_apply_emergency_brake()
+                    
+        #         else:
+        #             self.power_command = self.power_command
+        #             self.power_command_signal.emit(self.power_command)
+        #             # self.reset_service_brake_button_style()
+        #             # self.brake_status.driver_service_brake_command = False
+        #             # self.brake_status.driver_brake_status = False
+        #             # self.brake_status.driver_emergency_brake_command = False
+        #             # self.brake_status.no_apply_service_brake()
+        #             # self.brake_status.no_apply_emergency_brake()
+                    
+        #         # self.power_command_signal.emit(self.power_command)
+        #         # print(f"Power Command in Train Controller: {self.power_command}")
+        
 class SpeedControl(QObject):
     commanded_speed_signal = pyqtSignal(float)
     current_velocity_signal = pyqtSignal(float)
     
     def __init__(self, power_class: PowerCommand, brake_status: BrakeStatus, communicator: Communicate):
         super().__init__()
-        self.commanded_speed = 13.89
+        self.commanded_speed = 40
         self.setpoint_speed = 0.0
         self.setpoint_speed_submit = False
-        self.speed_limit = 13.89
+        self.speed_limit = 40
         self.operation_mode = 1 # 1 for manual, 0 for automatic
         self.current_velocity = 0.0
         self.desired_velocity = 0.0
@@ -243,6 +319,8 @@ class SpeedControl(QObject):
         
     def find_max_speed(self):
         self.max_speed = min(self.speed_limit, self.commanded_speed)
+        # convert km/hr to m/s
+        self.max_speed = self.max_speed / 3.6
         # print(f"Max Speed: {self.max_speed}")
         
     def update_speed_limit(self, speed: float):
@@ -253,19 +331,28 @@ class SpeedControl(QObject):
         if speed == 0:
             self.current_velocity = 0
             self.current_velocity_signal.emit(self.current_velocity)
-            self.brake_status.passenger_brake = False
-            self.brake_status.driver_brake_status = False
-            self.brake_status.driver_service_brake_command = False
-            self.brake_status.driver_emergency_brake_command = False
+            if self.brake_status.driver_emergency_brake_command:
+                self.brake_status.no_apply_emergency_brake()
+            # self.brake_status.passenger_brake = False
+            # self.brake_status.driver_brake_status = False
+            # self.brake_status.driver_service_brake_command = False
+            # self.brake_status.driver_emergency_brake_command = False
             # self.communicator.passenger_brake_command_signal.emit(False)    
+            
+        if self.brake_status.driver_service_brake_command and speed < self.desired_velocity:
+            self.brake_status.no_apply_service_brake()
             
         self.current_velocity = speed
         self.power_class.update_power_command(self.current_velocity, self.desired_velocity)
+        
+        if self.power_class.power_command == 0.0 and self.brake_status.driver_service_brake_command:
+            self.desired_velocity = 0
+            
         self.current_velocity_signal.emit(self.current_velocity)
         # print(f"Current Speed: {self.current_velocity:.2f} m/s")
         
     def handle_commanded_speed(self, speed: float):
-        self.commanded_speed = speed
+        self.commanded_speed = speed / 1.60934
         self.find_max_speed()
         self.commanded_speed_signal.emit(self.commanded_speed)
         # print(f"Commanded Speed: {self.commanded_speed:.2f} m/s")
@@ -295,7 +382,7 @@ class SpeedControl(QObject):
         self.max_speed = min(self.speed_limit, self.commanded_speed)
         # print(f"Max Speed: {self.max_speed}")
         
-        self.desired_velocity = speed * 0.44704
+        self.desired_velocity = speed
         
         if (self.desired_velocity) > self.max_speed:
             self.desired_velocity = self.max_speed
@@ -305,24 +392,29 @@ class SpeedControl(QObject):
         
         self.power_class.update_power_command(self.current_velocity, self.desired_velocity)
         self.power_class.power_command_signal.emit(self.power_class.power_command)
+        if self.power_class.power_command == 0.0 and self.brake_status.driver_service_brake_command:
+            self.desired_velocity = 0
         # Update the power command display
         # self.power_command_edit.setText(f"{self.power_command:.2f}")
         # print(f"Power Command: {self.power_class.power_command} kW")
  
     def update_setpoint_speed_auto(self):
-        if self.desired_velocity < self.speed_limit and self.desired_velocity < self.commanded_speed and self.commanded_speed < self.speed_limit:
-            # If the setpoint speed is less than the speed limit and the commanded speed
-            self.desired_velocity = self.commanded_speed
-            # self.current_speed_edit.setText(f"{self.current_velocity * 2.23694:.2f} mph")
-            # self.setpoint_speed_edit.clear()
-        elif self.desired_velocity < self.speed_limit and self.desired_velocity < self.commanded_speed and self.commanded_speed > self.speed_limit:
-            # If the setpoint speed is less than the speed limit and the commanded speed is greater than the speed limit
-            self.desired_velocity = self.speed_limit
-            # self.current_speed_edit.setText(f"{self.current_velocity * 2.23694:.2f} mph")
-            # self.setpoint_speed_edit.clear()
+        self.desired_velocity = self.max_speed
+        # if self.desired_velocity < self.speed_limit and self.desired_velocity < self.commanded_speed and self.commanded_speed < self.speed_limit:
+        #     # If the setpoint speed is less than the speed limit and the commanded speed
+        #     self.desired_velocity = self.commanded_speed
+        #     # self.current_speed_edit.setText(f"{self.current_velocity * 2.23694:.2f} mph")
+        #     # self.setpoint_speed_edit.clear()
+        # elif self.desired_velocity < self.speed_limit and self.desired_velocity < self.commanded_speed and self.commanded_speed > self.speed_limit:
+        #     # If the setpoint speed is less than the speed limit and the commanded speed is greater than the speed limit
+        #     self.desired_velocity = self.speed_limit
+        #     # self.current_speed_edit.setText(f"{self.current_velocity * 2.23694:.2f} mph")
+        #     # self.setpoint_speed_edit.clear()
             
         self.power_class.update_power_command(self.current_velocity, self.desired_velocity)
         self.power_class.power_command_signal.emit(self.power_class.power_command)
+        if self.power_class.power_command == 0.0 and self.brake_status.driver_service_brake_command:
+            self.desired_velocity = 0
         # Update the power command display
         # self.power_command_edit.setText(f"{self.power_command:.2f}")
         # print(f"Power Command: {self.power_class.power_command} kW")
@@ -830,6 +922,8 @@ class TrainControllerUI(QWidget):
 
         # Setpoint Speed Input Box
         self.setpoint_speed_edit = QLineEdit()
+        # Only number validation
+        self.setpoint_speed_edit.setValidator(QDoubleValidator(0.0, 100.0, 2))
         self.setpoint_speed_edit.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.setpoint_speed_edit.setPlaceholderText("50")
         self.setpoint_speed_edit.setStyleSheet("margin-left: 50px; max-width: 100px; color: black; border: 2px solid black; border-radius: 5px; padding: 5px;")
@@ -875,7 +969,10 @@ class TrainControllerUI(QWidget):
         # Emergency Brake Button
         self.emergency_brake_button = QPushButton("EMERGENCY BRAKE")
         self.emergency_brake_button.setStyleSheet("border: 3px solid black; margin-left: 40px; background-color: red; color: white; font-size: 20px; font-weight: bold; padding: 50px; border-radius: 10px;")
-        self.emergency_brake_button.pressed.connect(self.toggle_emergency_brake_button)
+        self.emergency_brake_button.clicked.connect(self.toggle_emergency_brake_button)
+        self.emergency_brake_button.pressed.connect(self.divet_in_emergency_brake_buttons)
+        self.emergency_brake_button.released.connect(self.reset_emergency_brake_button_style)
+        # self.emergency_brake_button.pressed.connect(lambda: self.brake_class.pressed_emergency_brake.emit(True))
         # self.emergency_brake_button.pressed.connect(self.divet_in_emergency_brake_buttons)
         # self.emergency_brake_button.released.connect(self.reset_emergency_brake_button_style)
         # self.emergency_brake_button.released.connect(
@@ -1152,12 +1249,13 @@ class TrainControllerUI(QWidget):
         
     
     def toggle_emergency_brake_button(self):
-        if self.brake_class.driver_emergency_brake_command:
-            self.brake_class.no_apply_emergency_brake()
-            self.reset_emergency_brake_button_style()
-        else:
-            self.brake_class.apply_emergency_brake()
-            self.divet_in_emergency_brake_buttons()
+        self.brake_class.handle_emergency_brake_command(self.brake_class.driver_emergency_brake_command)
+        # if self.brake_class.driver_emergency_brake_command:
+        #     self.brake_class.no_apply_emergency_brake()
+        #     # self.reset_emergency_brake_button_style()
+        # else:
+        #     self.brake_class.apply_emergency_brake()
+        #     # self.divet_in_emergency_brake_buttons()
 
     def toggle_service_brake_button(self):
         if self.brake_class.driver_service_brake_command:
@@ -1175,10 +1273,10 @@ class TrainControllerUI(QWidget):
     ############################################
     
     def update_current_speed(self, current_speed: float):
-        self.current_speed_edit.setText(f"{current_speed * 2.23 * 2:.2f} mph")
+        self.current_speed_edit.setText(f"{current_speed * 2.23:.2f} mph")
     
     def update_commanded_speed(self, commanded_speed: float):
-        self.commanded_speed_edit.setText(f"{commanded_speed:.2f} mph")
+        self.commanded_speed_edit.setText(f"{commanded_speed / 1.609:.2f} mph")
     
     def update_commanded_authority(self, commanded_authority: float):
         self.commanded_authority_edit.setText(f"{commanded_authority} blocks")
@@ -1280,11 +1378,12 @@ class TrainControllerUI(QWidget):
             self.passenger_brake_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
             
     def send_setpoint_speed(self):
-        # self.speed_control.desired_velocity = float(self.setpoint_speed_edit.text()) * 0.44704
-        # # print(f"Setpoint Speed: {self.speed_control.desired_velocity}")
-        # if self.speed_control.desired_velocity > self.speed_control.max_speed:
-        #     # Set setpoint speed input to max speed value
-        #     self.setpoint_speed_edit.setText(f"{self.speed_control.max_speed * 2.23694:.2f}")
+        self.speed_control.desired_velocity = float(self.setpoint_speed_edit.text()) * 0.44704
+        # 20 mph = 8.9408 m/s
+        print(f"Setpoint Speed: {self.speed_control.desired_velocity}")
+        if self.speed_control.desired_velocity > self.speed_control.max_speed:
+            # Set setpoint speed input to max speed value
+            self.setpoint_speed_edit.setText(f"{self.speed_control.max_speed * 2.23694:.2f}")
             
         self.speed_control.update_setpoint_speed_calculations(float(self.setpoint_speed_edit.text()) * 0.44704)
             

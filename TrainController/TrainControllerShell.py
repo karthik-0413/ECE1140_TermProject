@@ -1,12 +1,11 @@
 import sys
 import os
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
-from TrainController.TrainController import *
 import os
 from PyQt6.QtWidgets import QApplication
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from TrainController.TrainController import *
 from Resources.TrainTrainControllerComm import TrainTrainController as Communicate
 
 class TrainControllerShell:
@@ -135,7 +134,10 @@ class TrainControllerShell:
         service_brake_commands = [train_controller.brake_class.driver_service_brake_command for train_controller in self.train_controller_list]
         self.communicator.service_brake_command_signal.emit(service_brake_commands)
         
-        emergency_brake_commands = [train_controller.brake_class.driver_emergency_brake_command for train_controller in self.train_controller_list]
+        # emergency_brake_commands = [train_controller.brake_class.driver_emergency_brake_command for train_controller in self.train_controller_list]
+        # self.communicator.emergency_brake_command_signal.emit(emergency_brake_commands)
+        # only accounting for first train in train list
+        emergency_brake_commands = [self.train_controller_list[0].brake_class.driver_emergency_brake_command]
         self.communicator.emergency_brake_command_signal.emit(emergency_brake_commands)
         
         desired_temperatures = [train_controller.temperature.desired_temperature for train_controller in self.train_controller_list]
@@ -201,6 +203,8 @@ class TrainControllerShell:
     def update_passenger_brake_command(self, passenger_brake_command: list):
         for i in range(len(passenger_brake_command)):
             self.train_controller_list[i].brake_class.handle_passenger_brake_command(passenger_brake_command[i])
+            if passenger_brake_command[i]:
+                self.train_controller_list[i].speed_control.desired_velocity = 0
         # print(f"Passenger Brake Command: {passenger_brake_command}")
 
     def update_actual_temperature(self, actual_temperature: list):

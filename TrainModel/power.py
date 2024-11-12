@@ -61,7 +61,7 @@ def calculate_train_speed(train_data, index):
 
     # Ensure velocity doesn't go negative
     train_data.current_speed[index] = max(new_velocity, 0.0)
-    train_data.current_speed_UI[index] = train_data.current_speed[index] * 2.23 * 2 * 0.99453  # in mph
+    train_data.current_speed_UI[index] = train_data.current_speed[index] * 2.23  # in mph
 
     # Update position
     train_data.current_position[index] += train_data.current_speed[index] * delta_t
