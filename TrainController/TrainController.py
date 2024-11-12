@@ -326,6 +326,7 @@ class SpeedControl(QObject):
         self.brake_status = brake_status
         self.communicator = communicator
         self.max_speed = 0.0
+        self.prev_service_brake = False
         self.find_max_speed()
         
     def find_max_speed(self):
@@ -352,6 +353,15 @@ class SpeedControl(QObject):
             # self.brake_status.driver_service_brake_command = False
             # self.brake_status.driver_emergency_brake_command = False
             # self.communicator.passenger_brake_command_signal.emit(False)    
+            
+        if self.brake_status.driver_service_brake_command:
+            self.prev_service_brake = True
+            
+        if not self.brake_status.driver_service_brake_command:
+            self.brake_status.no_apply_service_brake()
+            if self.prev_service_brake:
+                self.desired_velocity = speed
+                self.prev_service_brake = False
             
         if self.brake_status.driver_emergency_brake_command and speed == 0.0:
             self.brake_status.no_apply_emergency_brake()
