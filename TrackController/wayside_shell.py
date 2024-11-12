@@ -93,6 +93,7 @@ class wayside_shell_class:
         self.read_sugg_speed = sugg_speed_array
 
         # Update Wayside user interface table
+        self.ui.past_sugg_speed = self.ui.green_line_sugg_speed
         self.ui.green_line_sugg_speed = sugg_speed_array
         self.sugg_speed_check = 1
 
@@ -113,6 +114,7 @@ class wayside_shell_class:
         self.read_sugg_authority = sugg_authority_array
 
         # Update Wayside user interface table
+        self.ui.past_sugg_authority = self.ui.green_line_sugg_auth
         self.ui.green_line_sugg_auth = sugg_authority_array
         self.sugg_authority_check = 1
         
@@ -400,13 +402,31 @@ class wayside_shell_class:
 
 
         # Update Wayside user interface table
+
+        # Commanded Speed
         self.ui.green_line_cmd_speed = self.write_cmd_speed
+
+        # Commanded Authority
         self.ui.green_line_cmd_auth = self.write_cmd_authority
+
+        # Switch Command
+        self.ui.past_sw_cmd = self.ui.green_line_sw_cmd
         self.ui.green_line_sw_cmd = self.write_switch_cmd
+
+        # Signal Command
+        self.ui.past_sig_cmd = self.ui.green_line_sig_cmd
         self.ui.green_line_sig_cmd = self.write_signal_cmd
+
+        # Crossing Command
+        self.ui.green_line_cross_cmd = self.write_crossing_cmd
         self.ui.green_line_cross_cmd = self.write_crossing_cmd
 
+        # Update Wayside user interface data table
         self.ui.update_table()
+
+        # Update Wayside user interface update log
+        self.ui.update_log_array()
+        self.ui.update_log_entries()
 
     ####################################################################################################
     #

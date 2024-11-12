@@ -1060,6 +1060,10 @@ class Ui_MainWindow(QWidget):
         #       Update UI Elements
         #########################################
 
+        ####################
+        #  Update Table
+        ####################
+
         # Update Wayside Select ComboBox
         def update_wayside_select_combobox(self):
                 # Clear Contents
@@ -1593,6 +1597,184 @@ class Ui_MainWindow(QWidget):
         def filter_button_clicked(self, filter):
                 self.update_filter_button(filter)
                 self.update_table()
+
+
+        ####################
+        #  Update Log
+        ####################
+
+        # Variables
+        log_entries = []
+        past_sugg_speed = [None] * 151
+        past_sugg_authority = [None] * 151
+        past_sw_cmd = [None] * 6
+        past_sig_cmd = [None] * 11
+        past_cross_cmd = [None] * 2
+
+        # Update Log
+        def update_log_array(self):
+                
+                # Variables
+                new_sugg_speed_entry = ''
+                new_sugg_auth_entry = ''
+                new_sw_cmd_entry = ''
+                new_sig_cmd_entry = ''
+                new_cross_cmd_entry = ''
+
+                # Traverse through sugg speeds
+                for i in range(self.green_line_sugg_speed):
+
+                        # Check if new speed is different from past speed
+                        if self.green_line_sugg_speed[i] != self.past_sugg_speed[i] and self.green_line_sugg_speed != None:
+                                new_sugg_speed_entry == f"Block {i} suggested speed: {self.green_line_sugg_speed[i]} Km/Hr\n"
+
+                                # Check if sugg speed is passed on as cmd speed
+                                if self.green_line_cmd_speed[i] == self.green_line_sugg_speed[i]:
+                                        new_sugg_speed_entry += "Suggested speed approved"
+                                else:
+                                        new_sugg_speed_entry += "Suggested speed rejected"
+
+                                # Add entry to log
+                                self.log_entries.append(new_sugg_speed_entry)
+
+                # Traverse through sugg authorities
+                for i in range(self.green_line_sugg_auth):
+
+                        # Check if new authority is different from past authority
+                        if self.green_line_sugg_auth[i] != self.past_sugg_authority[i] and self.green_line_sugg_auth != None:
+                                new_sugg_auth_entry == f"Block {i} suggested authority: {self.green_line_sugg_auth[i]} blocks\n"
+
+                                # Check if sugg authority is passed on as cmd authority
+                                if self.green_line_cmd_auth[i] == self.green_line_sugg_auth[i]:
+                                        new_sugg_auth_entry += "Suggested authority approved"
+                                else:
+                                        new_sugg_auth_entry += "Suggested authority rejected"
+
+                                # Add entry to log
+                                self.log_entries.append(new_sugg_auth_entry)
+
+                # Traverse through switch commands
+                for i in range(self.green_line_sw_cmd):
+
+                        # Check if new switch command is different from past switch command
+                        if self.green_line_sw_cmd[i] != self.past_sw_cmd[i]:
+
+                                # Check which switch changed
+                                
+                                # Switch D
+                                if i == 0:
+                                        new_sw_cmd_entry == f"Switch D: {"D <-- A" if self.green_line_sw_cmd[i] else "D --> C"}"
+
+                                # Switch F
+                                elif i == 1:
+                                        new_sw_cmd_entry == f"Switch F: {"F <-- Z" if self.green_line_sw_cmd[i] else "F --> G"}"
+
+                                # Switch I
+                                elif i == 2:
+                                        new_sw_cmd_entry == f"Switch I: {"I --> J" if self.green_line_sw_cmd[i] else "I --> Yard"}"
+
+                                # Switch K
+                                elif i == 3:
+                                        new_sw_cmd_entry == f"Switch K: {"K <-- Yard" if self.green_line_sw_cmd[i] else "K <-- J"}"
+
+                                # Switch N1
+                                elif i == 4:
+                                        new_sw_cmd_entry == f"Switch N1: {"N1 <-- M" if self.green_line_sw_cmd[i] else "N1 --> R"}"
+
+                                # Switch N2
+                                elif i == 5:
+                                        new_sw_cmd_entry == f"Switch N2: {"N2 <-- Q" if self.green_line_sw_cmd[i] else "N2 --> O"}"
+
+                                # Add entry to log
+                                self.log_entries.append(new_sw_cmd_entry)
+
+                # Traverse through signal commands
+                for i in range(self.green_line_sig_cmd):
+
+                        # Check if new signal command is different from past signal command
+                        if self.green_line_sig_cmd[i] != self.past_sig_cmd[i]:
+
+                                # Check which signal changed
+                                
+                                # Signal C
+                                if i == 0:
+                                        new_sig_cmd_entry == f"Signal C: {"Red" if self.green_line_sig_cmd[i] else "Green"}"
+
+                                # Signal D
+                                elif i == 1:
+                                        new_sig_cmd_entry == f"Signal D: {"Red" if self.green_line_sig_cmd[i] else "Green"}"
+
+                                # Signal F
+                                elif i == 2:
+                                        new_sig_cmd_entry == f"Signal F: {"Red" if self.green_line_sig_cmd[i] else "Green"}"
+
+                                # Signal G
+                                elif i == 3:
+                                        new_sig_cmd_entry == f"Signal G: {"Red" if self.green_line_sig_cmd[i] else "Green"}"
+
+                                # Signal J
+                                elif i == 4:
+                                        new_sig_cmd_entry == f"Signal J: {"Red" if self.green_line_sig_cmd[i] else "Green"}"
+
+                                # Signal K
+                                elif i == 5:
+                                        new_sig_cmd_entry == f"Signal K: {"Red" if self.green_line_sig_cmd[i] else "Green"}"
+
+                                # Signal N1
+                                elif i == 6:
+                                        new_sig_cmd_entry == f"Signal N1: {"Red" if self.green_line_sig_cmd[i] else "Green"}"
+
+                                # Signal N2
+                                elif i == 7:
+                                        new_sig_cmd_entry == f"Signal N2: {"Red" if self.green_line_sig_cmd[i] else "Green"}"
+
+                                # Signal O
+                                elif i == 8:
+                                        new_sig_cmd_entry == f"Signal O: {"Red" if self.green_line_sig_cmd[i] else "Green"}"
+
+                                # Signal R
+                                elif i == 9:
+                                        new_sig_cmd_entry == f"Signal R: {"Red" if self.green_line_sig_cmd[i] else "Green"}"
+
+                                # Signal Yard
+                                elif i == 10:
+                                        new_sig_cmd_entry == f"Signal Yard: {"Red" if self.green_line_sig_cmd[i] else "Green"}"
+
+                                # Add entry to log
+                                self.log_entries.append(new_sig_cmd_entry)
+
+                # Traverse through crossing commands
+                for i in range(self.green_line_cross_cmd):
+
+                        # Check if new crossing command is different from past crossing command
+                        if self.green_line_cross_cmd[i] != self.past_cross_cmd[i]:
+
+                                # Check which crossing changed
+                                
+                                # Crossing E
+                                if i == 0:
+                                        new_cross_cmd_entry == f"Crossing E: {"Closed" if self.green_line_cross_cmd[i] else "Open"}"
+
+                                # Crossing T
+                                elif i == 1:
+                                        new_cross_cmd_entry == f"Crossing T: {"Closed" if self.green_line_cross_cmd[i] else "Open"}"
+
+                                # Add entry to log
+                                self.log_entries.append(new_cross_cmd_entry)
+
+
+        # Add log entry to Update Log
+        def update_log_entries(self):
+
+                # Clear log table
+                self.UpdateLog.clear()
+
+                # Add log entries to log table
+                for entry in reversed(self.log_entries):
+                        self.UpdateLog.addItem(entry)
+                
+                
+
 
         ###################################
         #       Upload PLC Program
