@@ -1,4 +1,4 @@
-import sys
+import sys, os
 import csv
 import re
 from typing import List, Dict
@@ -6,6 +6,9 @@ from PyQt6 import QtWidgets, QtCore, QtGui
 from PyQt6.QtCore import (Qt, QObject, pyqtSignal)
 from Track_Model_UI import Ui_TrackModel
 import random
+
+from TrackTrainCommunicate import TrackTrainComms as TrainComms
+from WaysideTrackCommunicate import WaysideTrackComms as WaysideComms
 
 cmdSpeed: List[int] = []
 cmdAuthority: List[int] = []
@@ -48,10 +51,8 @@ switchDict = {
 }
 
 class Track(QObject):
-    def __init__(self, line, totBlocks, trackType):
-        self.line = line
-        self.totBlocks = totBlocks
-        self.trackType = trackType
+    def __init__(self):
+        super().__init__()
         self.heater = False
         self.switches = []
         self.stations = []
@@ -61,68 +62,87 @@ class Track(QObject):
         self.lenghtArray = []
         self.occupancies = []
 
-    def getBlock(self, blockNum):
-        return self.blocks[blockNum - 1]
+class Passenger(QObject):
+    def __init__(self, communicator: TrainComms):
+        super().__init__()
+        self.num_passengers_at_station = []
+        self.num_passengers_embarking = []
+        self.num_passengers_disembarking = []
+        self.open_train_seats = []
+        self.communicator = communicator
 
-    def addBlock(self, block):
-        self.blocks.append(block)
+    # generate a random number of passengers at the station between 1 and 
+    def gen_num_passengers_at_station(self):
+        self.num_passengers_at_station = random.randint(1, 222)
 
-    def toggleHeater(self, tempStatus):
-        self.heater = tempStatus
+    # return the value of the number of passengers at the station
+    def get_num_passengers_at_station(self):
+        return self.num_passengers_at_station
 
-    def getStations(self, stationName):
-        for i in self.stations:
-            if i.stationName == stationName:
-                return i.blocks
-        return 0
+    # update the number of passengers at the station according to people boarding and leaving the train
+    def update_num_passengers_at_station(self):
+        self.num_passengers_at_station -= self.num_passengers_embarking
+        self.num_passengers_at_station += self.num_passengers_disembarking
 
-class Station:
-    def __init__(self, stationName, side):
-        self.stationName = stationName
-        self.side = side
-        self.vacancy = 0
-        self.numPassengersEmbarking = 0
-        self.numPassengersDisembarking = 0
-        self.numPassengersAtStation = 0
-        self.blocks = []
+    # get the number of passengers leaving the train from the train model
+    def get_num_passengers_leaving(self):
+        self.communicator.number_passenger_leaving_signal.connect(self.handle_num_passenger_leaving_signal)
 
-    def getVacancy(self, vacancy):
-        self.vacancy = vacancy
-        return vacancy
+    # store the number of passengers leaving the train
+    def handle_num_passenger_leaving_signal(self, num_people: list):
+        self.num_passengers_disembarking = num_people
 
-    def getPassengersAtStation(self, numPassengersAtStation):
-        delta = self.numPassengersDisembarking - self.numPassengersEmbarking
-        numPassengersAtStation += delta
-        return numPassengersAtStation
+    # generate a random number between 0 and the number of people at station, send this value to the train model
+    def get_num_passengers_boarding(self):
+        self.num_passengers_embarking = random.randint(0, min(self.num_passengers_at_station, self.open_train_seats))
+        self.communicator.number_passenger_boarding_signal.emit(self.num_passengers_embarking)
+    
+    # store the number of passengers leaving the train
+    def handle_seat_vacancy_signal(self, train_vacancy: list): 
+        self.open_train_seats = train_vacancy
 
-    def getPassengersEmbarking(self, numPassengersEmbarking):
-        self.numPassengersEmbarking = random.randint(0, self.vacancy)
-        return numPassengersEmbarking
+    # get the number of open seats on the train from the train model
+    def get_seat_vacancy(self):
+        self.communicator.seat_vacancy_signal.connect(self.handle_seat_vacancy_signal)
 
-    def getPassengersDisembarking(self, numPassengersDisembarking):
-        self.numPassengersDisembarking = numPassengersDisembarking
-        return numPassengersDisembarking
+class Station(QObject):
+    def __init__(self, communicator: WaysideComms):
+        self.station_status = []
+        self.communicator = communicator
 
-class Switch:
-    def __init__(self, joint, leg1, leg2):
-        self.joint = joint
-        if leg1 > leg2:
-            temp = leg1
-            leg1 = leg2
-            leg2 = temp
+class Switch(QObject):
+    def __init__(self, communicator: WaysideComms):
+        self.switch_status = []
+        self.signal_status = []
+        self.communicator = communicator
 
-        self.leg1 = leg1
-        self.leg2 = leg2
-        self.thisSwitch = self.leg1
+    # def get_switch_cmds(self, switch_state):
+    #     self.switch_status = switch_state
 
-    def setSwtich(self, switchCmd):
-        if switchCmd:
-            self.thisSwitch = self.leg2
-        else:
-            self.thisSwitch = self.leg1
+    # def get_signal_cmds(self, signal_state):
+    #     self.signal_status = signal_state
 
-class Block:
+    def handle_switch_cmds(self, switch_state):
+        self.switch_status = switch_state
+        
+
+class Crossing(QObject):
+    crossing_cmd_signal = pyqtSignal(list)
+
+    def __init__(self, communicator: WaysideComms):
+        self.crossing_status = []
+
+class Block(QObject):
+    commanded_speed_signal = pyqtSignal(list)
+    commanded_authority_signal = pyqtSignal(list)
+    block_occupancies_signal = pyqtSignal(list)
+    block_grade_signal = pyqtSignal(list)
+    block_elevation_signal = pyqtSignal(list)
+    polarity_signal = pyqtSignal(list)
+    position_signal = pyqtSignal(list)
+
     def __init__(self, line, section: str, number: int, length: float, grade: float, speedLimit: float, infrastructure: str, elevation: float, cumulativeElevation: float, side, polarity: bool = False, functional: bool = True, occupied: bool = False):
+        super().__init__()
         self.line = line
         self.section = section
         self.number = number
@@ -137,7 +157,17 @@ class Block:
         self.functional = functional
         self.occupied = occupied
 
-    @staticmethod
+        self.postion_list = []
+
+        self.position_signal.connect(self.get_positions)
+
+    def get_positions(self, positions):
+        self.position_list = positions
+
+    def set_positions(self):
+        positions = [50, 1000, 2000, 7000]
+        self.position_signal.emit(positions)
+
     def checkFailure(ui) -> bool:
         return any(toggle.isChecked() for toggle in [ui.breakStatus1, ui.breakStatus2, ui.breakStatus3])
 
@@ -197,9 +227,10 @@ class Block:
                 block.polarity = defaultGreenPath.index(block.number) % 2 == 0
 
 class MainWindow(QtWidgets.QMainWindow):
-    def __init__(self):
+    def __init__(self, Communicator: WaysideComms):
         super().__init__()
         self.ui = Ui_TrackModel()
+        self.communicator = Communicator
         self.ui.setupUi(self)
         self.setupConnections()
         self.blocks = {}
@@ -215,6 +246,20 @@ class MainWindow(QtWidgets.QMainWindow):
         self.tempIncreaseTimer = QtCore.QTimer(self)
         self.tempIncreaseTimer.timeout.connect(self.increaseTemp)
         # Block.setPath(self.blocks, defaultGreenPath)
+
+
+    def read_wayside(self):
+        pass
+
+    def write_wayside(self):
+        pass
+
+    def read_train(self):
+        Passenger.get_num_passengers_leaving()
+        Passenger.get_seat_vacancy()
+
+    def write_train(self):
+        pass
 
     def setupConnections(self) -> None:
         self.ui.uploadButton.clicked.connect(self.uploadFile)
