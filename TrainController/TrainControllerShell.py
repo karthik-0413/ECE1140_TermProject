@@ -134,10 +134,8 @@ class TrainControllerShell:
         service_brake_commands = [train_controller.brake_class.driver_service_brake_command for train_controller in self.train_controller_list]
         self.communicator.service_brake_command_signal.emit(service_brake_commands)
         
-        # emergency_brake_commands = [train_controller.brake_class.driver_emergency_brake_command for train_controller in self.train_controller_list]
-        # self.communicator.emergency_brake_command_signal.emit(emergency_brake_commands)
-        # only accounting for first train in train list
-        emergency_brake_commands = [self.train_controller_list[0].brake_class.driver_emergency_brake_command]
+        emergency_brake_commands = [train_controller.brake_class.driver_emergency_brake_command for train_controller in self.train_controller_list]
+        print(f"Emergency Brake Commands: {emergency_brake_commands}")
         self.communicator.emergency_brake_command_signal.emit(emergency_brake_commands)
         
         desired_temperatures = [train_controller.temperature.desired_temperature for train_controller in self.train_controller_list]
@@ -303,6 +301,7 @@ class TrainControllerShell:
 
     def handle_emergency_brake_status(self, emergency_brake_status: bool):
         if self.train_controller_list:
+            print(f"Emergency Brake Status: {emergency_brake_status}")
             self.train_controller_list[self.current_train_id - 1].update_emergency_brake_status(emergency_brake_status)
             self.train_controller_list[self.current_train_id - 1].brake_class.driver_emergency_brake_command = emergency_brake_status
 

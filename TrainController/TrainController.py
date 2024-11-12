@@ -109,14 +109,15 @@ class BrakeStatus(QObject):
         # print("Service Brake Released.")
     
     def handle_emergency_brake_command(self, status: bool):
-        if not status:
-            self.driver_emergency_brake_command = True
-            self.emergency_brake_signal.emit(self.driver_emergency_brake_command)
-            # print("Emergency Brake Applied")
-        elif status:
-            self.driver_emergency_brake_command = False
-            self.emergency_brake_signal.emit(self.driver_emergency_brake_command)
-            # print("Emergency Brake Released")
+        self.apply_emergency_brake()
+        # if not status:
+        #     self.driver_emergency_brake_command = True
+        #     self.emergency_brake_signal.emit(self.driver_emergency_brake_command)
+        #     # print("Emergency Brake Applied")
+        # elif status:
+        #     self.driver_emergency_brake_command = False
+        #     self.emergency_brake_signal.emit(self.driver_emergency_brake_command)
+        #     # print("Emergency Brake Released")
         
     def handle_passenger_brake_command(self, status: bool):
         if status:
@@ -157,10 +158,20 @@ class PowerCommand(QObject):
     def update_power_command(self, current_velocity: float, desired_velocity: float):
         # if manual mode is selected, then brakes should be applied whenever it is pressed
         # if self.speed_control.operation_mode == 0:
-        # if self.brake_status.driver_service_brake_command and current_velocity < desired_velocity:
+        # if self.brake_status.driver_service_brake_command:
         #     self.brake_status.no_apply_service_brake()
+        
+        if desired_velocity == 0.0:
+            self.power_command = 0
+            self.power_command_signal.emit(self.power_command)
+            self.brake_status.apply_service_brake()
+            if current_velocity == 0.0:
+                self.brake_status.no_apply_service_brake()
+            # Put Brake Status has OFF
+            # self.brake_status.no_apply_service_brake()
+            # self.brake_status.no_apply_emergency_brake()
             
-        if round(desired_velocity, 2) == round(current_velocity, 2):
+        elif round(desired_velocity, 2) == round(current_velocity, 2):
             self.power_command = 0
             # Put Brake Status has OFF
             # self.brake_status.no_apply_service_brake()
@@ -333,19 +344,25 @@ class SpeedControl(QObject):
             self.current_velocity_signal.emit(self.current_velocity)
             if self.brake_status.driver_emergency_brake_command:
                 self.brake_status.no_apply_emergency_brake()
+            if self.brake_status.driver_service_brake_command:
+                self.brake_status.no_apply_service_brake()
+                self.desired_velocity = 0.0
             # self.brake_status.passenger_brake = False
             # self.brake_status.driver_brake_status = False
             # self.brake_status.driver_service_brake_command = False
             # self.brake_status.driver_emergency_brake_command = False
             # self.communicator.passenger_brake_command_signal.emit(False)    
             
-        # if self.brake_status.driver_service_brake_command and speed < self.desired_velocity:
-        #     self.brake_status.no_apply_service_brake()
+        if self.brake_status.driver_emergency_brake_command and speed == 0.0:
+            self.brake_status.no_apply_emergency_brake()
+            
+        if self.brake_status.driver_service_brake_command and speed == 0.0:
+            self.brake_status.no_apply_service_brake()
             
         self.current_velocity = speed
         self.power_class.update_power_command(self.current_velocity, self.desired_velocity)
         
-        if self.power_class.power_command == 0.0 and self.brake_status.driver_service_brake_command:
+        if self.power_class.power_command == 0.0 and self.brake_status.driver_service_brake_command and self.current_velocity == 0.0:
             self.desired_velocity = 0
             
         self.current_velocity_signal.emit(self.current_velocity)
@@ -392,7 +409,7 @@ class SpeedControl(QObject):
         
         self.power_class.update_power_command(self.current_velocity, self.desired_velocity)
         self.power_class.power_command_signal.emit(self.power_class.power_command)
-        if self.power_class.power_command == 0.0 and self.brake_status.driver_service_brake_command:
+        if self.power_class.power_command == 0.0 and self.brake_status.driver_service_brake_command and self.current_velocity == 0.0:
             self.desired_velocity = 0
         # Update the power command display
         # self.power_command_edit.setText(f"{self.power_command:.2f}")
@@ -413,7 +430,7 @@ class SpeedControl(QObject):
             
         self.power_class.update_power_command(self.current_velocity, self.desired_velocity)
         self.power_class.power_command_signal.emit(self.power_class.power_command)
-        if self.power_class.power_command == 0.0 and self.brake_status.driver_service_brake_command:
+        if self.power_class.power_command == 0.0 and self.brake_status.driver_service_brake_command and self.current_velocity == 0.0:
             self.desired_velocity = 0
         # Update the power command display
         # self.power_command_edit.setText(f"{self.power_command:.2f}")
@@ -969,9 +986,9 @@ class TrainControllerUI(QWidget):
         # Emergency Brake Button
         self.emergency_brake_button = QPushButton("EMERGENCY BRAKE")
         self.emergency_brake_button.setStyleSheet("border: 3px solid black; margin-left: 40px; background-color: red; color: white; font-size: 20px; font-weight: bold; padding: 50px; border-radius: 10px;")
-        self.emergency_brake_button.clicked.connect(self.toggle_emergency_brake_button)
-        self.emergency_brake_button.pressed.connect(self.divet_in_emergency_brake_buttons)
-        self.emergency_brake_button.released.connect(self.reset_emergency_brake_button_style)
+        self.emergency_brake_button.pressed.connect(self.handle_emergency_brake_button)
+        # self.emergency_brake_button.pressed.connect(self.divet_in_emergency_brake_buttons)
+        # self.emergency_brake_button.released.connect(self.reset_emergency_brake_button_style)
         # self.emergency_brake_button.pressed.connect(lambda: self.brake_class.pressed_emergency_brake.emit(True))
         # self.emergency_brake_button.pressed.connect(self.divet_in_emergency_brake_buttons)
         # self.emergency_brake_button.released.connect(self.reset_emergency_brake_button_style)
@@ -1248,14 +1265,14 @@ class TrainControllerUI(QWidget):
         
         
     
-    def toggle_emergency_brake_button(self):
-        self.brake_class.handle_emergency_brake_command(self.brake_class.driver_emergency_brake_command)
-        # if self.brake_class.driver_emergency_brake_command:
-        #     self.brake_class.no_apply_emergency_brake()
-        #     # self.reset_emergency_brake_button_style()
-        # else:
-        #     self.brake_class.apply_emergency_brake()
-        #     # self.divet_in_emergency_brake_buttons()
+    def handle_emergency_brake_button(self):
+        # self.brake_class.handle_emergency_brake_command(self.brake_class.driver_emergency_brake_command)
+        if self.brake_class.driver_emergency_brake_command:
+            self.brake_class.no_apply_emergency_brake()
+            # self.reset_emergency_brake_button_style()
+        else:
+            self.brake_class.apply_emergency_brake()
+            # self.divet_in_emergency_brake_buttons()
 
     def toggle_service_brake_button(self):
         if self.brake_class.driver_service_brake_command:

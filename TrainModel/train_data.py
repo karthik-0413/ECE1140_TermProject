@@ -4,13 +4,14 @@ from PyQt6.QtCore import QObject, pyqtSignal, QTimer
 from TrainModel.power import calculate_train_speed
 import random  # For simulating passenger departures
 from Resources.TrainTrainControllerComm import TrainTrainController
+from Resources.TrackTrainComm import TrackTrainModelComm
 
 class TrainData(QObject):
     """Class representing the data and state of all trains."""
     data_changed = pyqtSignal()
     announcement = pyqtSignal(list)  # List of announcements for all trains
 
-    def __init__(self, tc_communicate: TrainTrainController, tm_communicate, ctc_communicate):
+    def __init__(self, tc_communicate: TrainTrainController, tm_communicate: TrackTrainModelComm, ctc_communicate):
         super().__init__()
 
         self.tc_communicate = tc_communicate
@@ -354,7 +355,7 @@ class TrainData(QObject):
         # if True in state_list:
         # print("Emergency Brake List in Train Model:", state_list)
             # self.passenger_emergency_brake = state_list
-        print("Emergency Brake List in Train Model:", state_list)
+        # print("Emergency Brake List in Train Model:", state_list)
         # if len(state_list) < max(1, self.train_count):
         #     state_list = state_list + [False] * (max(1, self.train_count) - len(state_list))
         self.emergency_brake = state_list
