@@ -1,3 +1,5 @@
+# train_model_page.py
+
 from PyQt6.QtGui import QFont, QPixmap, QImage
 from PyQt6.QtWidgets import (
     QLabel, QVBoxLayout, QHBoxLayout, QGridLayout,
@@ -51,13 +53,12 @@ class TrainModelPage(BasePage):
             ("Passenger Count", "passenger_count", ""),
             ("Crew Count", "crew_count", ""),
             ("Maximum Speed", "maximum_speed", "mph"),
-            ("Current Speed", "current_speed", "mph"),
+            ("Current Speed", "current_speed_UI", "mph"),
             ("Total Car Weight", "total_car_weight", "tons"),
-            # Removed 'Train Length', 'Train Height', 'Train Width' from Dynamic Information
             ("Number of Cars", "number_of_cars", ""),
             ("Single Car Tare Weight", "single_car_tare_weight", "tons"),
             ("Current Acceleration", "current_acceleration", "ft/s²"),
-            ("Commanded Speed", "commanded_speed", "mph"),
+            ("Commanded Speed", "commanded_speed_UI", "mph"),
             ("Commanded Authority", "commanded_authority", "ft"),
             ("Available Seats", "available_seats", ""),
             ("Current Train Weight", "current_train_weight", "tons"),
@@ -167,9 +168,22 @@ class TrainModelPage(BasePage):
 
         # Buttons
         buttons_layout = QVBoxLayout()
-        buttons_layout.setSpacing(20)  # Increased spacing between buttons
+        buttons_layout.setSpacing(25)  # Increased spacing between buttons
         buttons_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
+        # Emergency Brake Button
+        self.emergency_brake_button = QPushButton("Passenger Emergency Brake")
+        # Set font and size
+        emergency_button_font = QFont('Arial', 16, QFont.Weight.Bold)
+        self.emergency_brake_button.setFont(emergency_button_font)
+        self.emergency_brake_button.setFixedSize(500, 150)  # Larger size
+        self.emergency_brake_button.setStyleSheet("background-color: red; color: white; font-weight: bold;")
+        # Connect the button's clicked signal
+        self.emergency_brake_button.clicked.connect(self.emergency_brake_pressed)
+        # Add the button to the buttons_layout
+        buttons_layout.addWidget(self.emergency_brake_button)
+
+        # Other Buttons
         self.interior_light_button = QPushButton("Interior Light: Off")
         self.exterior_light_button = QPushButton("Exterior Light: Off")
         self.left_door_button = QPushButton("Left Door: Closed")
@@ -254,6 +268,20 @@ class TrainModelPage(BasePage):
         # Initial display update
         self.update_display()
 
+    def emergency_brake_pressed(self):
+        """Handle emergency brake button press."""
+        index = self.current_train_index
+        # Set passenger_emergency_brake for current train to True
+        if len(self.train_data.passenger_emergency_brake) > index:
+            self.train_data.passenger_emergency_brake[index] = True
+            # Optionally, provide feedback
+            self.emergency_brake_button.setText("Emergency Brake Activated")
+            # Optionally, disable the button if you want to prevent multiple presses
+            # self.emergency_brake_button.setEnabled(False)
+        else:
+            # Handle case where index is out of range
+            pass
+
     def set_light_button_style(self, button, is_on, label, font, size):
         button.setText(f"{label}: {'On' if is_on else 'Off'}")
         button.setFont(font)
@@ -279,13 +307,13 @@ class TrainModelPage(BasePage):
             'passenger_count': '',
             'crew_count': '',
             'maximum_speed': 'mph',
-            'current_speed': 'mph',
+            'current_speed_UI': 'mph', #UUU
             'total_car_weight': 'tons',
             'number_of_cars': '',
             'single_car_tare_weight': 'tons',
             'current_acceleration': 'ft/s²',
-            'commanded_speed': 'mph',
-            'commanded_authority': 'ft',
+            'commanded_speed_UI': 'mph',
+            'commanded_authority': 'block',
             'available_seats': '',
             'current_train_weight': 'tons',
             # Static units

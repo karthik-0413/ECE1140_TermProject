@@ -17,7 +17,7 @@ class TrainControllerShell:
         
         # Setting up the parameters
         self.communicator = communicator
-        self.trainControllerUI = trainControllerUI
+        
         
         # Initializing the variables needed
         self.current_train_id = 1
@@ -25,6 +25,7 @@ class TrainControllerShell:
         
         # Calling all of the necessary __init__ functions
         self.create_and_add_train_controller_and_engineer_ui()
+        self.trainControllerUI = self.train_controller_list[self.current_train_id - 1]
         self.connect_signals()
         # self.communicator.train_count_signal.connect(self.handle_train_id)
         self.read_from_train_model()
@@ -264,7 +265,7 @@ class TrainControllerShell:
             # power_commands = [train_controller.power_class.power_command for train_controller in self.train_controller_list]
             # self.communicator.power_command_signal.emit(power_commands)
         self.train_controller_list[self.current_train_id - 1].update_power_command(power_command)
-        # self.train_controller_list[self.current_train_id - 1].power_class.power_command = power_command
+        self.train_controller_list[self.current_train_id - 1].power_class.power_command = power_command
 
     def handle_exterior_lights(self, exterior_lights: bool):
         if self.train_controller_list:

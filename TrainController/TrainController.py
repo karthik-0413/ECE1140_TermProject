@@ -143,8 +143,8 @@ class PowerCommand(QObject):
             self.power_command = 0
             self.power_command_signal.emit(self.power_command)
             # Put Brake Status has OFF
-            self.brake_status.no_apply_service_brake()
-            self.brake_status.no_apply_emergency_brake()
+            # self.brake_status.no_apply_service_brake()
+            # self.brake_status.no_apply_emergency_brake()
             return self.power_command
 
         print(f"Desired Speed: {desired_velocity:.2f} m/s, Current Speed: {current_velocity:.2f} m/s")
@@ -173,17 +173,17 @@ class PowerCommand(QObject):
             self.brake_status.driver_service_brake_command = False
             self.brake_status.driver_brake_status = False
             self.brake_status.driver_emergency_brake_command = False
-            self.brake_status.no_apply_service_brake()
-            self.brake_status.no_apply_emergency_brake()
+            # self.brake_status.no_apply_service_brake()
+            # self.brake_status.no_apply_emergency_brake()
             
         elif self.power_command <= 0:
             self.power_command = 0
-            self.brake_status.driver_service_brake_command = True
-            self.brake_status.driver_brake_status = True
-            self.brake_status.driver_emergency_brake_command = False
-            print("Service Brake Applied")
-            self.brake_status.apply_service_brake()
-            self.brake_status.no_apply_emergency_brake()
+            # self.brake_status.driver_service_brake_command = True
+            # self.brake_status.driver_brake_status = True
+            # self.brake_status.driver_emergency_brake_command = False
+            # print("Service Brake Applied")
+            # self.brake_status.apply_service_brake()
+            # self.brake_status.no_apply_emergency_brake()
             
         else:
             self.power_command = self.power_command
@@ -191,8 +191,8 @@ class PowerCommand(QObject):
             self.brake_status.driver_service_brake_command = False
             self.brake_status.driver_brake_status = False
             self.brake_status.driver_emergency_brake_command = False
-            self.brake_status.no_apply_service_brake()
-            self.brake_status.no_apply_emergency_brake()
+            # self.brake_status.no_apply_service_brake()
+            # self.brake_status.no_apply_emergency_brake()
             
         self.power_command_signal.emit(self.power_command)
         print(f"Power Command in Train Controller: {self.power_command}")
@@ -285,16 +285,18 @@ class SpeedControl(QObject):
         print(f"Power Command: {self.power_class.power_command} kW")
  
     def update_setpoint_speed_auto(self):
-        if self.desired_velocity < self.speed_limit and self.desired_velocity < self.commanded_speed and self.commanded_speed < self.speed_limit:
-            # If the setpoint speed is less than the speed limit and the commanded speed
-            self.desired_velocity = self.commanded_speed
-            # self.current_speed_edit.setText(f"{self.current_velocity * 2.23694:.2f} mph")
-            # self.setpoint_speed_edit.clear()
-        elif self.desired_velocity < self.speed_limit and self.desired_velocity < self.commanded_speed and self.commanded_speed > self.speed_limit:
-            # If the setpoint speed is less than the speed limit and the commanded speed is greater than the speed limit
-            self.desired_velocity = self.speed_limit
-            # self.current_speed_edit.setText(f"{self.current_velocity * 2.23694:.2f} mph")
-            # self.setpoint_speed_edit.clear()
+        self.desired_velocity = self.max_speed
+        
+        # if self.desired_velocity < self.speed_limit and self.desired_velocity < self.commanded_speed and self.commanded_speed < self.speed_limit:
+        #     # If the setpoint speed is less than the speed limit and the commanded speed
+        #     self.desired_velocity = self.commanded_speed
+        #     # self.current_speed_edit.setText(f"{self.current_velocity * 2.23694:.2f} mph")
+        #     # self.setpoint_speed_edit.clear()
+        # elif self.desired_velocity < self.speed_limit and self.desired_velocity < self.commanded_speed and self.commanded_speed > self.speed_limit:
+        #     # If the setpoint speed is less than the speed limit and the commanded speed is greater than the speed limit
+        #     self.desired_velocity = self.speed_limit
+        #     # self.current_speed_edit.setText(f"{self.current_velocity * 2.23694:.2f} mph")
+        #     # self.setpoint_speed_edit.clear()
             
         self.power_class.update_power_command(self.current_velocity, self.desired_velocity)
         self.power_class.power_command_signal.emit(self.power_class.power_command)
@@ -369,8 +371,8 @@ class Lights(QObject):
     
     def __init__(self, speed_control: SpeedControl):
         super().__init__()
-        self.exterior_lights = False
-        self.interior_lights = False
+        self.exterior_lights = None
+        self.interior_lights = None
         self.speed_control = speed_control
             
     def turn_on_exterior_lights(self):
@@ -443,7 +445,8 @@ class Position(QObject):
     # Connect function for the Communicate class
     def handle_polarity_change(self, polarity: bool):
         self.polarity = polarity
-        self.speed_control.update_speed_limit(self.green_speed_limit[self.current_block])
+        current_index = self.default_path_blocks.index(self.current_block)
+        self.speed_control.update_speed_limit(self.green_speed_limit[self.current_block + 1])
         self.commanded_authority -= 1
         self.commanded_authority_signal.emit(self.commanded_authority)
         
@@ -460,27 +463,29 @@ class Position(QObject):
         print(f"Polarity: {self.polarity}")
         
     def check_block_underground(self):
-        if "UNDERGROUND" in self.green_underground[self.current_block]:
+        current_index = self.default_path_blocks.index(self.current_block)
+        if "UNDERGROUND" in self.green_underground[self.current_block + 1]:
             self.light.turn_on_exterior_lights()
             self.light.turn_on_interior_lights()
             print("Underground Block")
-        elif "UNDERGROUND" not in self.green_underground[self.current_block]:
-            self.light.turn_off_exterior_lights()
-            self.light.turn_off_interior_lights()
-            print("Above Ground Block")
+        # elif "UNDERGROUND" not in self.green_underground[current_index]:
+        #     self.light.turn_off_exterior_lights()
+        #     self.light.turn_off_interior_lights()
+        #     print("Above Ground Block")
             
             
     def check_current_block(self):
         print(f"Current Block: {self.current_block}")
         if self.commanded_authority == 0:
             # Open Doors
-            if "Left" in self.green_station_door[self.current_block] and  "Right" not in self.green_station_door[self.current_block]:
+            current_index = self.default_path_blocks.index(self.current_block)
+            if "Left" in self.green_station_door[self.current_block + 1] and  "Right" not in self.green_station_door[self.current_block + 1]:
                 self.door.open_left_door()
                 print("Left door opened")
-            elif "Right" in self.green_station_door[self.current_block] and  "Left" not in self.green_station_door[self.current_block]:
+            elif "Right" in self.green_station_door[self.current_block + 1] and  "Left" not in self.green_station_door[self.current_block + 1]:
                 self.door.open_right_door()
                 print("Right door opened")
-            elif "Left" in self.green_station_door[self.current_block] and  "Right" in self.green_station_door[self.current_block]:
+            elif "Left" in self.green_station_door[self.current_block + 1] and  "Right" in self.green_station_door[self.current_block + 1]:
                 self.door.open_left_door()
                 self.door.open_right_door()
                 print("Both doors opened")
@@ -508,8 +513,9 @@ class Position(QObject):
             self.power_class.update_power_command(self.speed_control.current_velocity, self.speed_control.desired_velocity)
         
     def find_station_name(self):
+        current_index = self.default_path_blocks.index(self.current_block)
         # Grab everything after the first space in the string and before the next ";" character
-        after_space = self.green_station[self.current_block].split(' ', 1)[1]
+        after_space = self.green_station[self.current_block + 1].split(' ', 1)[1]
         
         # Split the remaining part at the semicolon and take the first part
         self.station_name = after_space.split(';', 1)[1].split(';')[0].strip()
