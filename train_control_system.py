@@ -1,16 +1,59 @@
+###########################################################################################
+#                                                                                         #
+#                          Import Modules and Communication Classes                       #
+#                                                                                         #
+###########################################################################################
+
+###################################
+#             Modules             #
+###################################
+
+# CTC Office
 from CTC_Office.CTC_frontend import CTC_frontend
+
+# Wayside Controller
+from TrackController import wayside_shell
+
+# Track Model
+
+
+# Train Model
 from TrainModel.main import MainWindow
 from TrainModel.CTC_communicate import CTC_Train_Model_Communicate
-from PyQt6.QtWidgets import QApplication, QMainWindow
-from PyQt6.QtCore import Qt, QTimer
 from Resources.CTCTrain import CTCTrain
-from Resources.Clock import *
-from Resources.TrainTrainControllerComm import TrainTrainController
-from TrainController.TrainController import *
-from TrainController.TrainControllerShell import TrainControllerShell
 from TrainModel.train_data import TrainData
 
+# Train Controller
+from TrainController.TrainController import *
+from TrainController.TrainControllerShell import TrainControllerShell
+from Resources.TrainTrainControllerComm import TrainTrainController
+
+# Clock
+from Resources.Clock import *
+
+# Other
+from PyQt6.QtWidgets import QApplication, QMainWindow
+from PyQt6.QtCore import Qt, QTimer
 import sys
+
+###################################
+#         Communications          #
+###################################
+
+# CTC <-> Wayside Controller
+from Resources import CTCWaysideComm
+
+# Wayside Controller <-> Track Model
+
+
+# Track Model <-> Train Model
+
+
+# Train Model <-> Train Controller
+
+
+
+
 
 
 # Function to be triggered by clock tick
@@ -33,13 +76,15 @@ if __name__ == '__main__':
     
     # CTC Setup
     ctc_window = QMainWindow()
-    ctc_window = QMainWindow()
 
     # Train Model Setup
     # (No need to create another QApplication)
     
     # Train Controller Setup
     # (No need to create another QApplication)
+
+    # CTC <--> Wayside Controller Communication
+    ctc_wayside_comm = CTCWaysideComm.CTCWaysideControllerComm()
 
     # CTC -> Train Model Communication
     comm1 = CTC_Train_Model_Communicate()
@@ -51,6 +96,9 @@ if __name__ == '__main__':
     # CTC
     ctc_ui = CTC_frontend(comm1)
     ctc_ui.setupUi(ctc_window)
+
+    # Wayside Controller
+    wayside_controller_shell = wayside_shell.wayside_shell_class(ctc_wayside_comm)
 
     # Train Model
     tm_window = MainWindow(comm1, comm5)

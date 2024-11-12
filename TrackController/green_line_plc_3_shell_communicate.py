@@ -23,9 +23,9 @@
 #
 ####################################################################################################
 
-from PyQt6.QtCore import pyqtSignal
+from PyQt6.QtCore import pyqtSignal, QObject
 
-class green_line_plc_3:
+class green_line_plc_3(QObject):
 
     ###################################
     #     Inputs from CTC Office

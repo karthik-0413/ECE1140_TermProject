@@ -8,7 +8,7 @@
 # Program:          Wayside User Interface      
 #
 # Created:          11/05/2024
-# Last Update:      11/10/2024
+# Last Update:      11/11/2024
 # Last Updated by:  Zachary McPherson
 # Python Version:   3.12.6
 # PyQt Version:     6.7.1
@@ -22,8 +22,9 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtWidgets import QFileDialog, QWidget
 import subprocess
 import sys
+import os
 
-
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 
 class Ui_MainWindow(QWidget):
         def setupUi(self, MainWindow):
@@ -964,12 +965,12 @@ class Ui_MainWindow(QWidget):
                 self.WaysideSelectComboBox.currentIndexChanged.connect(self.clear_table)
 
                 # Filter Buttons
-                self.SpeedButton.clicked.connect(lambda: self.update_table(1))
-                self.AuthorityButton.clicked.connect(lambda: self.update_table(2))
-                self.SwitchButton.clicked.connect(lambda: self.update_table(3))
-                self.SignalButton.clicked.connect(lambda: self.update_table(4))
-                self.OccupancyButton.clicked.connect(lambda: self.update_table(5))
-                self.CrossingButton.clicked.connect(lambda: self.update_table(6))
+                self.SpeedButton.clicked.connect(lambda: self.filter_button_clicked(1))
+                self.AuthorityButton.clicked.connect(lambda: self.filter_button_clicked(2))
+                self.SwitchButton.clicked.connect(lambda: self.filter_button_clicked(3))
+                self.SignalButton.clicked.connect(lambda: self.filter_button_clicked(4))
+                self.OccupancyButton.clicked.connect(lambda: self.filter_button_clicked(5))
+                self.CrossingButton.clicked.connect(lambda: self.filter_button_clicked(6))
 
                 # Upload PLC Button
                 self.UploadPLCButton.clicked.connect(self.open_file_dialog)
@@ -1126,13 +1127,10 @@ class Ui_MainWindow(QWidget):
                         self.selected_filter = filter
 
         # Update Table Contents
-        def update_table(self, filter):
+        def update_table(self):
 
                 # Default Values
                 default_row_count = 24
-
-                # Update Filter Button
-                self.update_filter_button(filter)
 
                 # Clear Table
                 self.DataTable.clear()
@@ -1590,7 +1588,12 @@ class Ui_MainWindow(QWidget):
                 else:
                         self.DataTable.setRowCount(default_row_count)
                         self.DataTable.setHorizontalHeaderLabels(["", "", ""])
-                        
+
+        # Filter button clicked
+        def filter_button_clicked(self, filter):
+                self.update_filter_button(filter)
+                self.update_table()
+
         ###################################
         #       Upload PLC Program
         ###################################

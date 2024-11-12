@@ -13,12 +13,12 @@
 # Python Version:   3.12.6
 # PyQt Version:     6.7.1
 #
-# Notes: This is communicate file for the Wayside shell and plc program 2.
-#        This program holds the pyqt signals used between the Wayside shell and green line plc programs.
+# Notes: This is the communicate file for the Wayside shell and plc program 2.
+#        This program holds the pyqt signals used between the Wayside shell and green line plc program 2.
 
 ####################################################################################################
 #
-#                                               PLC Program 1
+#                                               PLC Program 2
 #
 ####################################################################################################
 
@@ -31,7 +31,7 @@ class green_line_plc_2(QObject):
     ###################################
 
     # Maintenance Switch Command
-    green_line_plc_2_maintenance_switch_cmd = pyqtSignal(list)
+#    green_line_plc_2_maintenance_switch_cmd = pyqtSignal(list)
 
     # Suggested Speed
     green_line_plc_2_sugg_speed = pyqtSignal(list)

@@ -486,19 +486,19 @@ wayside = Wayside([H, I, J, K, L, M, T, U, V, W, X, Y, Z])
 ################################
 
 # Variables
-read_maintenance_switch_array = [None] * 2
+#read_maintenance_switch_array = [None] * 2
 read_sugg_speed_array = [None] * 87
 read_sugg_authority_array = [None] * 87
-maintenance_switch_check = 0
+#maintenance_switch_check = 0
 sugg_speed_check = 0
 sugg_authority_check = 0
 
 # Functions
-def read_maintenance_switches_handler(maintenance_switch_array):
-    global read_maintenance_switch_array
-    global maintenance_switch_check
-    read_maintenance_switch_array = maintenance_switch_array
-    maintenance_switch_check = 1
+# def read_maintenance_switches_handler(maintenance_switch_array):
+#     global read_maintenance_switch_array
+#     global maintenance_switch_check
+#     read_maintenance_switch_array = maintenance_switch_array
+#     maintenance_switch_check = 1
 
 def read_sugg_speed_handler(sugg_speed_array):
     global read_sugg_speed_array
@@ -554,11 +554,11 @@ write_crossing_cmd_array = [0]
 
 # Write to Wayside Shell
 def write_to_wayside_shell():
-    green_line_plc_2_shell_communicate.green_line_plc_2.green_line_plc_2_cmd_speed.emit(write_cmd_speed_array)
-    green_line_plc_2_shell_communicate.green_line_plc_2.green_line_plc_2_cmd_authority.emit(write_cmd_authority_array)
-    green_line_plc_2_shell_communicate.green_line_plc_2.green_line_plc_2_switch_cmd.emit(write_switch_cmd_array)
-    green_line_plc_2_shell_communicate.green_line_plc_2.green_line_plc_2_signal_cmd.emit(write_signal_cmd_array)
-    green_line_plc_2_shell_communicate.green_line_plc_2.green_line_plc_2_crossing_cmd.emit(write_crossing_cmd_array[0])
+    green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_cmd_speed.emit(write_cmd_speed_array)
+    green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_cmd_authority.emit(write_cmd_authority_array)
+    green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_switch_cmd.emit(write_switch_cmd_array)
+    green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_signal_cmd.emit(write_signal_cmd_array)
+    green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_crossing_cmd.emit(write_crossing_cmd_array[0])
 
 ####################################################################################################
 #
@@ -567,14 +567,14 @@ def write_to_wayside_shell():
 ####################################################################################################
 
 # Establish connection to Wayside shell
-green_line_plc_2_shell_communicate.green_line_plc_2.green_line_plc_2_maintenance_switch_cmd.connect(read_maintenance_switches_handler)
-green_line_plc_2_shell_communicate.green_line_plc_2.green_line_plc_2_sugg_speed.connect(read_sugg_speed_handler)
-green_line_plc_2_shell_communicate.green_line_plc_2.green_line_plc_2_sugg_authority.connect(read_sugg_authority_handler)
-green_line_plc_2_shell_communicate.green_line_plc_2.green_line_plc_2_block_occupancy.connect(read_block_occupancy_handler)
+#green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_maintenance_switch_cmd.connect(read_maintenance_switches_handler)
+green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_sugg_speed.connect(read_sugg_speed_handler)
+green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_sugg_authority.connect(read_sugg_authority_handler)
+green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_block_occupancy.connect(read_block_occupancy_handler)
 
 while True:
 
-    if maintenance_switch_check and sugg_speed_check and sugg_authority_check and block_occupancy_check:
+    if sugg_speed_check and sugg_authority_check and block_occupancy_check:
 
         # Update block occupancies
         wayside.update_block_occupancies()
@@ -591,7 +591,7 @@ while True:
         write_to_wayside_shell()
 
         # Reset checks
-        maintenance_switch_check = 0
+#        maintenance_switch_check = 0
         sugg_speed_check = 0
         sugg_authority_check = 0
         block_occupancy_check = 0

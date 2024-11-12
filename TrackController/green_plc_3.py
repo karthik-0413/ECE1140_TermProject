@@ -596,10 +596,10 @@ write_signal_cmd_array = [0, 1, 1, 0]
 
 # Write to Wayside Shell
 def write_to_wayside_shell():
-    green_line_plc_3_shell_communicate.green_line_plc_3.green_line_plc_3_cmd_speed.emit(write_cmd_speed_array)
-    green_line_plc_3_shell_communicate.green_line_plc_3.green_line_plc_3_cmd_authority.emit(write_cmd_authority_array)
-    green_line_plc_3_shell_communicate.green_line_plc_3.green_line_plc_3_switch_cmd.emit(write_switch_cmd_array)
-    green_line_plc_3_shell_communicate.green_line_plc_3.green_line_plc_3_signal_cmd.emit(write_signal_cmd_array)
+    green_line_plc_3_shell_communicate.green_plc_3.green_line_plc_3_cmd_speed.emit(write_cmd_speed_array)
+    green_line_plc_3_shell_communicate.green_plc_3.green_line_plc_3_cmd_authority.emit(write_cmd_authority_array)
+    green_line_plc_3_shell_communicate.green_plc_3.green_line_plc_3_switch_cmd.emit(write_switch_cmd_array)
+    green_line_plc_3_shell_communicate.green_plc_3.green_line_plc_3_signal_cmd.emit(write_signal_cmd_array)
 
 ####################################################################################################
 #
@@ -608,10 +608,10 @@ def write_to_wayside_shell():
 ####################################################################################################
 
 # Establish connection to Wayside shell
-green_line_plc_3_shell_communicate.green_line_plc_3.green_line_plc_3_maintenance_switch_cmd.connect(read_maintenance_switches_handler)
-green_line_plc_3_shell_communicate.green_line_plc_3.green_line_plc_3_sugg_speed.connect(read_sugg_speed_handler)
-green_line_plc_3_shell_communicate.green_line_plc_3.green_line_plc_3_sugg_authority.connect(read_sugg_authority_handler)
-green_line_plc_3_shell_communicate.green_line_plc_3.green_line_plc_3_block_occupancy.connect(read_block_occupancy_handler)
+green_line_plc_3_shell_communicate.green_plc_3.green_line_plc_3_maintenance_switch_cmd.connect(read_maintenance_switches_handler)
+green_line_plc_3_shell_communicate.green_plc_3.green_line_plc_3_sugg_speed.connect(read_sugg_speed_handler)
+green_line_plc_3_shell_communicate.green_plc_3.green_line_plc_3_sugg_authority.connect(read_sugg_authority_handler)
+green_line_plc_3_shell_communicate.green_plc_3.green_line_plc_3_block_occupancy.connect(read_block_occupancy_handler)
 
 while True:
 

@@ -32,7 +32,7 @@ class green_line_plc_1(QObject):
     ###################################
 
     # Maintenance Switch Command
-    green_line_plc_1_maintenance_switch_cmd = pyqtSignal(list)
+#    green_line_plc_1_maintenance_switch_cmd = pyqtSignal(list)
 
     # Suggested Speed
     green_line_plc_1_sugg_speed = pyqtSignal(list)
