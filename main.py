@@ -17,6 +17,7 @@ class TrainSystem:
 
     def show_ClockUI(self):
         # Create and show the clock UI
+        # Make sure to show the UI
         self.clock_UI = ClockDisplay(self.clock)
         self.clock_UI.show()
         
@@ -84,9 +85,9 @@ def main():
     train_controller = train_system.train_controller_window
 
     # Use QTimer to trigger `handle_clock_tick` every second
-    timer = QTimer()
-    timer.timeout.connect(lambda: train_system.handle_clock_tick(train_controller))
-    timer.start(100)  # Update every millisecond
+    # timer = QTimer()
+    # timer.timeout.connect(lambda: train_system.handle_clock_tick(train_controller))
+    # timer.start(100)  # Update every millisecond
 
     # Execute the application event loop
     app.exec()
