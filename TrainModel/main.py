@@ -30,7 +30,7 @@ class MainWindow(QMainWindow):
 
         # Create TrainData instance
         self.train_data = TrainData(self.tc_communicate, self.tm_communicate, self.ctc_communicate)
-        print("TrainData instance created")
+        # print("TrainData instance created")
 
         # Create tab widget
         self.tabs = QTabWidget()
