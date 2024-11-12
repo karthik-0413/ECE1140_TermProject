@@ -157,19 +157,19 @@ class PowerCommand(QObject):
     def update_power_command(self, current_velocity: float, desired_velocity: float):
         # if manual mode is selected, then brakes should be applied whenever it is pressed
         # if self.speed_control.operation_mode == 0:
-        if self.brake_status.driver_service_brake_command and current_velocity < desired_velocity:
-            self.brake_status.no_apply_service_brake()
+        # if self.brake_status.driver_service_brake_command and current_velocity < desired_velocity:
+        #     self.brake_status.no_apply_service_brake()
             
-        elif round(desired_velocity, 2) == round(current_velocity, 2):
+        if round(desired_velocity, 2) == round(current_velocity, 2):
             self.power_command = 0
             # Put Brake Status has OFF
-            self.brake_status.no_apply_service_brake()
+            # self.brake_status.no_apply_service_brake()
             self.power_command_signal.emit(self.power_command)
             
         elif current_velocity > desired_velocity: 
             self.power_command = 0
             self.power_command_signal.emit(self.power_command)
-            self.brake_status.apply_service_brake()
+            # self.brake_status.apply_service_brake()
             
         elif current_velocity < desired_velocity:
             # self.brake_status.no_apply_service_brake()
@@ -339,8 +339,8 @@ class SpeedControl(QObject):
             # self.brake_status.driver_emergency_brake_command = False
             # self.communicator.passenger_brake_command_signal.emit(False)    
             
-        if self.brake_status.driver_service_brake_command and speed < self.desired_velocity:
-            self.brake_status.no_apply_service_brake()
+        # if self.brake_status.driver_service_brake_command and speed < self.desired_velocity:
+        #     self.brake_status.no_apply_service_brake()
             
         self.current_velocity = speed
         self.power_class.update_power_command(self.current_velocity, self.desired_velocity)
