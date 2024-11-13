@@ -247,52 +247,22 @@ color: rgb(255, 255, 255);</string>
            <widget class="QTableWidget" name="blocks">
             <column>
              <property name="text">
-              <string>Line</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>Section</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>Number</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>Length</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>Grade</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>Speed Limit</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>Infrastructure</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>Elevation</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>Cumulative Elevation</string>
+              <string>Functional</string>
              </property>
             </column>
             <column>
              <property name="text">
               <string>Occupancy</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Occupied</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Passengers</string>
              </property>
             </column>
            </widget>

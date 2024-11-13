@@ -7,19 +7,9 @@ from Track_Model_UI import Ui_TrackModel
 from TrackTrainCommunicate import TrackTrainComms as TrainComms
 from WaysideTrackCommunicate import WaysideTrackComms as WaysideComms
 
-cmdSpeed: List[int] = []
-cmdAuthority: List[int] = []
 gradeValue: List[float] = []
 elevationValue: List[float] = []
 polarityValue: List[bool] = []
-numPassengersEmbarking: List[int] = []
-numPassengersDisembarking: List[int] = []
-positions: List[float] = [50, 1000, 2000, 7000]
-direction: bool = False
-vacancy: int = 0
-switchCmds: List[bool] = []
-crossingCmds: List[bool] = []
-signalCmds: List[bool] = []
 
 defaultRedPath = [
     0, 9, 8, 7, 6, 5, 4, 3, 2, 1, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 76, 75,
@@ -29,46 +19,74 @@ defaultRedPath = [
     23, 22, 21, 20, 19, 18, 17, 16, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0
 ]
 defaultGreenPath = [
-    0, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100,
+    0, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100,
     85, 84, 83, 82, 81, 80, 79, 78, 77, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124,
-    125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 29, 28, 27, 26, 25, 24, 23,
-    22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
-    32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 0
+    125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 28, 27, 26, 25, 24, 23,
+    22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 151, 6, 5, 4, 3, 2, 1, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
+    32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 0
 ]
 
-switchDict = {
-    "green": {
-        "13": [["1", "12"]],
-        "28": [["150", "29"]],
-        "57": [["58", "0"]],
-        "63": [["0", "62"]],
-        "77": [["76", "101"]],
-        "85": [["100", "86"]]
-    }
-}
 
-class Track(QObject):
-    def __init__(self):
+class Block():
+    def __init__(self, line, section, number: int, length: float, grade: float, speedLimit: float, infrastructure: str, side, elevation: float, cumulativeElevation: float, polarity: bool):
         super().__init__()
-        self.heater = False
-        self.switches = []
-        self.stations = []
-        self.blocks = []
-        self.path = {}
-        self.layoutData = []
-        self.lenghtArray = []
-        self.occupancies = []
+        self.line = line
+        self.section = section
+        self.number = number
+        self.length = length
+        self.grade = grade
+        self.speedLimit = speedLimit
+        self.infrastructure = infrastructure
+        self.side = side
+        self.elevation = elevation
+        self.cumulativeElevation = cumulativeElevation
+        self.polarity = polarity
+        self.functional = True
+        self.occupied = False
 
-# passenger object to handle the number of passengers waiting at stations and boarding trains
-class Passenger(QObject):
-    # initialize the passenger class with the lists to hold the values for all trains on the track
-    def __init__(self, train_communicator: TrainComms):
+
+    def checkFailure(ui) -> bool:
+        return any(toggle.isChecked() for toggle in [ui.breakStatus1, ui.breakStatus2, ui.breakStatus3])
+
+
+class TrackModel(QtWidgets.QMainWindow):
+    def __init__(self, train_communicator: TrainComms, wayside_communicator: WaysideComms):
         super().__init__()
-        self.num_passengers_at_station = []
-        self.num_passengers_embarking = []
-        self.num_passengers_disembarking = []
-        self.open_train_seats = []
+        self.ui = Ui_TrackModel()
+
         self.train_communicator = train_communicator
+        self.wayside_communicator = wayside_communicator
+        self.ui.setupUi(self)
+        self.setupConnections()
+        self.all_blocks = []
+        self.layoutData = []
+
+        self.switchStatus = False
+        self.switchArray = []
+        self.switchLightArray = []
+        self.timer = QtCore.QTimer(self)
+        self.timer.timeout.connect(self.recurring)
+        self.timer.start(1000)
+        self.tempIncreaseTimer = QtCore.QTimer(self)
+        self.tempIncreaseTimer.timeout.connect(self.increaseTemp)
+
+    postion_list = []
+    occupancies = []
+    default_length_array = []
+    
+    # Block.setPath(self.blocks, defaultGreenPath)
+
+    ############################################################################################################
+    #
+    #                                           Handler Functions     
+    #
+    ############################################################################################################
+
+    # Passengers
+    num_passengers_at_station = []
+    num_passengers_embarking = []
+    num_passengers_disembarking = []
+    open_train_seats = []
 
     # generate a random number of passengers at the station between 1 and 
     def gen_num_passengers_at_station(self):
@@ -104,22 +122,13 @@ class Passenger(QObject):
     def get_seat_vacancy(self):
         self.train_communicator.seat_vacancy_signal.connect(self.handle_seat_vacancy_signal)
 
-class Temperature(QObject):
-    def __init__(self):
-        pass
+    def handle_position_signal(self, positions: list):
+        self.position_list = positions
 
-class Station(QObject):
-    def __init__(self):
-        pass
+    def get_positions(self):
+        self.train_communicator.position_signal.connect(self.handle_position_signal)
 
-class Murphy(QObject):
-    def __init__(self):
-        pass
-
-class Lights(QObject):
-    # initialize the Lights class with an array
-    def __init__(self, wayside_communicator: WaysideComms):
-        super().__init__()
+    # Lights
         # holds the values of all the lights on the track.
         # 0: green
         # 1: red
@@ -134,8 +143,7 @@ class Lights(QObject):
             # section O, block 86
             # section R, block 101
             # yard
-        self.light_statuses = []
-        self.wayside_communicator = wayside_communicator
+    light_statuses = []
 
     def handle_signal_cmd_signal(self, signal_cmds: list):
         self.light_statuses = signal_cmds
@@ -143,10 +151,7 @@ class Lights(QObject):
     def get_signal_cmds(self):
         self.wayside_communicator.signal_cmd_signal.connect(self.handle_signal_cmd_signal)
 
-class Switch(QObject):
-    # initialize the Swtich class with an array
-    def __init__(self, wayside_communicator: WaysideComms):
-        super().__init__()
+    # Switches
         # holds the values of all the switches on the track.
         # 0: goes to the smaller block number that does not repeat twice in the infrastructure string
         # 1: goes to the larger block number that does not repeat twice in the infrastructure string
@@ -156,8 +161,7 @@ class Switch(QObject):
             # section K, block 63: 0, 62
             # section N, block 77: 76, 101
             # section N, block 85: 86, 100
-        self.switch_statuses = []
-        self.wayside_communicator = wayside_communicator
+    switch_statuses = []
 
     # store the switch commands from the wayside controller
     def handle_switch_cmd_signal(self, switch_cmds: list):
@@ -166,17 +170,12 @@ class Switch(QObject):
     # get the switch commands from the wayside controller
     def get_switch_cmds(self):
         self.wayside_communicator.switch_cmd_signal.connect(self.handle_switch_cmd_signal)
-        
-
-class Crossing(QObject):
-    # initialize the Crossing class with an array
-    def __init__(self, wayside_communicator: WaysideComms):
-        super().__init__()
+    
+    # Crossings
         # holds the values of all the crossings on the track.
         # 0: open
         # 1: closed
-        self.crossing_status = []
-        self.wayside_communicator = wayside_communicator
+    crossing_status = []
 
     # store the crossing commands from the wayside controller
     def handle_crossing_cmd_signal(self, crossing_cmds: list):
@@ -186,11 +185,9 @@ class Crossing(QObject):
     def get_crossing_cmds(self):
         self.wayside_communicator.crossing_cmd_signal.connect(self.handle_crossing_cmd_signal)
 
-class Info(QObject):
-    def __init__(self, wayside_communicator: WaysideComms):
-        self.cmd_speed_array = []
-        self.cmd_authority_array = []
-        self.wayside_communicator = wayside_communicator
+    # Passed Information
+    cmd_speed_array = []
+    cmd_authority_array = []
 
     def handle_commanded_speed_signal(self, speed: list):
         self.cmd_speed_array = speed
@@ -204,145 +201,35 @@ class Info(QObject):
     def get_cmd_authority(self):    
         self.wayside_communicator.commanded_authority_signal.emit(self.handle_commanded_authority_signal)
 
-class Block(QObject):
-    def __init__(self, line, section: str, number: int, length: float, grade: float, speedLimit: float, infrastructure: str, elevation: float, cumulativeElevation: float, side, polarity: bool = False, functional: bool = True, occupied: bool = False, wayside_communicator: WaysideComms = None, train_communicator: TrainComms = None):
-        super().__init__()
-        self.line = line
-        self.section = section
-        self.number = number
-        self.length = length
-        self.grade = grade
-        self.speedLimit = speedLimit
-        self.infrastructure = infrastructure
-        self.side = side
-        self.elevation = elevation
-        self.cumulativeElevation = cumulativeElevation
-        self.polarity = polarity
-        self.functional = functional
-        self.occupied = occupied
-        self.wayside_communicator = wayside_communicator
-        self.train_communicator = train_communicator
+    def send_cmd_speed(self):
+        self.wayside_communicator.commanded_speed_signal.emit(self.cmd_speed_array)
 
-        self.postion_list = []
-        
+    def send_cmd_authority(self):
+        self.wayside_communicator.commanded_authority_signal.emit(self.cmd_authority_array)
 
-    def handle_position_signal(self, positions: list):
-        self.position_list = positions
-
-    def get_positions(self):
-        self.train_communicator.position_signal.connect(self.handle_position_signal)
-
-    def get_occupancies(self):
-        self.wayside_communicator.block_occupancies_signal.emit(self.occupancies)
-
-    def checkFailure(ui) -> bool:
-        return any(toggle.isChecked() for toggle in [ui.breakStatus1, ui.breakStatus2, ui.breakStatus3])
-
-    @classmethod
-    def createBlocks(cls, ui, layoutData: List[List[str]], lengthArray: List[float], position: int) -> Dict[str, List['Block']]:
-        sections = {row[1]: [] for row in layoutData}
-        for row in layoutData:
-            line, section, number, length, grade, speedLimit, infrastructure, side, elevation, cumulativeElevation = row[:10]
-            block = cls(
-                line=line,
-                section=section,
-                number=int(number),
-                length=float(length),
-                grade=float(grade),
-                speedLimit=float(speedLimit),
-                infrastructure=infrastructure,
-                side=side,
-                elevation=float(elevation),
-                cumulativeElevation=float(cumulativeElevation)
-            )
-            sections[section].append(block)
-        allBlocks = [block for blocks in sections.values() for block in blocks]
-        cls.setOccupancy(ui, allBlocks, lengthArray, position)
-        cls.setPolarity(allBlocks)
-        return sections
-
-    # def setPath(blocks: Dict[str, List['Block']], pathOrder: List[int]) -> Dict[int, 'Block']:
-    #     path = {}
-    #     for num in pathOrder:
-    #         for blockList in blocks.values():
-    #             for block in blockList:
-    #                 if block.number == num:
-    #                     path[block.number] = block
-    #                     break
-    #     return path
-
-    @staticmethod
-    def setOccupancy(ui, blocks: List['Block'], lengthArray: List[float], x: int) -> List[bool]:
-        occupancies = []
-        blockStart = 0
-        for i, (length, block) in enumerate(zip(lengthArray, blocks)):
-            blockEnd = blockStart + length
-            if block.functional:
-                occupied = blockStart <= x < blockEnd
-            else:
-                occupied = Block.checkFailure(ui) or (blockStart <= x < blockEnd)
-            blocks[i].occupied = occupied
-            occupancies.append(occupied)
-            blockStart = blockEnd
-
-        return occupancies
-
-    @staticmethod
-    def setPolarity(blocks: List['Block']) -> None:
-        for i, block in enumerate(blocks):
-            if block.number in defaultGreenPath:
-                block.polarity = defaultGreenPath.index(block.number) % 2 == 0
-
-class MainWindow(QtWidgets.QMainWindow):
-    def __init__(self, train_communicator: TrainComms, wayside_communicator: WaysideComms, block: Block, passenger: Passenger, switch: Switch, crossing: Crossing, light: Lights):
-        super().__init__()
-        self.ui = Ui_TrackModel()
-
-        self.train_communicator = train_communicator
-        self.wayside_communicator = wayside_communicator
-        self.block = block
-        self.passenger = passenger
-        self.switch = switch
-        self.crossing = crossing
-        self.light = light
-
-        self.ui.setupUi(self)
-        self.setupConnections()
-        self.blocks = {}
-        self.layoutData = []
-        self.lengthArray = []
-        self.occupancies = []
-        self.switchStatus = False
-        self.switchArray = []
-        self.switchLightArray = []
-        self.timer = QtCore.QTimer(self)
-        self.timer.timeout.connect(self.recurring)
-        self.timer.start(1000)
-        self.tempIncreaseTimer = QtCore.QTimer(self)
-        self.tempIncreaseTimer.timeout.connect(self.increaseTemp)
-        # Block.setPath(self.blocks, defaultGreenPath)
-
+    # def send_occupancies(self):
+    #     self.wayside_communicator.block_occupancies_signal.emit(self.occupancies)
 
     def read_wayside(self):
-        Switch.get_switch_cmds()
-        Lights.get_signal_cmds()
-        Crossing.get_crossing_cmds()
-        Info.get_cmd_speed()
-        Info.get_cmd_authority()
+        self.get_switch_cmds()
+        self.get_signal_cmds()
+        self.get_crossing_cmds()
+        self.get_cmd_speed()
+        self.get_cmd_authority()
 
     def write_wayside(self):
         Block.get_occupancies()
 
     def read_train(self):
-        Passenger.get_num_passengers_leaving()
-        Passenger.get_seat_vacancy()
+        self.get_num_passengers_leaving()
+        self.get_seat_vacancy()
 
     def write_train(self):
-        Passenger.get_num_passengers_boarding()
+        self.get_num_passengers_boarding()
         
 
     def setupConnections(self) -> None:
-        self.ui.uploadButton.clicked.connect(self.uploadFile)
+        self.ui.uploadButton.clicked.connect(self.upload_file)
         self.ui.tempStepper.valueChanged.connect(self.checkTemp)
         self.ui.applyChangesButton.clicked.connect(self.applyChanges)
         self.ui.breakStatus1.toggled.connect(self.breakToggle1)
@@ -351,39 +238,61 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.switchToggle.toggled.connect(self.checkSwitch)
         self.ui.blockTable.itemSelectionChanged.connect(self.printBlockInfo)
 
-    def uploadFile(self) -> None:
+    def upload_file(self) -> None:
         self.switchArray.clear()
         self.switchLightArray.clear()
         fileDialog = QtWidgets.QFileDialog()
         filePath, _ = fileDialog.getOpenFileName(self, "Open CSV File", "", "CSV Files (*.csv)")
         if filePath:
             try:
-                self.readLayoutFile(filePath)
-                self.initializeBlocks()
+                self.read_layout_file(filePath)
             except Exception as e:
                 print(f"Error reading file: {e}")
 
-    def readLayoutFile(self, filePath: str) -> None:
+    def read_layout_file(self, filePath: str) -> None:
         with open(filePath, newline='') as layoutFile:
             reader = csv.reader(layoutFile, delimiter=',', quotechar='|')
             next(reader)
             self.layoutData = []
-            self.lengthArray = []
             for row in reader:
                 self.layoutData.append(row)
-                self.lengthArray.append(float(row[3]))
+                for row in self.layoutData:
+                    line, section, number, length, grade, speedLimit, infrastructure, side, elevation, cumulativeElevation,polarity = row[:11]
+                    temp_block = Block(line,section,int(number),float(length),float(grade),float(speedLimit),infrastructure,side,float(elevation),float(cumulativeElevation),bool(polarity)
+                )
+                self.all_blocks.append(temp_block)
 
-    def initializeBlocks(self) -> None:
-        totLen = sum(self.lengthArray)
-        self.ui.positionValue.setMaximum(totLen)
-        position = self.ui.positionValue.value()
-        self.blocks = Block.createBlocks(self.ui, self.layoutData, self.lengthArray, position)
-        # self.path = Block.setPath(self.blocks, self.path)
-        self.occupancies = Block.setOccupancy(self.ui, [block for blocks in self.blocks.values() for block in blocks], self.lengthArray, position)
-        self.updateBlockTable()
-        self.setSwitches()
-        self.createCrossings()
-        self.createStaions()
+    def create_length_array(self):
+        # define the global variable
+        global defaultGreenPath
+        # iterate through all the numbers in the default green path
+        for block_number in defaultGreenPath:
+            # append the length of the block to the default length array
+            self.default_length_array.append(self.all_blocks[block_number].length)    
+
+    def set_train_occupancies(self):
+        # resets all occupancies from the previous train ~ glorious king zach
+        self.occupancies.clear()
+        for block in self.all_blocks:
+            block.occupied = False
+        for position_value in self.position_list:
+            train_back_front = [position_value - 16.0, position_value + 16.0] 
+            for pos in train_back_front:
+                block_start, block_end = 0
+                for i in range(len(self.default_length_array)):
+                    block_end = block_start + self.default_length_array[i]
+                    if (block_start <= pos < block_end):
+                        self.all_block[i].occupied = True
+                    else:
+                        self.all_block[i].occupied = False
+                    block_start = block_end
+        for block in self.all_blocks:
+            self.occupancies.append(block.occupied)        
+
+    def set_failure_occupancies(self):
+        for i in range(len(self.all_blocks)):
+            if self.all_blocks[i].functional == False:
+                self.occupancies[i] = True
 
 
     def checkTemp(self) -> None:
@@ -544,6 +453,18 @@ class MainWindow(QtWidgets.QMainWindow):
         allBlocks = [block for blocks in self.blocks.values() for block in blocks]
         self.ui.blockTable.setRowCount(len(allBlocks))
 
+        # glorious king zach changing the headers of the rows
+        labels = []
+        for i in range(len(allBlocks)):
+            if i == 0:
+                labels.append("Yard")
+
+            else:
+                labels.append(f"{i}")
+
+        self.ui.blockTable.setVerticalHeaderLabels(labels)
+        #
+
         headers = ["Functional", "Occupied", "Switch State"]
         self.ui.blockTable.setColumnCount(len(headers))
         self.ui.blockTable.setHorizontalHeaderLabels(headers)
@@ -619,11 +540,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.updateOccupancy()
         self.checkSwitch()
         self.checkCrossing()
-        self.checkTemp()
-        
+        self.checkTemp()        
 
-if __name__ == "__main__":
+if __name__ == "__main__":#
     app = QtWidgets.QApplication([])
-    window = MainWindow(TrainComms, WaysideComms, Block, Passenger, Switch, Crossing, Lights)
-    window.show()
+    window = TrackModel(TrainComms, WaysideComms)
     sys.exit(app.exec())

@@ -1,6 +1,5 @@
 from PyQt6 import QtCore, QtGui, QtWidgets
 
-
 class Ui_TrackModel(object):
     def setupUi(self, TrackModel):
         TrackModel.setObjectName("TrackModel")
