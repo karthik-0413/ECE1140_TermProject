@@ -3,16 +3,16 @@ import os
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 
-from CTC_Office.CTC_UI import CTC_logic
+from CTC_Office.CTC_logic import CTC_logic
 from TrainModel.CTC_communicate import CTC_Train_Model_Communicate
+from Resources.CTCWaysideComm import CTCWaysideControllerComm
 
 from PyQt6 import QtCore, QtGui, QtWidgets
-from PyQt6.QtWidgets import QApplication
+from PyQt6.QtWidgets import QApplication, QFileDialog
 
 class CTC_frontend(object):
-    def __init__(self, ctc_train_communicate: CTC_Train_Model_Communicate):
-        self.test_int = 0
-        self.ctc = CTC_logic(ctc_train_communicate)
+    def __init__(self, ctc_train_communicate: CTC_Train_Model_Communicate, wayside_communicate: CTCWaysideControllerComm):
+        self.ctc = CTC_logic(ctc_train_communicate, wayside_communicate)
 
     def setupUi(self, mainwindow):
         mainwindow.setObjectName("mainwindow")
@@ -369,19 +369,19 @@ class CTC_frontend(object):
         self.gridLayoutWidget_5.setObjectName("gridLayoutWidget_5")
         self.InfoLayout_pg2 = QtWidgets.QGridLayout(self.gridLayoutWidget_5)
         self.InfoLayout_pg2.setSizeConstraint(QtWidgets.QLayout.SizeConstraint.SetDefaultConstraint)
-        self.InfoLayout_pg2.setContentsMargins(5, 5, 5, 5)
+        self.InfoLayout_pg2.setContentsMargins(-1, 0, -1, -1)
         self.InfoLayout_pg2.setHorizontalSpacing(10)
         self.InfoLayout_pg2.setObjectName("InfoLayout_pg2")
         self.ThroughputFrame_pg2 = QtWidgets.QFrame(parent=self.gridLayoutWidget_5)
-        self.ThroughputFrame_pg2.setMinimumSize(QtCore.QSize(175, 170))
-        self.ThroughputFrame_pg2.setMaximumSize(QtCore.QSize(200, 180))
+        self.ThroughputFrame_pg2.setMinimumSize(QtCore.QSize(175, 150))
+        self.ThroughputFrame_pg2.setMaximumSize(QtCore.QSize(200, 150))
         self.ThroughputFrame_pg2.setStyleSheet("border: 2px solid #000000;\n"
 "")
         self.ThroughputFrame_pg2.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
         self.ThroughputFrame_pg2.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
         self.ThroughputFrame_pg2.setObjectName("ThroughputFrame_pg2")
         self.verticalLayoutWidget_3 = QtWidgets.QWidget(parent=self.ThroughputFrame_pg2)
-        self.verticalLayoutWidget_3.setGeometry(QtCore.QRect(0, 0, 201, 181))
+        self.verticalLayoutWidget_3.setGeometry(QtCore.QRect(0, 0, 201, 150))
         self.verticalLayoutWidget_3.setObjectName("verticalLayoutWidget_3")
         self.ThroughputLayout_pg2 = QtWidgets.QVBoxLayout(self.verticalLayoutWidget_3)
         self.ThroughputLayout_pg2.setContentsMargins(10, 10, 10, 10)
@@ -429,6 +429,15 @@ class CTC_frontend(object):
         self.MaintenanceFrame.setMaximumSize(QtCore.QSize(350, 180))
         self.MaintenanceFrame.setStyleSheet("border-color: rgb(0, 0, 0);\n"
 "border: 2px solid #000000;")
+        
+        self.upload_layout_button = QtWidgets.QPushButton(parent=self.gridLayoutWidget_5)
+        self.upload_layout_button.setMinimumSize(QtCore.QSize(130, 30))
+        self.upload_layout_button.setStyleSheet("background-color: rgb(40, 15, 100); border: 1px solid #000000; font: 18pt 'Arial';")
+        self.upload_layout_button.setObjectName("upload_layout_button")
+        self.upload_layout_button.clicked.connect(self.upload_layout)
+        self.InfoLayout_pg2.addWidget(self.upload_layout_button, 2, 2, 1, 1)
+
+
         self.MaintenanceFrame.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
         self.MaintenanceFrame.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
         self.MaintenanceFrame.setObjectName("MaintenanceFrame")
@@ -478,7 +487,7 @@ class CTC_frontend(object):
 "")
         self.MaintenanceButton.setObjectName("MaintenanceButton")
         self.MaintenanceLayout.addWidget(self.MaintenanceButton, 0, QtCore.Qt.AlignmentFlag.AlignHCenter)
-        self.InfoLayout_pg2.addWidget(self.MaintenanceFrame, 1, 0, 1, 1)
+        self.InfoLayout_pg2.addWidget(self.MaintenanceFrame, 1, 0, 1, 2)
         self.HeaderFrame_pg2 = QtWidgets.QFrame(parent=self.gridLayoutWidget_5)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Preferred)
         sizePolicy.setHorizontalStretch(0)
@@ -1202,6 +1211,7 @@ class CTC_frontend(object):
         self.TimeLabel_pg2.setText(_translate("mainwindow", "10:30"))
         self.ThroughputDisplay_pg2.setText(_translate("mainwindow", "X Trains/hr/line"))
         self.ThroughputLabel_pg2.setText(_translate("mainwindow", "Throughput"))
+        self.upload_layout_button.setText(_translate("mainwindow", "Upload Layout"))
         self.MaintenanceTitle.setText(_translate("mainwindow", "Place Block in Maintanence Mode"))
         self.departureLabel_2.setText(_translate("mainwindow", "Blue Line - Block #2"))
         self.MaintenanceButton.setText(_translate("mainwindow", "Maintenance Mode"))
@@ -1317,11 +1327,43 @@ class CTC_frontend(object):
         self.pagetab.setTabText(self.pagetab.indexOf(self.TestTab), _translate("mainwindow", "Test Bench"))
         self.pagetab.setTabToolTip(self.pagetab.indexOf(self.TestTab), _translate("mainwindow", "Test I/O operation"))
 
-    def dispatch_train(self):
-        self.ctc.add_new_train_to_line("fake_line", 69, "fake_destination")
-        print(f"self.test_int = {self.test_int}")
-        self.test_int = self.test_int + 1
 
+    def updateUI(self):
+
+
+
+        self.TimeLabel.setText(self.ctc.get_time())
+        self.ThroughputDisplay.setText(self.ctc.get_throughput())
+        self.ThroughputDisplay_pg2.setText(self.ctc.get_throughput())
+        self.ThroughputDisplay_pg3.setText(self.ctc.get_throughput())
+        self.SimulationTimeDisplay.setText(self.ctc.get_time())
+        self.suggested_speed_display.setText(self.ctc.get_suggested_speed())
+        self.label_3.setText(self.ctc.get_authority())
+        self.label.setText(self.ctc.get_suggested_speed())
+        self.label_2
+
+    def dispatch_train(self):
+
+        station = self.StationSelector.currentText()
+        print(f"Selected Station = {station}")
+
+        dest = self.ctc.find_destination(station)
+        if dest == -1:
+            print("Invalid Destination")
+            return
+        else:
+            self.ctc.add_new_train_to_line("Green", dest, station)
+
+        self.BlueTrainsTable.clear()
+
+        for index, train in enumerate(self.ctc.line.train_list):
+            self.BlueTrainsTable.setItem(index, 0, QtWidgets.QTableWidgetItem(str(train.train_id)))
+            self.BlueTrainsTable.setItem(index, 1, QtWidgets.QTableWidgetItem(str(train.location)))
+            self.BlueTrainsTable.setItem(index, 2, QtWidgets.QTableWidgetItem(str(train.destination_station)))
+            self.BlueTrainsTable.setItem(index, 4, QtWidgets.QTableWidgetItem(str(train.arrival_time)))
+            self.BlueTrainsTable.setItem(index, 3, QtWidgets.QTableWidgetItem(str(train.departure_time)))
+        
+        
     def add_destination(self):
         pass
     
@@ -1329,16 +1371,40 @@ class CTC_frontend(object):
         pass
     
     def maintenance_mode(self):
-        self.ctc.toggle_automatic_manual()
+        pass
     
     def auto_manual_toggle(self):
-        pass
+        self.ctc.toggle_automatic_manual()
+        _translate = QtCore.QCoreApplication.translate
+        if self.ctc.automatic:
+            self.automatic_manual_toggle.setText(_translate("mainwindow", "Manual Mode"))
+        else:
+            self.automatic_manual_toggle.setText(_translate("mainwindow", "Auto Mode"))
     
     def upload_schedule(self):
         pass
     
     def select_block(self):
         pass
+    
+    def upload_layout(self):
+        filename, _ = QFileDialog.getOpenFileName(self, "Select Layout File", os.getcwd(), "Excel File (*.xlsx *.xls)")
+        if filename:
+            print("filename = ", filename)
+            self.ctc.upload_layout_to_line(filename)
+
+        # Update Lines Selector
+        self.LineSelectorComboBox.clear()
+        self.LineSelectorComboBox.addItem("Green")
+
+        # Update Station Selector
+        self.StationSelector.clear()
+        stations = self.ctc.get_stations()
+        self.StationSelector.addItems(stations)
+
+        
+
+        
     
 
 

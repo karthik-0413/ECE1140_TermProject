@@ -1,6 +1,5 @@
 from enum import Enum
 import re
-from numpy import nan
 
 class Signal(Enum):
     RED = 1
@@ -10,17 +9,17 @@ class Signal(Enum):
 class Block():
     def __init__(self,
                 section:str,
-                station_name:str,
                 block_number:str,
                 speed_limit:str,
                 infrastructure:str
                 ):
 
         self.section = str(section)
-        self.station_name = str(station_name)
         self.block_number = int(block_number)
         self.speed_limit = int(speed_limit)
         self.infrastructure = str(infrastructure)
+
+        self.station_name = None
 
         self.occupied = False
         self.failure = False

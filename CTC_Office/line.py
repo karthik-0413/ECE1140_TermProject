@@ -3,6 +3,7 @@ import os
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 
+import pandas as pd
 
 from CTC_Office.block import Block
 from CTC_Office.train import Train
@@ -14,8 +15,22 @@ class Line():
         self.throughput = 0
         self.elapsed_time = 1
 
-    def read_excel_layout():
-        pass
+        self.excel_layout = {}
+        self.excel_schedule = {}
+
+    def read_excel_layout(self, path_to_layout:str):
+        self.excel_layout = pd.read_excel(path_to_layout, sheet_name=None)
+
+        for key in self.excel_layout.keys():
+            for index, row in self.excel_layout[key].iterrows():
+                block = Block(
+                    section=row['Section'],
+                    block_number=row['Block Number'],
+                    speed_limit=row['Speed Limit'],
+                    infrastructure=row['Infrastructure']
+                )
+                self.layout.append(block)
+                print(f"Block number: {block.block_number}  Section: {block.section}  Infrastructure: {block.infrastructure}")
 
     def read_excel_schedule():
         pass
@@ -43,18 +58,16 @@ class Line():
         self.train_list[train_id].authority = authority
             
 
-    def calc_speed(self):
-        for train in self.train_list:
-            suggested_speed = self.layout[train.location].speed_limit
+    def calc_speed(self, train_id:int):
+            index = self.train_list.index(train_id)
+            self.train_list[index].suggested_speed = self.layout[self.train_list[index].location].speed_limit
 
     def create_train(self, destination, destination_station):
         self.train_list.append(Train(len(self.train_list), destination, destination_station))
 
-    def change_train_destination(self, train_id, old_destination, new_destination, station_name):
-        self.train_list[train_id].change_destination(old_destination, new_destination, station_name)
-
     def add_train_destination(self, train_id, destination, station_name):
-        self.train_list[train_id].add_destination(destination, station_name)
+        #self.train_list[train_id].add_destination(destination, station_name)
+        pass
         
     def remove_train_destination(self, train_id, destination):
         self.train_list[train_id].remove_destination(destination)
@@ -69,4 +82,25 @@ class Line():
     def calculate_line_throughput(self):
         for train in self.train_list:
             stops = len(train.destinations)
+
+    def update_train_locations(self):
+        # Update the locations stored by the Trains
+
+        for train in self.train_list:
+            next = self.layout[train.location].next_block(train.prev_location)
+            if self.layout[train.location].occupied:
+                train.prev_location = train.location
+                train.location = next.block_number
+
+    def get_stations(self):
+        stations = []
+        for block in self.layout:
+            if block.station_name != None:
+                stations.append(block.station_name)
+        return stations
             
+    def find_destination(self, station_name:str):
+        for block in self.layout:
+            if block.station_name == station_name:
+                return block.block_number
+        return -1
