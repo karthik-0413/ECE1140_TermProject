@@ -64,6 +64,7 @@ class track_model:
         self.ui.breakStatus2.toggled.connect(self.handle_power_failure_checkbox)
         self.ui.breakStatus3.toggled.connect(self.handle_rail_failure_checkbox)
 
+        self.read()
 
     # important arrays
     all_blocks = []
@@ -96,41 +97,55 @@ class track_model:
     elevation_values = []
     polarity_values = []
 
-    # # Passengers
-    # open_train_seats = []
+    cmd_speeds = []
+    cmd_authorities = []
 
-    # # get the number of passengers leaving the train from the train model
-    # def get_num_passengers_leaving(self):
-    #     self.train_communicator.number_passenger_leaving_signal.connect(self.handle_num_passenger_leaving_signal)
+    # Passengers
+    open_train_seats = []
 
-    # # store the number of passengers leaving the train
-    # def handle_num_passenger_leaving_signal(self, num_people: list):
-    #     self.num_passengers_disembarking = num_people
+    # get the number of passengers leaving the train from the train model
+    def get_num_passengers_leaving(self):
+        self.train_communicator.number_passenger_leaving_signal.connect(self.handle_num_passenger_leaving_signal)
 
-    # # generate a random number between 0 and the number of people at station, send this value to the train model
-    # def get_num_passengers_boarding(self):
-    #     self.num_passengers_embarking = random.randint(0, min(self.num_passengers_at_station, self.open_train_seats))
-    #     self.train_communicator.number_passenger_boarding_signal.emit(self.num_passengers_embarking)
-    
-    # # store the number of passengers leaving the train
-    # def handle_seat_vacancy_signal(self, train_vacancy: list): 
-    #     self.open_train_seats = train_vacancy
+    # store the number of passengers leaving the train
+    def handle_num_passenger_leaving_signal(self, num_people: list):
+        self.num_passengers_disembarking = num_people
 
-    # # get the number of open seats on the train from the train model
-    # def get_seat_vacancy(self):
-    #     self.train_communicator.seat_vacancy_signal.connect(self.handle_seat_vacancy_signal)
+    # generate a random number between 0 and the number of people at station, send this value to the train model
+    def get_num_passengers_boarding(self):
+        self.num_passengers_embarking = random.randint(0, min(self.num_passengers_at_station, self.open_train_seats))
 
-    # def handle_position_signal(self, positions: list):
-    #     self.position_list = positions
+    # store the number of passengers leaving the train
+    def handle_seat_vacancy_signal(self, train_vacancy: list): 
+        self.open_train_seats = train_vacancy
 
-    # def get_positions(self):
-    #     self.train_communicator.position_signal.connect(self.handle_position_signal)
+    # get the number of open seats on the train from the train model
+    def get_seat_vacancy(self):
+        self.train_communicator.seat_vacancy_signal.connect(self.handle_seat_vacancy_signal)
 
-    # def send_cmd_speed(self):
-    #     self.train_communicator.commanded_speed_signal.emit(self.cmd_speed_array)
+    def handle_position_signal(self, positions: list):
+        self.position_list = positions
 
-    # def send_cmd_authority(self):
-    #     self.train_communicator.commanded_authority_signal.emit(self.cmd_authority_array)
+    def get_positions(self):
+        self.train_communicator.position_signal.connect(self.handle_position_signal)
+
+    def update_polarity_values(self):
+        self.polarity_values.clear()
+        for block in self.all_blocks:
+            if block.occupied == True and block.functional == True:
+                self.polarity_values.append(block.polarity)
+
+    def update_grade_values(self):
+        self.all_blocks.clear()
+        for block in self.all_blocks:
+            if block.occupied == True and block.functional == True:
+                self.grade_values.append(block.grade)
+
+    def update_elevation_values(self):
+        self.elevation_values.clear()
+        for block in self.all_blocks:
+            if block.occupied == True and block.functional == True:
+                self.elevation_values.append(block.elevation)
 
 ############################################################################################################
 #
@@ -184,12 +199,18 @@ class track_model:
     #
     ############################################################################################################
 
-    def write_wayside(self):
-        pass
+    def read(self):
+        self.train_communicator.number_passenger_leaving_signal.connect(self.handle_num_passenger_leaving_signal)
+        self.train_communicator.seat_vacancy_signal.connect(self.handle_seat_vacancy_signal)
+        self.train_communicator.position_signal.connect(self.handle_position_signal)
 
-    def write_train(self):
-        self.get_num_passengers_boarding()
-        
+    def write(self):
+        self.train_communicator.number_passenger_boarding_signal.emit(self.num_passengers_embarking)
+        self.train_communicator.polarity_signal.emit(self.polarity_values)
+        self.train_communicator.block_grade_signal.emit(self.grade_values)
+        self.train_communicator.block_elevation_signal.emit(self.elevation_values)
+        self.train_communicator.commanded_speed_signal.emit(self.cmd_speeds)
+        self.train_communicator.commanded_authority_signal.emit(self.cmd_authorities)
 
     def upload_file(self) -> None:
         self.ui_switch_array.clear()
@@ -229,16 +250,23 @@ class track_model:
         for block in self.all_blocks:
             block.occupied = False
         for position_value in self.position_list:
-            train_back_front = [position_value - 16.0, position_value + 16.0] 
-            for pos in train_back_front:
+            for i in range(len(self.default_length_array)):
                 block_start, block_end = 0
-                for i in range(len(self.default_length_array)):
-                    block_end = block_start + self.default_length_array[i]
-                    if (block_start <= pos < block_end):
-                        self.all_blocks[i].occupied = True
-                    else:
-                        self.all_blocks[i].occupied = False
-                    block_start = block_end
+                if (block_start <= position_value < block_end):
+                    self.all_blocks[i].occupied = True
+                else:
+                    self.all_blocks[i].occupied = False
+                block_start = block_end
+            # train_back_front = [position_value - 16.0, position_value + 16.0] 
+            # for pos in train_back_front:
+            #     block_start, block_end = 0
+            #     for i in range(len(self.default_length_array)):
+            #         block_end = block_start + self.default_length_array[i]
+            #         if (block_start <= pos < block_end):
+            #             self.all_blocks[i].occupied = True
+            #         else:
+            #             self.all_blocks[i].occupied = False
+            #         block_start = block_end
         for block in self.all_blocks:
             self.occupancies.append(block.occupied)        
 

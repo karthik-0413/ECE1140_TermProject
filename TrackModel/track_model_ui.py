@@ -520,3 +520,21 @@ class Ui_TrackModel(QObject):
                 self.groupBox.setTitle(_translate("TrackModel", "Crossing Commands"))
                 self.crossingStatus.setText(_translate("TrackModel", "Toggle"))
                 self.tabs.setTabText(self.tabs.indexOf(self.tab_2), _translate("TrackModel", "Testbench"))
+
+        def initializa_block_info_table(self):
+                self.blockInfo.setRowCount(10)
+                self.blockInfo.setColumnCount(1)
+                self.blockInfo.setVerticalHeaderLabels([
+                "Line", "Section", "Number", "Length", "Grade", "Speed Limit", 
+                "Infrastructure", "Elevation", "Cumulative Elevation", "Side"
+                ])
+                self.blockInfo.setItem(0, 0, QtWidgets.QTableWidgetItem(""))
+                self.blockInfo.setItem(1, 0, QtWidgets.QTableWidgetItem(""))
+                self.blockInfo.setItem(2, 0, QtWidgets.QTableWidgetItem(""))
+                self.blockInfo.setItem(3, 0, QtWidgets.QTableWidgetItem(""))
+                self.blockInfo.setItem(4, 0, QtWidgets.QTableWidgetItem(""))
+                self.blockInfo.setItem(5, 0, QtWidgets.QTableWidgetItem(""))
+                self.blockInfo.setItem(6, 0, QtWidgets.QTableWidgetItem(""))
+                self.blockInfo.setItem(7, 0, QtWidgets.QTableWidgetItem(""))
+                self.blockInfo.setItem(8, 0, QtWidgets.QTableWidgetItem(""))
+                self.blockInfo.setItem(9, 0, QtWidgets.QTableWidgetItem(""))
