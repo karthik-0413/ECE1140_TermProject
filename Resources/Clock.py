@@ -46,7 +46,7 @@ class StopwatchEngine(QThread):
             # Wait based on the modified speed factor
             time.sleep(1.0 / (self.speed_factor * 10))
             self.elapsed_seconds += 1
-            print(f"Elapsed time: {self.elapsed_seconds} seconds")
+            # print(f"Elapsed time: {self.elapsed_seconds} seconds")
             self.time_updated.emit(self.elapsed_seconds)
 
 class ClockDisplay(QWidget):
@@ -103,10 +103,10 @@ class ClockDisplay(QWidget):
             self.speed_label.setText(f"{multiplier:.1f}x")
 
 # Example usage
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    engine = StopwatchEngine()
-    interface = ClockDisplay(engine)
-    engine.initiate()
-    interface.show()
-    sys.exit(app.exec())
+# if __name__ == "__main__":
+#     app = QApplication(sys.argv)
+#     engine = StopwatchEngine()
+#     interface = ClockDisplay(engine)
+#     engine.initiate()
+#     interface.show()
+#     sys.exit(app.exec())

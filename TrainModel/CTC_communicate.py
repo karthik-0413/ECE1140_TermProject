@@ -1,4 +1,4 @@
-# ctc_communicate.py
+# CTC_communicate.py
 
 from PyQt6.QtCore import QObject, pyqtSignal
 

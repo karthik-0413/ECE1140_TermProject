@@ -69,7 +69,7 @@ def main():
     
     # Start the clock
     clock.start_clock()
-    clock.second_passed.connect(lambda second: print(f"Clock tick: {second}"))
+    clock.second_passed.connect(lambda second: # print(f"Clock tick: {second}"))
 
     # Create a TrainSystem to handle all UI components
     train_system = TrainSystem(train_trainControllerComm, clock)
