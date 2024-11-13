@@ -27,7 +27,7 @@ class CTC_logic():
         self.train_model_communicate = train_model_communicate
         self.wayside_communicate = wayside_communicate
 
-        self.wayside_communicate.block_occupancy_signal.connect(self.update_blocks_on_line)
+
 
     def write_to_communicate_objects(self):
 
@@ -85,7 +85,7 @@ class CTC_logic():
         self.lines[line_name].layout[block_number].toggle_maintenance()
 
     def update_blocks_on_line(self, block_occupancies: list):
-        # Update block occupancies
+        # Update block occupancies based on the wayside controller
         for block, in self.line.layout:
             block.update_occupancy(block_occupancies[block.block_number])
 

@@ -13,6 +13,9 @@ from PyQt6.QtWidgets import QApplication, QFileDialog
 class CTC_frontend(object):
     def __init__(self, ctc_train_communicate: CTC_Train_Model_Communicate, wayside_communicate: CTCWaysideControllerComm):
         self.ctc = CTC_logic(ctc_train_communicate, wayside_communicate)
+        self.wayside_communicate = wayside_communicate
+
+        self.wayside_communicate.block_occupancy_signal.connect(self.update_block_occupancies)
 
     def setupUi(self, mainwindow):
         mainwindow.setObjectName("mainwindow")
@@ -1341,6 +1344,15 @@ class CTC_frontend(object):
         self.label_3.setText(self.ctc.get_authority())
         self.label.setText(self.ctc.get_suggested_speed())
         self.label_2
+
+    def update_block_occupancies(self, blocks: list):
+        # Connected to CTC-Wayside Communication - gets block occupancies from signal
+
+        # Updates Block Occupancies and Updates: Train Locations, Authorities, Speeds, Throughput
+        self.ctc.update_blocks_on_line(blocks)
+
+        # Once calculations have been made, update the UI
+        self.updateUI()
 
     def dispatch_train(self):
 

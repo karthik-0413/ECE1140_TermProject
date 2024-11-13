@@ -4,6 +4,7 @@ from TrainModel.CTC_communicate import CTC_Train_Model_Communicate
 from PyQt6.QtWidgets import QApplication, QMainWindow
 from PyQt6.QtCore import Qt, QTimer
 from Resources.CTCTrain import CTCTrain
+from Resources.CTCWaysideComm import CTCWaysideControllerComm
 from Resources.Clock import *
 from Resources.TrainTrainControllerComm import TrainTrainController
 from TrainController.TrainController import *
@@ -14,11 +15,12 @@ import sys
 
 
 # Function to be triggered by clock tick
-def handle_clock_tick(seconds, train_controller_shell: TrainControllerShell, train_model_data: MainWindow):
+def handle_clock_tick(seconds, train_controller_shell: TrainControllerShell, train_model_data: MainWindow, ctc_frontend: CTC_frontend):
     # print(f"Clock tick {seconds} seconds")
     if seconds % 2 == 0:
         train_model_data.train_data.write_to_trainController_trackModel()
         train_controller_shell.write_to_train_model()
+        ctc_frontend.ctc.write_to_communicate_objects()
     # Create a QTimer to call handle_clock_tick every second
     # else:
     #     pass
@@ -33,7 +35,6 @@ if __name__ == '__main__':
     
     # CTC Setup
     ctc_window = QMainWindow()
-    ctc_window = QMainWindow()
 
     # Train Model Setup
     # (No need to create another QApplication)
@@ -43,14 +44,15 @@ if __name__ == '__main__':
 
     # CTC -> Train Model Communication
     comm1 = CTC_Train_Model_Communicate()
+    comm2 = CTCWaysideControllerComm()
     
     # Train Model -> Train Controller Communication
     comm5 = TrainTrainController()
     
     
     # CTC
-    ctc_ui = CTC_frontend(comm1)
-    ctc_ui.setupUi(ctc_window)
+    ctc = CTC_frontend(comm1, comm2)
+    ctc.setupUi(ctc_window)
 
     # Train Model
     tm_window = MainWindow(comm1, comm5)
@@ -79,7 +81,7 @@ if __name__ == '__main__':
     
     
     timer = QTimer()
-    timer.timeout.connect(lambda: handle_clock_tick(clock.elapsed_seconds, tc_shell_window, tm_window))
+    timer.timeout.connect(lambda: handle_clock_tick(clock.elapsed_seconds, tc_shell_window, tm_window, ctc))
     timer.start(100)
     
     clockUI = ClockDisplay(clock)
