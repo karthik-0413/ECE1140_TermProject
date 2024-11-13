@@ -189,6 +189,7 @@ class PowerCommand(QObject):
                 self.brake_status.reaching_station = False
         
         if self.brake_status.entered_lower == True:
+            # print("Entered Lower")
             self.power_command = 0
             self.power_command_signal.emit(self.power_command)
             self.brake_status.apply_service_brake()
@@ -253,7 +254,9 @@ class PowerCommand(QObject):
                 
             elif self.module == 0:
                 pass
-                
+            # self.power_command, self.ek_previous, self.uk_previous = find_power_command(desired_velocity, current_velocity, self.ek_current, self.max_power, self.uk_current, self.uk_previous, self.ek_previous, self.tuning.kp, self.tuning.ki)
+            # self.power_command_signal.emit(self.power_command)
+            
             # Power command bound
             if self.power_command > self.max_power:
                 self.power_command = self.max_power
@@ -369,10 +372,10 @@ class SpeedControl(QObject):
     
     def __init__(self, power_class: PowerCommand, brake_status: BrakeStatus, communicator: Communicate):
         super().__init__()
-        self.commanded_speed = 40
+        self.commanded_speed = 40.0
         self.setpoint_speed = 0.0
         self.setpoint_speed_submit = False
-        self.speed_limit = 40
+        self.speed_limit = 40.0
         self.operation_mode = 1 # 1 for manual, 0 for automatic
         self.current_velocity = 0.0
         self.desired_velocity = 0.0
@@ -382,6 +385,7 @@ class SpeedControl(QObject):
         self.max_speed = 0.0
         self.prev_service_brake = False
         self.prev_emergency_brake = False
+        self.prev_speed_limit = 40.0
         # self.entered_lower = False
         self.find_max_speed()
         
@@ -389,14 +393,21 @@ class SpeedControl(QObject):
         # Commanded speed already in m/s, so no need to convert
         # Speed limit already in m/s, so no need to convert
         self.max_speed = min(self.speed_limit, self.commanded_speed)
-        print(f"Speed Limit: {self.speed_limit}")
-        print(f"Commanded Speed: {self.commanded_speed}")
-        print(f"Max Speed: {self.max_speed}")
+        # print(f"Speed Limit: {self.speed_limit}")
+        # print(f"Commanded Speed: {self.commanded_speed}")
+        # print(f"Max Speed: {self.max_speed}")
         # print(f"Max Speed: {self.max_speed}")
         
     def update_speed_limit(self, speed: float):
         # km/hr to m/s
+        self.prev_speed_limit = self.speed_limit
         self.speed_limit = speed / 3.6
+        
+        if self.speed_limit < self.prev_speed_limit:
+            self.brake_status.entered_lower = True
+            self.desired_velocity = self.speed_limit
+            self.power_class.update_power_command(self.current_velocity, self.desired_velocity)
+            # print("Entered Lower")
         # print(f"Speed Limit: {self.speed_limit} Km/Hr")
         
     def handle_current_velocity(self, speed: float):
@@ -457,8 +468,15 @@ class SpeedControl(QObject):
         
     def handle_commanded_speed(self, speed: float):
         # km/hr to m/s
+        if self.commanded_speed > (speed / 3.6):
+            self.brake_status.entered_lower = True
+            self.find_max_speed()
+            self.desired_velocity = self.max_speed
+            self.power_class.update_power_command(self.current_velocity, self.desired_velocity)
+            
         self.commanded_speed = speed / 3.6
         self.find_max_speed()
+        self.commanded_speed = self.max_speed
         self.commanded_speed_signal.emit(self.max_speed)
         # print(f"Commanded Speed: {self.commanded_speed:.2f} m/s")
     
