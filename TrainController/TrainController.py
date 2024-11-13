@@ -586,8 +586,8 @@ class Lights(QObject):
     
     def __init__(self, speed_control: SpeedControl):
         super().__init__()
-        self.exterior_lights = None
-        self.interior_lights = None
+        self.exterior_lights = False
+        self.interior_lights = False
         self.speed_control = speed_control
             
     def turn_on_exterior_lights(self):
@@ -662,8 +662,7 @@ class Position(QObject):
     # Connect function for the Communicate class
     def handle_polarity_change(self, polarity: bool):
         self.polarity = polarity
-        current_index = self.default_path_blocks.index(self.current_block)
-        self.speed_control.update_speed_limit(self.green_speed_limit[self.current_block + 1])
+        self.speed_control.update_speed_limit(self.green_speed_limit[self.current_block])
         self.commanded_authority -= 1
         self.commanded_authority_signal.emit(self.commanded_authority)
         
@@ -683,8 +682,7 @@ class Position(QObject):
         # print(f"Polarity: {self.polarity}")
         
     def check_block_underground(self):
-        current_index = self.default_path_blocks.index(self.current_block)
-        if "UNDERGROUND" in self.green_underground[self.current_block + 1]:
+        if "UNDERGROUND" in self.green_underground[self.current_block]:
             self.light.turn_on_exterior_lights()
             self.light.turn_on_interior_lights()
             # print("Underground Block")
@@ -698,8 +696,7 @@ class Position(QObject):
         # print(f"Current Block: {self.current_block}")
         if self.commanded_authority == 0:
             # Open Doors
-            current_index = self.default_path_blocks.index(self.current_block)
-            if "Left" in self.green_station_door[self.current_block + 1] and  "Right" not in self.green_station_door[self.current_block + 1]:
+            if "Left" in self.green_station_door[self.current_block] and  "Right" not in self.green_station_door[self.current_block]:
                 self.door.open_left_door()
                 # print("Left door opened")
             elif "Right" in self.green_station_door[self.current_block] and  "Left" not in self.green_station_door[self.current_block]:
@@ -736,9 +733,8 @@ class Position(QObject):
             self.power_class.update_power_command(self.speed_control.current_velocity, self.speed_control.desired_velocity)
         
     def find_station_name(self):
-        current_index = self.default_path_blocks.index(self.current_block)
         # Grab everything after the first space in the string and before the next ";" character
-        after_space = self.green_station[self.current_block + 1].split(' ', 1)[1]
+        after_space = self.green_station[self.current_block].split(' ', 1)[1]
         
         # Split the remaining part at the semicolon and take the first part
         self.station_name = after_space.split(';', 1)[1].split(';')[0].strip()
