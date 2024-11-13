@@ -38,6 +38,7 @@ class TrainData(QObject):
         self.train_width = []
         self.number_of_cars = []
         self.single_car_tare_weight = []
+        self.emergency_brake_active = []
 
         self.announcement_text = []
 
@@ -123,6 +124,7 @@ class TrainData(QObject):
         self.total_car_weight.append(40.9)  # tons
 
         self.train_length.append(32.2)  # meters
+        self.emergency_brake_active.append(False)
         self.train_height.append(3.42)  # meters
         self.train_width.append(2.65)   # meters
         self.number_of_cars.append(1)
@@ -209,6 +211,7 @@ class TrainData(QObject):
         if self.train_count > 0:
             # Remove first elements from all lists
             self.cabin_temperature.pop(0)
+            self.emergency_brake_active.pop(0)
             self.maximum_capacity.pop(0)
             self.passenger_count.pop(0)
             self.crew_count.pop(0)
@@ -356,8 +359,8 @@ class TrainData(QObject):
         # print("Emergency Brake List in Train Model:", state_list)
             # self.passenger_emergency_brake = state_list
         # print("Emergency Brake List in Train Model:", state_list)
-        # if len(state_list) < max(1, self.train_count):
-        #     state_list = state_list + [False] * (max(1, self.train_count) - len(state_list))
+        if len(state_list) < max(1, self.train_count):
+            state_list = state_list + [False] * (max(1, self.train_count) - len(state_list))
         self.emergency_brake = state_list
         self.data_changed.emit()
 
@@ -468,8 +471,8 @@ class TrainData(QObject):
             
 
         for index in range(self.train_count):
-            if self.emergency_brake[index] and self.current_speed[0] == 0.0:
-                self.emergency_brake[index] = False
+            # if self.emergency_brake[index] and self.current_speed[0] == 0.0:
+            #     self.emergency_brake[index] = False
             # Calculate train speed; brake logic is handled in power.py
             calculate_train_speed(self, index)
 

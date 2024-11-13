@@ -135,7 +135,6 @@ class TrainControllerShell:
         self.communicator.service_brake_command_signal.emit(service_brake_commands)
         
         emergency_brake_commands = [train_controller.brake_class.driver_emergency_brake_command for train_controller in self.train_controller_list]
-        print(f"Emergency Brake Commands: {emergency_brake_commands}")
         self.communicator.emergency_brake_command_signal.emit(emergency_brake_commands)
         
         desired_temperatures = [train_controller.temperature.desired_temperature for train_controller in self.train_controller_list]
@@ -163,7 +162,7 @@ class TrainControllerShell:
         self.communicator.engine_failure_signal.connect(self.update_engine_failure)
         self.communicator.brake_failure_signal.connect(self.update_brake_failure)
         self.communicator.signal_failure_signal.connect(self.update_signal_failure)
-        self.communicator.passenger_brake_command_signal.connect(self.update_passenger_brake_command)
+        # self.communicator.passenger_brake_command_signal.connect(self.update_passenger_brake_command)
         self.communicator.actual_temperature_signal.connect(self.update_actual_temperature)
         self.communicator.polarity_signal.connect(self.update_polarity)
         # self.communicator.train_count_signal.connect(self.update_train_count)
@@ -301,7 +300,10 @@ class TrainControllerShell:
 
     def handle_emergency_brake_status(self, emergency_brake_status: bool):
         if self.train_controller_list:
-            print(f"Emergency Brake Status: {emergency_brake_status}")
+            # print(f"Emergency Brake Status: {emergency_brake_status}")
+            # if emergency_brake_status:
+            #     self.train_controller_list[self.current_train_id - 1].speed_control.desired_velocity = 0
+            #     self.train_controller_list[self.current_train_id - 1].power_class.update_power_command(self.train_controller_list[self.current_train_id - 1].speed_control.current_velocity, self.train_controller_list[self.current_train_id - 1].speed_control.desired_velocity)
             self.train_controller_list[self.current_train_id - 1].update_emergency_brake_status(emergency_brake_status)
             self.train_controller_list[self.current_train_id - 1].brake_class.driver_emergency_brake_command = emergency_brake_status
 
