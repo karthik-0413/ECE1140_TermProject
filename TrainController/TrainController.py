@@ -79,6 +79,7 @@ class BrakeStatus(QObject):
         self.driver_emergency_brake_command = False
         self.driver_brake_status = False
         self.passenger_brake = False
+        self.entered_lower = False
         self.communicator = communicator
         
     def apply_emergency_brake(self):
@@ -178,7 +179,14 @@ class PowerCommand(QObject):
         # if desired_velocity > current_velocity:
         #     self.brake_status.no_apply_service_brake()
         
-        if desired_velocity == 0.0:
+        if self.brake_status.entered_lower == True:
+            self.brake_status.apply_service_brake()
+            if current_velocity < desired_velocity:
+                self.brake_status.no_apply_service_brake()
+                self.brake_status.entered_lower = False
+        
+        # Murphy Failures
+        elif desired_velocity == 0.0:
             self.power_command = 0
             self.power_command_signal.emit(self.power_command)
             self.brake_status.apply_emergency_brake()
@@ -194,6 +202,7 @@ class PowerCommand(QObject):
             # self.brake_status.apply_emergency_brake()
             # if current_velocity == 0.0:
             #     self.brake_status.no_apply_emergency_brake()
+
             
         elif round(desired_velocity, 2) == round(current_velocity, 2):
             self.power_command = 0
@@ -362,6 +371,7 @@ class SpeedControl(QObject):
         self.max_speed = 0.0
         self.prev_service_brake = False
         self.prev_emergency_brake = False
+        # self.entered_lower = False
         self.find_max_speed()
         
     def find_max_speed(self):
@@ -1465,14 +1475,20 @@ class TrainControllerUI(QWidget):
             self.reset_emergency_brake_button_style()
             
     def send_setpoint_speed(self):
-        self.speed_control.desired_velocity = float(self.setpoint_speed_edit.text()) * 0.44704
         # 20 mph = 8.9408 m/s
-        print(f"Setpoint Speed: {self.speed_control.desired_velocity}")
-        if self.speed_control.desired_velocity > self.speed_control.max_speed:
+        print(f"Setpoint Speed: {float(self.setpoint_speed_edit.text()) * 0.44704}")
+        if float(self.setpoint_speed_edit.text()) * 0.44704 > self.speed_control.max_speed:
             # Set setpoint speed input to max speed value
             self.setpoint_speed_edit.setText(f"{self.speed_control.max_speed * 2.23694:.2f}")
             
-        self.speed_control.update_setpoint_speed_calculations(float(self.setpoint_speed_edit.text()) * 0.44704)
+        if float(self.setpoint_speed_edit.text()) * 0.44704 < self.speed_control.desired_velocity:
+            self.brake_class.entered_lower = True
+            self.speed_control.desired_velocity = float(self.setpoint_speed_edit.text()) * 0.44704
+            self.power_class.update_power_command(self.speed_control.current_velocity, self.speed_control.desired_velocity)
+        else:
+            self.speed_control.desired_velocity = float(self.setpoint_speed_edit.text()) * 0.44704
+            
+            self.speed_control.update_setpoint_speed_calculations(float(self.setpoint_speed_edit.text()) * 0.44704)
             
     def send_manual_mode(self):
         # Enable setpoint speed input
