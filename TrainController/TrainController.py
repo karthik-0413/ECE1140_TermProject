@@ -80,6 +80,7 @@ class BrakeStatus(QObject):
         self.driver_brake_status = False
         self.passenger_brake = False
         self.entered_lower = False
+        self.reaching_station = False
         self.communicator = communicator
         
     def apply_emergency_brake(self):
@@ -179,7 +180,17 @@ class PowerCommand(QObject):
         # if desired_velocity > current_velocity:
         #     self.brake_status.no_apply_service_brake()
         
+        if self.brake_status.reaching_station:
+            self.power_command = 0
+            self.power_command_signal.emit(self.power_command)
+            self.brake_status.apply_service_brake()
+            if current_velocity == 0.0:
+                self.brake_status.no_apply_service_brake()
+                self.brake_status.reaching_station = False
+        
         if self.brake_status.entered_lower == True:
+            self.power_command = 0
+            self.power_command_signal.emit(self.power_command)
             self.brake_status.apply_service_brake()
             if current_velocity < desired_velocity:
                 self.brake_status.no_apply_service_brake()
@@ -602,7 +613,7 @@ class Lights(QObject):
 class Position(QObject):
     commanded_authority_signal = pyqtSignal(int)
     
-    def __init__(self, doors: Doors, failure_modes: FailureModes, speed_control: SpeedControl, power_class: PowerCommand, communicator: Communicate, lights: Lights):
+    def __init__(self, doors: Doors, failure_modes: FailureModes, speed_control: SpeedControl, power_class: PowerCommand, communicator: Communicate, lights: Lights, brake_status: BrakeStatus):
         super().__init__()
         self.commanded_authority = 5    # int
         self.station_name = 'Shadyside' # string
@@ -615,6 +626,8 @@ class Position(QObject):
         self.speed_control = speed_control
         self.power_class = power_class
         self.light = lights
+        self.brake_status = brake_status
+        self.iterate = True
         
         # Variables needed for the Track Layouts (GREEN LINE)
         self.green_station = []
@@ -655,10 +668,13 @@ class Position(QObject):
         
         # Looping around the green line of the track
         if self.current_block == 57:
-            self.current_block = 63
+            self.current_block = 0
+            # stop iterating over the blocks
+            self.iterate = False
         else:
-            current_index = self.default_path_blocks.index(self.current_block)
-            self.current_block = self.default_path_blocks[current_index + 1]
+            if self.iterate == True:
+                current_index = self.default_path_blocks.index(self.current_block)
+                self.current_block = self.default_path_blocks[current_index + 1]
             
         self.check_current_block()
         self.check_block_underground()
@@ -705,12 +721,15 @@ class Position(QObject):
     def calculate_desired_speed(self):
         if self.commanded_authority == 2:
             self.speed_control.desired_velocity = 10
+            self.brake_status.reaching_station = True
             self.power_class.update_power_command(self.speed_control.current_velocity, self.speed_control.desired_velocity)
         elif self.commanded_authority == 1:
             self.speed_control.desired_velocity = 5
+            self.brake_status.reaching_station = True
             self.power_class.update_power_command(self.speed_control.current_velocity, self.speed_control.desired_velocity)
         elif self.commanded_authority == 0:
             self.speed_control.desired_velocity = 0
+            self.brake_status.reaching_station = True
             self.power_class.update_power_command(self.speed_control.current_velocity, self.speed_control.desired_velocity)
         
     def find_station_name(self):
