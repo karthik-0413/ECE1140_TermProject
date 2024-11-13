@@ -58,20 +58,20 @@ class wayside_shell_class:
     ####################################################################################################
 
     # Input from CTC Office
-    read_sugg_speed = [None] * 151
-    read_sugg_authority = [None] * 151
+    read_sugg_speed = [None] * 152
+    read_sugg_authority = [None] * 152
 #    read_maintenance_blocks = [0] * 151
 #    read_maintenance_switch_cmd = [None] * 6
 
     # Input from Track Model
-    read_block_occupancy = [0] * 151
+    read_block_occupancy = [0] * 152
 
     # Output to CTC Office
-    write_block_occupancy = [0] * 151
+    write_block_occupancy = [0] * 152
 
     # Output to Track Model
-    write_cmd_speed = [None] * 151
-    write_cmd_authority = [None] * 151
+    write_cmd_speed = [None] * 152
+    write_cmd_authority = [None] * 152
 
     #                    D   F   I   K  N1  N2   
     write_switch_cmd = [ 1,  1,  0,  0,  0,  0]
@@ -178,6 +178,8 @@ class wayside_shell_class:
         for i in range(1, 33):
             plc_1_sugg_speed.append(self.read_sugg_speed[i])
         plc_1_sugg_speed.append(self.read_sugg_speed[150])
+        plc_1_sugg_speed.append(self.read_sugg_speed[151])
+
 
         green_line_plc_1_shell_communicate.green_plc_1.green_line_plc_1_sugg_speed.emit(plc_1_sugg_speed)
 
@@ -187,6 +189,7 @@ class wayside_shell_class:
         for i in range(1, 33):
             plc_1_sugg_authority.append(self.read_sugg_speed[i])
         plc_1_sugg_authority.append(self.read_sugg_speed[150])
+        plc_1_sugg_authority.append(self.read_sugg_speed[151])
 
         green_line_plc_1_shell_communicate.green_plc_1.green_line_plc_1_sugg_authority.emit(plc_1_sugg_authority)
 
@@ -197,6 +200,7 @@ class wayside_shell_class:
         for i in range(1, 36):
             plc_1_block_occupancy.append(self.read_block_occupancy[i])
         plc_1_block_occupancy.append(self.read_block_occupancy[150])
+        plc_1_block_occupancy.append(self.read_block_occupancy[151])
 
         green_line_plc_1_shell_communicate.green_plc_1.green_line_plc_1_block_occupancy.emit(plc_1_block_occupancy)
 
@@ -440,7 +444,6 @@ class wayside_shell_class:
 
     # Initialize the Wayside UI Interface
     def __init__(self, ctc_wayside):
-        #self.app = QApplication(sys.argv)
 
         # Initialize update UI checks
         self.block_occupancy_check = 0
@@ -461,9 +464,6 @@ class wayside_shell_class:
         # Initialize and show the Wayside user interface
         self.ui = wayside_shell_ui()
         self.ui.show()
-
-        # Run the Wayside user interface application
-        #sys.exit(self.app.exec())
 
 class wayside_shell_ui(wayside_ui.QtWidgets.QMainWindow, wayside_ui.Ui_MainWindow):
     def __init__(self):

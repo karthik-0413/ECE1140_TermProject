@@ -959,10 +959,10 @@ class Ui_MainWindow(QWidget):
         ############################################################################################################
 
                 # Line Select ComboBox
-                self.LineSelectComboBox.currentIndexChanged.connect(self.update_wayside_select_combobox)
+                self.LineSelectComboBox.currentIndexChanged.connect(self.update_line_select_combobox_handler)
 
                 # Wayside Select ComboBox
-                self.WaysideSelectComboBox.currentIndexChanged.connect(self.clear_table)
+                self.WaysideSelectComboBox.currentIndexChanged.connect(self.update_wayside_select_combobox_handler)
 
                 # Filter Buttons
                 self.SpeedButton.clicked.connect(lambda: self.filter_button_clicked(1))
@@ -1039,11 +1039,11 @@ class Ui_MainWindow(QWidget):
         ######################################
 
         selected_filter = 0 # 1 = Speed, 2 = Authority, 3 = Switches, 4 = Signals, 5 = Occupancy, 6 = Crossings
-        green_line_block_occupancy = [0] * 151
-        green_line_sugg_speed = [None] * 151
-        green_line_sugg_auth = [None] * 151
-        green_line_cmd_speed = [None] * 151
-        green_line_cmd_auth = [None] * 151
+        green_line_block_occupancy = [0] * 152
+        green_line_sugg_speed = [None] * 152
+        green_line_sugg_auth = [None] * 152
+        green_line_cmd_speed = [None] * 152
+        green_line_cmd_auth = [None] * 152
 
         #                     D   F   I   K  N1  N2
         green_line_sw_cmd = [ 0,  1,  0,  1,  1,  0 ]
@@ -1064,8 +1064,8 @@ class Ui_MainWindow(QWidget):
         #  Update Table
         ####################
 
-        # Update Wayside Select ComboBox
-        def update_wayside_select_combobox(self):
+        # Update Line Select ComboBox
+        def update_line_select_combobox_handler(self):
                 # Clear Contents
                 self.WaysideSelectComboBox.clear()
 
@@ -1080,9 +1080,13 @@ class Ui_MainWindow(QWidget):
                 elif self.LineSelectComboBox.currentText() == "Red Line":
                         self.clear_filter_button() 
         
+        # Update Wayside Select ComboBox
+        def update_wayside_select_combobox_handler(self):
+                self.update_table()
+
         def clear_table(self):
                 self.selected_filter = 0
-                self.update_table(0)
+                self.update_table()
 
         # Update Filter Button Background
         def clear_filter_button(self):
@@ -1152,7 +1156,7 @@ class Ui_MainWindow(QWidget):
                                 if self.WaysideSelectComboBox.currentIndex() == 0:
 
                                         # Set Table Size
-                                        self.DataTable.setRowCount(150)
+                                        self.DataTable.setRowCount(152)
 
                                         # Set Yard Block speed data
                                         self.DataTable.setItem(0, 0, QtWidgets.QTableWidgetItem("Yard"))
@@ -1160,11 +1164,19 @@ class Ui_MainWindow(QWidget):
                                         self.DataTable.setItem(0, 2, QtWidgets.QTableWidgetItem(self.green_line_cmd_speed[0] if self.green_line_cmd_speed[0] != None else "None"))
 
                                         # Fill Table with rest of block speed data
+
                                         for i in range(1, 151):
 
-                                                self.DataTable.setItem(i, 0, QtWidgets.QTableWidgetItem(f"{i}"))
+                                                self.DataTable.setItem(i, 0, QtWidgets.QTableWidgetItem(f"{i if i != 7 else '7b'}"))
                                                 self.DataTable.setItem(i, 1, QtWidgets.QTableWidgetItem(self.green_line_sugg_speed[i] if self.green_line_sugg_speed[i] != None else "None"))
                                                 self.DataTable.setItem(i, 2, QtWidgets.QTableWidgetItem(self.green_line_cmd_speed[i] if self.green_line_cmd_speed[i] != None else "None"))
+
+                                        # Insert Section C, Block 151
+                                        self.DataTable.insertRow(7)
+
+                                        self.DataTable.setItem(7, 0, QtWidgets.QTableWidgetItem("7a"))
+                                        self.DataTable.setItem(7, 1, QtWidgets.QTableWidgetItem(self.green_line_sugg_speed[151] if self.green_line_sugg_speed[151] != None else "None"))
+                                        self.DataTable.setItem(7, 2, QtWidgets.QTableWidgetItem(self.green_line_cmd_speed[151] if self.green_line_cmd_speed[151] != None else "None"))
 
                                 # Wayside 1 selected
                                 elif self.WaysideSelectComboBox.currentIndex() == 1:
@@ -1175,7 +1187,7 @@ class Ui_MainWindow(QWidget):
                                         # Fill Table with block speed data
                                         for i in range(1, 36):
 
-                                                self.DataTable.setItem(i-1, 0, QtWidgets.QTableWidgetItem(f"{i}"))
+                                                self.DataTable.setItem(i-1, 0, QtWidgets.QTableWidgetItem(f"{i if i != 7 else '7b'}"))
                                                 self.DataTable.setItem(i-1, 1, QtWidgets.QTableWidgetItem(self.green_line_sugg_speed[i] if self.green_line_sugg_speed[i] != None else "None"))
                                                 self.DataTable.setItem(i-1, 2, QtWidgets.QTableWidgetItem(self.green_line_cmd_speed[i] if self.green_line_cmd_speed[i] != None else "None"))
 
@@ -1183,6 +1195,13 @@ class Ui_MainWindow(QWidget):
                                         self.DataTable.setItem(35, 0, QtWidgets.QTableWidgetItem(f"{150}"))
                                         self.DataTable.setItem(35, 1, QtWidgets.QTableWidgetItem(self.green_line_sugg_speed[150] if self.green_line_sugg_speed[150] != None else "None"))
                                         self.DataTable.setItem(35, 2, QtWidgets.QTableWidgetItem(self.green_line_cmd_speed[150] if self.green_line_cmd_speed[150] != None else "None"))
+
+                                        # Insert Section C, Block 151
+                                        self.DataTable.insertRow(6)
+
+                                        self.DataTable.setItem(6, 0, QtWidgets.QTableWidgetItem("7a"))
+                                        self.DataTable.setItem(6, 1, QtWidgets.QTableWidgetItem(self.green_line_sugg_speed[151] if self.green_line_sugg_speed[151] != None else "None"))
+                                        self.DataTable.setItem(6, 2, QtWidgets.QTableWidgetItem(self.green_line_cmd_speed[151] if self.green_line_cmd_speed[151] != None else "None"))
 
                                 # Wayside 2 selected
                                 elif self.WaysideSelectComboBox.currentIndex() == 2:
@@ -1771,9 +1790,6 @@ class Ui_MainWindow(QWidget):
                 # Add log entry to new row
                 self.UpdateLog.setItem(0, 0, QtWidgets.QTableWidgetItem(entry))
                 
-                
-
-
         ###################################
         #       Upload PLC Program
         ###################################

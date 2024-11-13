@@ -69,12 +69,19 @@ class Wayside:
             
             # Traverse through each block in each section
             for j in range(len(self.sec_array[i].block_occupancy)):
+                
+                # Check if section C, block 151
+                if i == 2 and j == 0:
+                    self.sec_array[2].block_occupancy[0] = read_block_occupancies_array[36]
+                
+                # Check every other block
+                else:
                     
-                # Update block occupancy
-                self.sec_array[i].block_occupancy[j] = read_block_occupancies_array[BlockArrayIndex]
+                    # Update block occupancy
+                    self.sec_array[i].block_occupancy[j] = read_block_occupancies_array[BlockArrayIndex]
 
-                # Increment index
-                BlockArrayIndex += 1
+                    # Increment index
+                    BlockArrayIndex += 1
         
             # Update overall occupancy of section
             self.sec_array[i].update_section_occupancy()
@@ -408,16 +415,22 @@ class Wayside:
                 # Traverse each block in each section
                 for j in range(len(self.sec_array[i].block_stop_go)):
 
-                    # Block is commanding stop
-                    if self.sec_array[i].block_stop_go[j] == 0:
-                        write_cmd_speed_array[BlockArrayIndex] = 0
-
-                    # Block is commanding go
+                    # Check for section C, block 151
+                    if i == 2 and j == 0:
+                        if self.sec_array[2].block_stop_go[0] == 0:
+                            write_cmd_speed_array[33] = 0
                     else:
-                        write_cmd_speed_array[BlockArrayIndex] = read_sugg_speed_array[BlockArrayIndex]
-                    
-                    # Increment index
-                    BlockArrayIndex += 1
+
+                        # Block is commanding stop
+                        if self.sec_array[i].block_stop_go[j] == 0:
+                            write_cmd_speed_array[BlockArrayIndex] = 0
+
+                        # Block is commanding go
+                        else:
+                            write_cmd_speed_array[BlockArrayIndex] = read_sugg_speed_array[BlockArrayIndex]
+                        
+                        # Increment index
+                        BlockArrayIndex += 1
 
     # Update commanded authority of each block
     def update_cmd_authority(self):
@@ -438,11 +451,16 @@ class Wayside:
                 # Traverse each block in each section
                 for j in range(len(self.sec_array[i].block_stop_go)):
 
-                    # Pass suggested authority
-                    write_cmd_authority_array[BlockArrayIndex] = read_sugg_authority_array[BlockArrayIndex]
+                    # Check for section C, block 151
+                    if i == 2 and j == 0:
+                        write_cmd_authority_array[33] = read_sugg_authority_array[33]
+                    else:
 
-                    # Increment index
-                    BlockArrayIndex += 1
+                        # Pass suggested authority
+                        write_cmd_authority_array[BlockArrayIndex] = read_sugg_authority_array[BlockArrayIndex]
+
+                        # Increment index
+                        BlockArrayIndex += 1
 
     # Update switch commands
     def update_switch_cmd(self):
@@ -562,7 +580,7 @@ class Section:
 # Sections
 A = Section(3)
 B = Section(3)
-C = Section(6)
+C = Section(7)
 D = Section(4) # Direction matters
 E = Section(4) # Direction matters
 F = Section(8) # Direction matters
@@ -585,8 +603,8 @@ wayside = Wayside([A, B, C, D, E, F, G, H, Z])
 
 # Variables
 #read_maintenance_switch_array = [None] * 2
-read_sugg_speed_array = [None] * 33
-read_sugg_authority_array = [None] * 33
+read_sugg_speed_array = [None] * 34
+read_sugg_authority_array = [None] * 34
 #maintenance_switch_check = 0
 sugg_speed_check = 0
 sugg_authority_check = 0
@@ -618,7 +636,7 @@ def read_sugg_authority_handler(sugg_authority_array):
 ################################
 
 # Variables
-read_block_occupancies_array = [0] * 36
+read_block_occupancies_array = [0] * 37
 block_occupancy_check = 0
 
 # Functions
@@ -640,8 +658,8 @@ def read_block_occupancy_handler(block_occupancy_array):
 ################################
 
 # Variables
-write_cmd_speed_array = [None] * 33
-write_cmd_authority_array = [None] * 33
+write_cmd_speed_array = [None] * 34
+write_cmd_authority_array = [None] * 34
 write_switch_cmd_array = [0, 1]
 write_signal_cmd_array = [0, 1, 0, 1]
 write_cross_cmd_array = [0]
