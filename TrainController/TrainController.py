@@ -372,10 +372,10 @@ class SpeedControl(QObject):
     
     def __init__(self, power_class: PowerCommand, brake_status: BrakeStatus, communicator: Communicate):
         super().__init__()
-        self.commanded_speed = 40.0
+        self.commanded_speed = 0.0
         self.setpoint_speed = 0.0
         self.setpoint_speed_submit = False
-        self.speed_limit = 40.0
+        self.speed_limit = 0.0
         self.operation_mode = 1 # 1 for manual, 0 for automatic
         self.current_velocity = 0.0
         self.desired_velocity = 0.0
@@ -385,7 +385,7 @@ class SpeedControl(QObject):
         self.max_speed = 0.0
         self.prev_service_brake = False
         self.prev_emergency_brake = False
-        self.prev_speed_limit = 40.0
+        self.prev_speed_limit = 0.0
         # self.entered_lower = False
         self.find_max_speed()
         
