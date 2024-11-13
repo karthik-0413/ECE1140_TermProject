@@ -15,7 +15,7 @@ import sys
 
 # Function to be triggered by clock tick
 def handle_clock_tick(seconds, train_controller_shell: TrainControllerShell, train_model_data: MainWindow):
-    print(f"Clock tick {seconds} seconds")
+    # print(f"Clock tick {seconds} seconds")
     if seconds % 2 == 0:
         train_model_data.train_data.write_to_trainController_trackModel()
         train_controller_shell.write_to_train_model()
@@ -25,7 +25,7 @@ def handle_clock_tick(seconds, train_controller_shell: TrainControllerShell, tra
 
 
 def get_seconds_elapsed(seconds):
-    print(f"Elapsed time: {seconds} seconds")
+    # print(f"Elapsed time: {seconds} seconds")
     return seconds
 
 if __name__ == '__main__':

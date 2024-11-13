@@ -24,9 +24,9 @@ class CTC_logic():
         
         # Add destinations to the train object 
         #self.lines[line_name].create_train(destination, destination_station)
-        print("Adding train")
+        # print("Adding train")
         self.num_trains = len(self.line.train_list)
-        print(self.num_trains)
+        # print(self.num_trains)
         self.train_model_communicate.current_train_count_signal.emit(self.num_trains)
 
 
@@ -81,4 +81,4 @@ class CTC_logic():
 
     def toggle_automatic_manual(self):
         self.automatic = not self.automatic
-        print("Toggled")
+        # print("Toggled")

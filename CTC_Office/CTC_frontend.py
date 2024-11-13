@@ -1319,7 +1319,7 @@ class CTC_frontend(object):
 
     def dispatch_train(self):
         self.ctc.add_new_train_to_line("fake_line", 69, "fake_destination")
-        print(f"self.test_int = {self.test_int}")
+        # print(f"self.test_int = {self.test_int}")
         self.test_int = self.test_int + 1
 
     def add_destination(self):
