@@ -1,60 +1,67 @@
-def calculate_train_speed(train_data, index, brake_deceleration=0.0):
+# power.py
+import math
+def calculate_train_speed(train_data, index):
     """
-    Calculate the train's speed based on the commanded power and other factors.
+    Calculate the train's speed based on the commanded power, brake inputs, grade, and other factors.
     Updates the train's current speed and acceleration.
-    
-    Parameters:
-    train_data (TrainData): The train data object containing information on power, speed, weight, etc.
-    index (int): The index of the train data to use for calculation.
-    brake_deceleration (float): The braking deceleration value (default is 0.0).
     """
-    # Extract necessary variables from the train data
-    power_command_kw = train_data.commanded_power[index]  # in kW
-    power_command = power_command_kw * 1000  # Convert kW to Watts
-    current_velocity = train_data.current_speed[index]  # in m/s
-    mass = train_data.current_train_weight[index] * 1000  # Convert tonnes to kg
+
     delta_t = 1.0  # Time step in seconds
 
-    # Calculate force from power (F = P / v), with protection against low speeds
-    if current_velocity <= 0.1:  # Prevent division by zero and handle very low speeds
-        force = power_command / 1.0  # Assume initial force at very low speed
+    # Get brake states
+    emergency_brake_active = train_data.emergency_brake[index]
+    service_brake_active = train_data.service_brake[index]
+
+    # Determine acceleration based on brake states
+    if emergency_brake_active:
+        # Emergency brake: highest priority
+        acceleration = -2.73  # m/s²
+        train_data.commanded_power[index] = 0
+    elif service_brake_active:
+        # Service brake
+        acceleration = -1.2  # m/s²
+        train_data.commanded_power[index] = 0
     else:
-        force = power_command / current_velocity  # F = P / v
+        power_command_w = train_data.commanded_power[index]  # in W
 
-    # Calculate frictional force (simplified model)
-    frictional_force = 0.002 * mass * 9.81  # F_friction = coefficient * mass * gravity
+        if power_command_w > 0:
+            # No brakes active and power is commanded
+            current_velocity = train_data.current_speed[index]  # in m/s
+            mass = train_data.current_train_weight[index] * 1000  # Convert tons to kg
 
-    # Calculate braking force (F_brake = a_brake * m)
-    brake_force = brake_deceleration * mass
+            # Calculate force from power
+            if current_velocity == 0.00:
+                force = 120000 / 19.44
+            else:
+                force = power_command_w / current_velocity  # F = P / v
 
-    # Net force: power-based force minus friction and braking force
-    net_force = force - frictional_force - brake_force
+            # Calculate grade force
+            grade = train_data.grade[index] if index < len(train_data.grade) else 0.0
+            slope_angle = math.atan(grade / 100)
+            grade_force = mass * 9.81 * math.sin(slope_angle)
 
-    # Calculate acceleration (a = F / m)
-    acceleration = net_force / mass
+            # Net force
+            net_force = force - grade_force
 
-    # Limit acceleration to realistic values (max acceleration and deceleration)
-    max_acceleration = 0.5  # m/s²
-    max_deceleration = -3.0  # m/s² (e.g., emergency braking)
+            # Calculate acceleration
+            acceleration = net_force / mass  # a = F / m
 
-    if acceleration > max_acceleration:
-        acceleration = max_acceleration
-    elif acceleration < max_deceleration:
-        acceleration = max_deceleration
+            # Limit acceleration
+            max_acceleration = 0.5  # m/s²
+            acceleration = min(acceleration, max_acceleration)
+        else:
+            # No power commanded, no acceleration
+            acceleration = 0.0
 
-    # Update the train data with the calculated acceleration
+    # Update acceleration
     train_data.current_acceleration[index] = acceleration
 
-    # Update velocity (new_velocity = current_velocity + acceleration * delta_t)
-    new_velocity = current_velocity + acceleration * delta_t
+    # Update velocity
+    new_velocity = train_data.current_speed[index] + acceleration * delta_t
 
     # Ensure velocity doesn't go negative
-    if new_velocity < 0:
-        new_velocity = 0.0
+    train_data.current_speed[index] = max(new_velocity, 0.0)
+    train_data.current_speed_UI[index] = train_data.current_speed[index] * 2.23  # in mph
 
-    # Update the train data with the new velocity
-    train_data.current_speed[index] = new_velocity  # in m/s
-
-    # Update position (new_position = current_position + velocity * delta_t)
-    new_position = train_data.current_position[index] + new_velocity * delta_t
-    train_data.current_position[index] = new_position
+    # Update position
+    train_data.current_position[index] += train_data.current_speed[index] * delta_t
