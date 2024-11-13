@@ -65,6 +65,8 @@ class track_model:
         self.ui.breakStatus3.toggled.connect(self.handle_rail_failure_checkbox)
 
         self.read()
+        self.initialize_arrays()
+        self.update_block_values()
 
     # important arrays
     all_blocks = []
@@ -147,6 +149,11 @@ class track_model:
             if block.occupied == True and block.functional == True:
                 self.elevation_values.append(block.elevation)
 
+    def update_block_values(self):
+        self.update_polarity_values()
+        self.update_grade_values()
+        self.update_elevation_values()
+
 ############################################################################################################
 #
 #                                           Wayside Integration   
@@ -190,8 +197,20 @@ class track_model:
         # 1: closed
     
 
-    # Passed Information
-    
+    def handle_switch_cmd_signal(self, switch_cmds: list):
+        self.switch_cmds = switch_cmds
+
+    def handle_signal_cmd_signal(self, light_cmds: list):
+        self.light_cmds = light_cmds
+
+    def handle_crossing_cmd_signal(self, crossing_cmds: list):
+        self.crossing_cmds = crossing_cmds
+
+    def handle_commanded_speed_signal(self, cmd_speeds: list):
+        self.cmd_speeds = cmd_speeds
+
+    def handle_commanded_authority_signal(self, cmd_authorities: list):
+        self.cmd_authorities = cmd_authorities    
 
     ############################################################################################################
     #
@@ -203,6 +222,11 @@ class track_model:
         self.train_communicator.number_passenger_leaving_signal.connect(self.handle_num_passenger_leaving_signal)
         self.train_communicator.seat_vacancy_signal.connect(self.handle_seat_vacancy_signal)
         self.train_communicator.position_signal.connect(self.handle_position_signal)
+        self.wayside_communicator.switch_cmd_signal.connect(self.handle_switch_cmd_signal)
+        self.wayside_communicator.signal_cmd_signal.connect(self.handle_signal_cmd_signal)
+        self.wayside_communicator.crossing_cmd_signal.connect(self.handle_crossing_cmd_signal)
+        self.wayside_communicator.commanded_speed_signal.connect(self.handle_commanded_speed_signal)
+        self.wayside_communicator.commanded_authority_signal.connect(self.handle_commanded_authority_signal)
 
     def write(self):
         self.train_communicator.number_passenger_boarding_signal.emit(self.num_passengers_embarking)
@@ -211,6 +235,7 @@ class track_model:
         self.train_communicator.block_elevation_signal.emit(self.elevation_values)
         self.train_communicator.commanded_speed_signal.emit(self.cmd_speeds)
         self.train_communicator.commanded_authority_signal.emit(self.cmd_authorities)
+        self.wayside_communicator.block_occupancies_signal.emit(self.occupancies)
 
     def upload_file(self) -> None:
         self.ui_switch_array.clear()
