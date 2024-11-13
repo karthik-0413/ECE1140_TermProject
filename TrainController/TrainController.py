@@ -240,7 +240,7 @@ class PowerCommand(QObject):
                 
                 # Using the different cases from lecture slides
                 if self.power_command < self.max_power:
-                    self.uk_current = self.uk_previous + (0.25 / 2) * (self.ek_current + self.ek_previous)
+                    self.uk_current = self.uk_previous + (1 / 2) * (self.ek_current + self.ek_previous)
                 else:
                     self.uk_current = self.uk_previous
                 

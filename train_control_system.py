@@ -64,7 +64,7 @@ if __name__ == '__main__':
     failure_modes = FailureModes(speed_control, power_class)
     lights = Lights(speed_control)
     temperature = Temperature()
-    position = Position(doors, failure_modes, speed_control, power_class, comm5, lights)
+    position = Position(doors, failure_modes, speed_control, power_class, comm5, lights, brake_status)
     
     tc_window = TrainControllerUI(comm5, doors, tuning, brake_status, power_class, speed_control, failure_modes, position, lights, temperature)
     tc_shell_window = TrainControllerShell(comm5, tc_window)
@@ -80,7 +80,7 @@ if __name__ == '__main__':
     
     timer = QTimer()
     timer.timeout.connect(lambda: handle_clock_tick(clock.elapsed_seconds, tc_shell_window, tm_window))
-    timer.start(100)
+    timer.start(1000)
     
     clockUI = ClockDisplay(clock)
     clockUI.show()
