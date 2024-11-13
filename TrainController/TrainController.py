@@ -124,11 +124,13 @@ class BrakeStatus(QObject):
     def handle_passenger_brake_command(self, status: bool):
         if status:
             # Turn on the passenger brake indcator until current velocity is 0
+            self.passenger_brake = True
             self.driver_emergency_brake_command = True
             self.passenger_brake_command_signal.emit(self.driver_emergency_brake_command)
             # print("Passenger Brake Applied")
         elif not status:
-            self.driver_emergency_brake_command = False
+            # self.driver_emergency_brake_command = False
+            self.passenger_brake = False
             self.passenger_brake_command_signal.emit(self.driver_emergency_brake_command)
             # print("Passenger Brake Released")
             
@@ -1453,8 +1455,9 @@ class TrainControllerUI(QWidget):
     
     def update_passenger_brake_status(self, passenger_brake: bool):
         if passenger_brake:
-            self.passenger_brake_status.setText("ON")
-            self.passenger_brake_status.setStyleSheet("background-color: #f5c842; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
+            if self.brake_class.passenger_brake:
+                self.passenger_brake_status.setText("ON")
+                self.passenger_brake_status.setStyleSheet("background-color: #f5c842; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
             self.divet_in_emergency_brake_buttons()
         else:
             self.passenger_brake_status.setText("OFF")

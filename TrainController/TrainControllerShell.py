@@ -162,7 +162,7 @@ class TrainControllerShell:
         self.communicator.engine_failure_signal.connect(self.update_engine_failure)
         self.communicator.brake_failure_signal.connect(self.update_brake_failure)
         self.communicator.signal_failure_signal.connect(self.update_signal_failure)
-        # self.communicator.passenger_brake_command_signal.connect(self.update_passenger_brake_command)
+        self.communicator.passenger_brake_command_signal.connect(self.update_passenger_brake_command)
         self.communicator.actual_temperature_signal.connect(self.update_actual_temperature)
         self.communicator.polarity_signal.connect(self.update_polarity)
         # self.communicator.train_count_signal.connect(self.update_train_count)
