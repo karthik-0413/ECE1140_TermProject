@@ -92,7 +92,7 @@ class BrakeStatus(QObject):
         # self.power_class.update_power_command(self.speed_control.current_velocity, self.speed_control.desired_velocity)
         # self.communicator.emergency_brake_command_signal.emit(self.driver_emergency_brake_command)
         # self.communicator.emergency_brake_command_signal.emit([self.driver_emergency_brake_command])
-        print("Emergency Brake Activated!")
+        # print("Emergency Brake Activated!")
         
     def apply_service_brake(self):
         self.driver_service_brake_command = True
@@ -104,7 +104,7 @@ class BrakeStatus(QObject):
         self.emergency_brake_signal.emit(self.driver_emergency_brake_command)
         # self.communicator.emergency_brake_command_signal.emit([self.driver_emergency_brake_command])
         # self.send_emergency_brake_command(self.driver_emergency_brake_command)
-        print("Emergency Brake Dectivated!")
+        # print("Emergency Brake Dectivated!")
         
     def no_apply_service_brake(self):
         self.driver_service_brake_command = False
@@ -192,7 +192,7 @@ class PowerCommand(QObject):
             self.power_command = 0
             self.power_command_signal.emit(self.power_command)
             self.brake_status.apply_service_brake()
-            if current_velocity < desired_velocity:
+            if current_velocity < desired_velocity or current_velocity == 0.0:
                 self.brake_status.no_apply_service_brake()
                 self.brake_status.entered_lower = False
         
@@ -386,13 +386,17 @@ class SpeedControl(QObject):
         self.find_max_speed()
         
     def find_max_speed(self):
+        # Commanded speed already in m/s, so no need to convert
+        # Speed limit already in m/s, so no need to convert
         self.max_speed = min(self.speed_limit, self.commanded_speed)
-        # convert km/hr to m/s
-        self.max_speed = self.max_speed / 3.6
+        print(f"Speed Limit: {self.speed_limit}")
+        print(f"Commanded Speed: {self.commanded_speed}")
+        print(f"Max Speed: {self.max_speed}")
         # print(f"Max Speed: {self.max_speed}")
         
     def update_speed_limit(self, speed: float):
-        self.speed_limit = speed
+        # km/hr to m/s
+        self.speed_limit = speed / 3.6
         # print(f"Speed Limit: {self.speed_limit} Km/Hr")
         
     def handle_current_velocity(self, speed: float):
@@ -439,8 +443,8 @@ class SpeedControl(QObject):
         # if self.brake_status.driver_emergency_brake_command and speed == 0.0:
         #     self.brake_status.no_apply_emergency_brake()
             
-        if self.brake_status.driver_service_brake_command and speed == 0.0:
-            self.brake_status.no_apply_service_brake()
+        # if self.brake_status.driver_service_brake_command and speed == 0.0:
+        #     self.brake_status.no_apply_service_brake()
             
         self.current_velocity = speed
         self.power_class.update_power_command(self.current_velocity, self.desired_velocity)
@@ -452,9 +456,10 @@ class SpeedControl(QObject):
         # print(f"Current Speed: {self.current_velocity:.2f} m/s")
         
     def handle_commanded_speed(self, speed: float):
-        self.commanded_speed = speed / 1.60934
+        # km/hr to m/s
+        self.commanded_speed = speed / 3.6
         self.find_max_speed()
-        self.commanded_speed_signal.emit(self.commanded_speed)
+        self.commanded_speed_signal.emit(self.max_speed)
         # print(f"Commanded Speed: {self.commanded_speed:.2f} m/s")
     
     def set_manual_mode(self):
@@ -661,25 +666,26 @@ class Position(QObject):
         
     # Connect function for the Communicate class
     def handle_polarity_change(self, polarity: bool):
-        self.polarity = polarity
-        self.speed_control.update_speed_limit(self.green_speed_limit[self.current_block])
-        self.commanded_authority -= 1
-        self.commanded_authority_signal.emit(self.commanded_authority)
-        
-        # Looping around the green line of the track
-        if self.current_block == 57:
-            self.current_block = 0
-            # stop iterating over the blocks
-            self.iterate = False
-        else:
-            if self.iterate == True:
-                current_index = self.default_path_blocks.index(self.current_block)
-                self.current_block = self.default_path_blocks[current_index + 1]
+        if polarity is not self.polarity:
+            self.polarity = polarity
+            self.speed_control.update_speed_limit(self.green_speed_limit[self.current_block])
+            self.commanded_authority -= 1
+            self.commanded_authority_signal.emit(self.commanded_authority)
             
-        self.check_current_block()
-        self.check_block_underground()
-        self.calculate_desired_speed()
-        # print(f"Polarity: {self.polarity}")
+            # Looping around the green line of the track
+            if self.current_block == 57:
+                self.current_block = 0
+                # stop iterating over the blocks
+                self.iterate = False
+            else:
+                if self.iterate == True:
+                    current_index = self.default_path_blocks.index(self.current_block)
+                    self.current_block = self.default_path_blocks[current_index + 1]
+                
+            self.check_current_block()
+            self.check_block_underground()
+            self.calculate_desired_speed()
+            # print(f"Polarity: {self.polarity}")
         
     def check_block_underground(self):
         if "UNDERGROUND" in self.green_underground[self.current_block]:
@@ -1389,7 +1395,7 @@ class TrainControllerUI(QWidget):
         self.current_speed_edit.setText(f"{current_speed * 2.23:.2f} mph")
     
     def update_commanded_speed(self, commanded_speed: float):
-        self.commanded_speed_edit.setText(f"{commanded_speed / 1.609:.2f} mph")
+        self.commanded_speed_edit.setText(f"{commanded_speed * 2.237:.2f} mph")
     
     def update_commanded_authority(self, commanded_authority: float):
         self.commanded_authority_edit.setText(f"{commanded_authority} blocks")
