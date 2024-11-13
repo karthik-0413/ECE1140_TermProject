@@ -80,7 +80,7 @@ if __name__ == '__main__':
     
     timer = QTimer()
     timer.timeout.connect(lambda: handle_clock_tick(clock.elapsed_seconds, tc_shell_window, tm_window))
-    timer.start(1000)
+    timer.start(100)
     
     clockUI = ClockDisplay(clock)
     clockUI.show()
