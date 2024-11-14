@@ -176,7 +176,7 @@ class Wayside:
                             self.sec_array[2].block_stop_go[5] = 0 # Block 12
 
                         # Not edge block
-                        elif j < 4: # Blocks 7 --> 10
+                        elif j < 4: # Blocks 151 --> 10
                             self.sec_array[2].block_stop_go[j + 1] = 0
                             self.sec_array[2].block_stop_go[j + 2] = 0
 
