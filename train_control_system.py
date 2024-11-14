@@ -21,7 +21,7 @@ import sys
 def handle_clock_tick(seconds, train_controller_shell: TrainControllerShell, train_model_data: MainWindow, track_model_backend: track_model):
     # print(f"Clock tick {seconds} seconds")
     if seconds % 2 == 0:
-        track_model_backend.write()
+        track_model_backend.write_train()
         train_model_data.train_data.write_to_trainController_trackModel()
         train_controller_shell.write_to_train_model()
     # Create a QTimer to call handle_clock_tick every second

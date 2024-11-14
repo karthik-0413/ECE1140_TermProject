@@ -475,9 +475,9 @@ class SpeedControl(QObject):
             self.power_class.update_power_command(self.current_velocity, self.desired_velocity)
             
         self.commanded_speed = speed / 3.6
-        print(f"Commanded Speed: {self.commanded_speed:.2f} m/s")
+        # print(f"Commanded Speed: {self.commanded_speed:.2f} m/s")
         self.find_max_speed()
-        self.commanded_speed_signal.emit(self.commanded_speed)
+        self.commanded_speed_signal.emit(self.max_speed)
         # print(f"Commanded Speed: {self.commanded_speed:.2f} m/s")
     
     def set_manual_mode(self):
@@ -641,7 +641,7 @@ class Position(QObject):
         self.commanded_authority = 5    # int
         self.station_name = 'Shadyside' # string
         self.announcement = '' # string
-        self.polarity = True   # boolean
+        self.polarity = False   # boolean
         # I need the block number of the station so that I can query into my infrastructure array and check what the station name is of that block
         self.communicator = communicator
         self.door = doors

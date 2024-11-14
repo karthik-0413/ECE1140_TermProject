@@ -212,8 +212,8 @@ class TrainControllerShell:
 
     def update_polarity(self, polarity: list):
         for i in range(len(polarity)):
-            self.train_controller_list[i].position.handle_polarity_change(polarity[i])
-        # print(f"Polarity: {polarity}")
+            self.train_controller_list[0].position.handle_polarity_change(polarity[i])
+        print(f"Polarity: {polarity}")
 
     # def update_train_count(self, train_count: int):
     #     if self.train_count > train_count:

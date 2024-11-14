@@ -304,7 +304,6 @@ class TrainData(QObject):
         self.tm_communicate.block_grade_signal.connect(self.set_block_grade)
         self.tm_communicate.block_elevation_signal.connect(self.set_block_elevation)
         self.tm_communicate.polarity_signal.connect(self.set_track_polarity)
-        print(f"train: {self.polarity}")
         self.tm_communicate.number_passenger_boarding_signal.connect(self.set_passenger_boarding)
 
     def read_from_ctc(self):
@@ -455,6 +454,7 @@ class TrainData(QObject):
         if len(polarity_list) < max(1, self.train_count):
             polarity_list = polarity_list + [True] * (max(1, self.train_count) - len(polarity_list))
         self.polarity = polarity_list
+        print(f"train: {self.polarity}")
         self.data_changed.emit()
 
     def set_passenger_boarding(self, boarding_list):

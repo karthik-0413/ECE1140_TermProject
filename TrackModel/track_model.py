@@ -2,10 +2,15 @@ import sys, os, csv, re, random
 from typing import List, Dict
 from PyQt6 import QtWidgets, QtCore, QtGui
 from PyQt6.QtCore import (QObject, pyqtSignal)
-from TrackModel.track_model_ui import Ui_TrackModel
 
+
+from TrackModel.track_model_ui import Ui_TrackModel
 from TrackModel.TrackTrainCommunicate import TrackTrainComms as TrainComms
 from TrackModel.WaysideTrackCommunicate import WaysideTrackComms as WaysideComms
+
+# from track_model_ui import Ui_TrackModel
+# from TrackTrainCommunicate import TrackTrainComms as TrainComms
+# from WaysideTrackCommunicate import WaysideTrackComms as WaysideComms
 
 class Block():
     def __init__(self, line, section, number: int, length: float, grade: float, speedLimit: float, infrastructure: str, side, elevation: float, cumulativeElevation: float, polarity: bool):
@@ -65,7 +70,6 @@ class track_model:
         self.ui.breakStatus3.toggled.connect(self.handle_rail_failure_checkbox)
 
         self.read_train()
-        self.initialize_arrays()
         self.update_block_values()
 
     # important arrays
@@ -79,6 +83,8 @@ class track_model:
     occupancies = []
     default_length_array = []
     station_list = []
+
+    current_block = []
 
         # self.timer = QtCore.QTimer(self)
         # self.timer.timeout.connect(self.recurring)
@@ -129,16 +135,23 @@ class track_model:
         self.position_list = positions
         # print(f"received position: {self.position_list}")
         self.set_train_occupancies()
+        self.update_polarity_values()
 
     # def get_positions(self):
     #     self.train_communicator.position_signal.connect(self.handle_position_signal)
 
+   
     def update_polarity_values(self):
+        print("updating polarity values")
         self.polarity_values.clear()
-        for block in self.all_blocks:
-            if block.occupied == True and block.functional == True:
-                self.polarity_values.append(block.polarity)
-        print(self.polarity_values)
+        for i in range(len(self.current_block)):
+            if self.all_blocks[self.current_block[i]].polarity == 0:
+                self.polarity_values.append(False)
+            else:
+                self.polarity_values.append(True)
+            print(self.all_blocks[self.current_block[i]].polarity)
+        print(f"track: {self.polarity_values}")
+
 
     def update_grade_values(self):
         self.all_blocks.clear()
@@ -153,7 +166,6 @@ class track_model:
                 self.elevation_values.append(block.elevation)
 
     def update_block_values(self):
-        self.update_polarity_values()
         self.update_grade_values()
         self.update_elevation_values()
 
@@ -232,7 +244,7 @@ class track_model:
         self.wayside_communicator.commanded_speed_signal.connect(self.handle_commanded_speed_signal)
         self.wayside_communicator.commanded_authority_signal.connect(self.handle_commanded_authority_signal)
 
-    def write(self):
+    def write_train(self):
         self.train_communicator.number_passenger_boarding_signal.emit(self.num_passengers_embarking)
         self.train_communicator.polarity_signal.emit(self.polarity_values)
         self.train_communicator.block_grade_signal.emit(self.grade_values)
@@ -240,7 +252,7 @@ class track_model:
         self.train_communicator.commanded_speed_signal.emit(self.cmd_speeds)
         self.train_communicator.commanded_authority_signal.emit(self.cmd_authorities)
 
-    def read(self):
+    def write_wayside(self):
         self.wayside_communicator.block_occupancies_signal.emit(self.occupancies)
 
     def upload_file(self) -> None:
@@ -263,43 +275,42 @@ class track_model:
                 self.layout_data.append(row)
                 for row in self.layout_data:
                     line, section, number, length, grade, speedLimit, infrastructure, side, elevation, cumulativeElevation, polarity = row[:11]
-                    temp_block = Block(line,section,int(number),float(length),float(grade),float(speedLimit),infrastructure,side,float(elevation),float(cumulativeElevation),bool(polarity)
+                    temp_block = Block(line,section,int(number),float(length),float(grade),float(speedLimit),infrastructure,side,float(elevation),float(cumulativeElevation),int(polarity)
                 )
                 self.all_blocks.append(temp_block)
         self.initialize_arrays()
         self.update_ui_list()
+        # for block in self.all_blocks:
+        #     print(f"{block.number}, {block.polarity}")
 
     def create_length_array(self):
+        self.default_length_array.clear()
         # iterate through all the numbers in the default green path
         for block_number in self.defaultGreenPath:
             # append the length of the block to the default length array
-            self.default_length_array.append(self.all_blocks[block_number].length)    
+            # print(block_number)
+            self.default_length_array.append(self.all_blocks[block_number].length)
+            
 
     def set_train_occupancies(self):
         # resets all occupancies from the previous train ~ glorious king zach
         self.occupancies.clear()
+        self.current_block.clear()
         for block in self.all_blocks:
             block.occupied = False
         for position_value in self.position_list:
+            block_start = 0
             for i in range(len(self.default_length_array)):
-                block_start, block_end = 0
+                block_end = block_start + self.default_length_array[i]
                 if (block_start <= position_value < block_end):
-                    self.all_blocks[i].occupied = True
+                    self.all_blocks[self.defaultGreenPath[i]].occupied = True
+                    self.current_block.append(self.all_blocks[self.defaultGreenPath[i]].number)
                 else:
-                    self.all_blocks[i].occupied = False
+                    self.all_blocks[self.defaultGreenPath[i]].occupied = False
                 block_start = block_end
-            # train_back_front = [position_value - 16.0, position_value + 16.0] 
-            # for pos in train_back_front:
-            #     block_start, block_end = 0
-            #     for i in range(len(self.default_length_array)):
-            #         block_end = block_start + self.default_length_array[i]
-            #         if (block_start <= pos < block_end):
-            #             self.all_blocks[i].occupied = True
-            #         else:
-            #             self.all_blocks[i].occupied = False
-            #         block_start = block_end
         for block in self.all_blocks:
-            self.occupancies.append(block.occupied)      
+            self.occupancies.append(block.occupied)  
+        print(f"current block: {self.current_block}")
 
     def set_failure_occupancies(self):
         for i in range(len(self.all_blocks)):
@@ -423,7 +434,6 @@ class track_model:
             temp_num = random.randint(0, min(self.num_passengers_at_station[i], seats_available))
             self.num_passengers_at_station[i] -= temp_num
             self.num_passengers_at_station[i] += passengers_disembarking
-
 
 
 ############################################################################################################
@@ -653,7 +663,7 @@ class track_model:
         self.ui.toggle_circuit_failure = temp_failures
         self.ui.toggle_power_failure = temp_failures
         self.ui.toggle_rail_failure = temp_failures
-
+        
     def initialize_arrays(self):
         self.initialize_functional()
         self.initialize_occupancy()
@@ -662,6 +672,7 @@ class track_model:
         self.initialize_crossings()
         self.initialize_people()
         self.initialize_failures()
+        self.create_length_array()
         self.ui.initialize_block_table(len(self.all_blocks))
         
     # def updateBlockTable(self) -> None:
