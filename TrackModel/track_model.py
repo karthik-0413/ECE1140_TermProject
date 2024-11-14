@@ -70,6 +70,7 @@ class track_model:
         self.ui.breakStatus3.toggled.connect(self.handle_rail_failure_checkbox)
 
         self.read_train()
+        self.read_wayside()
         self.update_block_values()
 
     # important arrays
@@ -105,8 +106,9 @@ class track_model:
     elevation_values = []
     polarity_values = []
 
-    cmd_speeds = [20]
-    cmd_authorities = [25]
+    # Speed and Authority to be sent to Train Model
+    cmd_speeds_train = []
+    cmd_authorities_train = []
 
     # Passengers
     open_train_seats = []
@@ -150,7 +152,6 @@ class track_model:
                 self.polarity_values.append(True)
         # print(f"track: {self.polarity_values}")
 
-
     def update_grade_values(self):
         self.all_blocks.clear()
         for block in self.all_blocks:
@@ -176,6 +177,11 @@ class track_model:
     switch_cmds = []
     light_cmds = []
     crossing_cmds = []
+    cmd_speeds_wayside = []
+    cmd_authorities_wayside = []
+    past_cmd_speeds_wayside = []
+    past_cmd_authorities_wayside = []
+
     # Lights
         # holds the values of all the lights on the track.
         # 0: green
@@ -211,18 +217,33 @@ class track_model:
 
     def handle_switch_cmd_signal(self, switch_cmds: list):
         self.switch_cmds = switch_cmds
+        self.update_switch_status()
 
     def handle_signal_cmd_signal(self, light_cmds: list):
         self.light_cmds = light_cmds
+        self.update_light_status()
 
     def handle_crossing_cmd_signal(self, crossing_cmds: list):
         self.crossing_cmds = crossing_cmds
+        self.update_crossing_status()
 
     def handle_commanded_speed_signal(self, cmd_speeds: list):
-        self.cmd_speeds = cmd_speeds
+        self.past_cmd_speeds_wayside = self.cmd_speeds_wayside
+        self.cmd_speeds_wayside = cmd_speeds
+
+        for cmd_speed in self.cmd_speeds_wayside:
+            print(f"Received Cmd Speed: {cmd_speed}")
+
+        # Update the train commanded speeds
+        self.update_train_cmd_speeds()
 
     def handle_commanded_authority_signal(self, cmd_authorities: list):
-        self.cmd_authorities = cmd_authorities   
+        self.cmd_authorities = cmd_authorities
+        self.past_cmd_authorities_wayside = self.cmd_authorities_wayside
+        self.cmd_authorities_wayside = cmd_authorities
+
+        # Update the train commanded authorities
+        self.update_train_cmd_authorities()
 
     ############################################################################################################
     #
@@ -242,17 +263,18 @@ class track_model:
         self.wayside_communicator.commanded_speed_signal.connect(self.handle_commanded_speed_signal)
         self.wayside_communicator.commanded_authority_signal.connect(self.handle_commanded_authority_signal)
 
-    def write_train(self):
+    def write(self):
         self.train_communicator.number_passenger_boarding_signal.emit(self.num_passengers_embarking)
         self.train_communicator.polarity_signal.emit(self.polarity_values)
         self.train_communicator.block_grade_signal.emit(self.grade_values)
         self.train_communicator.block_elevation_signal.emit(self.elevation_values)
-        self.train_communicator.commanded_speed_signal.emit(self.cmd_speeds)
-        self.train_communicator.commanded_authority_signal.emit(self.cmd_authorities)
-
-    def write_wayside(self):
+        self.train_communicator.commanded_speed_signal.emit(self.cmd_speeds_train)
+        self.train_communicator.commanded_authority_signal.emit(self.cmd_authorities_train)
         self.wayside_communicator.block_occupancies_signal.emit(self.occupancies)
 
+        # Update UI
+        self.update_ui_list()
+        
     def upload_file(self) -> None:
         self.ui_switch_array.clear()
         self.ui_light_array.clear()
@@ -289,7 +311,6 @@ class track_model:
             # print(block_number)
             self.default_length_array.append(self.all_blocks[block_number].length)
             
-
     def set_train_occupancies(self):
         # resets all occupancies from the previous train ~ glorious king zach
         self.occupancies.clear()
@@ -523,6 +544,50 @@ class track_model:
         self.ui_people_at_station.clear()
         for i in range(len(self.station_list)):
             self.ui_people_at_station.append([self.num_passengers_at_station[i], self.station_list[i]])
+
+
+############################################################################################################
+#
+#                                           Internal Functions: Update Cmd Speeds
+#
+############################################################################################################
+
+    def update_train_cmd_speeds(self):
+        
+        # Check if current block array is empty
+        if len(self.current_block):
+            
+            # Iterate through all the current block array
+            for i in range(len(self.current_block)):
+
+                # Check if current cmd speed is NONE
+                if self.cmd_speeds_wayside[self.current_block[i]] != None:
+
+                    # Set train commanded speeds to the wayside commanded speeds
+                    self.cmd_speeds_train[i] = self.cmd_speeds_wayside[self.current_block[i]]
+
+############################################################################################################
+#
+#                                           Internal Functions: Update Cmd Authorites
+#
+############################################################################################################
+
+    def update_train_cmd_authorities(self):
+        
+        # Check if current block array is empty
+        if len(self.current_block):
+
+            # Iterate through current_block array
+            for i in range(len(self.current_block)):
+
+                # Check if current cmd authority is not equal to the past cmd authority
+                if self.cmd_authorities_train[i] != self.past_cmd_authorities_wayside[self.current_block[i]]:
+
+                    # Check if cmd authority is NONE
+                    if self.cmd_authorities_wayside[self.current_block[i]] != None:
+
+                        # Set train commanded authority to new wayside commanded authority
+                        self.cmd_authorities_train[i] = self.cmd_authorities_wayside[self.current_block[i]]
 
 
 ############################################################################################################
