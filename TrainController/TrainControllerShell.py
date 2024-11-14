@@ -174,7 +174,7 @@ class TrainControllerShell:
 
     def update_commanded_authority(self, commanded_authority: list):
         for i in range(len(commanded_authority)):
-            self.train_controller_list[i].position.handle_commanded_authority(commanded_authority[i])
+            self.train_controller_list[0].position.handle_commanded_authority(commanded_authority[0])
         # print(f"Commanded Authority: {commanded_authority}")
 
     def update_current_velocity(self, current_velocity: list):
