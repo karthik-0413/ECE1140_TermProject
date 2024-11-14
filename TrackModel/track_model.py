@@ -263,7 +263,7 @@ class track_model:
         self.wayside_communicator.switch_cmd_signal.connect(self.handle_switch_cmd_signal)
         self.wayside_communicator.signal_cmd_signal.connect(self.handle_signal_cmd_signal)
         self.wayside_communicator.crossing_cmd_signal.connect(self.handle_crossing_cmd_signal)
-        self.wayside_communicator.commanded_speed_signal.connect(self.handle_commanded_speed_signal)
+        # self.wayside_communicator.commanded_speed_signal.connect(self.handle_commanded_speed_signal)
         self.wayside_communicator.commanded_authority_signal.connect(self.handle_commanded_authority_signal)
 
     def write(self):
