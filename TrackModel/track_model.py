@@ -2,10 +2,10 @@ import sys, os, csv, re, random
 from typing import List, Dict
 from PyQt6 import QtWidgets, QtCore, QtGui
 from PyQt6.QtCore import (QObject, pyqtSignal)
-from track_model_ui import Ui_TrackModel
+from TrackModel.track_model_ui import Ui_TrackModel
 
-from TrackTrainCommunicate import TrackTrainComms as TrainComms
-from WaysideTrackCommunicate import WaysideTrackComms as WaysideComms
+from TrackModel.TrackTrainCommunicate import TrackTrainComms as TrainComms
+from TrackModel.WaysideTrackCommunicate import WaysideTrackComms as WaysideComms
 
 class Block():
     def __init__(self, line, section, number: int, length: float, grade: float, speedLimit: float, infrastructure: str, side, elevation: float, cumulativeElevation: float, polarity: bool):
@@ -64,7 +64,7 @@ class track_model:
         self.ui.breakStatus2.toggled.connect(self.handle_power_failure_checkbox)
         self.ui.breakStatus3.toggled.connect(self.handle_rail_failure_checkbox)
 
-        self.read()
+        self.read_train()
         self.initialize_arrays()
         self.update_block_values()
 
@@ -127,9 +127,11 @@ class track_model:
 
     def handle_position_signal(self, positions: list):
         self.position_list = positions
+        print(f"abcd {self.position_list}")
+        self.set_train_occupancies()
 
-    def get_positions(self):
-        self.train_communicator.position_signal.connect(self.handle_position_signal)
+    # def get_positions(self):
+    #     self.train_communicator.position_signal.connect(self.handle_position_signal)
 
     def update_polarity_values(self):
         self.polarity_values.clear()
@@ -195,7 +197,6 @@ class track_model:
         # holds the values of all the crossings on the track.
         # 0: open
         # 1: closed
-    
 
     def handle_switch_cmd_signal(self, switch_cmds: list):
         self.switch_cmds = switch_cmds
@@ -218,10 +219,12 @@ class track_model:
     #
     ############################################################################################################
 
-    def read(self):
+    def read_train(self):
         self.train_communicator.number_passenger_leaving_signal.connect(self.handle_num_passenger_leaving_signal)
         self.train_communicator.seat_vacancy_signal.connect(self.handle_seat_vacancy_signal)
         self.train_communicator.position_signal.connect(self.handle_position_signal)
+
+    def read_wayside(self):
         self.wayside_communicator.switch_cmd_signal.connect(self.handle_switch_cmd_signal)
         self.wayside_communicator.signal_cmd_signal.connect(self.handle_signal_cmd_signal)
         self.wayside_communicator.crossing_cmd_signal.connect(self.handle_crossing_cmd_signal)
@@ -235,6 +238,8 @@ class track_model:
         self.train_communicator.block_elevation_signal.emit(self.elevation_values)
         self.train_communicator.commanded_speed_signal.emit(self.cmd_speeds)
         self.train_communicator.commanded_authority_signal.emit(self.cmd_authorities)
+
+    def read(self):
         self.wayside_communicator.block_occupancies_signal.emit(self.occupancies)
 
     def upload_file(self) -> None:
@@ -270,6 +275,7 @@ class track_model:
             self.default_length_array.append(self.all_blocks[block_number].length)    
 
     def set_train_occupancies(self):
+        print("test")
         # resets all occupancies from the previous train ~ glorious king zach
         self.occupancies.clear()
         for block in self.all_blocks:
@@ -293,7 +299,7 @@ class track_model:
             #             self.all_blocks[i].occupied = False
             #         block_start = block_end
         for block in self.all_blocks:
-            self.occupancies.append(block.occupied)        
+            self.occupancies.append(block.occupied)      
 
     def set_failure_occupancies(self):
         for i in range(len(self.all_blocks)):
@@ -445,13 +451,14 @@ class track_model:
         
     # this function will get the switch state to update the block table
     def update_switch_status(self):
-            self.ui_crossing_array.clear()
-            for i in range(len(self.switch_cmds)):
-                if self.switch_cmds[i]:
-                    self.ui_switch_array.append([self.switch_state_array[i][1], self.switch_block_array[i]]) 
-                else:
-                    self.ui_switch_array.append([self.switch_state_array[i][0], self.switch_block_array[i]])
-    
+            if len(self.switch_state_array) > 0:
+                self.ui_switch_array.clear()
+                for i in range(len(self.switch_cmds)):
+                    if self.switch_cmds[i]:
+                        self.ui_switch_array.append([self.switch_state_array[i][1], self.switch_block_array[i]]) 
+                    else:
+                        self.ui_switch_array.append([self.switch_state_array[i][0], self.switch_block_array[i]])
+
 
 ############################################################################################################
 #
@@ -467,12 +474,13 @@ class track_model:
                 self.crossing_block_array.append(block.number)
 
     def update_crossing_status(self):
-        self.ui_crossing_array.clear()
-        for i in range(len(self.crossing_cmds)):
-            if self.crossing_cmds[i]:
-                self.ui_crossing_array.append(["Closed", self.crossing_block_array[i]])
-            else:
-                self.ui_crossing_array.append(["Open", self.crossing_block_array[i]])
+        if len(self.crossing_block_array) > 0:
+            self.ui_crossing_array.clear()
+            for i in range(len(self.crossing_cmds)):
+                if self.crossing_cmds[i]:
+                    self.ui_crossing_array.append(["Closed", self.crossing_block_array[i]])
+                else:
+                    self.ui_crossing_array.append(["Open", self.crossing_block_array[i]])
 
 
 ############################################################################################################
@@ -489,12 +497,13 @@ class track_model:
                 self.light_block_array.append(block.number)
 
     def update_light_status(self):
-        self.ui_light_array.clear()
-        for i in range(len(self.light_cmds)):
-            if self.light_cmds[i]:
-                self.ui_light_array.append(['red', self.light_block_array[i]]) # 0 is red, 1 is green
-            else:
-                self.ui_light_array.append(['green', self.light_block_array[i]])
+        if len(self.light_block_array) > 0:
+            self.ui_light_array.clear()
+            for i in range(len(self.light_cmds)):
+                if self.light_cmds[i]:
+                    self.ui_light_array.append(['red', self.light_block_array[i]]) # 0 is red, 1 is green
+                else:
+                    self.ui_light_array.append(['green', self.light_block_array[i]])
 
 
 ############################################################################################################
@@ -655,7 +664,6 @@ class track_model:
         self.initialize_failures()
         self.ui.initialize_block_table(len(self.all_blocks))
         
-
     # def updateBlockTable(self) -> None:
     #     blocks = self.all_blocks
     #     self.ui.blockTable.setRowCount(len(blocks))
@@ -754,7 +762,7 @@ class track_ui(QtWidgets.QMainWindow, Ui_TrackModel):
         super().__init__()
         self.setupUi(self)
 
-if __name__ == "__main__":
-    app = QtWidgets.QApplication([])
-    object = track_model(TrainComms, WaysideComms)
-    sys.exit(app.exec())
+# if __name__ == "__main__":
+#     app = QtWidgets.QApplication([])
+#     object = track_model(TrainComms, WaysideComms)
+#     sys.exit(app.exec())

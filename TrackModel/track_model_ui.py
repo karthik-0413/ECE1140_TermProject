@@ -2,31 +2,33 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtCore import QObject
 
 class Ui_TrackModel(QObject):
-        functional_list = []
-        occupancy_list = []
-        switch_list = []
-        crossing_list = []
-        lights_list = []
-        num_people_at_station_list = []
+        def __init__(self):
+                super().__init__()
+                self.functional_list = []
+                self.occupancy_list = []
+                self.switch_list = []
+                self.crossing_list = []
+                self.lights_list = []
+                self.num_people_at_station_list = []
 
-        #initialize these lists with the proper values in order to display in the table
-        block_line_list = []
-        block_section_list = []
-        block_number_list = []
-        block_grade_list = []
-        block_length_list = []
-        block_elevation_list = []
-        block_cumulative_elevation_list = []
-        block_infrastructure_list = []
-        block_speed_limit_list = []
-        block_side_list = []
+                #initialize these lists with the proper values in order to display in the table
+                self.block_line_list = []
+                self.block_section_list = []
+                self.block_number_list = []
+                self.block_grade_list = []
+                self.block_length_list = []
+                self.block_elevation_list = []
+                self.block_cumulative_elevation_list = []
+                self.block_infrastructure_list = []
+                self.block_speed_limit_list = []
+                self.block_side_list = []
 
-        toggle_circuit_failure = []
-        toggle_power_failure = []
-        toggle_rail_failure = []
+                self.toggle_circuit_failure = []
+                self.toggle_power_failure = []
+                self.toggle_rail_failure = []
 
-        heater_status = False
-        temperature = 0
+                self.heater_status = False
+                self.temperature = 0
 
         def update_block_table(self):
                 self.update_functional_list()
