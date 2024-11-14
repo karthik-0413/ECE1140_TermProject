@@ -153,7 +153,7 @@ class PowerCommand(QObject):
         self.power_command = 0.0
         self.tuning = tuning
         self.brake_status = brake_status
-        self.module = 0     # 1 for Software, 0 for Hardware
+        self.module = 1     # 1 for Software, 0 for Hardware
         self.raspberry_pi_hostname = '192.168.0.204'
         self.raspberry_pi_port = 22
         self.raspberry_pi_username = 'maj214'
@@ -258,13 +258,12 @@ class PowerCommand(QObject):
                 self.uk_previous = self.uk_current
                 
             elif self.module == 0:
-            # self.power_command, self.ek_previous, self.uk_previous = find_power_command(desired_velocity, current_velocity, self.ek_current, self.max_power, self.uk_current, self.uk_previous, self.ek_previous, self.tuning.kp, self.tuning.ki)
-            # self.power_command_signal.emit(self.power_command)
                 result = send_numbers_to_pi(self.raspberry_pi_hostname, self.raspberry_pi_port, self.raspberry_pi_username, self.raspberry_pi_password, [desired_velocity, current_velocity, self.ek_current, self.max_power, self.uk_current, self.uk_previous, self.ek_previous, self.tuning.kp, self.tuning.ki])
                 print(f"Result:{result}")
                 if result:
                     self.power_command, self.ek_previous, self.uk_previous, self.uk_current, self.ek_current = result
-            
+            # self.power_command, self.ek_previous, self.uk_previous = find_power_command(desired_velocity, current_velocity, self.ek_current, self.max_power, self.uk_current, self.uk_previous, self.ek_previous, self.tuning.kp, self.tuning.ki)
+            # self.power_command_signal.emit(self.power_command)
             
             # Power command bound
             if self.power_command > self.max_power:
@@ -484,6 +483,7 @@ class SpeedControl(QObject):
             self.power_class.update_power_command(self.current_velocity, self.desired_velocity)
             
         self.commanded_speed = speed / 3.6
+        # print(f"Commanded Speed: {self.commanded_speed:.2f} m/s")
         self.find_max_speed()
         self.commanded_speed_signal.emit(self.max_speed)
         # print(f"Commanded Speed: {self.commanded_speed:.2f} m/s")
@@ -646,7 +646,7 @@ class Position(QObject):
     
     def __init__(self, doors: Doors, failure_modes: FailureModes, speed_control: SpeedControl, power_class: PowerCommand, communicator: Communicate, lights: Lights, brake_status: BrakeStatus):
         super().__init__()
-        self.commanded_authority = 5    # int
+        self.commanded_authority = 3 + 1   # int
         self.station_name = 'Shadyside' # string
         self.announcement = '' # string
         self.polarity = True   # boolean
@@ -695,7 +695,7 @@ class Position(QObject):
         if polarity != self.polarity:
             self.polarity = polarity
             self.speed_control.update_speed_limit(self.green_speed_limit[self.current_block])
-            self.commanded_authority = self.commanded_authority - 1
+            self.commanded_authority -= 1
             self.commanded_authority_signal.emit(self.commanded_authority)
             
             # Looping around the green line of the track
@@ -751,15 +751,15 @@ class Position(QObject):
             # print("Doors closed")
             
     def calculate_desired_speed(self):
-        if self.commanded_authority == 2:
-            self.speed_control.desired_velocity = 10
-            self.brake_status.reaching_station = True
-            self.power_class.update_power_command(self.speed_control.current_velocity, self.speed_control.desired_velocity)
-        elif self.commanded_authority == 1:
-            self.speed_control.desired_velocity = 5
-            self.brake_status.reaching_station = True
-            self.power_class.update_power_command(self.speed_control.current_velocity, self.speed_control.desired_velocity)
-        elif self.commanded_authority == 0:
+        # if self.commanded_authority == 2:
+        #     self.speed_control.desired_velocity = 10
+        #     self.brake_status.reaching_station = True
+        #     self.power_class.update_power_command(self.speed_control.current_velocity, self.speed_control.desired_velocity)
+        # if self.commanded_authority == 1:
+        #     self.speed_control.desired_velocity = 5
+        #     self.brake_status.reaching_station = True
+        #     self.power_class.update_power_command(self.speed_control.current_velocity, self.speed_control.desired_velocity)
+        if self.commanded_authority == 0:
             self.speed_control.desired_velocity = 0
             self.brake_status.reaching_station = True
             self.power_class.update_power_command(self.speed_control.current_velocity, self.speed_control.desired_velocity)

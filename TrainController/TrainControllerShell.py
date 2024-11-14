@@ -169,7 +169,7 @@ class TrainControllerShell:
         
     def update_commanded_speed(self, commanded_speed: list):
         for i in range(len(commanded_speed)):
-            self.train_controller_list[i].speed_control.handle_commanded_speed(commanded_speed[i])
+            self.train_controller_list[0].speed_control.handle_commanded_speed(commanded_speed[0])
             # print(f"Commanded Speed: {commanded_speed[i]}")
 
     def update_commanded_authority(self, commanded_authority: list):
@@ -212,8 +212,8 @@ class TrainControllerShell:
 
     def update_polarity(self, polarity: list):
         for i in range(len(polarity)):
-            self.train_controller_list[0].position.handle_polarity_change(polarity[i])
-        # print(f"Polarity: {polarity}")
+            self.train_controller_list[0].position.handle_polarity_change(polarity[0])
+        print(f"Polarity: {polarity}")
 
     # def update_train_count(self, train_count: int):
     #     if self.train_count > train_count:

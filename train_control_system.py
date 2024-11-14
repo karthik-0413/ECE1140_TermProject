@@ -22,7 +22,7 @@ import sys
 def handle_clock_tick(seconds, train_controller_shell: TrainControllerShell, train_model_data: MainWindow, track_model_backend: track_model, ctc_frontend: CTC_frontend):
     # print(f"Clock tick {seconds} seconds")
     if seconds % 2 == 0:
-        ctc_frontend.ctc.write_to_communicate_objects()
+        # ctc_frontend.ctc.write_to_communicate_objects()
         track_model_backend.write_train()
         train_model_data.train_data.write_to_trainController_trackModel()
         train_controller_shell.write_to_train_model()
@@ -98,7 +98,7 @@ if __name__ == '__main__':
     
     timer = QTimer()
     timer.timeout.connect(lambda: handle_clock_tick(clock.elapsed_seconds, tc_shell_window, tm_window, track_model_backend, ctc_ui))
-    timer.start(1000)
+    timer.start(100)
     
     clockUI = ClockDisplay(clock)
     clockUI.show()

@@ -35,7 +35,7 @@ class CTC_logic():
         print("Writing to communicate objects")
 
         # Write all buffered information to the communicate objects
-        self.train_model_communicate.dispatch_train_signal.emit(self.num_trains)
+        # self.train_model_communicate.dispatch_train_signal.emit(self.num_trains)
         # self.wayside_communicate.suggested_speed_signal.emit(self.suggested_speed_list)
         # self.wayside_communicate.suggested_authority_signal.emit(self.suggested_authority_list)
 
