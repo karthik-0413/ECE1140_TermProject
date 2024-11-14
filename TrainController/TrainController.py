@@ -8,6 +8,7 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import Qt, QCoreApplication, pyqtSignal, QObject, QTimer
 from PyQt6.QtGui import QDoubleValidator
+from TrainController.TrainControllerHWConnection import send_numbers_to_pi
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from Resources.TrainTrainControllerComm import TrainTrainController as Communicate
@@ -152,7 +153,11 @@ class PowerCommand(QObject):
         self.power_command = 0.0
         self.tuning = tuning
         self.brake_status = brake_status
-        self.module = 1     # 1 for Software, 0 for Hardware
+        self.module = 0     # 1 for Software, 0 for Hardware
+        self.raspberry_pi_hostname = '192.168.0.204'
+        self.raspberry_pi_port = 22
+        self.raspberry_pi_username = 'maj214'
+        self.raspberry_pi_password = 'password'
         
     def update_kp(self, kp):
         self.tuning.kp = kp
@@ -253,9 +258,13 @@ class PowerCommand(QObject):
                 self.uk_previous = self.uk_current
                 
             elif self.module == 0:
-                pass
             # self.power_command, self.ek_previous, self.uk_previous = find_power_command(desired_velocity, current_velocity, self.ek_current, self.max_power, self.uk_current, self.uk_previous, self.ek_previous, self.tuning.kp, self.tuning.ki)
             # self.power_command_signal.emit(self.power_command)
+                result = send_numbers_to_pi(self.raspberry_pi_hostname, self.raspberry_pi_port, self.raspberry_pi_username, self.raspberry_pi_password, [desired_velocity, current_velocity, self.ek_current, self.max_power, self.uk_current, self.uk_previous, self.ek_previous, self.tuning.kp, self.tuning.ki])
+                print(f"Result:{result}")
+                if result:
+                    self.power_command, self.ek_previous, self.uk_previous, self.uk_current, self.ek_current = result
+            
             
             # Power command bound
             if self.power_command > self.max_power:
@@ -683,10 +692,10 @@ class Position(QObject):
         
     # Connect function for the Communicate class
     def handle_polarity_change(self, polarity: bool):
-        if polarity is not self.polarity:
+        if polarity != self.polarity:
             self.polarity = polarity
             self.speed_control.update_speed_limit(self.green_speed_limit[self.current_block])
-            self.commanded_authority -= 1
+            self.commanded_authority = self.commanded_authority - 1
             self.commanded_authority_signal.emit(self.commanded_authority)
             
             # Looping around the green line of the track

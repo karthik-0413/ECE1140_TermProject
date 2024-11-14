@@ -66,6 +66,7 @@ class TrainController:
             frictional_force = 0.002 * mass * 9.8
             
             if force < frictional_force:
+                pass
                 # print("Train has stopped moving")
                 
             force -= frictional_force
@@ -105,10 +106,10 @@ class TrainController:
 
 def main():
     controller = TrainController()
-    controller.run_simulation(9)
-    controller.plot_velocity()
-    # power = controller.update_power_command(10)
-    # # print(power)
+    # controller.run_simulation(19)
+    # controller.plot_velocity()
+    power = controller.update_power_command(16)
+    print(power)
 
 
 if __name__ == "__main__":
