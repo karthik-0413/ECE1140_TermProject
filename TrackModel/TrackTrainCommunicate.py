@@ -1,6 +1,6 @@
 from PyQt6.QtCore import pyqtSignal, QObject
 
-class TrackTrainModelComm(QObject):
+class TrackTrainComms(QObject):
     
     # Track Model -> Train Model
     commanded_speed_signal = pyqtSignal(list)        #km/hr

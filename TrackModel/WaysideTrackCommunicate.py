@@ -1,6 +1,6 @@
 from PyQt6.QtCore import pyqtSignal, QObject
 
-class WaysideControllerTrackComm(QObject):
+class WaysideTrackComms(QObject):
     
     # Wayside Controller -> Track Model
     commanded_speed_signal = pyqtSignal(list)        #km/hr
