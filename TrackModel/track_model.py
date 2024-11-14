@@ -150,7 +150,7 @@ class track_model:
                 self.polarity_values.append(False)
             else:
                 self.polarity_values.append(True)
-        # print(f"track: {self.polarity_values}")
+        print(f"track: {self.polarity_values}")
 
     def update_grade_values(self):
         self.all_blocks.clear()
@@ -231,8 +231,8 @@ class track_model:
         self.past_cmd_speeds_wayside = self.cmd_speeds_wayside
         self.cmd_speeds_wayside = cmd_speeds
 
-        if len(self.cmd_speeds_wayside):
-            print(f"Received Cmd Speed: {self.cmd_speeds_wayside[0]}")
+        # if len(self.cmd_speeds_wayside):
+        #      print(f"Received Cmd Speed: {self.cmd_speeds_wayside[0]}")
 
         # Update the train commanded speeds
         self.update_train_cmd_speeds()
@@ -242,8 +242,8 @@ class track_model:
         self.past_cmd_authorities_wayside = self.cmd_authorities_wayside
         self.cmd_authorities_wayside = cmd_authorities
 
-        if len(self.cmd_authorities_wayside):
-            print(f"Received Cmd Authority: {self.cmd_authorities_wayside[0]}")
+        # if len(self.cmd_authorities_wayside):
+        #     print(f"Received Cmd Authority: {self.cmd_authorities_wayside[0]}")
 
         # Update the train commanded authorities
         self.update_train_cmd_authorities()
@@ -559,15 +559,22 @@ class track_model:
         
         # Check if current block array is empty
         if len(self.current_block):
+
+            # Clear the current cmd speed
+            self.cmd_speeds_train.clear()
             
             # Iterate through all the current block array
             for i in range(len(self.current_block)):
 
                 # Check if current cmd speed is NONE
                 if self.cmd_speeds_wayside[self.current_block[i]] != None:
-
+                    print(f"index i: {i}")
+                    print(f"Current Block: {self.current_block[i]}")
+                    
                     # Set train commanded speeds to the wayside commanded speeds
-                    self.cmd_speeds_train[i] = self.cmd_speeds_wayside[self.current_block[i]]
+                    self.cmd_speeds_train.append(self.cmd_speeds_wayside[self.current_block[i]])
+
+                    print(f"Train Cmd Speed: {self.cmd_speeds_train[i]}")
 
 ############################################################################################################
 #
@@ -583,16 +590,34 @@ class track_model:
             # Iterate through current_block array
             for i in range(len(self.current_block)):
 
-                # Check if current cmd authority is not equal to the past cmd authority
-                if self.cmd_authorities_train[i] != self.past_cmd_authorities_wayside[self.current_block[i]]:
+                print(f"index i: {i}")
+                print(f"Current Block: {self.current_block[i]}")
+
+                if len(self.cmd_authorities_train) != len(self.current_block):
+
+                    print(f"len cmd_auth_train: {len(self.cmd_authorities_train)}")
+                    print(f"len current_block: {len(self.current_block)}")
+                    print(f"len cmd_auth_wayside: {len(self.cmd_authorities_wayside)}")
+                    print(f"cmd_auth_wayside: {self.cmd_authorities_wayside[self.current_block[len(self.cmd_authorities_train)]]}")
+                    
+
+                    self.cmd_authorities_train.append(self.cmd_authorities_wayside[self.current_block[len(self.cmd_authorities_train)]])
+                    self.past_cmd_authorities_wayside.append(self.cmd_authorities_wayside[self.current_block[len(self.cmd_authorities_train)-1]])
+                
+                    print(f"Train Cmd Authority: {self.cmd_authorities_train[-1]}")
+
+                else:
+                    # Check if current cmd authority is not equal to the past cmd authority
+                    #if self.cmd_authorities_train[i] != self.past_cmd_authorities_wayside[self.current_block[i]]:
 
                     # Check if cmd authority is NONE
                     if self.cmd_authorities_wayside[self.current_block[i]] != None:
 
                         # Set train commanded authority to new wayside commanded authority
                         self.cmd_authorities_train[i] = self.cmd_authorities_wayside[self.current_block[i]]
-                        self.train_communicator.commanded_authority_signal.emit(self.cmd_authorities_train)
-
+                        print(f"Train Cmd Authority: {self.cmd_authorities_train[i]}")
+                            
+            #self.train_communicator.commanded_authority_signal.emit(self.cmd_authorities_train)
 
 ############################################################################################################
 #

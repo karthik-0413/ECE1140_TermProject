@@ -380,7 +380,7 @@ class SpeedControl(QObject):
     
     def __init__(self, power_class: PowerCommand, brake_status: BrakeStatus, communicator: Communicate):
         super().__init__()
-        self.commanded_speed = 0.0
+        self.commanded_speed = 20.0
         self.setpoint_speed = 0.0
         self.setpoint_speed_submit = False
         self.speed_limit = 100.0
@@ -700,6 +700,7 @@ class Position(QObject):
             # self.speed_control.update_speed_limit(self.green_speed_limit[self.current_block])
             if self.commanded_authority >= 1:
                 self.commanded_authority -= 1
+                # print(f"Commanded authority: {self.commanded_authority}")
                 self.commanded_authority_signal.emit(self.commanded_authority)
                 if self.commanded_authority == 0:
                     self.calculate_desired_speed()
@@ -718,7 +719,7 @@ class Position(QObject):
             # self.check_current_block()
             self.check_block_underground()
             # self.calculate_desired_speed()
-            # print(f"Polarity: {self.polarity}")
+        # print(f"Polarity: {self.polarity}")
         
     def check_block_underground(self):
         if "UNDERGROUND" in self.green_underground[self.current_block]:

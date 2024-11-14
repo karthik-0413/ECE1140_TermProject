@@ -31,7 +31,8 @@ class CTC_logic():
 
 
     def write_to_communicate_objects(self):
-        print("Writing to communicate objects")
+        #print("Writing to communicate objects")
+        #print("self.line.send_new_values = ", self.line.send_new_values)
 
         # Write all buffered information to the communicate objects
         # self.train_model_communicate.dispatch_train_signal.emit(self.num_trains)
