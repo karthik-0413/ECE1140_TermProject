@@ -107,8 +107,8 @@ class track_model:
     polarity_values = []
 
     # Speed and Authority to be sent to Train Model
-    cmd_speeds_train = []
-    cmd_authorities_train = []
+    cmd_speeds_train = [20]
+    cmd_authorities_train = [25]
 
     # Passengers
     open_train_seats = []
@@ -231,8 +231,8 @@ class track_model:
         self.past_cmd_speeds_wayside = self.cmd_speeds_wayside
         self.cmd_speeds_wayside = cmd_speeds
 
-        for cmd_speed in self.cmd_speeds_wayside:
-            print(f"Received Cmd Speed: {cmd_speed}")
+        if len(self.cmd_speeds_wayside):
+            print(f"Received Cmd Speed: {self.cmd_speeds_wayside[0]}")
 
         # Update the train commanded speeds
         self.update_train_cmd_speeds()
@@ -241,6 +241,9 @@ class track_model:
         self.cmd_authorities = cmd_authorities
         self.past_cmd_authorities_wayside = self.cmd_authorities_wayside
         self.cmd_authorities_wayside = cmd_authorities
+
+        if len(self.cmd_authorities_wayside):
+            print(f"Received Cmd Authority: {self.cmd_authorities_wayside[0]}")
 
         # Update the train commanded authorities
         self.update_train_cmd_authorities()
@@ -269,7 +272,7 @@ class track_model:
         self.train_communicator.block_grade_signal.emit(self.grade_values)
         self.train_communicator.block_elevation_signal.emit(self.elevation_values)
         self.train_communicator.commanded_speed_signal.emit(self.cmd_speeds_train)
-        self.train_communicator.commanded_authority_signal.emit(self.cmd_authorities_train)
+        # self.train_communicator.commanded_authority_signal.emit(self.cmd_authorities_train)
         self.wayside_communicator.block_occupancies_signal.emit(self.occupancies)
 
         # Update UI
@@ -588,6 +591,7 @@ class track_model:
 
                         # Set train commanded authority to new wayside commanded authority
                         self.cmd_authorities_train[i] = self.cmd_authorities_wayside[self.current_block[i]]
+                        self.train_communicator.commanded_authority_signal.emit(self.cmd_authorities_train)
 
 
 ############################################################################################################

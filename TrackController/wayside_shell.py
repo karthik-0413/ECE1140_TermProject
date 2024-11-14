@@ -31,11 +31,12 @@
 # System library
 import sys
 import os
+import importlib.util
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 
 # PyQt6 libraries
-from PyQt6.QtWidgets import QApplication
+from PyQt6.QtWidgets import QApplication, QFileDialog
 
 # Wayside UI Interface
 from TrackController import wayside_ui
@@ -47,9 +48,9 @@ from Resources import CTCWaysideComm
 from Resources import WaysideTrackComm
 
 # PLC Communication Files
-from TrackController import green_line_plc_1_shell_communicate
-from TrackController import green_line_plc_2_shell_communicate
-from TrackController import green_line_plc_3_shell_communicate
+# from TrackController import green_line_plc_1_shell_communicate
+# from TrackController import green_line_plc_2_shell_communicate
+# from TrackController import green_line_plc_3_shell_communicate
 
 
 ####################################################################################################
@@ -67,9 +68,9 @@ class wayside_shell_class:
     ####################################################################################################
 
     # Input from CTC Office
-    read_sugg_speed = [2] * 152
+    read_sugg_speed = [None] * 152
 
-    read_sugg_authority = [2] * 152
+    read_sugg_authority = [None] * 152
 
 #    read_maintenance_blocks = [0] * 151
 #    read_maintenance_switch_cmd = [None] * 6
@@ -81,8 +82,8 @@ class wayside_shell_class:
     write_block_occupancy = [0] * 152
 
     # Output to Track Model
-    write_cmd_speed = [1] * 152
-    write_cmd_authority = [1] * 152
+    write_cmd_speed = [None] * 152
+    write_cmd_authority = [None] * 152
 
     #                    D   F   I   K  N1  N2   
     #write_switch_cmd = [ 1,  1,  0,  0,  0,  0]
@@ -94,7 +95,6 @@ class wayside_shell_class:
     #write_crossing_cmd = [0, 0]
 
     # Test Values
-    read_sugg_speed = [1] * 152
 
     write_switch_cmd = [ 1,  1,  0,  0,  0,  0]
 
@@ -112,53 +112,52 @@ class wayside_shell_class:
 
     # Inputs from CTC Office
     def read_sugg_speed_handler(self, sugg_speed_array):
-        print('read_sugg_speed_handler')
+        print(f'read_sugg_speed_handler, {sugg_speed_array[0] if len(sugg_speed_array) else 'empty'}')
 
         self.read_sugg_speed = sugg_speed_array
 
         # Update Wayside user interface table
-        self.ui.past_sugg_speed = self.ui.green_line_sugg_speed
-        self.ui.green_line_sugg_speed = sugg_speed_array
-        self.sugg_speed_check = 1
+        if len(self.read_sugg_speed):
+            self.ui.past_sugg_speed = self.ui.green_line_sugg_speed
+            self.ui.green_line_sugg_speed = sugg_speed_array
+            self.sugg_speed_check = 1
 
-        if self.sugg_speed_check == 1 and self.sugg_authority_check == 1 and self.block_occupancy_check == 1:
+            if self.sugg_speed_check == 1 and self.sugg_authority_check == 1 and self.block_occupancy_check == 1:
 
-            self.ui.update_table()
+                self.ui.update_table()
 
-            self.sugg_speed_check = 0
-            self.sugg_authority_check = 0
-            self.block_occupancy_check = 0
+                self.sugg_speed_check = 0
+                self.sugg_authority_check = 0
+                self.block_occupancy_check = 0
 
-        # Call PLC Program handler functions
-        self.green_line_plc_1_sugg_speed_handler()
-        self.green_line_plc_2_sugg_speed_handler()
-        self.green_line_plc_3_sugg_speed_handler()
+            # Call PLC Program handler functions
+            # self.green_line_plc_1_sugg_speed_handler()
+            # self.green_line_plc_2_sugg_speed_handler()
+            # self.green_line_plc_3_sugg_speed_handler()
 
     def read_sugg_authority_handler(self, sugg_authority_array):
-        print('read_sugg_authority_handler')
+        print(f'read_sugg_authority_handler, {sugg_authority_array[0] if len(sugg_authority_array) else 'empty'}')
 
         self.read_sugg_authority = sugg_authority_array
 
         # Update Wayside user interface table
-        self.ui.past_sugg_authority = self.ui.green_line_sugg_auth
-        self.ui.green_line_sugg_auth = sugg_authority_array
-        self.sugg_authority_check = 1
-        
-        if self.sugg_speed_check == 1 and self.sugg_authority_check == 1 and self.block_occupancy_check == 1:
+        if len(self.read_sugg_authority):
+            self.ui.past_sugg_authority = self.ui.green_line_sugg_auth
+            self.ui.green_line_sugg_auth = sugg_authority_array
+            self.sugg_authority_check = 1
+            
+            if self.sugg_speed_check == 1 and self.sugg_authority_check == 1 and self.block_occupancy_check == 1:
 
-            self.ui.update_table()
+                self.ui.update_table()
 
-            self.sugg_speed_check = 0
-            self.sugg_authority_check = 0
-            self.block_occupancy_check = 0
+                self.sugg_speed_check = 0
+                self.sugg_authority_check = 0
+                self.block_occupancy_check = 0
 
-        # Call PLC Program handler functions
-        self.green_line_plc_1_sugg_authority_handler()
-        self.green_line_plc_2_sugg_authority_handler()
-        self.green_line_plc_3_sugg_authority_handler()
-
-        # Update Wayside user interface table
-        self.ui.update_table()
+            # Call PLC Program handler functions
+            # self.green_line_plc_1_sugg_authority_handler()
+            # self.green_line_plc_2_sugg_authority_handler()
+            # self.green_line_plc_3_sugg_authority_handler()
 
 #    def read_maintenance_blocks_handler(self, maintenance_blocks_array):
 #        self.read_maintenance_blocks = maintenance_blocks_array
@@ -171,21 +170,22 @@ class wayside_shell_class:
         self.read_block_occupancy = block_occupancy_array
 
         # Update Wayside user interface table
-        self.ui.green_line_block_occupancy = block_occupancy_array
-        self.block_occupancy_check = 1
-        
-        if self.sugg_speed_check == 1 and self.sugg_authority_check == 1 and self.block_occupancy_check == 1:
+        if len(self.read_block_occupancy):
+            self.ui.green_line_block_occupancy = block_occupancy_array
+            self.block_occupancy_check = 1
+            
+            if self.sugg_speed_check == 1 and self.sugg_authority_check == 1 and self.block_occupancy_check == 1:
 
-            self.ui.update_table()
+                self.ui.update_table()
 
-            self.sugg_speed_check = 0
-            self.sugg_authority_check = 0
-            self.block_occupancy_check = 0
+                self.sugg_speed_check = 0
+                self.sugg_authority_check = 0
+                self.block_occupancy_check = 0
 
-        # Call PLC Program handler functions
-        self.green_line_plc_1_block_occupancy_handler()
-        self.green_line_plc_2_block_occupancy_handler()
-        self.green_line_plc_3_block_occupancy_handler()
+            # Call PLC Program handler functions
+            # self.green_line_plc_1_block_occupancy_handler()
+            # self.green_line_plc_2_block_occupancy_handler()
+            # self.green_line_plc_3_block_occupancy_handler()
 
     ####################################################################################################
     #
@@ -201,34 +201,40 @@ class wayside_shell_class:
     def green_line_plc_1_sugg_speed_handler(self):
         plc_1_sugg_speed = []
 
-        for i in range(1, 33):
-            plc_1_sugg_speed.append(self.read_sugg_speed[i])
-        plc_1_sugg_speed.append(self.read_sugg_speed[150])
-        plc_1_sugg_speed.append(self.read_sugg_speed[151])
+        # Check if the sugg_speed_array is empty
+        if len(self.read_sugg_speed):
 
+            for i in range(1, 33):
+                plc_1_sugg_speed.append(self.read_sugg_speed[i])
+            plc_1_sugg_speed.append(self.read_sugg_speed[150])
+            plc_1_sugg_speed.append(self.read_sugg_speed[151])
 
-        green_line_plc_1_shell_communicate.green_plc_1.green_line_plc_1_sugg_speed.emit(plc_1_sugg_speed)
+            #green_line_plc_1_shell_communicate.green_plc_1.green_line_plc_1_sugg_speed.emit(plc_1_sugg_speed)
 
     def green_line_plc_1_sugg_authority_handler(self):
         plc_1_sugg_authority = []
 
-        for i in range(1, 33):
-            plc_1_sugg_authority.append(self.read_sugg_speed[i])
-        plc_1_sugg_authority.append(self.read_sugg_speed[150])
-        plc_1_sugg_authority.append(self.read_sugg_speed[151])
+        # Check if the sugg_speed_array is empty
+        if len(self.read_sugg_speed):
+            for i in range(1, 33):
+                plc_1_sugg_authority.append(self.read_sugg_speed[i])
+            plc_1_sugg_authority.append(self.read_sugg_speed[150])
+            plc_1_sugg_authority.append(self.read_sugg_speed[151])
 
-        green_line_plc_1_shell_communicate.green_plc_1.green_line_plc_1_sugg_authority.emit(plc_1_sugg_authority)
+            #green_line_plc_1_shell_communicate.green_plc_1.green_line_plc_1_sugg_authority.emit(plc_1_sugg_authority)
 
     # Inputs from Track Model
     def green_line_plc_1_block_occupancy_handler(self):
         plc_1_block_occupancy = []
 
-        for i in range(1, 36):
-            plc_1_block_occupancy.append(self.read_block_occupancy[i])
-        plc_1_block_occupancy.append(self.read_block_occupancy[150])
-        plc_1_block_occupancy.append(self.read_block_occupancy[151])
+        # Check if the sugg_speed_array is empty
+        if len(self.read_sugg_speed):
+            for i in range(1, 36):
+                plc_1_block_occupancy.append(self.read_block_occupancy[i])
+            plc_1_block_occupancy.append(self.read_block_occupancy[150])
+            plc_1_block_occupancy.append(self.read_block_occupancy[151])
 
-        green_line_plc_1_shell_communicate.green_plc_1.green_line_plc_1_block_occupancy.emit(plc_1_block_occupancy)
+            #green_line_plc_1_shell_communicate.green_plc_1.green_line_plc_1_block_occupancy.emit(plc_1_block_occupancy)
 
     # Outputs to Track Model
     def green_line_plc_1_cmd_speed_handler(self, cmd_speed_array):
@@ -257,12 +263,12 @@ class wayside_shell_class:
         self.write_crossing_cmd[0] = crossing_cmd_bool
 
     # Connect to PLC 1 communication signals
-    def connect_green_line_plc_1_signals(self):
-        green_line_plc_1_shell_communicate.green_plc_1.green_line_plc_1_cmd_speed.connect(self.green_line_plc_1_cmd_speed_handler)
-        green_line_plc_1_shell_communicate.green_plc_1.green_line_plc_1_cmd_authority.connect(self.green_line_plc_1_cmd_authority_handler)
-        green_line_plc_1_shell_communicate.green_plc_1.green_line_plc_1_switch_cmd.connect(self.green_line_plc_1_switch_cmd_handler)
-        green_line_plc_1_shell_communicate.green_plc_1.green_line_plc_1_signal_cmd.connect(self.green_line_plc_1_signal_cmd_handler)
-        green_line_plc_1_shell_communicate.green_plc_1.green_line_plc_1_crossing_cmd.connect(self.green_line_plc_1_crossing_cmd_handler)
+    # def connect_green_line_plc_1_signals(self):
+    #     green_line_plc_1_shell_communicate.green_plc_1.green_line_plc_1_cmd_speed.connect(self.green_line_plc_1_cmd_speed_handler)
+    #     green_line_plc_1_shell_communicate.green_plc_1.green_line_plc_1_cmd_authority.connect(self.green_line_plc_1_cmd_authority_handler)
+    #     green_line_plc_1_shell_communicate.green_plc_1.green_line_plc_1_switch_cmd.connect(self.green_line_plc_1_switch_cmd_handler)
+    #     green_line_plc_1_shell_communicate.green_plc_1.green_line_plc_1_signal_cmd.connect(self.green_line_plc_1_signal_cmd_handler)
+    #     green_line_plc_1_shell_communicate.green_plc_1.green_line_plc_1_crossing_cmd.connect(self.green_line_plc_1_crossing_cmd_handler)
 
     ####################################
     #     Green Line PLC Program 2
@@ -270,44 +276,53 @@ class wayside_shell_class:
 
     # Inputs from Track Model
     def green_line_plc_2_sugg_speed_handler(self):
-        plc_2_sugg_apeed = []
+        plc_2_sugg_speed = []
 
-        plc_2_sugg_apeed.append(self.read_sugg_speed[0])
+        # Check if the sugg_speed_array is empty
+        if len(self.read_sugg_speed):
+            plc_2_sugg_speed.append(self.read_sugg_speed[0])
 
-        for i in range(33, 74):
-            plc_2_sugg_apeed.append(self.read_sugg_speed[i])
+            for i in range(33, 74):
+                plc_2_sugg_speed.append(self.read_sugg_speed[i])
 
-        for i in range(105, 150):
-            plc_2_sugg_apeed.append(self.read_sugg_speed[i])
+            for i in range(105, 150):
+                plc_2_sugg_speed.append(self.read_sugg_speed[i])
 
-        green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_sugg_speed.emit(plc_2_sugg_apeed)
+
+            #green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_sugg_speed.emit(plc_2_sugg_speed)
 
     def green_line_plc_2_sugg_authority_handler(self):
         plc_2_sugg_authority = []
 
-        plc_2_sugg_authority.append(self.read_sugg_authority[0])
+        # Check if the sugg_authority_array is empty
+        if len(self.read_sugg_authority):
 
-        for i in range(33, 74):
-            plc_2_sugg_authority.append(self.read_sugg_authority[i])
+            plc_2_sugg_authority.append(self.read_sugg_authority[0])
 
-        for i in range(105, 150):
-            plc_2_sugg_authority.append(self.read_sugg_authority[i])
+            for i in range(33, 74):
+                plc_2_sugg_authority.append(self.read_sugg_authority[i])
 
-        green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_sugg_authority.emit(plc_2_sugg_authority)
+            for i in range(105, 150):
+                plc_2_sugg_authority.append(self.read_sugg_authority[i])
+
+           #green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_sugg_authority.emit(plc_2_sugg_authority)
 
     # Inputs from Track Model
     def green_line_plc_2_block_occupancy_handler(self):
         plc_2_block_occupancy = []
 
-        plc_2_block_occupancy.append(self.read_block_occupancy[0])
+        # Check if the block_occupancy_array is empty
+        if len(self.read_block_occupancy):
 
-        for i in range(33, 77):
-            plc_2_block_occupancy.append(self.read_block_occupancy[i])
+            plc_2_block_occupancy.append(self.read_block_occupancy[0])
 
-        for i in range(105, 151):
-            plc_2_block_occupancy.append(self.read_block_occupancy[i])
+            for i in range(33, 77):
+                plc_2_block_occupancy.append(self.read_block_occupancy[i])
 
-        green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_block_occupancy.emit(plc_2_block_occupancy)
+            for i in range(105, 151):
+                plc_2_block_occupancy.append(self.read_block_occupancy[i])
+
+            #green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_block_occupancy.emit(plc_2_block_occupancy)
 
     # Outputs to Track Model
     def green_line_plc_2_cmd_speed_handler(self, cmd_speed_array):
@@ -341,12 +356,12 @@ class wayside_shell_class:
         self.write_crossing_cmd[0] = crossing_cmd_bool
 
     # Connect to PLC 2 communication signals
-    def connect_green_line_plc_2_signals(self):
-        green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_cmd_speed.connect(self.green_line_plc_2_cmd_speed_handler)
-        green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_cmd_authority.connect(self.green_line_plc_2_cmd_authority_handler)
-        green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_switch_cmd.connect(self.green_line_plc_2_switch_cmd_handler)
-        green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_signal_cmd.connect(self.green_line_plc_2_signal_cmd_handler)
-        green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_crossing_cmd.connect(self.green_line_plc_2_crossing_cmd_handler)
+    # def connect_green_line_plc_2_signals(self):
+    #     green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_cmd_speed.connect(self.green_line_plc_2_cmd_speed_handler)
+    #     green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_cmd_authority.connect(self.green_line_plc_2_cmd_authority_handler)
+    #     green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_switch_cmd.connect(self.green_line_plc_2_switch_cmd_handler)
+    #     green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_signal_cmd.connect(self.green_line_plc_2_signal_cmd_handler)
+    #     green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_crossing_cmd.connect(self.green_line_plc_2_crossing_cmd_handler)
 
     ####################################
     #     Green Line PLC Program 3
@@ -356,27 +371,33 @@ class wayside_shell_class:
     def green_line_plc_3_sugg_speed_handler(self):
         plc_3_sugg_speed = []
 
-        for i in range(74, 105):
-            plc_3_sugg_speed.append(self.read_sugg_speed[i])
+        # Check if the sugg_speed_array is empty
+        if len(self.read_sugg_speed):
+            for i in range(74, 105):
+                plc_3_sugg_speed.append(self.read_sugg_speed[i])
 
-        green_line_plc_3_shell_communicate.green_plc_3.green_line_plc_3_sugg_speed.emit(plc_3_sugg_speed)
+            #green_line_plc_3_shell_communicate.green_plc_3.green_line_plc_3_sugg_speed.emit(plc_3_sugg_speed)
     
     def green_line_plc_3_sugg_authority_handler(self):
         plc_3_sugg_authority = []
 
-        for i in range(74, 105):
-            plc_3_sugg_authority.append(self.read_block_occupancy[i])
+        # Check if the sugg_authority_array is empty
+        if len(self.read_sugg_authority):
+            for i in range(74, 105):
+                plc_3_sugg_authority.append(self.read_sugg_authority[i])
 
-        green_line_plc_3_shell_communicate.green_plc_3.green_line_plc_3_sugg_authority.emit(plc_3_sugg_authority)
+            #green_line_plc_3_shell_communicate.green_plc_3.green_line_plc_3_sugg_authority.emit(plc_3_sugg_authority)
 
     # Inputs from Track Model
     def green_line_plc_3_block_occupancy_handler(self):
         plc_3_block_occupancy = []
 
-        for i in range(74, 110):
-            plc_3_block_occupancy.append(self.read_block_occupancy[i])
+        # Check if the block_occupancy_array is empty
+        if len(self.read_block_occupancy):
+            for i in range(74, 110):
+                plc_3_block_occupancy.append(self.read_block_occupancy[i])
 
-        green_line_plc_3_shell_communicate.green_plc_3.green_line_plc_3_block_occupancy.emit(plc_3_block_occupancy)
+            #green_line_plc_3_shell_communicate.green_plc_3.green_line_plc_3_block_occupancy.emit(plc_3_block_occupancy)
 
     # Outputs to Track Model
     def green_line_plc_3_cmd_speed_handler(self, cmd_speed_array):
@@ -400,11 +421,11 @@ class wayside_shell_class:
     # No crossing commands for PLC Program 3
 
     # Connect to PLC 3 communication signals
-    def connect_green_line_plc_3_signals(self):
-        green_line_plc_3_shell_communicate.green_plc_3.green_line_plc_3_cmd_speed.connect(self.green_line_plc_3_cmd_speed_handler)
-        green_line_plc_3_shell_communicate.green_plc_3.green_line_plc_3_cmd_authority.connect(self.green_line_plc_3_cmd_authority_handler)
-        green_line_plc_3_shell_communicate.green_plc_3.green_line_plc_3_switch_cmd.connect(self.green_line_plc_3_switch_cmd_handler)
-        green_line_plc_3_shell_communicate.green_plc_3.green_line_plc_3_signal_cmd.connect(self.green_line_plc_3_signal_cmd_handler)
+    # def connect_green_line_plc_3_signals(self):
+    #     green_line_plc_3_shell_communicate.green_plc_3.green_line_plc_3_cmd_speed.connect(self.green_line_plc_3_cmd_speed_handler)
+    #     green_line_plc_3_shell_communicate.green_plc_3.green_line_plc_3_cmd_authority.connect(self.green_line_plc_3_cmd_authority_handler)
+    #     green_line_plc_3_shell_communicate.green_plc_3.green_line_plc_3_switch_cmd.connect(self.green_line_plc_3_switch_cmd_handler)
+    #     green_line_plc_3_shell_communicate.green_plc_3.green_line_plc_3_signal_cmd.connect(self.green_line_plc_3_signal_cmd_handler)
 
     ####################################################################################################
     #
@@ -417,7 +438,7 @@ class wayside_shell_class:
         self.ctc_wayside_comm_object.suggested_authority_signal.connect(self.read_sugg_authority_handler)
 
     def connect_track_model_signals(self):
-        self.wayside_track_comm_object.block_occupancy_signal.connect(self.read_block_occupancy_handler)
+        self.wayside_track_comm_object.block_occupancies_signal.connect(self.read_block_occupancy_handler)
 
     ####################################################################################################
     #
@@ -446,10 +467,12 @@ class wayside_shell_class:
         ####################################
 
         # Commanded Speed
-        self.ui.green_line_cmd_speed = self.write_cmd_speed
+        if len(self.write_cmd_speed):
+            self.ui.green_line_cmd_speed = self.write_cmd_speed
 
         # Commanded Authority
-        self.ui.green_line_cmd_auth = self.write_cmd_authority
+        if len(self.write_cmd_authority):
+            self.ui.green_line_cmd_auth = self.write_cmd_authority
 
         # Switch Command
         self.ui.past_sw_cmd = self.ui.green_line_sw_cmd
@@ -474,6 +497,46 @@ class wayside_shell_class:
     #
     ####################################################################################################
 
+    ###################################
+    #       Upload PLC Program
+    ###################################
+
+    # Open file manager to select PLC programs
+    def open_file_dialog(self):
+
+            # Open a file dialog to select Python files
+            file_paths, _ = QFileDialog.getOpenFileNames(self, 'Open Python files', '', 'Python Files (*.py)')
+
+            # Run PLC programs in separate processes
+            self.execute_files(file_paths)
+
+    # Execute the selected Python files
+    def execute_files(self, file_paths):
+
+            # Start each file in a separate process
+                    
+            # Import filepath
+
+            # PLC Program 1
+            module_name = 'gp1'
+            gp1_spec = importlib.util.spec_from_file_location(module_name, file_paths[0])
+            plc_1 = importlib.util.module_from_spec(gp1_spec)
+            gp1_spec.loader.exec_module(plc_1)
+
+            # PLC Program 2
+            module_name = 'gp2'
+            gp2_spec = importlib.util.spec_from_file_location(module_name, file_paths[1])
+            plc_2 = importlib.util.module_from_spec(gp2_spec)
+            gp2_spec.loader.exec_module(plc_2)
+
+            # PLC Program 3
+            module_name = 'gp3'
+            gp3_spec = importlib.util.spec_from_file_location(module_name, file_paths[2])
+            plc_3 = importlib.util.module_from_spec(gp3_spec)
+            gp3_spec.loader.exec_module(plc_3)
+
+
+
     # Initialize the Wayside UI Interface
     def __init__(self, ctc_wayside, wayside_track):
 
@@ -491,14 +554,20 @@ class wayside_shell_class:
         # Connect to CTC Office signals
         self.connect_ctc_signals()
 
+        # Connect to Track Model signals
+        self.connect_track_model_signals()
+
         # Connect to PLC program signals
-        self.connect_green_line_plc_1_signals()
-        self.connect_green_line_plc_2_signals()
-        self.connect_green_line_plc_3_signals()
+        # self.connect_green_line_plc_1_signals()
+        # self.connect_green_line_plc_2_signals()
+        # self.connect_green_line_plc_3_signals()
 
         # Initialize and show the Wayside user interface
         self.ui = wayside_shell_ui()
         self.ui.show()
+
+        # Connect to upload button
+        self.ui.UploadPLCButton.clicked.connect(self.open_file_dialog)
 
 class wayside_shell_ui(wayside_ui.QtWidgets.QMainWindow, wayside_ui.Ui_MainWindow):
     def __init__(self):

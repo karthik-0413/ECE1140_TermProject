@@ -973,7 +973,7 @@ class Ui_MainWindow(QWidget):
                 self.CrossingButton.clicked.connect(lambda: self.filter_button_clicked(6))
 
                 # Upload PLC Button
-                self.UploadPLCButton.clicked.connect(self.open_file_dialog)
+                #self.UploadPLCButton.clicked.connect(self.open_file_dialog)
 
         def retranslateUi(self, MainWindow):
                 _translate = QtCore.QCoreApplication.translate
@@ -1820,31 +1820,31 @@ class Ui_MainWindow(QWidget):
                 # Add log entry to new row
                 self.UpdateLog.setItem(0, 0, QtWidgets.QTableWidgetItem(entry))
                 
-        ###################################
-        #       Upload PLC Program
-        ###################################
+        # ###################################
+        # #       Upload PLC Program
+        # ###################################
 
-        # Open file manager to select PLC programs
-        def open_file_dialog(self):
+        # # Open file manager to select PLC programs
+        # def open_file_dialog(self):
 
-                # Open a file dialog to select Python files
-                file_paths, _ = QFileDialog.getOpenFileNames(self, 'Open Python files', '', 'Python Files (*.py)')
+        #         # Open a file dialog to select Python files
+        #         file_paths, _ = QFileDialog.getOpenFileNames(self, 'Open Python files', '', 'Python Files (*.py)')
 
-                # Run PLC programs in separate processes
-                self.execute_files(file_paths)
+        #         # Run PLC programs in separate processes
+        #         self.execute_files(file_paths)
     
-        # Execute the selected Python files
-        def execute_files(self, file_paths):
+        # # Execute the selected Python files
+        # def execute_files(self, file_paths):
 
-                # Start each file in a separate process
-                for file_path in file_paths:
+        #         # Start each file in a separate process
+        #         for file_path in file_paths:
 
-                        # Start subprocess
-                        process = subprocess.Popen(['python', file_path])
+        #                 # Start subprocess
+        #                 process = subprocess.Popen(['python', file_path])
 
-                        # Add the process to the list of running processes
-                        self.processes.append(process)
-                        print(f"Running {file_path}")
+        #                 # Add the process to the list of running processes
+        #                 self.processes.append(process)
+        #                 print(f"Running {file_path}")
 
         
 
