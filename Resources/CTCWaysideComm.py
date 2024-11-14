@@ -8,4 +8,4 @@ class CTCWaysideControllerComm(QObject):
 
     
     # Wayside -> CTC
-    block_occupancy_signal = pyqtSignal(list)
+    block_occupancy_signal = pyqtSignal(list)     # bools
