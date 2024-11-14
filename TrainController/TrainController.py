@@ -380,7 +380,7 @@ class SpeedControl(QObject):
     
     def __init__(self, power_class: PowerCommand, brake_status: BrakeStatus, communicator: Communicate):
         super().__init__()
-        self.commanded_speed = 20.0
+        self.commanded_speed = 0.0
         self.setpoint_speed = 0.0
         self.setpoint_speed_submit = False
         self.speed_limit = 100.0
@@ -479,11 +479,11 @@ class SpeedControl(QObject):
         
     def handle_commanded_speed(self, speed: float):
         # km/hr to m/s
-        # if self.commanded_speed > (speed / 3.6):
-        #     self.brake_status.entered_lower = True
-        #     self.find_max_speed()
-        #     self.desired_velocity = self.max_speed
-        #     self.power_class.update_power_command(self.current_velocity, self.desired_velocity)
+        if self.commanded_speed > (speed / 3.6):
+            self.brake_status.entered_lower = True
+            self.find_max_speed()
+            self.desired_velocity = self.max_speed
+            self.power_class.update_power_command(self.current_velocity, self.desired_velocity)
             
         self.commanded_speed = speed / 3.6
         # print(f"Commanded Speed: {self.commanded_speed:.2f} m/s")
