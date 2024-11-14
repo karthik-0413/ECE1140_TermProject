@@ -65,3 +65,6 @@ def calculate_train_speed(train_data, index):
 
     # Update position
     train_data.current_position[index] += train_data.current_speed[index] * delta_t
+
+    # prints the current positions of the trains
+    # print(train_data.current_position)

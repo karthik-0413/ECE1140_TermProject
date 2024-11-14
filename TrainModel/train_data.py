@@ -5,13 +5,14 @@ from TrainModel.power import calculate_train_speed
 import random  # For simulating passenger departures
 from Resources.TrainTrainControllerComm import TrainTrainController
 from Resources.TrackTrainComm import TrackTrainModelComm
+from Resources.CTCTrain import CTCTrain
 
 class TrainData(QObject):
     """Class representing the data and state of all trains."""
     data_changed = pyqtSignal()
     announcement = pyqtSignal(list)  # List of announcements for all trains
 
-    def __init__(self, tc_communicate: TrainTrainController, tm_communicate: TrackTrainModelComm, ctc_communicate):
+    def __init__(self, tc_communicate: TrainTrainController, tm_communicate: TrackTrainModelComm, ctc_communicate: CTCTrain):
         super().__init__()
 
         self.tc_communicate = tc_communicate
@@ -308,7 +309,7 @@ class TrainData(QObject):
 
     def read_from_ctc(self):
         """Connect incoming signals from CTC."""
-        self.ctc_communicate.current_train_count_signal.connect(self.update_train_list)
+        self.ctc_communicate.dispatch_train_signal.connect(self.update_train_list)
 
     def update_train_list(self, ctc_train_count):
         """Update train data lists based on current train count from CTC."""
@@ -454,6 +455,7 @@ class TrainData(QObject):
         if len(polarity_list) < max(1, self.train_count):
             polarity_list = polarity_list + [True] * (max(1, self.train_count) - len(polarity_list))
         self.polarity = polarity_list
+        # print(f"train: {self.polarity}")
         self.data_changed.emit()
 
     def set_passenger_boarding(self, boarding_list):
@@ -531,8 +533,8 @@ class TrainData(QObject):
     def write_to_trainController_trackModel(self):
         """Send updated data to Train Controller and Track Model via communication classes."""
         # Send data to Train Controller
-        self.tc_communicate.commanded_speed_signal.emit(self.commanded_speed)  # mph for UI
-        self.tc_communicate.commanded_authority_signal.emit(self.commanded_authority)
+        self.tc_communicate.commanded_speed_signal.emit(self.commanded_speed_tc)  # mph for UI
+        # self.tc_communicate.commanded_authority_signal.emit(self.commanded_authority)
         self.tc_communicate.current_velocity_signal.emit(self.current_speed)  # m/s
         self.tc_communicate.engine_failure_signal.emit(self.engine_failure)
         self.tc_communicate.brake_failure_signal.emit(self.brake_failure)

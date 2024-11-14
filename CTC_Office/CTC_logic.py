@@ -7,9 +7,10 @@ from CTC_Office.line import Line
 
 from TrainModel.CTC_communicate import CTC_Train_Model_Communicate
 from Resources.CTCWaysideComm import CTCWaysideControllerComm
+from Resources.CTCTrain import CTCTrain
 
 class CTC_logic():
-    def __init__(self, train_model_communicate: CTC_Train_Model_Communicate, wayside_communicate: CTCWaysideControllerComm):
+    def __init__(self, train_model_communicate: CTCTrain, wayside_communicate: CTCWaysideControllerComm):
         self.line = Line("Green")
 
 
@@ -30,9 +31,10 @@ class CTC_logic():
 
 
     def write_to_communicate_objects(self):
+        print("Writing to communicate objects")
 
         # Write all buffered information to the communicate objects
-        self.train_model_communicate.current_train_count_signal.emit(self.num_trains)
+        # self.train_model_communicate.dispatch_train_signal.emit(self.num_trains)
         self.wayside_communicate.suggested_speed_signal.emit(self.suggested_speed_list)
         self.wayside_communicate.suggested_authority_signal.emit(self.suggested_authority_list)
 

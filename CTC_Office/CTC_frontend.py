@@ -6,6 +6,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 from CTC_Office.CTC_logic import CTC_logic
 from TrainModel.CTC_communicate import CTC_Train_Model_Communicate
 from Resources.CTCWaysideComm import CTCWaysideControllerComm
+from Resources.CTCTrain import CTCTrain
 
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtWidgets import QApplication, QFileDialog
@@ -14,9 +15,12 @@ import datetime as dt
 import time
 
 class CTC_frontend(object):
-    def __init__(self, ctc_train_communicate: CTC_Train_Model_Communicate, wayside_communicate: CTCWaysideControllerComm):
+    def __init__(self, ctc_train_communicate: CTCTrain, wayside_communicate: CTCWaysideControllerComm):
         self.ctc = CTC_logic(ctc_train_communicate, wayside_communicate)
         self.wayside_communicate = wayside_communicate
+        self.ctc_train_communicate = ctc_train_communicate
+        
+        
 
         self.wayside_communicate.block_occupancy_signal.connect(self.update_block_occupancies)
         self.wall_clock_time = dt.datetime.now()
@@ -24,6 +28,7 @@ class CTC_frontend(object):
     def setupUi(self, mainwindow):
         mainwindow.setObjectName("mainwindow")
         mainwindow.resize(838, 800)
+        mainwindow.setStyleSheet("background-color: lightgray;")
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.MinimumExpanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -70,7 +75,7 @@ class CTC_frontend(object):
         self.ThroughputLayout.setObjectName("ThroughputLayout")
         self.TimeLabel = QtWidgets.QLabel(parent=self.verticalLayoutWidget_2)
         self.TimeLabel.setMaximumSize(QtCore.QSize(120, 60))
-        self.TimeLabel.setStyleSheet("font: 36pt \"Arial\";")
+        self.TimeLabel.setStyleSheet("font: 36pt \"Arial\"; color: black;")
         self.TimeLabel.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.TimeLabel.setObjectName("TimeLabel")
         self.ThroughputLayout.addWidget(self.TimeLabel, 0, QtCore.Qt.AlignmentFlag.AlignHCenter)
@@ -88,6 +93,7 @@ class CTC_frontend(object):
 "border-color: rgb(0, 0, 0);\n"
 "font: 18pt \"Arial\";\n"
 "background-color: rgb(43, 120, 228);\n"
+"color: black;\n"
 "")
         self.ThroughputDisplay.setLineWidth(4)
         self.ThroughputDisplay.setMidLineWidth(4)
@@ -96,7 +102,7 @@ class CTC_frontend(object):
         self.ThroughputLayout.addWidget(self.ThroughputDisplay, 0, QtCore.Qt.AlignmentFlag.AlignHCenter|QtCore.Qt.AlignmentFlag.AlignVCenter)
         self.ThroughputLabel = QtWidgets.QLabel(parent=self.verticalLayoutWidget_2)
         self.ThroughputLabel.setMaximumSize(QtCore.QSize(100, 40))
-        self.ThroughputLabel.setStyleSheet("font: 14pt \"Arial\";\n"
+        self.ThroughputLabel.setStyleSheet("font: 14pt \"Arial\"; color: black;\n"
 "border:0px\n"
 ";")
         self.ThroughputLabel.setAlignment(QtCore.Qt.AlignmentFlag.AlignHCenter|QtCore.Qt.AlignmentFlag.AlignTop)
@@ -105,7 +111,7 @@ class CTC_frontend(object):
         self.UploadScheduleButton = QtWidgets.QPushButton(parent=self.verticalLayoutWidget_2)
         self.UploadScheduleButton.setMinimumSize(QtCore.QSize(150, 30))
         self.UploadScheduleButton.setMaximumSize(QtCore.QSize(200, 40))
-        self.UploadScheduleButton.setStyleSheet("background-color: rgb(255, 0, 255);\n"
+        self.UploadScheduleButton.setStyleSheet("background-color: rgb(255, 0, 255); color: black;\n"
 "border: 1px solid;\n"
 "font: 18pt \"Arial\";\n"
 "")
@@ -116,7 +122,7 @@ class CTC_frontend(object):
         self.TrainTable = QtWidgets.QTabWidget(parent=self.TrainTab)
         self.TrainTable.setMinimumSize(QtCore.QSize(0, 200))
         self.TrainTable.setMaximumSize(QtCore.QSize(800, 400))
-        self.TrainTable.setStyleSheet("")
+        self.TrainTable.setStyleSheet("color: black;")
         self.TrainTable.setTabPosition(QtWidgets.QTabWidget.TabPosition.North)
         self.TrainTable.setUsesScrollButtons(False)
         self.TrainTable.setTabsClosable(False)
@@ -139,7 +145,7 @@ class CTC_frontend(object):
         self.BlueTrainsTable.setSizePolicy(sizePolicy)
         self.BlueTrainsTable.setMinimumSize(QtCore.QSize(0, 100))
         self.BlueTrainsTable.setMaximumSize(QtCore.QSize(750, 600))
-        self.BlueTrainsTable.setStyleSheet("font: 13pt \"Arial\";")
+        self.BlueTrainsTable.setStyleSheet("font: 13pt \"Arial\"; background-color: lightgray;")
         self.BlueTrainsTable.setFrameShape(QtWidgets.QFrame.Shape.Box)
         self.BlueTrainsTable.setFrameShadow(QtWidgets.QFrame.Shadow.Plain)
         self.BlueTrainsTable.setLineWidth(2)
@@ -147,9 +153,11 @@ class CTC_frontend(object):
         self.BlueTrainsTable.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
         self.BlueTrainsTable.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.SizeAdjustPolicy.AdjustToContentsOnFirstShow)
         self.BlueTrainsTable.setShowGrid(True)
+        self.BlueTrainsTable.setGridStyle(QtCore.Qt.PenStyle.SolidLine)
         self.BlueTrainsTable.setRowCount(0)
         self.BlueTrainsTable.setObjectName("BlueTrainsTable")
         self.BlueTrainsTable.setColumnCount(5)
+        self.BlueTrainsTable.setSortingEnabled(True)
         item = QtWidgets.QTableWidgetItem()
         self.BlueTrainsTable.setHorizontalHeaderItem(0, item)
         item = QtWidgets.QTableWidgetItem()
@@ -1175,7 +1183,7 @@ class CTC_frontend(object):
     def retranslateUi(self, mainwindow):
         _translate = QtCore.QCoreApplication.translate
         mainwindow.setWindowTitle(_translate("mainwindow", "MainWindow"))
-        self.TimeLabel.setText(_translate("mainwindow", "10:30"))
+        self.TimeLabel.setText(_translate("mainwindow", self.wall_clock_time.strftime("%H:%M")))
         self.ThroughputDisplay.setText(_translate("mainwindow", "X Trains/hr/line"))
         self.ThroughputLabel.setText(_translate("mainwindow", "Throughput"))
         self.UploadScheduleButton.setText(_translate("mainwindow", "Upload Schedule"))
@@ -1357,8 +1365,8 @@ class CTC_frontend(object):
             self.BlueTrainsTable.setItem(index, 0, QtWidgets.QTableWidgetItem(str(train.train_id)))
             self.BlueTrainsTable.setItem(index, 1, QtWidgets.QTableWidgetItem(str(train.location)))
             self.BlueTrainsTable.setItem(index, 2, QtWidgets.QTableWidgetItem(str(train.destination_station)))
-            self.BlueTrainsTable.setItem(index, 3, QtWidgets.QTableWidgetItem(str(train.arrival_time)))
-            self.BlueTrainsTable.setItem(index, 4, QtWidgets.QTableWidgetItem(str(train.departure_time)))
+            self.BlueTrainsTable.setItem(index, 3, QtWidgets.QTableWidgetItem(str(train.arrival_time.strftime("%H:%M"))))
+            self.BlueTrainsTable.setItem(index, 4, QtWidgets.QTableWidgetItem(str(train.departure_time.strftime("%H:%M"))))
         
             for col in range(5):
                 item1 = self.BlueTrainsTable.item(index, col)
@@ -1387,6 +1395,7 @@ class CTC_frontend(object):
         self.updateUI()
 
     def dispatch_train(self):
+            
 
         station = self.StationSelector.currentText()
         print(f"Selected Station = {station}")
@@ -1402,6 +1411,7 @@ class CTC_frontend(object):
             depart_time = dt.time(hour=departure_time.hour(),minute=departure_time.minute(),second=departure_time.second())
             print(depart_time)
             self.ctc.add_new_train_to_line("Green", dest, station, depart_time)
+            self.ctc_train_communicate.dispatch_train_signal.emit(1)
 
         self.updateUI()
         
@@ -1444,7 +1454,13 @@ class CTC_frontend(object):
 
 
     def time_step(self):
-        self.wall_clock_time = self.wall_clock_time + dt.timedelta(milliseconds=100)
+
+        date = dt.datetime.now().date()
+        datetime = dt.datetime.combine(date, self.wall_clock_time)
+        datetime = datetime + dt.timedelta(milliseconds=100)
+
+        self.wall_clock_time = datetime.time()
+
         self.updateUI()
         
 
@@ -1460,7 +1476,7 @@ if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
 
-    comm = CTC_Train_Model_Communicate()
+    comm = CTCTrain()
 
     ui = CTC_frontend(comm)
     ui.setupUi(MainWindow)

@@ -1167,7 +1167,7 @@ class Ui_MainWindow(QWidget):
 
                                         for i in range(1, 151):
 
-                                                self.DataTable.setItem(i, 0, QtWidgets.QTableWidgetItem(f"{i if i != 7 else '7b'}"))
+                                                self.DataTable.setItem(i, 0, QtWidgets.QTableWidgetItem(f"{i}" if i != 7 else '7b'))
                                                 self.DataTable.setItem(i, 1, QtWidgets.QTableWidgetItem(self.green_line_sugg_speed[i] if self.green_line_sugg_speed[i] != None else "None"))
                                                 self.DataTable.setItem(i, 2, QtWidgets.QTableWidgetItem(self.green_line_cmd_speed[i] if self.green_line_cmd_speed[i] != None else "None"))
 
@@ -1187,7 +1187,7 @@ class Ui_MainWindow(QWidget):
                                         # Fill Table with block speed data
                                         for i in range(1, 36):
 
-                                                self.DataTable.setItem(i-1, 0, QtWidgets.QTableWidgetItem(f"{i if i != 7 else '7b'}"))
+                                                self.DataTable.setItem(i-1, 0, QtWidgets.QTableWidgetItem(f"{i}" if i != 7 else '7b'))
                                                 self.DataTable.setItem(i-1, 1, QtWidgets.QTableWidgetItem(self.green_line_sugg_speed[i] if self.green_line_sugg_speed[i] != None else "None"))
                                                 self.DataTable.setItem(i-1, 2, QtWidgets.QTableWidgetItem(self.green_line_cmd_speed[i] if self.green_line_cmd_speed[i] != None else "None"))
 
@@ -1264,9 +1264,17 @@ class Ui_MainWindow(QWidget):
                                         # Fill Table with rest of block speed data
                                         for i in range(1, 151):
 
-                                                self.DataTable.setItem(i, 0, QtWidgets.QTableWidgetItem(f"{i}"))
+                                                self.DataTable.setItem(i, 0, QtWidgets.QTableWidgetItem(f"{i}" if i != 7 else "7b"))
                                                 self.DataTable.setItem(i, 1, QtWidgets.QTableWidgetItem(self.green_line_sugg_auth[i] if self.green_line_sugg_auth[i] != None else "None"))
                                                 self.DataTable.setItem(i, 2, QtWidgets.QTableWidgetItem(self.green_line_cmd_auth[i] if self.green_line_cmd_auth[i] != None else "None"))
+
+                                        # Insert Section C, Block 151
+                                        self.DataTable.insertRow(7)
+
+                                        self.DataTable.setItem(7, 0, QtWidgets.QTableWidgetItem("7a"))
+                                        self.DataTable.setItem(7, 1, QtWidgets.QTableWidgetItem(self.green_line_sugg_auth[151] if self.green_line_sugg_auth[151] != None else "None"))
+                                        self.DataTable.setItem(7, 2, QtWidgets.QTableWidgetItem(self.green_line_cmd_auth[151] if self.green_line_cmd_auth[151] != None else "None"))
+
 
                                 # Wayside 1 selected
                                 elif self.WaysideSelectComboBox.currentIndex() == 1:
@@ -1285,6 +1293,14 @@ class Ui_MainWindow(QWidget):
                                         self.DataTable.setItem(35, 0, QtWidgets.QTableWidgetItem(f"{150}"))
                                         self.DataTable.setItem(35, 1, QtWidgets.QTableWidgetItem(self.green_line_sugg_auth[150] if self.green_line_sugg_auth[150] != None else "None"))
                                         self.DataTable.setItem(35, 2, QtWidgets.QTableWidgetItem(self.green_line_cmd_auth[150] if self.green_line_cmd_auth[150] != None else "None"))
+
+                                        # Insert Section C, Block 151
+                                        self.DataTable.insertRow(6)
+
+                                        self.DataTable.setItem(6, 0, QtWidgets.QTableWidgetItem('7a'))
+                                        self.DataTable.setItem(6, 1, QtWidgets.QTableWidgetItem(self.green_line_sugg_auth[151] if self.green_line_sugg_auth[151] != None else "None"))
+                                        self.DataTable.setItem(6, 2, QtWidgets.QTableWidgetItem(self.green_line_cmd_auth[151] if self.green_line_cmd_auth[151] != None else "None"))
+
 
                                 # Wayside 2 selected
                                 elif self.WaysideSelectComboBox.currentIndex() == 2:
@@ -1509,8 +1525,15 @@ class Ui_MainWindow(QWidget):
                                         # Fill Table with rest of block occupancies
                                         for i in range(1, 151):
 
-                                                self.DataTable.setItem(i, 0, QtWidgets.QTableWidgetItem(f"{i}"))
+                                                self.DataTable.setItem(i, 0, QtWidgets.QTableWidgetItem(f"{i}" if i != 7 else '7b'))
                                                 self.DataTable.setItem(i, 1, QtWidgets.QTableWidgetItem("Occupied" if self.green_line_block_occupancy[i] else "Unoccupied"))
+
+                                        # Insert Section C, Block 151
+                                        self.DataTable.insertRow(7)
+
+                                        self.DataTable.setItem(7, 0, QtWidgets.QTableWidgetItem('7a'))
+                                        self.DataTable.setItem(7, 1, QtWidgets.QTableWidgetItem("Occupied" if self.green_line_block_occupancy[151] else "Unoccupied"))
+
 
                                 # Wayside 1 selected
                                 elif self.WaysideSelectComboBox.currentIndex() == 1:
@@ -1521,12 +1544,19 @@ class Ui_MainWindow(QWidget):
                                         # Fill Table with block occupancies
                                         for i in range(1, 36):
 
-                                                self.DataTable.setItem(i-1, 0, QtWidgets.QTableWidgetItem(f"{i}"))
+                                                self.DataTable.setItem(i-1, 0, QtWidgets.QTableWidgetItem(f"{i}" if i != 7 else '7b'))
                                                 self.DataTable.setItem(i-1, 1, QtWidgets.QTableWidgetItem("Occupied" if self.green_line_block_occupancy[i] else "Unoccupied"))
 
                                         # Set Block 150 occupancy
                                         self.DataTable.setItem(35, 0, QtWidgets.QTableWidgetItem(f"{150}"))
                                         self.DataTable.setItem(35, 1, QtWidgets.QTableWidgetItem("Occupied" if self.green_line_block_occupancy[150] else "Unoccupied"))
+
+                                        # Insert Section C, Block 151
+                                        self.DataTable.insertRow(6)
+                                        self.DataTable.setItem(6, 0, QtWidgets.QTableWidgetItem('7a'))
+                                        self.DataTable.setItem(6, 1, QtWidgets.QTableWidgetItem("Occupied" if self.green_line_block_occupancy[151] else "Unoccupied"))
+
+
 
                                 # Wayside 2 selected
                                 elif self.WaysideSelectComboBox.currentIndex() == 2:
@@ -1623,8 +1653,8 @@ class Ui_MainWindow(QWidget):
         ####################
 
         # Variables
-        past_sugg_speed = [None] * 151
-        past_sugg_authority = [None] * 151
+        past_sugg_speed = [None] * 152
+        past_sugg_authority = [None] * 152
         past_sw_cmd = [None] * 6
         past_sig_cmd = [None] * 11
         past_cross_cmd = [None] * 2
@@ -1640,7 +1670,7 @@ class Ui_MainWindow(QWidget):
                 new_cross_cmd_entry = ''
 
                 # Traverse through sugg speeds
-                for i in range(self.green_line_sugg_speed):
+                for i in range(len(self.green_line_sugg_speed)):
 
                         # Check if new speed is different from past speed
                         if self.green_line_sugg_speed[i] != self.past_sugg_speed[i] and self.green_line_sugg_speed != None:
@@ -1656,7 +1686,7 @@ class Ui_MainWindow(QWidget):
                                 self.add_log_entry(new_sugg_speed_entry)
 
                 # Traverse through sugg authorities
-                for i in range(self.green_line_sugg_auth):
+                for i in range(len(self.green_line_sugg_auth)):
 
                         # Check if new authority is different from past authority
                         if self.green_line_sugg_auth[i] != self.past_sugg_authority[i] and self.green_line_sugg_auth != None:
@@ -1672,7 +1702,7 @@ class Ui_MainWindow(QWidget):
                                 self.add_log_entry(new_sugg_auth_entry)
 
                 # Traverse through switch commands
-                for i in range(self.green_line_sw_cmd):
+                for i in range(len(self.green_line_sw_cmd)):
 
                         # Check if new switch command is different from past switch command
                         if self.green_line_sw_cmd[i] != self.past_sw_cmd[i]:
@@ -1707,7 +1737,7 @@ class Ui_MainWindow(QWidget):
                                 self.add_log_entry(new_sw_cmd_entry)
 
                 # Traverse through signal commands
-                for i in range(self.green_line_sig_cmd):
+                for i in range(len(self.green_line_sig_cmd)):
 
                         # Check if new signal command is different from past signal command
                         if self.green_line_sig_cmd[i] != self.past_sig_cmd[i]:
@@ -1762,7 +1792,7 @@ class Ui_MainWindow(QWidget):
                                 self.add_log_entry(new_sig_cmd_entry)
 
                 # Traverse through crossing commands
-                for i in range(self.green_line_cross_cmd):
+                for i in range(len(self.green_line_cross_cmd)):
 
                         # Check if new crossing command is different from past crossing command
                         if self.green_line_cross_cmd[i] != self.past_cross_cmd[i]:
