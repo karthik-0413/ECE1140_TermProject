@@ -15,14 +15,16 @@ from Resources.TrackTrainComm import TrackTrainModelComm
 from TrackModel.track_model import track_model
 from Resources.WaysideTrackComm import WaysideControllerTrackComm
 
+from TrackController.wayside_shell import wayside_shell_class
+
 import sys
 
-
 # Function to be triggered by clock tick
-def handle_clock_tick(seconds, train_controller_shell: TrainControllerShell, train_model_data: MainWindow, track_model_backend: track_model):
+def handle_clock_tick(seconds, train_controller_shell: TrainControllerShell, train_model_data: MainWindow, track_model_backend: track_model, wayside_shell: wayside_shell_class):
     # print(f"Clock tick {seconds} seconds")
     if seconds % 2 == 0:
-        track_model_backend.write_train()
+        wayside_shell.write()
+        track_model_backend.write()
         train_model_data.train_data.write_to_trainController_trackModel()
         train_controller_shell.write_to_train_model()
     # Create a QTimer to call handle_clock_tick every second
@@ -49,6 +51,9 @@ if __name__ == '__main__':
     # CTC -> Train Model Communication
     comm1 = CTC_Train_Model_Communicate()
 
+    # CTC -> Wayside Controller Communication
+    comm4 = CTCWaysideControllerComm()
+
     # Wayside Controller -> Track Model Communication
     comm2 = WaysideControllerTrackComm()
 
@@ -59,9 +64,12 @@ if __name__ == '__main__':
     comm5 = TrainTrainController()
     
     
-    # CTC
-    ctc_ui = CTC_frontend(comm1)
-    ctc_ui.setupUi(ctc_window)
+    # CTC Office
+    # ctc_ui = CTC_frontend(comm1, comm4)
+    # ctc_ui.setupUi(ctc_window)
+
+    # Wayside Controller
+    wayside_shell_object = wayside_shell_class(comm4, comm2)
 
     # Track Model
     track_model_ui = Ui_TrackModel()
@@ -94,7 +102,7 @@ if __name__ == '__main__':
     
     
     timer = QTimer()
-    timer.timeout.connect(lambda: handle_clock_tick(clock.elapsed_seconds, tc_shell_window, tm_window, track_model_backend))
+    timer.timeout.connect(lambda: handle_clock_tick(clock.elapsed_seconds, tc_shell_window, tm_window, track_model_backend, wayside_shell_object))
     timer.start(100)
     
     clockUI = ClockDisplay(clock)
