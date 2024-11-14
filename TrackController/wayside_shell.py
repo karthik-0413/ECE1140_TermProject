@@ -184,23 +184,27 @@ class wayside_shell_class:
     def green_line_plc_1_sugg_speed_handler(self):
         plc_1_sugg_speed = []
 
-        for i in range(1, 33):
-            plc_1_sugg_speed.append(self.read_sugg_speed[i])
-        plc_1_sugg_speed.append(self.read_sugg_speed[150])
-        plc_1_sugg_speed.append(self.read_sugg_speed[151])
+        # Check if the sugg_speed_array is empty
+        if len(self.read_sugg_speed) == 0:
+            for i in range(1, 33):
+                plc_1_sugg_speed.append(self.read_sugg_speed[i])
+            plc_1_sugg_speed.append(self.read_sugg_speed[150])
+            plc_1_sugg_speed.append(self.read_sugg_speed[151])
 
-
-        green_line_plc_1_shell_communicate.green_plc_1.green_line_plc_1_sugg_speed.emit(plc_1_sugg_speed)
+            green_line_plc_1_shell_communicate.green_plc_1.green_line_plc_1_sugg_speed.emit(plc_1_sugg_speed)
+        
 
     def green_line_plc_1_sugg_authority_handler(self):
         plc_1_sugg_authority = []
 
-        for i in range(1, 33):
-            plc_1_sugg_authority.append(self.read_sugg_speed[i])
-        plc_1_sugg_authority.append(self.read_sugg_speed[150])
-        plc_1_sugg_authority.append(self.read_sugg_speed[151])
+        # Check if the sugg_speed_array is empty
+        if len(self.read_sugg_speed) == 0:
+            for i in range(1, 33):
+                plc_1_sugg_authority.append(self.read_sugg_speed[i])
+            plc_1_sugg_authority.append(self.read_sugg_speed[150])
+            plc_1_sugg_authority.append(self.read_sugg_speed[151])
 
-        green_line_plc_1_shell_communicate.green_plc_1.green_line_plc_1_sugg_authority.emit(plc_1_sugg_authority)
+            green_line_plc_1_shell_communicate.green_plc_1.green_line_plc_1_sugg_authority.emit(plc_1_sugg_authority)
 
     # Inputs from Track Model
     def green_line_plc_1_block_occupancy_handler(self):
@@ -504,3 +508,17 @@ class wayside_shell_ui(wayside_ui.QtWidgets.QMainWindow, wayside_ui.Ui_MainWindo
 #                                               Main Execution
 #
 ####################################################################################################
+
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+
+    # CTC Office Communication
+    ctc_wayside_comm = CTCWaysideComm.CTCWaysideControllerComm()
+
+    # Track Model Communication
+    wayside_track_comm = WaysideTrackComm()
+
+    # Initialize the Wayside Shell
+    wayside_shell = wayside_shell_class(ctc_wayside_comm, wayside_track_comm)
+
+    sys.exit(app.exec())
