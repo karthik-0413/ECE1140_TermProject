@@ -8,8 +8,11 @@
 # PLC Program:      Wayside Shell
 #
 # Created:          11/05/2024
-# Last Update:      11/09/2024
+# Created by:       Zachary McPherson
+#
+# Last Update:      11/13/2024
 # Last Updated by:  Zachary McPherson
+#
 # Python Version:   3.12.6
 # PyQt Version:     6.7.1
 #
@@ -36,6 +39,12 @@ from PyQt6.QtWidgets import QApplication
 
 # Wayside UI Interface
 from TrackController import wayside_ui
+
+# CTC Office Communication Files
+from Resources import CTCWaysideComm
+
+# Track Model Communication Files
+from Resources import WaysideTrackComm
 
 # PLC Communication Files
 from TrackController import green_line_plc_1_shell_communicate
@@ -389,7 +398,7 @@ class wayside_shell_class:
         self.ctc_wayside_comm_object.suggested_authority_signal.connect(self.read_sugg_authority_handler)
 
     def connect_track_model_signals(self):
-        pass
+        self.wayside_track_comm_object.block_occupancy_signal.connect(self.read_block_occupancy_handler)
 
     ####################################################################################################
     #
@@ -407,6 +416,11 @@ class wayside_shell_class:
         self.ctc_wayside_comm_object.block_occupancy_signal.emit(self.write_block_occupancy)
 
         # Track Model
+        self.wayside_track_comm_object.commanded_speed_signal.emit(self.write_cmd_speed)
+        self.wayside_track_comm_object.commanded_authority_signal.emit(self.write_cmd_authority)
+        self.wayside_track_comm_object.switch_command_signal.emit(self.write_switch_cmd)
+        self.wayside_track_comm_object.signal_command_signal.emit(self.write_signal_cmd)
+        self.wayside_track_comm_object.crossing_command_signal.emit(self.write_crossing_cmd)
 
         ####################################
         #    Green Line Update UI
@@ -428,7 +442,6 @@ class wayside_shell_class:
 
         # Crossing Command
         self.ui.green_line_cross_cmd = self.write_crossing_cmd
-        self.ui.green_line_cross_cmd = self.write_crossing_cmd
 
         # Update Wayside user interface data table
         self.ui.update_table()
@@ -443,7 +456,7 @@ class wayside_shell_class:
     ####################################################################################################
 
     # Initialize the Wayside UI Interface
-    def __init__(self, ctc_wayside):
+    def __init__(self, ctc_wayside, wayside_track):
 
         # Initialize update UI checks
         self.block_occupancy_check = 0
@@ -452,6 +465,9 @@ class wayside_shell_class:
 
         # Initialize CTC Office and Wayside communication object
         self.ctc_wayside_comm_object = ctc_wayside
+        
+        # Initialize Wayside and Track Model communication object
+        self.wayside_track_comm_object = wayside_track
 
         # Connect to CTC Office signals
         self.connect_ctc_signals()
