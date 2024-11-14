@@ -231,8 +231,8 @@ class track_model:
         self.past_cmd_speeds_wayside = self.cmd_speeds_wayside
         self.cmd_speeds_wayside = cmd_speeds
 
-        for cmd_speed in self.cmd_speeds_wayside:
-            print(f"Received Cmd Speed: {cmd_speed}")
+        if len(self.cmd_speeds_wayside):
+            print(f"Received Cmd Speed: {self.cmd_speeds_wayside[0]}")
 
         # Update the train commanded speeds
         self.update_train_cmd_speeds()
@@ -241,6 +241,9 @@ class track_model:
         self.cmd_authorities = cmd_authorities
         self.past_cmd_authorities_wayside = self.cmd_authorities_wayside
         self.cmd_authorities_wayside = cmd_authorities
+
+        if len(self.cmd_authorities_wayside):
+            print(f"Received Cmd Authority: {self.cmd_authorities_wayside[0]}")
 
         # Update the train commanded authorities
         self.update_train_cmd_authorities()

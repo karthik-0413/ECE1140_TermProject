@@ -25,7 +25,7 @@
 #
 ####################################################################################################
 
-import green_line_plc_2_shell_communicate
+# import green_line_plc_2_shell_communicate
 
 ####################################################################################################
 #
@@ -34,22 +34,36 @@ import green_line_plc_2_shell_communicate
 ####################################################################################################
 
 # Wayside Class
-class Wayside:
+class green_line_plc_2_class:
     
     # Constructor
-    def __init__(self, sections):
-        self.sec_array = sections
+    def __init__(self):
+        # self.sec_array = sections
         self.yard_occupancy = 0
         self.yard_stop_go = 1
+
+        # Sections
+        H = Section(3)
+        I = Section(22)
+        J = Section(5)
+        K = Section(6)
+        L = Section(5)
+        M = Section(3)
+        T = Section(5)
+        U = Section(7)
+        V = Section(5)
+        W = Section(22)
+        X = Section(3)
+        Y = Section(3)
+        Z = Section(1)
+
+        self.sec_array = [H, I, J, K, L, M, T, U, V, W, X, Y, Z]
 
     # Methods
     def update_block_occupancies(self):
 
-        # Define global variables
-        global read_block_occupancies_array
-
         # Update Yard Occupancy
-        self.yard_occupancy = read_block_occupancies_array[0]
+        self.yard_occupancy = self.read_block_occupancies_array[0]
 
         # Index to traverse input block occupancy array
         BlockArrayIndex = 1
@@ -61,16 +75,13 @@ class Wayside:
             for j in range(len(self.sec_array[i].block_occupancy)):
                     
                 # Update block occupancy
-                self.sec_array[i].block_occupancy[j] = read_block_occupancies_array[BlockArrayIndex]
+                self.sec_array[i].block_occupancy[j] = self.read_block_occupancies_array[BlockArrayIndex]
 
                 # Increment index
                 BlockArrayIndex += 1
 
     # Update stop/go command for each block
     def update_block_stop_go(self):
-
-        # Define global variables
-        global write_switch_cmd_array
 
         # Reset each block to go
         self.yard_stop_go = 1
@@ -132,14 +143,14 @@ class Wayside:
                         if j == 0: # Block 58
 
                             # Check switch 1 position
-                            if write_switch_cmd_array[0]:
+                            if self.write_switch_cmd_array[0]:
                                 self.sec_array[1].block_stop_go[21] = 0 # Block 57
                                 self.sec_array[1].block_stop_go[20] = 0 # Block 56
 
                         elif j == 1: # Block 59
 
                             # Check switch 1 position
-                            if write_switch_cmd_array[0]:
+                            if self.write_switch_cmd_array[0]:
                                 self.sec_array[1].block_stop_go[21] = 0 # Block 57
 
                             self.sec_array[2].block_stop_go[0] = 0 # Block 58
@@ -156,7 +167,7 @@ class Wayside:
                         if j == 0: # Block 63
 
                             # Check switch 2 position
-                            if write_switch_cmd_array[1]:
+                            if self.write_switch_cmd_array[1]:
                                 self.yard_stop_go = 0 # Yard block
                             else:
                                 self.sec_array[2].block_stop_go[4] == 0 # Block 62
@@ -165,7 +176,7 @@ class Wayside:
                         elif j == 1: # Block 64
 
                             # Check switch 2 position
-                            if write_switch_cmd_array[1]:
+                            if self.write_switch_cmd_array[1]:
                                 self.sec_array[2].block_stop_go[4] == 0 # Block 62
                             else:
                                 self.yard_stop_go = 0
@@ -308,26 +319,22 @@ class Wayside:
                         self.sec_array[11].block_stop_go[1] == 0 # Block 148
 
         # Check switch positions
-        if write_switch_cmd_array[1]: # Yard -> K
+        if self.write_switch_cmd_array[1]: # Yard -> K
             self.sec_array[2].block_stop_go[4] = 0
             self.sec_array[2].block_stop_go[3] = 0
         else:                         # J -> K
             self.yard_stop_go = 0
 
     def update_cmd_speed(self):
-
-        # Define global variables
-        global write_cmd_speed_array
-        global read_sugg_speed_array
         
         # Index to traverse output suggested speed array
         BlockArrayIndex = 1
         
         # Check stop_go commands for each block
         if self.yard_stop_go == 0:
-            write_cmd_speed_array[0] = 0
+            self.write_cmd_speed_array[0] = 0
         else:
-            write_cmd_speed_array[0] = read_sugg_speed_array[0]
+            self.write_cmd_speed_array[0] = self.read_sugg_speed_array[0]
 
         # Traverse each section
         for i in range(len(self.sec_array)):
@@ -340,26 +347,22 @@ class Wayside:
 
                     # Block is commanding stop
                     if self.sec_array[i].block_stop_go[j] == 0:
-                        write_cmd_speed_array[BlockArrayIndex] = 0
+                        self.write_cmd_speed_array[BlockArrayIndex] = 0
 
                     # Block is commanding go
                     else:
-                        write_cmd_speed_array[BlockArrayIndex] = read_sugg_speed_array[BlockArrayIndex]
+                        self.write_cmd_speed_array[BlockArrayIndex] = self.read_sugg_speed_array[BlockArrayIndex]
                     
                     # Increment index
                     BlockArrayIndex += 1
 
     def update_cmd_authority(self):
-
-        # Define global variables
-        global write_cmd_authority_array
-        global read_sugg_authority_array
         
         # Index to traverse output suggested authority array
         BlockArrayIndex = 1
 
         # Pass yard suggested authority
-        write_cmd_authority_array[0] = read_sugg_authority_array[0]
+        self.write_cmd_authority_array[0] = self.read_sugg_authority_array[0]
 
         # Traverse each section
         for i in range(len(self.sec_array)):
@@ -371,50 +374,138 @@ class Wayside:
                 for j in range(len(self.sec_array[i].block_stop_go)):
 
                     # Pass suggested authority
-                    write_cmd_authority_array[BlockArrayIndex] = read_sugg_authority_array[BlockArrayIndex]
+                    self.write_cmd_authority_array[BlockArrayIndex] = self.read_sugg_authority_array[BlockArrayIndex]
 
                     # Increment index
                     BlockArrayIndex += 1
 
     def update_switch_cmd(self):
 
-        # Define global variables
-        global write_switch_cmd_array
-
         # Switch 1
-        write_switch_cmd_array[0] = 0 # I -> Yard
+        self.write_switch_cmd_array[0] = 0 # I -> Yard
 
         # Switch 2
-        write_switch_cmd_array[1] = 1 # Yard -> K
+        self.write_switch_cmd_array[1] = 1 # Yard -> K
 
     def update_signal_cmd(self):
-
-        # Define global variables
-        global write_signal_cmd_array
-        global write_switch_cmd_array
         
         # Check switch 1 position
-        if write_switch_cmd_array[0]: # Switch I -> J
-            write_signal_cmd_array[0] = 1 # Yard
-            write_signal_cmd_array[1] = 0 # Section J
+        if self.write_switch_cmd_array[0]: # Switch I -> J
+            self.write_signal_cmd_array[0] = 1 # Yard
+            self.write_signal_cmd_array[1] = 0 # Section J
         else:                         # Switch I -> Yard
-            write_signal_cmd_array[0] = 0 # Yard
-            write_signal_cmd_array[1] = 1 # Section J
+            self.write_signal_cmd_array[0] = 0 # Yard
+            self.write_signal_cmd_array[1] = 1 # Section J
 
         # Signal for Section K
-        write_signal_cmd_array[2] = 1 # Default signal
+        self.write_signal_cmd_array[2] = 1 # Default signal
 
     def update_crossing_cmd(self):
 
-        # Define global variables
-        global write_crossing_cmd_array
-
         # Check section T overall occupancy
         if self.sec_array[6].update_section_occupancy():
-            write_crossing_cmd_array[0] = 1
+            self.write_crossing_cmd_array[0] = 1
         else:
-            write_crossing_cmd_array[0] = 0
+            self.write_crossing_cmd_array[0] = 0
 
+
+
+
+                
+
+####################################################################################################
+#
+#                                   Initial Sections with Default Path
+#
+####################################################################################################
+
+
+
+# Wayside
+#wayside = Wayside([H, I, J, K, L, M, T, U, V, W, X, Y, Z])
+
+    ####################################################################################################
+    #
+    #                                              Read & Write
+    #
+    ####################################################################################################
+
+    ################################
+    #       CTC Office Inputs
+    ################################
+
+    # Variables
+    #read_maintenance_switch_array = [None] * 2
+    read_sugg_speed_array = [None] * 87
+    read_sugg_authority_array = [None] * 87
+    #maintenance_switch_check = 0
+    sugg_speed_check = 0
+    sugg_authority_check = 0
+
+    # Functions
+    # def read_maintenance_switches_handler(maintenance_switch_array):
+    #     global read_maintenance_switch_array
+    #     global maintenance_switch_check
+    #     read_maintenance_switch_array = maintenance_switch_array
+    #     maintenance_switch_check = 1
+
+    def read_sugg_speed_handler(self, sugg_speed_array):
+
+        print("in plc 2 read sugg speed handler")
+        self.read_sugg_speed_array = sugg_speed_array
+        self.sugg_speed_check = 1
+
+    def read_sugg_authority_handler(self, sugg_authority_array):
+
+        print("in plc 2 read sugg authority handler")
+        self.read_sugg_authority_array = sugg_authority_array
+        self.sugg_authority_check = 1
+
+
+    ################################
+    #       TRK Model Inputs
+    ################################
+
+    # Variables
+    read_block_occupancies_array = [0] * 91
+    block_occupancy_check = 0
+
+    # Functions
+    def read_block_occupancy_handler(self, block_occupancy_array):
+        self.read_block_occupancies_array = block_occupancy_array
+        self.block_occupancy_check = 1
+
+
+    ################################
+    #       CTC Office Outputs
+    ################################
+
+    # Block Occupancies are passed from Wayside shell file
+
+    ################################
+    #       TRK Model Outputs
+    ################################
+
+    # Variables
+    write_cmd_speed_array = [None] * 87
+    write_cmd_authority_array = [None] * 87
+    write_switch_cmd_array = [0, 1]
+    write_signal_cmd_array = [0, 1, 0]
+    write_crossing_cmd_array = [0]
+
+####################################################################################################
+#
+#                                         Write Function
+#
+####################################################################################################
+
+# Write to Wayside Shell
+# def write_to_wayside_shell():
+#     green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_cmd_speed.emit(write_cmd_speed_array)
+#     green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_cmd_authority.emit(write_cmd_authority_array)
+#     green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_switch_cmd.emit(write_switch_cmd_array)
+#     green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_signal_cmd.emit(write_signal_cmd_array)
+#     green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_crossing_cmd.emit(write_crossing_cmd_array[0])
 
 
 # Section Class
@@ -449,116 +540,6 @@ class Section:
                 return True
             
         return False
-                
-
-####################################################################################################
-#
-#                                   Initial Sections with Default Path
-#
-####################################################################################################
-
-# Sections
-H = Section(3)
-I = Section(22)
-J = Section(5)
-K = Section(6)
-L = Section(5)
-M = Section(3)
-T = Section(5)
-U = Section(7)
-V = Section(5)
-W = Section(22)
-X = Section(3)
-Y = Section(3)
-Z = Section(1)
-
-# Wayside
-wayside = Wayside([H, I, J, K, L, M, T, U, V, W, X, Y, Z])
-
-####################################################################################################
-#
-#                                              Read & Write
-#
-####################################################################################################
-
-################################
-#       CTC Office Inputs
-################################
-
-# Variables
-#read_maintenance_switch_array = [None] * 2
-read_sugg_speed_array = [None] * 87
-read_sugg_authority_array = [None] * 87
-#maintenance_switch_check = 0
-sugg_speed_check = 0
-sugg_authority_check = 0
-
-# Functions
-# def read_maintenance_switches_handler(maintenance_switch_array):
-#     global read_maintenance_switch_array
-#     global maintenance_switch_check
-#     read_maintenance_switch_array = maintenance_switch_array
-#     maintenance_switch_check = 1
-
-def read_sugg_speed_handler(sugg_speed_array):
-    global read_sugg_speed_array
-    global sugg_speed_check
-    read_sugg_speed_array = sugg_speed_array
-    sugg_speed_check = 1
-
-def read_sugg_authority_handler(sugg_authority_array):
-    global read_sugg_authority_array
-    global sugg_authority_check
-    read_sugg_authority_array = sugg_authority_array
-    sugg_authority_check = 1
-
-
-################################
-#       TRK Model Inputs
-################################
-
-# Variables
-read_block_occupancies_array = [0] * 91
-block_occupancy_check = 0
-
-# Functions
-def read_block_occupancy_handler(block_occupancy_array):
-    global read_block_occupancies_array
-    global block_occupancy_check
-    read_block_occupancies_array = block_occupancy_array
-    block_occupancy_check = 1
-
-
-################################
-#       CTC Office Outputs
-################################
-
-# Block Occupancies are passed from Wayside shell file
-
-################################
-#       TRK Model Outputs
-################################
-
-# Variables
-write_cmd_speed_array = [None] * 87
-write_cmd_authority_array = [None] * 87
-write_switch_cmd_array = [0, 1]
-write_signal_cmd_array = [0, 1, 0]
-write_crossing_cmd_array = [0]
-
-####################################################################################################
-#
-#                                         Write Function
-#
-####################################################################################################
-
-# Write to Wayside Shell
-def write_to_wayside_shell():
-    green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_cmd_speed.emit(write_cmd_speed_array)
-    green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_cmd_authority.emit(write_cmd_authority_array)
-    green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_switch_cmd.emit(write_switch_cmd_array)
-    green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_signal_cmd.emit(write_signal_cmd_array)
-    green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_crossing_cmd.emit(write_crossing_cmd_array[0])
 
 ####################################################################################################
 #
@@ -568,30 +549,30 @@ def write_to_wayside_shell():
 
 # Establish connection to Wayside shell
 #green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_maintenance_switch_cmd.connect(read_maintenance_switches_handler)
-green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_sugg_speed.connect(read_sugg_speed_handler)
-green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_sugg_authority.connect(read_sugg_authority_handler)
-green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_block_occupancy.connect(read_block_occupancy_handler)
+# green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_sugg_speed.connect(read_sugg_speed_handler)
+# green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_sugg_authority.connect(read_sugg_authority_handler)
+# green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_block_occupancy.connect(read_block_occupancy_handler)
 
-while True:
+# while True:
 
-    if sugg_speed_check and sugg_authority_check and block_occupancy_check:
+#     if sugg_speed_check and sugg_authority_check and block_occupancy_check:
 
-        # Update block occupancies
-        wayside.update_block_occupancies()
+#         # Update block occupancies
+#         wayside.update_block_occupancies()
 
-        # Perform computations based on block occupancies
-        wayside.update_switch_cmd()
-        wayside.update_signal_cmd()
-        wayside.update_crossing_cmd()
-        wayside.update_block_stop_go()
-        wayside.update_cmd_speed()
-        wayside.update_cmd_authority()
+#         # Perform computations based on block occupancies
+#         wayside.update_switch_cmd()
+#         wayside.update_signal_cmd()
+#         wayside.update_crossing_cmd()
+#         wayside.update_block_stop_go()
+#         wayside.update_cmd_speed()
+#         wayside.update_cmd_authority()
         
-        # Write commands to Wayside shell
-        write_to_wayside_shell()
+#         # Write commands to Wayside shell
+#         write_to_wayside_shell()
 
-        # Reset checks
-#        maintenance_switch_check = 0
-        sugg_speed_check = 0
-        sugg_authority_check = 0
-        block_occupancy_check = 0
+#         # Reset checks
+# #        maintenance_switch_check = 0
+#         sugg_speed_check = 0
+#         sugg_authority_check = 0
+#         block_occupancy_check = 0
