@@ -766,12 +766,13 @@ class Position(QObject):
         
     def find_station_name(self):
         # Grab everything after the first space in the string and before the next ";" character
-        after_space = self.green_station[self.current_block].split(' ', 1)[1]
+        #after_space = self.green_station[self.current_block].split(' ', 1)[1]
         
         # Split the remaining part at the semicolon and take the first part
-        self.station_name = after_space.split(';', 1)[1].split(';')[0].strip()
+        #self.station_name = after_space.split(';', 1)[1].split(';')[0].strip()
         
-        self.announcement = f"Welcome to {self.station_name} Station"
+        #self.announcement = f"Welcome to {self.station_name} Station"
+        pass
    
 class Temperature(QObject):
     current_temperature_signal = pyqtSignal(float)
