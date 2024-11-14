@@ -19,9 +19,10 @@ import sys
 
 
 # Function to be triggered by clock tick
-def handle_clock_tick(seconds, train_controller_shell: TrainControllerShell, train_model_data: MainWindow, track_model_backend: track_model):
+def handle_clock_tick(seconds, train_controller_shell: TrainControllerShell, train_model_data: MainWindow, track_model_backend: track_model, ctc_frontend: CTC_frontend):
     # print(f"Clock tick {seconds} seconds")
     if seconds % 2 == 0:
+        ctc_frontend.ctc.write_to_communicate_objects()
         track_model_backend.write_train()
         train_model_data.train_data.write_to_trainController_trackModel()
         train_controller_shell.write_to_train_model()
@@ -47,7 +48,7 @@ if __name__ == '__main__':
     # (No need to create another QApplication)
 
     # CTC -> Train Model Communication
-    comm1 = CTC_Train_Model_Communicate()
+    comm1 = CTCTrain()
 
     # Wayside Controller -> Track Model Communication
     comm2 = WaysideControllerTrackComm()
@@ -55,12 +56,14 @@ if __name__ == '__main__':
     # Track Model -> Train Model Communication
     comm3 = TrackTrainModelComm()
     
+    comm4 = CTCWaysideControllerComm()
+    
     # Train Model -> Train Controller Communication
     comm5 = TrainTrainController()
     
     
     # CTC
-    ctc_ui = CTC_frontend(comm1)
+    ctc_ui = CTC_frontend(comm1, comm4)
     ctc_ui.setupUi(ctc_window)
 
     # Track Model
@@ -94,8 +97,8 @@ if __name__ == '__main__':
     
     
     timer = QTimer()
-    timer.timeout.connect(lambda: handle_clock_tick(clock.elapsed_seconds, tc_shell_window, tm_window, track_model_backend))
-    timer.start(100)
+    timer.timeout.connect(lambda: handle_clock_tick(clock.elapsed_seconds, tc_shell_window, tm_window, track_model_backend, ctc_ui))
+    timer.start(1000)
     
     clockUI = ClockDisplay(clock)
     clockUI.show()
