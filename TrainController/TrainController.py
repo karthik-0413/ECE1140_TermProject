@@ -193,7 +193,7 @@ class PowerCommand(QObject):
                 self.brake_status.no_apply_service_brake()
                 self.brake_status.reaching_station = False
         
-        if self.brake_status.entered_lower == True:
+        elif self.brake_status.entered_lower == True:
             # print("Entered Lower")
             self.power_command = 0
             self.power_command_signal.emit(self.power_command)
@@ -380,7 +380,7 @@ class SpeedControl(QObject):
     
     def __init__(self, power_class: PowerCommand, brake_status: BrakeStatus, communicator: Communicate):
         super().__init__()
-        self.commanded_speed = 0.0
+        self.commanded_speed = 20.0
         self.setpoint_speed = 0.0
         self.setpoint_speed_submit = False
         self.speed_limit = 100.0
@@ -400,23 +400,26 @@ class SpeedControl(QObject):
     def find_max_speed(self):
         # Commanded speed already in m/s, so no need to convert
         # Speed limit already in m/s, so no need to convert)
-        self.max_speed = min(self.speed_limit, self.commanded_speed)
+        # self.max_speed = min(self.speed_limit, self.commanded_speed)
+        self.max_speed = self.commanded_speed
         # print(f"Speed Limit: {self.speed_limit}")
         # print(f"Commanded Speed: {self.commanded_speed}")
         # print(f"Max Speed: {self.max_speed}")
         # print(f"Max Speed: {self.max_speed}")
         
     def update_speed_limit(self, speed: float):
+        pass
         # km/hr to m/s
-        self.prev_speed_limit = self.speed_limit
-        self.speed_limit = speed / 3.6
+        # self.prev_speed_limit = self.speed_limit
+        # self.speed_limit = speed / 3.6
+        # self.find_max_speed()
         
-        if self.speed_limit < self.prev_speed_limit:
-            self.brake_status.entered_lower = True
-            self.desired_velocity = self.speed_limit
-            self.power_class.update_power_command(self.current_velocity, self.desired_velocity)
-            # print("Entered Lower")
-        # print(f"Speed Limit: {self.speed_limit} Km/Hr")
+        # if self.speed_limit < self.prev_speed_limit:
+        #     self.brake_status.entered_lower = True
+        #     self.desired_velocity = self.speed_limit
+        #     self.power_class.update_power_command(self.current_velocity, self.desired_velocity)
+        #     # print("Entered Lower")
+        # # print(f"Speed Limit: {self.speed_limit} Km/Hr")
         
     def handle_current_velocity(self, speed: float):
         if speed == 0:
@@ -485,7 +488,7 @@ class SpeedControl(QObject):
         self.commanded_speed = speed / 3.6
         # print(f"Commanded Speed: {self.commanded_speed:.2f} m/s")
         self.find_max_speed()
-        self.commanded_speed_signal.emit(self.max_speed)
+        self.commanded_speed_signal.emit(self.commanded_speed)
         # print(f"Commanded Speed: {self.commanded_speed:.2f} m/s")
     
     def set_manual_mode(self):
@@ -646,7 +649,7 @@ class Position(QObject):
     
     def __init__(self, doors: Doors, failure_modes: FailureModes, speed_control: SpeedControl, power_class: PowerCommand, communicator: Communicate, lights: Lights, brake_status: BrakeStatus):
         super().__init__()
-        self.commanded_authority = 3 + 1   # int
+        self.commanded_authority = 11 + 1   # int
         self.station_name = 'Shadyside' # string
         self.announcement = '' # string
         self.polarity = True   # boolean
@@ -694,9 +697,14 @@ class Position(QObject):
     def handle_polarity_change(self, polarity: bool):
         if polarity != self.polarity:
             self.polarity = polarity
-            self.speed_control.update_speed_limit(self.green_speed_limit[self.current_block])
-            self.commanded_authority -= 1
-            self.commanded_authority_signal.emit(self.commanded_authority)
+            # self.speed_control.update_speed_limit(self.green_speed_limit[self.current_block])
+            if self.commanded_authority >= 1:
+                self.commanded_authority -= 1
+                # print(f"Commanded authority: {self.commanded_authority}")
+                self.commanded_authority_signal.emit(self.commanded_authority)
+                if self.commanded_authority == 0:
+                    self.calculate_desired_speed()
+                    self.check_current_block()
             
             # Looping around the green line of the track
             if self.current_block == 57:
@@ -708,10 +716,10 @@ class Position(QObject):
                     current_index = self.default_path_blocks.index(self.current_block)
                     self.current_block = self.default_path_blocks[current_index + 1]
                 
-            self.check_current_block()
+            # self.check_current_block()
             self.check_block_underground()
-            self.calculate_desired_speed()
-            # print(f"Polarity: {self.polarity}")
+            # self.calculate_desired_speed()
+        # print(f"Polarity: {self.polarity}")
         
     def check_block_underground(self):
         if "UNDERGROUND" in self.green_underground[self.current_block]:
@@ -726,30 +734,32 @@ class Position(QObject):
             
     def check_current_block(self):
         # print(f"Current Block: {self.current_block}")
-        if self.commanded_authority == 0:
+        # if self.commanded_authority == 0:
             # Open Doors
-            if "Left" in self.green_station_door[self.current_block] and  "Right" not in self.green_station_door[self.current_block]:
-                self.door.open_left_door()
-                # print("Left door opened")
-            elif "Right" in self.green_station_door[self.current_block] and  "Left" not in self.green_station_door[self.current_block]:
-                self.door.open_right_door()
-                # print("Right door opened")
-            elif "Left" in self.green_station_door[self.current_block] and  "Right" in self.green_station_door[self.current_block]:
-                self.door.open_left_door()
-                self.door.open_right_door()
-                # print("Both doors opened")
-            else:
-                self.door.close_left_door()
-                self.door.close_right_door()
-                # print("No doors opened")
-                
-            self.find_station_name()
-            # Close doors after 60 seconds
-            time.sleep(60)
-            self.door.left_door = False
-            self.door.right_door = False
-            # print("Doors closed")
+        if "Left" in self.green_station_door[self.current_block] and  "Right" not in self.green_station_door[self.current_block]:
+            self.door.open_left_door()
+            # print("Left door opened")
+        elif "Right" in self.green_station_door[self.current_block] and  "Left" not in self.green_station_door[self.current_block]:
+            self.door.open_right_door()
+            # print("Right door opened")
+        elif "Left" in self.green_station_door[self.current_block] and  "Right" in self.green_station_door[self.current_block]:
+            self.door.open_left_door()
+            self.door.open_right_door()
+            # print("Both doors opened")
+        else:
+            self.door.close_left_door()
+            self.door.close_right_door()
+            # print("No doors opened")
             
+        # Close doors after 60 seconds
+        # Close doors after 60 seconds
+        QTimer.singleShot(10000, self.close_doors)
+
+    def close_doors(self):
+        self.door.close_left_door()
+        self.door.close_right_door()
+        # print("Doors closed")
+        
     def calculate_desired_speed(self):
         # if self.commanded_authority == 2:
         #     self.speed_control.desired_velocity = 10
@@ -759,21 +769,28 @@ class Position(QObject):
         #     self.speed_control.desired_velocity = 5
         #     self.brake_status.reaching_station = True
         #     self.power_class.update_power_command(self.speed_control.current_velocity, self.speed_control.desired_velocity)
-        if self.commanded_authority == 0:
-            self.speed_control.desired_velocity = 0
-            self.brake_status.reaching_station = True
-            self.power_class.update_power_command(self.speed_control.current_velocity, self.speed_control.desired_velocity)
+        # if self.commanded_authority == 0:
+        self.speed_control.desired_velocity = 0
+        self.brake_status.reaching_station = True
+        self.power_class.update_power_command(self.speed_control.current_velocity, self.speed_control.desired_velocity)
         
     def find_station_name(self):
-        # Grab everything after the first space in the string and before the next ";" character
-        #after_space = self.green_station[self.current_block].split(' ', 1)[1]
-        
-        # Split the remaining part at the semicolon and take the first part
-        #self.station_name = after_space.split(';', 1)[1].split(';')[0].strip()
-        
-        #self.announcement = f"Welcome to {self.station_name} Station"
+        # Split the string by ';' and take the second part (station name)
+        # try:
+        #     parts = self.green_station[self.current_block].split(';')
+        #     if len(parts) > 1:
+        #         self.station_name = parts[1].strip()
+        #         self.announcement = f"Welcome to {self.station_name} Station"
+        #         print(f"Station Name: {self.station_name}")
+        #     else:
+        #         # Handle cases where the expected format is not present
+        #         self.station_name = "Unknown"
+        #         self.announcement = "Welcome to the station"
+        # except IndexError:
+        #     self.station_name = "Unknown"
+        #     self.announcement = "Welcome to the station"
         pass
-   
+
 class Temperature(QObject):
     current_temperature_signal = pyqtSignal(float)
     
