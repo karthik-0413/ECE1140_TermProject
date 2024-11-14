@@ -1,6 +1,5 @@
 from enum import Enum
 import re
-from numpy import nan
 
 class Signal(Enum):
     RED = 1
