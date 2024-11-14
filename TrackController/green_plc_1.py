@@ -419,6 +419,8 @@ class Wayside:
                     if i == 2 and j == 0:
                         if self.sec_array[2].block_stop_go[0] == 0:
                             write_cmd_speed_array[33] = 0
+                        else:
+                            write_cmd_speed_array[33] = read_sugg_speed_array[33]
                     else:
 
                         # Block is commanding stop
