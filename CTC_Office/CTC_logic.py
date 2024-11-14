@@ -28,9 +28,6 @@ class CTC_logic():
         self.train_model_communicate = train_model_communicate
         self.wayside_communicate = wayside_communicate
 
-        # New stuff - zach
-
-
 
 
     def write_to_communicate_objects(self):
@@ -39,19 +36,8 @@ class CTC_logic():
 
         # Write all buffered information to the communicate objects
         # self.train_model_communicate.dispatch_train_signal.emit(self.num_trains)
-        if self.line.send_new_values and len(self.line.train_list):
-            #print("speed: ", self.suggested_speed_list[0])
-            #print("auth: ", self.suggested_authority_list[0])
-            self.wayside_communicate.suggested_speed_signal.emit(self.suggested_speed_list)
-            self.wayside_communicate.suggested_authority_signal.emit(self.suggested_authority_list)
-            self.line.send_new_values = False
-            
-        if len(self.line.train_list):
-            if self.line.train_list[0].to_yard and self.line.just_reached_station:
-                self.wayside_communicate.suggested_speed_signal.emit(self.suggested_speed_list)
-                self.wayside_communicate.suggested_authority_signal.emit(self.suggested_authority_list)
-                self.line.just_reached_station = False
-        
+        self.wayside_communicate.suggested_speed_signal.emit(self.suggested_speed_list)
+        # self.wayside_communicate.suggested_authority_signal.emit(self.suggested_authority_list)
 
     def upload_layout_to_line(self, path_to_layout:str):
         self.line.read_excel_layout(path_to_layout)
@@ -70,9 +56,6 @@ class CTC_logic():
         print("Adding train")
         self.num_trains = len(self.line.train_list)
         print("Num trains = ", self.num_trains)
-        
-        self.update_authority_list()
-        self.update_suggested_speed_list()
 
         #self.train_model_communicate.current_train_count_signal.emit(self.num_trains)
 
@@ -88,7 +71,7 @@ class CTC_logic():
             self.suggested_authority_list[train.location] = train.authority
 
     def update_suggested_speed_list(self):
-        #print("Updating suggested speed list")
+
         self.suggested_speed_list = [None for _ in self.suggested_speed_list]
 
         for train in self.line.train_list:
@@ -106,21 +89,20 @@ class CTC_logic():
 
     def update_blocks_on_line(self, block_occupancies: list):
         # Update block occupancies based on the wayside controller
-        for block in self.line.layout:
+        for block, in self.line.layout:
             block.update_occupancy(block_occupancies[block.block_number])
 
         self.update_train_locations_list()
         self.update_authority_list()
         self.update_suggested_speed_list()
         self.calculate_total_throughput()
-        #self.send_new_values = self.line.not_at_destination()
 
     def calculate_total_throughput(self):
-        pass
-        # total_throughput = 0
-        # for line in self.lines:
-        #     line.calculate_line_throughput()
-        #     total_throughput += line.throughput
+
+        total_throughput = 0
+        for line in self.lines:
+            line.calculate_line_throughput()
+            total_throughput += line.throughput
 
     def toggle_automatic_manual(self):
         self.automatic = not self.automatic

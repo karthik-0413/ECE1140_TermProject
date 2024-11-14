@@ -272,7 +272,7 @@ class track_model:
         self.train_communicator.block_grade_signal.emit(self.grade_values)
         self.train_communicator.block_elevation_signal.emit(self.elevation_values)
         self.train_communicator.commanded_speed_signal.emit(self.cmd_speeds_train)
-        # self.train_communicator.commanded_authority_signal.emit(self.cmd_authorities_train)
+        self.train_communicator.commanded_authority_signal.emit(self.cmd_authorities_train)
         self.wayside_communicator.block_occupancies_signal.emit(self.occupancies)
 
         # Update UI
