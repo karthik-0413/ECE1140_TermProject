@@ -4,6 +4,7 @@ from TrainModel.CTC_communicate import CTC_Train_Model_Communicate
 from PyQt6.QtWidgets import QApplication, QMainWindow
 from PyQt6.QtCore import Qt, QTimer
 from Resources.CTCTrain import CTCTrain
+from Resources.CTCWaysideComm import CTCWaysideControllerComm
 from Resources.Clock import *
 from Resources.TrainTrainControllerComm import TrainTrainController
 from TrainController.TrainController import *
@@ -33,7 +34,6 @@ if __name__ == '__main__':
     
     # CTC Setup
     ctc_window = QMainWindow()
-    ctc_window = QMainWindow()
 
     # Train Model Setup
     # (No need to create another QApplication)
@@ -43,14 +43,15 @@ if __name__ == '__main__':
 
     # CTC -> Train Model Communication
     comm1 = CTC_Train_Model_Communicate()
+    comm2 = CTCWaysideControllerComm()
     
     # Train Model -> Train Controller Communication
     comm5 = TrainTrainController()
     
     
     # CTC
-    ctc_ui = CTC_frontend(comm1)
-    ctc_ui.setupUi(ctc_window)
+    ctc = CTC_frontend(comm1, comm2)
+    ctc.setupUi(ctc_window)
 
     # Train Model
     tm_window = MainWindow(comm1, comm5)
