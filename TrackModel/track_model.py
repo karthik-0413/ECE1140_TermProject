@@ -107,7 +107,7 @@ class track_model:
     polarity_values = []
 
     # Speed and Authority to be sent to Train Model
-    cmd_speeds_train = []
+    cmd_speeds_train = [20]
     cmd_authorities_train = []
 
     # Passengers
