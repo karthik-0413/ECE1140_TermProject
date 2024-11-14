@@ -11,7 +11,6 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtWidgets import QApplication, QFileDialog
 
 import datetime as dt
-import time
 
 class CTC_frontend(object):
     def __init__(self, ctc_train_communicate: CTCTrain, wayside_communicate: CTCWaysideControllerComm):
@@ -26,7 +25,7 @@ class CTC_frontend(object):
 
     def setupUi(self, mainwindow):
         mainwindow.setObjectName("mainwindow")
-        mainwindow.resize(833, 731)
+        mainwindow.resize(848, 666)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.MinimumExpanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -46,8 +45,10 @@ class CTC_frontend(object):
         font = QtGui.QFont()
         font.setFamily("Arial")
         self.pagetab.setFont(font)
+        self.pagetab.setStyleSheet("color: black;")
         self.pagetab.setObjectName("pagetab")
         self.TrainTab = QtWidgets.QWidget()
+        self.TrainTab.setStyleSheet("color: black;")
         self.TrainTab.setObjectName("TrainTab")
         self.gridLayout_3 = QtWidgets.QGridLayout(self.TrainTab)
         self.gridLayout_3.setObjectName("gridLayout_3")
@@ -61,7 +62,8 @@ class CTC_frontend(object):
         self.train_table.setMinimumSize(QtCore.QSize(750, 100))
         self.train_table.setMaximumSize(QtCore.QSize(800, 200))
         self.train_table.setStyleSheet("font: 13pt \"Arial\";\n"
-"background-color: lightgray;")
+"background-color: lightgray;\n"
+"color:black;")
         self.train_table.setFrameShape(QtWidgets.QFrame.Shape.Box)
         self.train_table.setFrameShadow(QtWidgets.QFrame.Shadow.Plain)
         self.train_table.setLineWidth(2)
@@ -77,28 +79,31 @@ class CTC_frontend(object):
         font = QtGui.QFont()
         font.setFamily("Arial")
         item.setFont(font)
-        item.setBackground(QtGui.QColor(211, 211, 211))
+        item.setBackground(QtGui.QColor(160, 160, 160))
         self.train_table.setHorizontalHeaderItem(0, item)
         item = QtWidgets.QTableWidgetItem()
         font = QtGui.QFont()
         font.setFamily("Arial")
         item.setFont(font)
+        item.setBackground(QtGui.QColor(160, 160, 160))
         self.train_table.setHorizontalHeaderItem(1, item)
         item = QtWidgets.QTableWidgetItem()
         font = QtGui.QFont()
         font.setFamily("Arial")
         item.setFont(font)
+        item.setBackground(QtGui.QColor(160, 160, 160))
         self.train_table.setHorizontalHeaderItem(2, item)
         item = QtWidgets.QTableWidgetItem()
         font = QtGui.QFont()
         font.setFamily("Arial")
         item.setFont(font)
-        item.setBackground(QtGui.QColor(211, 211, 211))
+        item.setBackground(QtGui.QColor(160, 160, 160))
         self.train_table.setHorizontalHeaderItem(3, item)
         item = QtWidgets.QTableWidgetItem()
         font = QtGui.QFont()
         font.setFamily("Arial")
         item.setFont(font)
+        item.setBackground(QtGui.QColor(160, 160, 160))
         self.train_table.setHorizontalHeaderItem(4, item)
         self.train_table.horizontalHeader().setCascadingSectionResizes(True)
         self.train_table.horizontalHeader().setDefaultSectionSize(149)
@@ -118,9 +123,9 @@ class CTC_frontend(object):
         font.setFamily("Arial")
         font.setPointSize(18)
         self.automatic_manual_toggle.setFont(font)
-        self.automatic_manual_toggle.setStyleSheet("background-color: rgb(255, 143, 27);")
+        self.automatic_manual_toggle.setStyleSheet("background-color: rgb(255, 143, 27);\n"
+"color:black;")
         self.automatic_manual_toggle.setObjectName("automatic_manual_toggle")
-        self.automatic_manual_toggle.clicked.connect(self.auto_manual_toggle)
         self.InfoLayout.addWidget(self.automatic_manual_toggle, 3, 1, 1, 1, QtCore.Qt.AlignmentFlag.AlignHCenter|QtCore.Qt.AlignmentFlag.AlignVCenter)
         self.ScheduleFrame = QtWidgets.QFrame(parent=self.TrainTab)
         self.ScheduleFrame.setMinimumSize(QtCore.QSize(570, 200))
@@ -135,23 +140,24 @@ class CTC_frontend(object):
         font.setFamily("Arial")
         font.setPointSize(36)
         self.ScheduleTitle.setFont(font)
-        self.ScheduleTitle.setStyleSheet("border: 0px; color: black;")
+        self.ScheduleTitle.setStyleSheet("border: 0px;\n"
+"color:black;")
         self.ScheduleTitle.setObjectName("ScheduleTitle")
         self.DepartureSelector = QtWidgets.QTimeEdit(parent=self.ScheduleFrame)
-        self.DepartureSelector.setDisplayFormat("HH:mm")
-        self.DepartureSelector.setTime(QtCore.QTime.currentTime())
         self.DepartureSelector.setGeometry(QtCore.QRect(370, 60, 101, 24))
-        self.DepartureSelector.setStyleSheet("font: 13pt \"Arial\"; color: black;")
+        self.DepartureSelector.setStyleSheet("font: 13pt \"Arial\";\n"
+"color:black;")
         self.DepartureSelector.setDateTime(QtCore.QDateTime(QtCore.QDate(2000, 1, 1), QtCore.QTime(0, 0, 0)))
         self.DepartureSelector.setCalendarPopup(True)
         self.DepartureSelector.setObjectName("DepartureSelector")
         self.destinationLabel = QtWidgets.QLabel(parent=self.ScheduleFrame)
-        self.destinationLabel.setGeometry(QtCore.QRect(200, 100, 191, 41))
+        self.destinationLabel.setGeometry(QtCore.QRect(200, 100, 171, 41))
         font = QtGui.QFont()
         font.setFamily("Arial")
         font.setPointSize(18)
         self.destinationLabel.setFont(font)
-        self.destinationLabel.setStyleSheet("border: 0px; color: black;")
+        self.destinationLabel.setStyleSheet("border: 0px;\n"
+"color:black;")
         self.destinationLabel.setObjectName("destinationLabel")
         self.departureLabel = QtWidgets.QLabel(parent=self.ScheduleFrame)
         self.departureLabel.setGeometry(QtCore.QRect(200, 50, 131, 41))
@@ -159,31 +165,35 @@ class CTC_frontend(object):
         font.setFamily("Arial")
         font.setPointSize(18)
         self.departureLabel.setFont(font)
-        self.departureLabel.setStyleSheet("border: 0px;")
+        self.departureLabel.setStyleSheet("border: 0px;\n"
+"color:black;")
         self.departureLabel.setObjectName("departureLabel")
         self.StationSelector = QtWidgets.QComboBox(parent=self.ScheduleFrame)
         self.StationSelector.setGeometry(QtCore.QRect(370, 110, 191, 26))
+        self.StationSelector.setStyleSheet("font: 13pt \"Arial\";\n"
+"color:black;")
         self.StationSelector.setObjectName("StationSelector")
-        self.StationSelector.setStyleSheet("color: black;")
         self.ArrivalLabel = QtWidgets.QLabel(parent=self.ScheduleFrame)
         self.ArrivalLabel.setGeometry(QtCore.QRect(200, 150, 191, 41))
         font = QtGui.QFont()
         font.setFamily("Arial")
         font.setPointSize(18)
         self.ArrivalLabel.setFont(font)
-        self.ArrivalLabel.setStyleSheet("border: 0px; color: black;")
+        self.ArrivalLabel.setStyleSheet("border: 0px;\n"
+"color:black;")
         self.ArrivalLabel.setObjectName("ArrivalLabel")
         self.ArrivalSelector = QtWidgets.QTimeEdit(parent=self.ScheduleFrame)
         self.ArrivalSelector.setEnabled(False)
         self.ArrivalSelector.setGeometry(QtCore.QRect(310, 160, 101, 24))
-        self.ArrivalSelector.setStyleSheet("font: 13pt \"Arial\";")
+        self.ArrivalSelector.setStyleSheet("font: 13pt \"Arial\";\n"
+"color:black;")
         self.ArrivalSelector.setObjectName("ArrivalSelector")
         self.DispatchButton = QtWidgets.QPushButton(parent=self.ScheduleFrame)
         self.DispatchButton.setGeometry(QtCore.QRect(370, 10, 151, 32))
-        self.DispatchButton.setStyleSheet("background-color: rgb(70, 158, 49); color: black;\n"
+        self.DispatchButton.setStyleSheet("background-color: rgb(70, 158, 49);\n"
 "font: 18pt \"Arial\";\n"
 "border: 1px solid;\n"
-"")
+"color:black;")
         self.DispatchButton.setCheckable(False)
         self.DispatchButton.setObjectName("DispatchButton")
         self.DispatchButton.clicked.connect(self.dispatch_train)
@@ -193,14 +203,16 @@ class CTC_frontend(object):
         font.setFamily("Arial")
         font.setPointSize(18)
         self.LineLabel.setFont(font)
-        self.LineLabel.setStyleSheet("border: 0px; color: black;")
+        self.LineLabel.setStyleSheet("border: 0px;\n"
+"color:black;")
         self.LineLabel.setObjectName("LineLabel")
         self.train_vew_line_selector = QtWidgets.QComboBox(parent=self.ScheduleFrame)
         self.train_vew_line_selector.setEnabled(False)
         self.train_vew_line_selector.setGeometry(QtCore.QRect(80, 50, 100, 40))
         self.train_vew_line_selector.setMinimumSize(QtCore.QSize(90, 0))
         self.train_vew_line_selector.setMaximumSize(QtCore.QSize(100, 40))
-        self.train_vew_line_selector.setStyleSheet("font: 18pt \"Arial\"; color: black;")
+        self.train_vew_line_selector.setStyleSheet("font: 18pt \"Arial\";\n"
+"color:black;")
         self.train_vew_line_selector.setObjectName("train_vew_line_selector")
         self.train_vew_line_selector.addItem("")
         self.train_vew_line_selector.addItem("")
@@ -208,20 +220,20 @@ class CTC_frontend(object):
         self.add_destination_button = QtWidgets.QPushButton(parent=self.ScheduleFrame)
         self.add_destination_button.setEnabled(False)
         self.add_destination_button.setGeometry(QtCore.QRect(420, 160, 141, 32))
-        self.add_destination_button.setStyleSheet("background-color: rgb(133, 239, 128); color: black;\n"
+        self.add_destination_button.setStyleSheet("background-color: rgb(133, 239, 128);\n"
 "font: 18pt \"Arial\";\n"
 "border: 1px solid;\n"
-"")
+"color:black;")
         self.add_destination_button.setCheckable(False)
         self.add_destination_button.setObjectName("add_destination_button")
-        self.add_destination_button.clicked.connect(self.add_destination)
         self.destination_list_label = QtWidgets.QLabel(parent=self.ScheduleFrame)
         self.destination_list_label.setGeometry(QtCore.QRect(10, 100, 111, 41))
         font = QtGui.QFont()
         font.setFamily("Arial")
         font.setPointSize(18)
         self.destination_list_label.setFont(font)
-        self.destination_list_label.setStyleSheet("border: 0px; color: black;")
+        self.destination_list_label.setStyleSheet("border: 0px;\n"
+"color:black;")
         self.destination_list_label.setObjectName("destination_list_label")
         self.destination_scroll_area = QtWidgets.QScrollArea(parent=self.ScheduleFrame)
         self.destination_scroll_area.setGeometry(QtCore.QRect(10, 130, 171, 61))
@@ -233,7 +245,8 @@ class CTC_frontend(object):
         self.destination_list = QtWidgets.QListView(parent=self.scroll_area_contents)
         self.destination_list.setEnabled(False)
         self.destination_list.setGeometry(QtCore.QRect(-10, -10, 181, 71))
-        self.destination_list.setStyleSheet("font: 13pt \"Arial\"; color: black;")
+        self.destination_list.setStyleSheet("font: 13pt \"Arial\";\n"
+"color:black;")
         self.destination_list.setObjectName("destination_list")
         self.destination_scroll_area.setWidget(self.scroll_area_contents)
         self.InfoLayout.addWidget(self.ScheduleFrame, 2, 0, 2, 1)
@@ -282,7 +295,8 @@ class CTC_frontend(object):
         self.ThroughputLayout.setObjectName("ThroughputLayout")
         self.TimeLabel = QtWidgets.QLabel(parent=self.verticalLayoutWidget_2)
         self.TimeLabel.setMaximumSize(QtCore.QSize(120, 60))
-        self.TimeLabel.setStyleSheet("font: 36pt \"Arial\"; color: black;")
+        self.TimeLabel.setStyleSheet("font: 36pt \"Arial\";\n"
+"color:black;")
         self.TimeLabel.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.TimeLabel.setObjectName("TimeLabel")
         self.ThroughputLayout.addWidget(self.TimeLabel, 0, QtCore.Qt.AlignmentFlag.AlignHCenter)
@@ -300,8 +314,7 @@ class CTC_frontend(object):
 "border-color: rgb(0, 0, 0);\n"
 "font: 18pt \"Arial\";\n"
 "background-color: rgb(43, 120, 228);\n"
-"color: black;\n"
-"")
+"color:black;")
         self.ThroughputDisplay.setLineWidth(4)
         self.ThroughputDisplay.setMidLineWidth(4)
         self.ThroughputDisplay.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
@@ -310,16 +323,22 @@ class CTC_frontend(object):
         self.UploadScheduleButton = QtWidgets.QPushButton(parent=self.verticalLayoutWidget_2)
         self.UploadScheduleButton.setMinimumSize(QtCore.QSize(150, 30))
         self.UploadScheduleButton.setMaximumSize(QtCore.QSize(200, 40))
-        self.UploadScheduleButton.setStyleSheet("background-color: rgb(255, 0, 255); color: black;\n"
+        self.UploadScheduleButton.setStyleSheet("background-color: rgb(255, 0, 255);\n"
 "border: 1px solid;\n"
 "font: 18pt \"Arial\";\n"
-"")
+"\n"
+"color:black;")
         self.UploadScheduleButton.setObjectName("UploadScheduleButton")
+        self.UploadScheduleButton.clicked.connect(self.upload_schedule)
         self.ThroughputLayout.addWidget(self.UploadScheduleButton)
         self.InfoLayout.addWidget(self.ThroughputFrame, 2, 1, 1, 1)
         self.gridLayout_3.addLayout(self.InfoLayout, 0, 0, 2, 1)
         self.pagetab.addTab(self.TrainTab, "")
         self.BlockTab = QtWidgets.QWidget()
+        font = QtGui.QFont()
+        font.setFamily("Arial")
+        self.BlockTab.setFont(font)
+        self.BlockTab.setStyleSheet("color: black;")
         self.BlockTab.setObjectName("BlockTab")
         self.frame = QtWidgets.QFrame(parent=self.BlockTab)
         self.frame.setGeometry(QtCore.QRect(-1, -1, 811, 691))
@@ -337,7 +356,8 @@ class CTC_frontend(object):
         self.upload_layout_button = QtWidgets.QPushButton(parent=self.gridLayoutWidget_5)
         self.upload_layout_button.setMinimumSize(QtCore.QSize(180, 0))
         self.upload_layout_button.setMaximumSize(QtCore.QSize(180, 16777215))
-        self.upload_layout_button.setStyleSheet("background-color: pink; color: black;")
+        self.upload_layout_button.setStyleSheet("background-color: pink;\n"
+"color:black;")
         self.upload_layout_button.setObjectName("upload_layout_button")
         self.upload_layout_button.clicked.connect(self.upload_layout)
         self.InfoLayout_pg2.addWidget(self.upload_layout_button, 2, 2, 1, 1, QtCore.Qt.AlignmentFlag.AlignHCenter)
@@ -350,7 +370,7 @@ class CTC_frontend(object):
         self.MaintenanceFrame.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
         self.MaintenanceFrame.setObjectName("MaintenanceFrame")
         self.verticalLayoutWidget_5 = QtWidgets.QWidget(parent=self.MaintenanceFrame)
-        self.verticalLayoutWidget_5.setGeometry(QtCore.QRect(0, 0, 351, 171))
+        self.verticalLayoutWidget_5.setGeometry(QtCore.QRect(0, 0, 351, 181))
         self.verticalLayoutWidget_5.setObjectName("verticalLayoutWidget_5")
         self.MaintenanceLayout = QtWidgets.QVBoxLayout(self.verticalLayoutWidget_5)
         self.MaintenanceLayout.setSizeConstraint(QtWidgets.QLayout.SizeConstraint.SetNoConstraint)
@@ -363,7 +383,8 @@ class CTC_frontend(object):
         font.setFamily("Arial")
         font.setPointSize(18)
         self.MaintenanceTitle.setFont(font)
-        self.MaintenanceTitle.setStyleSheet("border: 0px; color: black;")
+        self.MaintenanceTitle.setStyleSheet("border: 0px;\n"
+"color:black;")
         self.MaintenanceTitle.setObjectName("MaintenanceTitle")
         self.MaintenanceLayout.addWidget(self.MaintenanceTitle, 0, QtCore.Qt.AlignmentFlag.AlignHCenter)
         self.departureLabel_2 = QtWidgets.QLabel(parent=self.verticalLayoutWidget_5)
@@ -375,8 +396,9 @@ class CTC_frontend(object):
         font.setItalic(False)
         font.setWeight(50)
         self.departureLabel_2.setFont(font)
-        self.departureLabel_2.setStyleSheet("font: 30pt \"Arial\"; color: black;"
-"border: 0px;")
+        self.departureLabel_2.setStyleSheet("font: 30pt \"Arial\";\n"
+"border: 0px;\n"
+"color:black;")
         self.departureLabel_2.setFrameShape(QtWidgets.QFrame.Shape.Box)
         self.departureLabel_2.setLineWidth(2)
         self.departureLabel_2.setObjectName("departureLabel_2")
@@ -384,14 +406,14 @@ class CTC_frontend(object):
         self.MaintenanceButton = QtWidgets.QPushButton(parent=self.verticalLayoutWidget_5)
         self.MaintenanceButton.setMinimumSize(QtCore.QSize(0, 30))
         self.MaintenanceButton.setMaximumSize(QtCore.QSize(200, 16777215))
-        self.MaintenanceButton.clicked.connect(self.maintenance_mode)
         font = QtGui.QFont()
         font.setFamily("Arial")
         font.setPointSize(18)
         self.MaintenanceButton.setFont(font)
-        self.MaintenanceButton.setStyleSheet("background-color: #b88804; color: black;"
+        self.MaintenanceButton.setStyleSheet("background-color: #b88804;\n"
 "border: 1px solid;\n"
-"")
+"\n"
+"color:black;")
         self.MaintenanceButton.setObjectName("MaintenanceButton")
         self.MaintenanceLayout.addWidget(self.MaintenanceButton, 0, QtCore.Qt.AlignmentFlag.AlignHCenter)
         self.InfoLayout_pg2.addWidget(self.MaintenanceFrame, 1, 0, 2, 1)
@@ -416,7 +438,7 @@ class CTC_frontend(object):
         font.setFamily("Arial")
         font.setPointSize(36)
         self.TimeLabel_pg2.setFont(font)
-        self.TimeLabel_pg2.setStyleSheet("color: black;")
+        self.TimeLabel_pg2.setStyleSheet("color:black;")
         self.TimeLabel_pg2.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.TimeLabel_pg2.setObjectName("TimeLabel_pg2")
         self.ThroughputLayout_pg2.addWidget(self.TimeLabel_pg2, 0, QtCore.Qt.AlignmentFlag.AlignHCenter)
@@ -430,7 +452,7 @@ class CTC_frontend(object):
         font.setItalic(False)
         font.setWeight(50)
         self.ThroughputDisplay_pg2.setFont(font)
-        self.ThroughputDisplay_pg2.setStyleSheet("border: 2px; color: black;"
+        self.ThroughputDisplay_pg2.setStyleSheet("border: 2px;\n"
 "border-color: rgb(0, 0, 0);\n"
 "font: 18pt \"Arial\";\n"
 "background-color: rgb(43, 120, 228);\n"
@@ -440,14 +462,6 @@ class CTC_frontend(object):
         self.ThroughputDisplay_pg2.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.ThroughputDisplay_pg2.setObjectName("ThroughputDisplay_pg2")
         self.ThroughputLayout_pg2.addWidget(self.ThroughputDisplay_pg2, 0, QtCore.Qt.AlignmentFlag.AlignHCenter|QtCore.Qt.AlignmentFlag.AlignVCenter)
-        self.ThroughputLabel_pg2 = QtWidgets.QLabel(parent=self.verticalLayoutWidget_3)
-        self.ThroughputLabel_pg2.setMinimumSize(QtCore.QSize(0, 30))
-        self.ThroughputLabel_pg2.setMaximumSize(QtCore.QSize(100, 30))
-        self.ThroughputLabel_pg2.setStyleSheet("font: 14pt \"Arial\"; color: black;"
-"border: 0px;")
-        self.ThroughputLabel_pg2.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-        self.ThroughputLabel_pg2.setObjectName("ThroughputLabel_pg2")
-        self.ThroughputLayout_pg2.addWidget(self.ThroughputLabel_pg2, 0, QtCore.Qt.AlignmentFlag.AlignHCenter|QtCore.Qt.AlignmentFlag.AlignVCenter)
         self.InfoLayout_pg2.addWidget(self.ThroughputFrame_pg2, 1, 2, 1, 1)
         self.HeaderFrame_pg2 = QtWidgets.QFrame(parent=self.gridLayoutWidget_5)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Preferred)
@@ -487,7 +501,7 @@ class CTC_frontend(object):
         self.InfoLayout_pg2.addWidget(self.HeaderFrame_pg2, 0, 0, 1, 3)
         self.SearchFrame = QtWidgets.QFrame(parent=self.gridLayoutWidget_5)
         self.SearchFrame.setMinimumSize(QtCore.QSize(200, 0))
-        self.SearchFrame.setMaximumSize(QtCore.QSize(200, 16777215))
+        self.SearchFrame.setMaximumSize(QtCore.QSize(200, 191))
         self.SearchFrame.setStyleSheet("border-color: rgb(0, 0, 0);\n"
 "border: 2px solid #000000;")
         self.SearchFrame.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
@@ -495,7 +509,7 @@ class CTC_frontend(object):
         self.SearchFrame.setLineWidth(2)
         self.SearchFrame.setObjectName("SearchFrame")
         self.verticalLayoutWidget_6 = QtWidgets.QWidget(parent=self.SearchFrame)
-        self.verticalLayoutWidget_6.setGeometry(QtCore.QRect(-1, -1, 201, 171))
+        self.verticalLayoutWidget_6.setGeometry(QtCore.QRect(-1, -1, 201, 191))
         self.verticalLayoutWidget_6.setObjectName("verticalLayoutWidget_6")
         self.SearchLayout = QtWidgets.QVBoxLayout(self.verticalLayoutWidget_6)
         self.SearchLayout.setContentsMargins(0, 5, 0, 10)
@@ -503,9 +517,9 @@ class CTC_frontend(object):
         self.SearchLayout.setObjectName("SearchLayout")
         self.SearchLabel = QtWidgets.QLabel(parent=self.verticalLayoutWidget_6)
         self.SearchLabel.setMaximumSize(QtCore.QSize(200, 30))
-        self.SearchLabel.setStyleSheet("font: 24pt \"Arial\"; color: black;"
+        self.SearchLabel.setStyleSheet("font: 24pt \"Arial\";\n"
 "border: 0px;\n"
-"")
+"color:black;")
         self.SearchLabel.setObjectName("SearchLabel")
         self.SearchLayout.addWidget(self.SearchLabel, 0, QtCore.Qt.AlignmentFlag.AlignHCenter)
         self.BlockSearchSubLayout = QtWidgets.QGridLayout()
@@ -514,7 +528,8 @@ class CTC_frontend(object):
         self.LineSelectorComboBox.setEnabled(False)
         self.LineSelectorComboBox.setMinimumSize(QtCore.QSize(90, 0))
         self.LineSelectorComboBox.setMaximumSize(QtCore.QSize(100, 40))
-        self.LineSelectorComboBox.setStyleSheet("font: 18pt \"Arial\"; color: black;")
+        self.LineSelectorComboBox.setStyleSheet("font: 18pt \"Arial\";\n"
+"color:black;")
         self.LineSelectorComboBox.setObjectName("LineSelectorComboBox")
         self.LineSelectorComboBox.addItem("")
         self.LineSelectorComboBox.addItem("")
@@ -522,20 +537,23 @@ class CTC_frontend(object):
         self.BlockSearchSubLayout.addWidget(self.LineSelectorComboBox, 0, 1, 1, 1)
         self.SearchLineLabel = QtWidgets.QLabel(parent=self.verticalLayoutWidget_6)
         self.SearchLineLabel.setMaximumSize(QtCore.QSize(70, 40))
-        self.SearchLineLabel.setStyleSheet("font: 24pt \"Arial\"; color: black;"
+        self.SearchLineLabel.setStyleSheet("color:black;\n"
+"font: 24pt \"Arial\";\n"
 "border: 0px;\n"
 "")
         self.SearchLineLabel.setObjectName("SearchLineLabel")
         self.BlockSearchSubLayout.addWidget(self.SearchLineLabel, 0, 0, 1, 1)
         self.BlockSelectorLabel = QtWidgets.QLabel(parent=self.verticalLayoutWidget_6)
         self.BlockSelectorLabel.setMaximumSize(QtCore.QSize(70, 40))
-        self.BlockSelectorLabel.setStyleSheet("font: 24pt \"Arial\"; color: black;"
-"border: 0px;")
+        self.BlockSelectorLabel.setStyleSheet("font: 24pt \"Arial\";\n"
+"border: 0px;\n"
+"color:black;")
         self.BlockSelectorLabel.setObjectName("BlockSelectorLabel")
         self.BlockSearchSubLayout.addWidget(self.BlockSelectorLabel, 1, 0, 1, 1)
         self.block_page_block_selector = QtWidgets.QSpinBox(parent=self.verticalLayoutWidget_6)
         self.block_page_block_selector.setMaximumSize(QtCore.QSize(80, 16777215))
-        self.block_page_block_selector.setStyleSheet("font: 13pt \"Arial\"; color: black;")
+        self.block_page_block_selector.setStyleSheet("font: 13pt \"Arial\";\n"
+"color:black;")
         self.block_page_block_selector.setObjectName("block_page_block_selector")
         self.BlockSearchSubLayout.addWidget(self.block_page_block_selector, 1, 1, 1, 1, QtCore.Qt.AlignmentFlag.AlignHCenter)
         self.SearchLayout.addLayout(self.BlockSearchSubLayout)
@@ -543,9 +561,9 @@ class CTC_frontend(object):
         self.SelectBlockButton.setMaximumSize(QtCore.QSize(150, 16777215))
         self.SelectBlockButton.setStyleSheet("font: 18pt \"Arial\";\n"
 "background-color: rgb(0, 209, 41);\n"
-"border: 1px solid;")
+"border: 1px solid;\n"
+"color:black;")
         self.SelectBlockButton.setObjectName("SelectBlockButton")
-        self.SelectBlockButton.clicked.connect(self.select_block)
         self.SearchLayout.addWidget(self.SelectBlockButton, 0, QtCore.Qt.AlignmentFlag.AlignHCenter)
         self.InfoLayout_pg2.addWidget(self.SearchFrame, 1, 1, 2, 1)
         self.block_table = QtWidgets.QTableWidget(parent=self.gridLayoutWidget_5)
@@ -557,7 +575,8 @@ class CTC_frontend(object):
         self.block_table.setSizePolicy(sizePolicy)
         self.block_table.setMinimumSize(QtCore.QSize(775, 0))
         self.block_table.setMaximumSize(QtCore.QSize(16777215, 300))
-        self.block_table.setStyleSheet("font: 13pt \"Arial\";")
+        self.block_table.setStyleSheet("font: 13pt \"Arial\";\n"
+"color:black;")
         self.block_table.setFrameShape(QtWidgets.QFrame.Shape.Box)
         self.block_table.setFrameShadow(QtWidgets.QFrame.Shadow.Plain)
         self.block_table.setLineWidth(2)
@@ -570,12 +589,28 @@ class CTC_frontend(object):
         self.block_table.setObjectName("block_table")
         self.block_table.setColumnCount(4)
         item = QtWidgets.QTableWidgetItem()
+        font = QtGui.QFont()
+        font.setFamily("Arial")
+        item.setFont(font)
+        item.setBackground(QtGui.QColor(159, 159, 159))
         self.block_table.setHorizontalHeaderItem(0, item)
         item = QtWidgets.QTableWidgetItem()
+        font = QtGui.QFont()
+        font.setFamily("Arial")
+        item.setFont(font)
+        item.setBackground(QtGui.QColor(159, 159, 159))
         self.block_table.setHorizontalHeaderItem(1, item)
         item = QtWidgets.QTableWidgetItem()
+        font = QtGui.QFont()
+        font.setFamily("Arial")
+        item.setFont(font)
+        item.setBackground(QtGui.QColor(159, 159, 159))
         self.block_table.setHorizontalHeaderItem(2, item)
         item = QtWidgets.QTableWidgetItem()
+        font = QtGui.QFont()
+        font.setFamily("Arial")
+        item.setFont(font)
+        item.setBackground(QtGui.QColor(159, 159, 159))
         self.block_table.setHorizontalHeaderItem(3, item)
         self.block_table.horizontalHeader().setCascadingSectionResizes(True)
         self.block_table.horizontalHeader().setDefaultSectionSize(193)
@@ -589,6 +624,10 @@ class CTC_frontend(object):
         self.InfoLayout_pg2.setRowStretch(0, 1)
         self.pagetab.addTab(self.BlockTab, "")
         self.TestTab = QtWidgets.QWidget()
+        font = QtGui.QFont()
+        font.setFamily("Arial")
+        self.TestTab.setFont(font)
+        self.TestTab.setStyleSheet("color: black;")
         self.TestTab.setObjectName("TestTab")
         self.TestBenchFrame = QtWidgets.QFrame(parent=self.TestTab)
         self.TestBenchFrame.setGeometry(QtCore.QRect(0, 0, 821, 711))
@@ -596,7 +635,7 @@ class CTC_frontend(object):
         self.TestBenchFrame.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
         self.TestBenchFrame.setObjectName("TestBenchFrame")
         self.gridLayoutWidget = QtWidgets.QWidget(parent=self.TestBenchFrame)
-        self.gridLayoutWidget.setGeometry(QtCore.QRect(-1, -1, 811, 701))
+        self.gridLayoutWidget.setGeometry(QtCore.QRect(-1, -1, 818, 701))
         self.gridLayoutWidget.setObjectName("gridLayoutWidget")
         self.TestBenchLayout = QtWidgets.QGridLayout(self.gridLayoutWidget)
         self.TestBenchLayout.setContentsMargins(5, 5, 10, 5)
@@ -610,7 +649,8 @@ class CTC_frontend(object):
         self.block_table_test_bench.setSizePolicy(sizePolicy)
         self.block_table_test_bench.setMinimumSize(QtCore.QSize(0, 100))
         self.block_table_test_bench.setMaximumSize(QtCore.QSize(800, 300))
-        self.block_table_test_bench.setStyleSheet("font: 13pt \"Arial\";")
+        self.block_table_test_bench.setStyleSheet("font: 13pt \"Arial\";\n"
+"color: black;")
         self.block_table_test_bench.setFrameShape(QtWidgets.QFrame.Shape.Box)
         self.block_table_test_bench.setFrameShadow(QtWidgets.QFrame.Shadow.Plain)
         self.block_table_test_bench.setLineWidth(2)
@@ -625,26 +665,31 @@ class CTC_frontend(object):
         font = QtGui.QFont()
         font.setFamily("Arial")
         item.setFont(font)
+        item.setBackground(QtGui.QColor(159, 159, 159))
         self.block_table_test_bench.setHorizontalHeaderItem(0, item)
         item = QtWidgets.QTableWidgetItem()
         font = QtGui.QFont()
         font.setFamily("Arial")
         item.setFont(font)
+        item.setBackground(QtGui.QColor(159, 159, 159))
         self.block_table_test_bench.setHorizontalHeaderItem(1, item)
         item = QtWidgets.QTableWidgetItem()
         font = QtGui.QFont()
         font.setFamily("Arial")
         item.setFont(font)
+        item.setBackground(QtGui.QColor(159, 159, 159))
         self.block_table_test_bench.setHorizontalHeaderItem(2, item)
         item = QtWidgets.QTableWidgetItem()
         font = QtGui.QFont()
         font.setFamily("Arial")
         item.setFont(font)
+        item.setBackground(QtGui.QColor(159, 159, 159))
         self.block_table_test_bench.setHorizontalHeaderItem(3, item)
         item = QtWidgets.QTableWidgetItem()
         font = QtGui.QFont()
         font.setFamily("Arial")
         item.setFont(font)
+        item.setBackground(QtGui.QColor(159, 159, 159))
         self.block_table_test_bench.setHorizontalHeaderItem(4, item)
         self.block_table_test_bench.horizontalHeader().setCascadingSectionResizes(True)
         self.block_table_test_bench.horizontalHeader().setDefaultSectionSize(158)
@@ -681,38 +726,42 @@ class CTC_frontend(object):
         self.TestBenchLayout.addWidget(self.HeaderFrame_pg3, 0, 0, 1, 2)
         self.train_outputs_frame = QtWidgets.QFrame(parent=self.gridLayoutWidget)
         self.train_outputs_frame.setMinimumSize(QtCore.QSize(572, 0))
-        self.train_outputs_frame.setMaximumSize(QtCore.QSize(650, 100))
+        self.train_outputs_frame.setMaximumSize(QtCore.QSize(610, 100))
         self.train_outputs_frame.setStyleSheet("border: 2px solid #000000")
         self.train_outputs_frame.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
         self.train_outputs_frame.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
         self.train_outputs_frame.setLineWidth(2)
         self.train_outputs_frame.setObjectName("train_outputs_frame")
         self.gridLayoutWidget_6 = QtWidgets.QWidget(parent=self.train_outputs_frame)
-        self.gridLayoutWidget_6.setGeometry(QtCore.QRect(-1, -1, 571, 101))
+        self.gridLayoutWidget_6.setGeometry(QtCore.QRect(-1, -1, 611, 101))
         self.gridLayoutWidget_6.setObjectName("gridLayoutWidget_6")
         self.train_outputs_layout = QtWidgets.QGridLayout(self.gridLayoutWidget_6)
         self.train_outputs_layout.setContentsMargins(10, 10, 10, 10)
         self.train_outputs_layout.setObjectName("train_outputs_layout")
         self.label_2 = QtWidgets.QLabel(parent=self.gridLayoutWidget_6)
         self.label_2.setStyleSheet("border: 0px;\n"
-"font: 18pt \"Arial\";")
+"font: 18pt \"Arial\";\n"
+"color: black;")
         self.label_2.setObjectName("label_2")
         self.train_outputs_layout.addWidget(self.label_2, 1, 2, 1, 1, QtCore.Qt.AlignmentFlag.AlignHCenter)
         self.suggested_speed_display = QtWidgets.QLabel(parent=self.gridLayoutWidget_6)
         self.suggested_speed_display.setStyleSheet("border: 2px solid #000000;\n"
 "font: 13pt \"Arial\";\n"
-"background-color: rgb(255, 255, 255);")
+"background-color: rgb(255, 255, 255);\n"
+"color: black;")
         self.suggested_speed_display.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.suggested_speed_display.setObjectName("suggested_speed_display")
         self.train_outputs_layout.addWidget(self.suggested_speed_display, 1, 1, 1, 1)
         self.train_number_selector = QtWidgets.QSpinBox(parent=self.gridLayoutWidget_6)
         self.train_number_selector.setEnabled(False)
-        self.train_number_selector.setStyleSheet("font: 13pt \"Arial\";")
+        self.train_number_selector.setStyleSheet("font: 13pt \"Arial\";\n"
+"color: black;")
         self.train_number_selector.setObjectName("train_number_selector")
         self.train_outputs_layout.addWidget(self.train_number_selector, 0, 1, 1, 1)
         self.train_number_label = QtWidgets.QLabel(parent=self.gridLayoutWidget_6)
         self.train_number_label.setStyleSheet("font: 18pt \"Arial\";\n"
-"border: 0px;")
+"border: 0px;\n"
+"color: black;")
         self.train_number_label.setObjectName("train_number_label")
         self.train_outputs_layout.addWidget(self.train_number_label, 0, 0, 1, 1)
         self.label = QtWidgets.QLabel(parent=self.gridLayoutWidget_6)
@@ -724,67 +773,67 @@ class CTC_frontend(object):
         font.setWeight(50)
         self.label.setFont(font)
         self.label.setStyleSheet("border: 0px;\n"
-"font: 18pt \"Arial\";")
+"font: 18pt \"Arial\";\n"
+"color: black;")
         self.label.setObjectName("label")
         self.train_outputs_layout.addWidget(self.label, 1, 0, 1, 1)
         self.authority_display = QtWidgets.QLabel(parent=self.gridLayoutWidget_6)
+        self.authority_display.setMaximumSize(QtCore.QSize(130, 16777215))
         self.authority_display.setStyleSheet("border: 2px solid #000000;\n"
 "font: 13pt \"Arial\";\n"
-"background-color: rgb(255, 255, 255);")
+"background-color: rgb(255, 255, 255);\n"
+"color: black;")
         self.authority_display.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.authority_display.setObjectName("authority_display")
         self.train_outputs_layout.addWidget(self.authority_display, 1, 3, 1, 1)
         self.train_outputs_label = QtWidgets.QLabel(parent=self.gridLayoutWidget_6)
         self.train_outputs_label.setMinimumSize(QtCore.QSize(200, 50))
+        self.train_outputs_label.setMaximumSize(QtCore.QSize(275, 16777215))
         self.train_outputs_label.setStyleSheet("font: 24pt \"Arial\";\n"
-"border: 0px;")
+"border: 0px;\n"
+"color: black;")
         self.train_outputs_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.train_outputs_label.setObjectName("train_outputs_label")
         self.train_outputs_layout.addWidget(self.train_outputs_label, 0, 2, 1, 2)
         self.TestBenchLayout.addWidget(self.train_outputs_frame, 1, 1, 1, 1)
         self.BlockSelectorFrame = QtWidgets.QFrame(parent=self.gridLayoutWidget)
-        self.BlockSelectorFrame.setMaximumSize(QtCore.QSize(250, 150))
-        self.BlockSelectorFrame.setStyleSheet("border: 2px solid #000000;")
+        self.BlockSelectorFrame.setMinimumSize(QtCore.QSize(150, 100))
+        self.BlockSelectorFrame.setMaximumSize(QtCore.QSize(170, 100))
+        font = QtGui.QFont()
+        self.BlockSelectorFrame.setFont(font)
+        self.BlockSelectorFrame.setStyleSheet("border: 2px solid black;")
         self.BlockSelectorFrame.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
         self.BlockSelectorFrame.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
         self.BlockSelectorFrame.setLineWidth(2)
         self.BlockSelectorFrame.setObjectName("BlockSelectorFrame")
-        self.verticalLayoutWidget_9 = QtWidgets.QWidget(parent=self.BlockSelectorFrame)
-        self.verticalLayoutWidget_9.setGeometry(QtCore.QRect(-1, -11, 211, 120))
-        self.verticalLayoutWidget_9.setObjectName("verticalLayoutWidget_9")
-        self.BlockSelectorLayout = QtWidgets.QGridLayout(self.verticalLayoutWidget_9)
-        self.BlockSelectorLayout.setContentsMargins(10, 20, 10, 20)
-        self.BlockSelectorLayout.setObjectName("BlockSelectorLayout")
-        self.TestBenchBlockLabel = QtWidgets.QLabel(parent=self.verticalLayoutWidget_9)
-        self.TestBenchBlockLabel.setMinimumSize(QtCore.QSize(0, 30))
-        self.TestBenchBlockLabel.setMaximumSize(QtCore.QSize(16777215, 30))
-        self.TestBenchBlockLabel.setStyleSheet("font: 18pt \"Arial\";\n"
-"border: 0px;")
-        self.TestBenchBlockLabel.setObjectName("TestBenchBlockLabel")
-        self.BlockSelectorLayout.addWidget(self.TestBenchBlockLabel, 2, 0, 3, 1, QtCore.Qt.AlignmentFlag.AlignVCenter)
-        self.TestBenchLineLabel = QtWidgets.QLabel(parent=self.verticalLayoutWidget_9)
-        self.TestBenchLineLabel.setMinimumSize(QtCore.QSize(0, 40))
-        self.TestBenchLineLabel.setMaximumSize(QtCore.QSize(16777215, 50))
-        self.TestBenchLineLabel.setStyleSheet("font: 18pt \"Arial\";\n"
-"border: 0px;")
-        self.TestBenchLineLabel.setObjectName("TestBenchLineLabel")
-        self.BlockSelectorLayout.addWidget(self.TestBenchLineLabel, 0, 0, 2, 1, QtCore.Qt.AlignmentFlag.AlignVCenter)
-        self.TestBenchLineSelector = QtWidgets.QComboBox(parent=self.verticalLayoutWidget_9)
-        self.TestBenchLineSelector.setEnabled(False)
-        self.TestBenchLineSelector.setMinimumSize(QtCore.QSize(0, 30))
-        self.TestBenchLineSelector.setMaximumSize(QtCore.QSize(16777215, 30))
-        self.TestBenchLineSelector.setStyleSheet("font: 13pt \"Arial\";")
-        self.TestBenchLineSelector.setObjectName("TestBenchLineSelector")
-        self.TestBenchLineSelector.addItem("")
-        self.TestBenchLineSelector.addItem("")
-        self.TestBenchLineSelector.addItem("")
-        self.BlockSelectorLayout.addWidget(self.TestBenchLineSelector, 0, 2, 2, 1)
-        self.TestBenchBlockSelector = QtWidgets.QSpinBox(parent=self.verticalLayoutWidget_9)
-        self.TestBenchBlockSelector.setMaximumSize(QtCore.QSize(16777215, 30))
-        self.TestBenchBlockSelector.setStyleSheet("font: 13pt \"Arial\";")
-        self.TestBenchBlockSelector.setObjectName("TestBenchBlockSelector")
-        self.BlockSelectorLayout.addWidget(self.TestBenchBlockSelector, 2, 2, 3, 1)
+        self.horizontalLayoutWidget = QtWidgets.QWidget(parent=self.BlockSelectorFrame)
+        self.horizontalLayoutWidget.setGeometry(QtCore.QRect(0, 0, 171, 101))
+        self.horizontalLayoutWidget.setObjectName("horizontalLayoutWidget")
+        self.horizontalLayout = QtWidgets.QHBoxLayout(self.horizontalLayoutWidget)
+        self.horizontalLayout.setContentsMargins(5, 5, 5, 5)
+        self.horizontalLayout.setObjectName("horizontalLayout")
+        self.label_3 = QtWidgets.QLabel(parent=self.horizontalLayoutWidget)
+        self.label_3.setMaximumSize(QtCore.QSize(70, 40))
+        font = QtGui.QFont()
+        font.setFamily("Arial")
+        font.setPointSize(18)
+        self.label_3.setFont(font)
+        self.label_3.setStyleSheet("border: 0px solid black;\n"
+"color: black;")
+        self.label_3.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.label_3.setObjectName("label_3")
+        self.horizontalLayout.addWidget(self.label_3)
+        self.spinBox = QtWidgets.QSpinBox(parent=self.horizontalLayoutWidget)
+        self.spinBox.setMaximumSize(QtCore.QSize(60, 16777215))
+        self.spinBox.setStyleSheet("color: black;")
+        self.spinBox.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.spinBox.setObjectName("spinBox")
+        self.horizontalLayout.addWidget(self.spinBox)
         self.TestBenchLayout.addWidget(self.BlockSelectorFrame, 1, 0, 1, 1)
+        self.HeaderFrame_pg3.raise_()
+        self.train_outputs_frame.raise_()
+        self.block_table_test_bench.raise_()
+        self.BlockSelectorFrame.raise_()
         self.pagetab.addTab(self.TestTab, "")
         self.gridLayout.addWidget(self.pagetab, 0, 0, 1, 1)
         mainwindow.setCentralWidget(self.centralwidget)
@@ -793,7 +842,6 @@ class CTC_frontend(object):
         self.pagetab.setCurrentIndex(0)
         self.train_vew_line_selector.setCurrentIndex(2)
         self.LineSelectorComboBox.setCurrentIndex(2)
-        self.TestBenchLineSelector.setCurrentIndex(2)
         QtCore.QMetaObject.connectSlotsByName(mainwindow)
 
     def retranslateUi(self, mainwindow):
@@ -812,7 +860,7 @@ class CTC_frontend(object):
         item.setText(_translate("mainwindow", "Yard Departure Time"))
         self.automatic_manual_toggle.setText(_translate("mainwindow", "Manual Mode"))
         self.ScheduleTitle.setText(_translate("mainwindow", "Schedule New Train"))
-        self.DepartureSelector.setDisplayFormat(_translate("mainwindow", "hh:mm "))
+        self.DepartureSelector.setDisplayFormat(_translate("mainwindow", "hh:mm"))
         self.destinationLabel.setText(_translate("mainwindow", "Destination Station:"))
         self.departureLabel.setText(_translate("mainwindow", "Departure Time:"))
         self.ArrivalLabel.setText(_translate("mainwindow", "Arrival Time:"))
@@ -824,7 +872,7 @@ class CTC_frontend(object):
         self.add_destination_button.setText(_translate("mainwindow", "Add Destination"))
         self.destination_list_label.setText(_translate("mainwindow", "Destinations:"))
         self.HeaderLabel.setText(_translate("mainwindow", "CTC"))
-        self.TimeLabel.setText(_translate("mainwindow", "10:30"))
+        self.TimeLabel.setText(_translate("mainwindow", self.wall_clock_time.strftime("%H:%M")))
         self.ThroughputDisplay.setText(_translate("mainwindow", "X Trains/hr/line"))
         self.UploadScheduleButton.setText(_translate("mainwindow", "Upload Schedule"))
         self.pagetab.setTabText(self.pagetab.indexOf(self.TrainTab), _translate("mainwindow", "Train View"))
@@ -833,9 +881,8 @@ class CTC_frontend(object):
         self.MaintenanceTitle.setText(_translate("mainwindow", "Place Block in Maintanence Mode"))
         self.departureLabel_2.setText(_translate("mainwindow", "No Block Selected"))
         self.MaintenanceButton.setText(_translate("mainwindow", "Maintenance Mode"))
-        self.TimeLabel_pg2.setText(_translate("mainwindow", "10:30"))
+        self.TimeLabel_pg2.setText(_translate("mainwindow", self.wall_clock_time.strftime("%H:%M")))
         self.ThroughputDisplay_pg2.setText(_translate("mainwindow", "X Trains/hr/line"))
-        self.ThroughputLabel_pg2.setText(_translate("mainwindow", "Throughput"))
         self.HeaderLabel_pg2.setText(_translate("mainwindow", "CTC"))
         self.SearchLabel.setText(_translate("mainwindow", "Search Blocks"))
         self.LineSelectorComboBox.setItemText(0, _translate("mainwindow", "Blue"))
@@ -868,24 +915,24 @@ class CTC_frontend(object):
         item.setText(_translate("mainwindow", "Switch State"))
         self.HeaderLabel_pg3.setText(_translate("mainwindow", "CTC"))
         self.label_2.setText(_translate("mainwindow", "Authority:"))
-        self.suggested_speed_display.setText(_translate("mainwindow", "20mph"))
-        self.train_number_label.setText(_translate("mainwindow", "  Train #:"))
+        self.suggested_speed_display.setText(_translate("mainwindow", "0 mph"))
+        self.train_number_label.setText(_translate("mainwindow", "Train #:"))
         self.label.setText(_translate("mainwindow", "Suggested Speed:"))
-        self.authority_display.setText(_translate("mainwindow", "300m"))
+        self.authority_display.setText(_translate("mainwindow", "0 blocks"))
         self.train_outputs_label.setText(_translate("mainwindow", "Outputs to Train"))
-        self.TestBenchBlockLabel.setText(_translate("mainwindow", "Block:"))
-        self.TestBenchLineLabel.setText(_translate("mainwindow", "Line:"))
-        self.TestBenchLineSelector.setItemText(0, _translate("mainwindow", "Blue"))
-        self.TestBenchLineSelector.setItemText(1, _translate("mainwindow", "Red"))
-        self.TestBenchLineSelector.setItemText(2, _translate("mainwindow", "Green"))
+        self.label_3.setText(_translate("mainwindow", "Block #:"))
         self.pagetab.setTabText(self.pagetab.indexOf(self.TestTab), _translate("mainwindow", "Test Bench"))
         self.pagetab.setTabToolTip(self.pagetab.indexOf(self.TestTab), _translate("mainwindow", "Test I/O operation"))
+
+        self.DepartureSelector.setTime(QtCore.QTime.currentTime())
+
 
     def updateUI(self):
 
         _translate = QtCore.QCoreApplication.translate
 
         self.TimeLabel.setText(self.wall_clock_time.strftime("%H:%M"))
+        self.TimeLabel_pg2.setText(self.wall_clock_time.strftime("%H:%M"))
         #self.ThroughputDisplay.setText(self.ctc.get_throughput())
         #self.ThroughputDisplay_pg2.setText(self.ctc.get_throughput())
         #self.ThroughputDisplay_pg3.setText(self.ctc.get_throughput())
@@ -897,28 +944,74 @@ class CTC_frontend(object):
         self.train_table.clear()
         self.train_table.setRowCount(len(self.ctc.line.train_list))
 
-        for index, train in enumerate(self.ctc.line.train_list):
-            self.train_table.setItem(index, 0, QtWidgets.QTableWidgetItem(str(train.train_id)))
-            self.train_table.setItem(index, 1, QtWidgets.QTableWidgetItem(str(train.location)))
-            self.train_table.setItem(index, 2, QtWidgets.QTableWidgetItem(str(train.destination_station)))
-            self.train_table.setItem(index, 3, QtWidgets.QTableWidgetItem(str(train.arrival_time.strftime("%H:%M"))))
-            self.train_table.setItem(index, 4, QtWidgets.QTableWidgetItem(str(train.departure_time.strftime("%H:%M"))))
+        if len(self.ctc.line.train_list):
+            for index, train in enumerate(self.ctc.line.train_list):
+                self.train_table.setItem(index, 0, QtWidgets.QTableWidgetItem(str(train.train_id)))
+                self.train_table.setItem(index, 1, QtWidgets.QTableWidgetItem(str(train.location)))
+                self.train_table.setItem(index, 2, QtWidgets.QTableWidgetItem(str(train.destination_station)))
+                self.train_table.setItem(index, 3, QtWidgets.QTableWidgetItem(str(train.arrival_time.strftime("%H:%M"))))
+                self.train_table.setItem(index, 4, QtWidgets.QTableWidgetItem(str(train.departure_time.strftime("%H:%M"))))
         
-            for col in range(5):
-                item1 = self.train_table.item(index, col)
+                for col in range(5):
+                    item1 = self.train_table.item(index, col)
+                    item1.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+
+            self.train_table.setColumnCount(5)
+
+            headers = ["Train #", "Current Block", "Next Destination", "Arrival Time", "Yard Departure Time"]
+            for col, header in enumerate(headers):
+                item = self.train_table.horizontalHeaderItem(col)
+                if item is None:
+                    item = QtWidgets.QTableWidgetItem()
+                    self.train_table.setHorizontalHeaderItem(col, item)
+                item.setText(_translate("mainwindow", header))
+
+            self.train_table.setShowGrid(True)
+
+        self.block_table.setRowCount(len(self.ctc.line.layout))
+        self.block_table_test_bench.setRowCount(len(self.ctc.line.layout))
+
+        for index, block in enumerate(self.ctc.line.layout):
+            self.block_table.setItem(index, 0, QtWidgets.QTableWidgetItem(str(block.block_number)))
+            self.block_table.setItem(index, 1, QtWidgets.QTableWidgetItem(str(block.section)))
+            self.block_table.setItem(index, 2, QtWidgets.QTableWidgetItem(str(block.occupied)))
+            self.block_table.setItem(index, 3, QtWidgets.QTableWidgetItem(str(block.maintenance)))
+
+            self.block_table_test_bench.setItem(index, 0, QtWidgets.QTableWidgetItem(str(block.block_number)))
+            self.block_table_test_bench.setItem(index, 1, QtWidgets.QTableWidgetItem(str(block.section)))
+            self.block_table_test_bench.setItem(index, 2, QtWidgets.QTableWidgetItem(str(block.occupied)))
+            self.block_table_test_bench.setItem(index, 3, QtWidgets.QTableWidgetItem(str(block.maintenance)))
+            self.block_table_test_bench.setItem(index, 4, QtWidgets.QTableWidgetItem("???"))
+
+            for col in range(4):
+                item1 = self.block_table.item(index, col)
                 item1.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
 
-        self.train_table.setColumnCount(5)
+            for col2 in range(5):
+                item2 = self.block_table_test_bench.item(index, col2)
+                item2.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
 
-        headers = ["Train #", "Current Block", "Next Destination", "Arrival Time", "Yard Departure Time"]
+        headers = ["Block #", "Section ID", "Occupied", "Maintenance"]
         for col, header in enumerate(headers):
-            item = self.train_table.horizontalHeaderItem(col)
+            item = self.block_table.horizontalHeaderItem(col)
             if item is None:
                 item = QtWidgets.QTableWidgetItem()
-                self.train_table.setHorizontalHeaderItem(col, item)
+                self.block_table.setHorizontalHeaderItem(col, item)
+            _translate = QtCore.QCoreApplication.translate
             item.setText(_translate("mainwindow", header))
 
-        self.train_table.setShowGrid(True)
+        headers = ["Block #", "Section ID", "Occupied", "Maintenance Mode", "Switch State"]
+        for col, header in enumerate(headers):
+            item = self.block_table_test_bench.horizontalHeaderItem(col)
+            if item is None:
+                item = QtWidgets.QTableWidgetItem()
+                self.block_table_test_bench.setHorizontalHeaderItem(col, item)
+            _translate = QtCore.QCoreApplication.translate
+            item.setText(_translate("mainwindow", header))
+
+        if len(self.ctc.line.train_list):
+            self.suggested_speed_display.setText(str(self.ctc.line.train_list[self.train_number_selector.value()].suggested_speed))
+            self.authority_display.setText(str(self.ctc.line.train_list[self.train_number_selector.value()].authority))
 
 
     def update_block_occupancies(self, blocks: list):
@@ -988,6 +1081,9 @@ class CTC_frontend(object):
         print("Stations = ", stations)
         self.StationSelector.addItems(stations)
 
+        self.updateUI()
+
+  
 
     def time_step(self):
 
@@ -998,12 +1094,6 @@ class CTC_frontend(object):
         self.wall_clock_time = datetime.time()
 
         self.updateUI()
-        
-
-        
-    
-
-
 
 
 if __name__ == "__main__":

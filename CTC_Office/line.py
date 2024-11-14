@@ -64,9 +64,9 @@ class Line():
         # while the current block of calculation is not the destination
         while True:
             authority = authority + 1
-            #print("Current block: ", curr)
+            print("Current block: ", curr)
             traverse_time = traverse_time + self.layout[curr].ideal_traverse_time
-            #print("Traversal time: ", traverse_time)
+            print("Traversal time: ", traverse_time)
 
             # calculate the next block to travel to
             temp = curr
