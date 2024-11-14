@@ -638,10 +638,10 @@ class Position(QObject):
     
     def __init__(self, doors: Doors, failure_modes: FailureModes, speed_control: SpeedControl, power_class: PowerCommand, communicator: Communicate, lights: Lights, brake_status: BrakeStatus):
         super().__init__()
-        self.commanded_authority = 5    # int
+        self.commanded_authority = 25 + 1   # int
         self.station_name = 'Shadyside' # string
         self.announcement = '' # string
-        self.polarity = False   # boolean
+        self.polarity = True   # boolean
         # I need the block number of the station so that I can query into my infrastructure array and check what the station name is of that block
         self.communicator = communicator
         self.door = doors
@@ -684,7 +684,7 @@ class Position(QObject):
         
     # Connect function for the Communicate class
     def handle_polarity_change(self, polarity: bool):
-        if polarity is not self.polarity:
+        if polarity != self.polarity:
             self.polarity = polarity
             self.speed_control.update_speed_limit(self.green_speed_limit[self.current_block])
             self.commanded_authority -= 1

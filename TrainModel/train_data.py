@@ -454,7 +454,7 @@ class TrainData(QObject):
         if len(polarity_list) < max(1, self.train_count):
             polarity_list = polarity_list + [True] * (max(1, self.train_count) - len(polarity_list))
         self.polarity = polarity_list
-        print(f"train: {self.polarity}")
+        # print(f"train: {self.polarity}")
         self.data_changed.emit()
 
     def set_passenger_boarding(self, boarding_list):
@@ -533,7 +533,7 @@ class TrainData(QObject):
         """Send updated data to Train Controller and Track Model via communication classes."""
         # Send data to Train Controller
         self.tc_communicate.commanded_speed_signal.emit(self.commanded_speed_tc)  # mph for UI
-        self.tc_communicate.commanded_authority_signal.emit(self.commanded_authority)
+        # self.tc_communicate.commanded_authority_signal.emit(self.commanded_authority)
         self.tc_communicate.current_velocity_signal.emit(self.current_speed)  # m/s
         self.tc_communicate.engine_failure_signal.emit(self.engine_failure)
         self.tc_communicate.brake_failure_signal.emit(self.brake_failure)

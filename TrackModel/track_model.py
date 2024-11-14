@@ -142,15 +142,13 @@ class track_model:
 
    
     def update_polarity_values(self):
-        print("updating polarity values")
         self.polarity_values.clear()
         for i in range(len(self.current_block)):
             if self.all_blocks[self.current_block[i]].polarity == 0:
                 self.polarity_values.append(False)
             else:
                 self.polarity_values.append(True)
-            print(self.all_blocks[self.current_block[i]].polarity)
-        print(f"track: {self.polarity_values}")
+        # print(f"track: {self.polarity_values}")
 
 
     def update_grade_values(self):
@@ -309,8 +307,7 @@ class track_model:
                     self.all_blocks[self.defaultGreenPath[i]].occupied = False
                 block_start = block_end
         for block in self.all_blocks:
-            self.occupancies.append(block.occupied)  
-        print(f"current block: {self.current_block}")
+            self.occupancies.append(block.occupied)
 
     def set_failure_occupancies(self):
         for i in range(len(self.all_blocks)):
