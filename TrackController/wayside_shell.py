@@ -67,8 +67,10 @@ class wayside_shell_class:
     ####################################################################################################
 
     # Input from CTC Office
-    read_sugg_speed = [None] * 152
-    read_sugg_authority = [None] * 152
+    read_sugg_speed = [2] * 152
+
+    read_sugg_authority = [2] * 152
+
 #    read_maintenance_blocks = [0] * 151
 #    read_maintenance_switch_cmd = [None] * 6
 
@@ -79,10 +81,21 @@ class wayside_shell_class:
     write_block_occupancy = [0] * 152
 
     # Output to Track Model
-    write_cmd_speed = [None] * 152
-    write_cmd_authority = [None] * 152
+    write_cmd_speed = [1] * 152
+    write_cmd_authority = [1] * 152
 
     #                    D   F   I   K  N1  N2   
+    #write_switch_cmd = [ 1,  1,  0,  0,  0,  0]
+
+    #                    C   D   F   G   J   K  N1  N2   O   R  Yard 
+    #write_signal_cmd = [ 0,  1,  0,  1,  1,  0,  0,  1,  0,  1,  0 ]
+
+    #                     E  T
+    #write_crossing_cmd = [0, 0]
+
+    # Test Values
+    read_sugg_speed = [1] * 152
+
     write_switch_cmd = [ 1,  1,  0,  0,  0,  0]
 
     #                    C   D   F   G   J   K  N1  N2   O   R  Yard 
@@ -99,6 +112,8 @@ class wayside_shell_class:
 
     # Inputs from CTC Office
     def read_sugg_speed_handler(self, sugg_speed_array):
+        print('read_sugg_speed_handler')
+
         self.read_sugg_speed = sugg_speed_array
 
         # Update Wayside user interface table
@@ -120,6 +135,8 @@ class wayside_shell_class:
         self.green_line_plc_3_sugg_speed_handler()
 
     def read_sugg_authority_handler(self, sugg_authority_array):
+        print('read_sugg_authority_handler')
+
         self.read_sugg_authority = sugg_authority_array
 
         # Update Wayside user interface table
@@ -218,11 +235,13 @@ class wayside_shell_class:
         for i in range(1, 33):
             self.write_cmd_speed[i] = cmd_speed_array[i-1]
         self.write_cmd_speed[150] = cmd_speed_array[32]
+        self.write_cmd_speed[151] = cmd_speed_array[33]
 
     def green_line_plc_1_cmd_authority_handler(self, cmd_authority_array):
         for i in range(1, 33):
             self.write_cmd_authority[i] = cmd_authority_array[i-1]
         self.write_cmd_authority[150] = cmd_authority_array[32]
+        self.write_cmd_authority[151] = cmd_authority_array[33]
 
     def green_line_plc_1_switch_cmd_handler(self, switch_cmd_array):
         self.write_switch_cmd[0] = not switch_cmd_array[0] # D
@@ -418,9 +437,9 @@ class wayside_shell_class:
         # Track Model
         self.wayside_track_comm_object.commanded_speed_signal.emit(self.write_cmd_speed)
         self.wayside_track_comm_object.commanded_authority_signal.emit(self.write_cmd_authority)
-        self.wayside_track_comm_object.switch_command_signal.emit(self.write_switch_cmd)
-        self.wayside_track_comm_object.signal_command_signal.emit(self.write_signal_cmd)
-        self.wayside_track_comm_object.crossing_command_signal.emit(self.write_crossing_cmd)
+        self.wayside_track_comm_object.switch_cmd_signal.emit(self.write_switch_cmd)
+        self.wayside_track_comm_object.signal_cmd_signal.emit(self.write_signal_cmd)
+        self.wayside_track_comm_object.crossing_cmd_signal.emit(self.write_crossing_cmd)
 
         ####################################
         #    Green Line Update UI
