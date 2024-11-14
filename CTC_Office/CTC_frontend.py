@@ -1450,7 +1450,13 @@ class CTC_frontend(object):
 
 
     def time_step(self):
-        self.wall_clock_time = self.wall_clock_time + dt.timedelta(milliseconds=100)
+
+        date = dt.datetime.now().date()
+        datetime = dt.datetime.combine(date, self.wall_clock_time)
+        datetime = datetime + dt.timedelta(milliseconds=100)
+
+        self.wall_clock_time = datetime.time()
+
         self.updateUI()
         
 
