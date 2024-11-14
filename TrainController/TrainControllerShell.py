@@ -179,29 +179,29 @@ class TrainControllerShell:
 
     def update_current_velocity(self, current_velocity: list):
         for i in range(len(current_velocity)):
-            self.train_controller_list[i].speed_control.handle_current_velocity(current_velocity[i])
+            self.train_controller_list[0].speed_control.handle_current_velocity(current_velocity[0])
         # print(f"Current Velocity: {current_velocity}")
 
     def update_engine_failure(self, engine_failure: list):
         for i in range(len(engine_failure)):
-            self.train_controller_list[i].failure_modes.handle_engine_failure(engine_failure[i])
+            self.train_controller_list[0].failure_modes.handle_engine_failure(engine_failure[0])
         # print(f"Engine Failure: {engine_failure}")
 
     def update_brake_failure(self, brake_failure: list):
         for i in range(len(brake_failure)):
-            self.train_controller_list[i].failure_modes.handle_brake_failure(brake_failure[i])
+            self.train_controller_list[0].failure_modes.handle_brake_failure(brake_failure[0])
         # print(f"Brake Failure: {brake_failure}")
 
     def update_signal_failure(self, signal_failure: list):
         for i in range(len(signal_failure)):
-            self.train_controller_list[i].failure_modes.handle_signal_failure(signal_failure[i])
+            self.train_controller_list[0].failure_modes.handle_signal_failure(signal_failure[0])
         # print(f"Signal Failure: {signal_failure}")
 
     def update_passenger_brake_command(self, passenger_brake_command: list):
         for i in range(len(passenger_brake_command)):
-            self.train_controller_list[i].brake_class.handle_passenger_brake_command(passenger_brake_command[i])
-            if passenger_brake_command[i]:
-                self.train_controller_list[i].speed_control.desired_velocity = 0
+            self.train_controller_list[0].brake_class.handle_passenger_brake_command(passenger_brake_command[0])
+            if passenger_brake_command[0]:
+                self.train_controller_list[0].speed_control.desired_velocity = 0
         # print(f"Passenger Brake Command: {passenger_brake_command}")
 
     def update_actual_temperature(self, actual_temperature: list):
