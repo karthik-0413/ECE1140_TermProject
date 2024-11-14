@@ -107,8 +107,8 @@ class track_model:
     polarity_values = []
 
     # Speed and Authority to be sent to Train Model
-    cmd_speeds_train = [20]
-    cmd_authorities_train = [25]
+    cmd_speeds_train = []
+    cmd_authorities_train = []
 
     # Passengers
     open_train_seats = []
@@ -267,6 +267,8 @@ class track_model:
         self.wayside_communicator.commanded_authority_signal.connect(self.handle_commanded_authority_signal)
 
     def write(self):
+        print('Occupancies:', self.occupancies)
+
         self.train_communicator.number_passenger_boarding_signal.emit(self.num_passengers_embarking)
         self.train_communicator.polarity_signal.emit(self.polarity_values)
         self.train_communicator.block_grade_signal.emit(self.grade_values)

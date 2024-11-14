@@ -188,6 +188,7 @@ class wayside_shell_class:
     # Inputs from Track Model
     def read_block_occupancy_handler(self, block_occupancy_array):
         self.read_block_occupancy = block_occupancy_array
+        self.write_block_occupancy = block_occupancy_array
 
         # Update Wayside user interface table
         if len(self.read_block_occupancy):
@@ -513,6 +514,7 @@ class wayside_shell_class:
         ####################################
         #     Green Line Emit Signals
         ####################################
+        print('Wayside occ', self.write_block_occupancy)
 
         # CTC Office
         self.ctc_wayside_comm_object.block_occupancy_signal.emit(self.write_block_occupancy)
