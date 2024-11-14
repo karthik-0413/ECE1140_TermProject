@@ -304,6 +304,7 @@ class TrainData(QObject):
         self.tm_communicate.block_grade_signal.connect(self.set_block_grade)
         self.tm_communicate.block_elevation_signal.connect(self.set_block_elevation)
         self.tm_communicate.polarity_signal.connect(self.set_track_polarity)
+        print(f"train: {self.polarity}")
         self.tm_communicate.number_passenger_boarding_signal.connect(self.set_passenger_boarding)
 
     def read_from_ctc(self):
@@ -531,7 +532,7 @@ class TrainData(QObject):
     def write_to_trainController_trackModel(self):
         """Send updated data to Train Controller and Track Model via communication classes."""
         # Send data to Train Controller
-        self.tc_communicate.commanded_speed_signal.emit(self.commanded_speed)  # mph for UI
+        self.tc_communicate.commanded_speed_signal.emit(self.commanded_speed_tc)  # mph for UI
         self.tc_communicate.commanded_authority_signal.emit(self.commanded_authority)
         self.tc_communicate.current_velocity_signal.emit(self.current_speed)  # m/s
         self.tc_communicate.engine_failure_signal.emit(self.engine_failure)

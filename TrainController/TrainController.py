@@ -475,8 +475,9 @@ class SpeedControl(QObject):
             self.power_class.update_power_command(self.current_velocity, self.desired_velocity)
             
         self.commanded_speed = speed / 3.6
+        print(f"Commanded Speed: {self.commanded_speed:.2f} m/s")
         self.find_max_speed()
-        self.commanded_speed_signal.emit(self.max_speed)
+        self.commanded_speed_signal.emit(self.commanded_speed)
         # print(f"Commanded Speed: {self.commanded_speed:.2f} m/s")
     
     def set_manual_mode(self):

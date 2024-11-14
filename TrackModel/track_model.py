@@ -99,8 +99,8 @@ class track_model:
     elevation_values = []
     polarity_values = []
 
-    cmd_speeds = []
-    cmd_authorities = []
+    cmd_speeds = [20]
+    cmd_authorities = [25]
 
     # Passengers
     open_train_seats = []
@@ -127,7 +127,7 @@ class track_model:
 
     def handle_position_signal(self, positions: list):
         self.position_list = positions
-        print(f"abcd {self.position_list}")
+        # print(f"received position: {self.position_list}")
         self.set_train_occupancies()
 
     # def get_positions(self):
@@ -138,6 +138,7 @@ class track_model:
         for block in self.all_blocks:
             if block.occupied == True and block.functional == True:
                 self.polarity_values.append(block.polarity)
+        print(self.polarity_values)
 
     def update_grade_values(self):
         self.all_blocks.clear()
@@ -211,7 +212,7 @@ class track_model:
         self.cmd_speeds = cmd_speeds
 
     def handle_commanded_authority_signal(self, cmd_authorities: list):
-        self.cmd_authorities = cmd_authorities    
+        self.cmd_authorities = cmd_authorities   
 
     ############################################################################################################
     #
@@ -275,7 +276,6 @@ class track_model:
             self.default_length_array.append(self.all_blocks[block_number].length)    
 
     def set_train_occupancies(self):
-        print("test")
         # resets all occupancies from the previous train ~ glorious king zach
         self.occupancies.clear()
         for block in self.all_blocks:
