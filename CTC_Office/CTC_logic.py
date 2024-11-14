@@ -46,10 +46,10 @@ class CTC_logic():
     def upload_schedule_to_line():
         pass
 
-    def add_new_train_to_line(self, line_name:str, destination:int, destination_station:str):
+    def add_new_train_to_line(self, line_name:str, destination:int, destination_station:str, departure_time):
         
         # Add destinations to the train object 
-        self.lines[line_name].create_train(destination, destination_station)
+        self.line.create_train(destination, destination_station, departure_time)
         print("Adding train")
         self.num_trains = len(self.line.train_list)
         print("Num trains = ", self.num_trains)
@@ -57,7 +57,7 @@ class CTC_logic():
         #self.train_model_communicate.current_train_count_signal.emit(self.num_trains)
 
     def add_train_destination_on_line(self, line_name:str, train_id:int, destination:int, station_name:str):
-        self.lines[line_name].add_train_destination(train_id, destination, station_name)
+        self.line.add_train_destination(train_id, destination, station_name)
 
     def update_authority_list(self):
 
@@ -82,7 +82,7 @@ class CTC_logic():
         pass
 
     def select_line_for_maintenance(self, line_name:str, block_number:int):
-        self.lines[line_name].layout[block_number].toggle_maintenance()
+        self.line.layout[block_number].toggle_maintenance()
 
     def update_blocks_on_line(self, block_occupancies: list):
         # Update block occupancies based on the wayside controller

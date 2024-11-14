@@ -4,14 +4,15 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 
 import pandas as pd
+import datetime as dt
 
 from CTC_Office.block import Block
 from CTC_Office.train import Train
 
 class Line():
     def __init__(self, line_name:str):
-        self.layout = [Block]
-        self.train_list = [Train]
+        self.layout = []
+        self.train_list = []
         self.throughput = 0
         self.elapsed_time = 1
 
@@ -26,44 +27,64 @@ class Line():
                 block = Block(
                     section=row['Section'],
                     block_number=row['Block Number'],
-                    speed_limit=row['Speed Limit'],
-                    infrastructure=row['Infrastructure']
+                    block_length=row['Block Length (m)'],
+                    speed_limit=row['Speed Limit (Km/Hr)'],
+                    infrastructure=row['Infrastructure'],
+                    next_block_string=row['Next Block']
                 )
                 self.layout.append(block)
-                print(f"Block number: {block.block_number}  Section: {block.section}  Infrastructure: {block.infrastructure}")
+                print(f"Block number: {block.block_number}  Block length: {block.block_length}  Section: {block.section}  Infrastructure: {block.infrastructure}")
+
 
     def read_excel_schedule():
         pass
 
     def calc_auth(self, train_id:int):
         authority = 0
+        traverse_time = 0
 
         # start is the current location of the train
         # end is the destination of the train
         # curr is the current block of the calculation
         # prev is the previous block of the calculation
+        if not self.train_list[train_id].to_yard:
+            start, end = self.train_list[train_id].location, self.train_list[train_id].destination
+        else:
+            start, end = self.train_list[train_id].location, 0
 
-        start, end = self.train_list[train_id].location, self.train_list[train_id].destinations[0]
         curr = start
         prev = self.train_list[train_id].prev_location
 
         # while the current block of calculation is not the destination
         while curr != end:
             authority = authority + 1
+            traverse_time = traverse_time + self.layout[curr].ideal_traverse_time
+            print("Traversal time: ", traverse_time)
 
             # calculate the next block to travel to
-            cur = self.layout[curr].next_block(prev)
+            temp = curr
+            curr = self.layout[curr].next_block(prev)
+            prev = temp
+            
+
+
 
         # assign authority
         self.train_list[train_id].authority = authority
+
+        date = dt.datetime.now().date()
+        datetime = dt.datetime.combine(date, self.train_list[train_id].departure_time)
+        datetime = datetime + dt.timedelta(seconds=traverse_time)
+        self.train_list[train_id].arrival_time = datetime.time()
             
 
     def calc_speed(self, train_id:int):
             index = self.train_list.index(train_id)
             self.train_list[index].suggested_speed = self.layout[self.train_list[index].location].speed_limit
 
-    def create_train(self, destination, destination_station):
-        self.train_list.append(Train(len(self.train_list), destination, destination_station))
+    def create_train(self, destination, destination_station, departure_time):
+        self.train_list.append(Train(len(self.train_list), destination, destination_station, departure_time))
+        self.calc_auth(len(self.train_list) - 1)
 
     def add_train_destination(self, train_id, destination, station_name):
         #self.train_list[train_id].add_destination(destination, station_name)

@@ -10,12 +10,16 @@ from Resources.CTCWaysideComm import CTCWaysideControllerComm
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtWidgets import QApplication, QFileDialog
 
+import datetime as dt
+import time
+
 class CTC_frontend(object):
     def __init__(self, ctc_train_communicate: CTC_Train_Model_Communicate, wayside_communicate: CTCWaysideControllerComm):
         self.ctc = CTC_logic(ctc_train_communicate, wayside_communicate)
         self.wayside_communicate = wayside_communicate
 
         self.wayside_communicate.block_occupancy_signal.connect(self.update_block_occupancies)
+        self.wall_clock_time = dt.datetime.now()
 
     def setupUi(self, mainwindow):
         mainwindow.setObjectName("mainwindow")
@@ -106,7 +110,7 @@ class CTC_frontend(object):
 "font: 18pt \"Arial\";\n"
 "")
         self.UploadScheduleButton.setObjectName("UploadScheduleButton")
-        self.UploadScheduleButton.clicked.connect(self.upload_schedule)
+        self.UploadScheduleButton.clicked.connect(self.upload_layout)
         self.ThroughputLayout.addWidget(self.UploadScheduleButton, 0, QtCore.Qt.AlignmentFlag.AlignHCenter|QtCore.Qt.AlignmentFlag.AlignTop)
         self.InfoLayout.addWidget(self.ThroughputFrame, 2, 1, 1, 1)
         self.TrainTable = QtWidgets.QTabWidget(parent=self.TrainTab)
@@ -242,6 +246,8 @@ class CTC_frontend(object):
         self.ScheduleTitle.setStyleSheet("border: 0px;")
         self.ScheduleTitle.setObjectName("ScheduleTitle")
         self.DepartureSelector = QtWidgets.QTimeEdit(parent=self.ScheduleFrame)
+        self.DepartureSelector.setDisplayFormat("HH:mm")
+        self.DepartureSelector.setTime(QtCore.QTime.currentTime())
         self.DepartureSelector.setGeometry(QtCore.QRect(370, 60, 101, 24))
         self.DepartureSelector.setStyleSheet("font: 13pt \"Arial\";")
         self.DepartureSelector.setObjectName("DepartureSelector")
@@ -1333,17 +1339,43 @@ class CTC_frontend(object):
 
     def updateUI(self):
 
+        _translate = QtCore.QCoreApplication.translate
 
+        self.TimeLabel.setText(self.wall_clock_time.strftime("%H:%M"))
+        #self.ThroughputDisplay.setText(self.ctc.get_throughput())
+        #self.ThroughputDisplay_pg2.setText(self.ctc.get_throughput())
+        #self.ThroughputDisplay_pg3.setText(self.ctc.get_throughput())
+        #self.SimulationTimeDisplay.setText(self.ctc.get_time())
+        #self.suggested_speed_display.setText(self.ctc.get_suggested_speed())
+        #self.label_3.setText(self.ctc.get_authority())
+        #self.label.setText(self.ctc.get_suggested_speed())
+        
+        self.BlueTrainsTable.clear()
+        self.BlueTrainsTable.setRowCount(len(self.ctc.line.train_list))
 
-        self.TimeLabel.setText(self.ctc.get_time())
-        self.ThroughputDisplay.setText(self.ctc.get_throughput())
-        self.ThroughputDisplay_pg2.setText(self.ctc.get_throughput())
-        self.ThroughputDisplay_pg3.setText(self.ctc.get_throughput())
-        self.SimulationTimeDisplay.setText(self.ctc.get_time())
-        self.suggested_speed_display.setText(self.ctc.get_suggested_speed())
-        self.label_3.setText(self.ctc.get_authority())
-        self.label.setText(self.ctc.get_suggested_speed())
-        self.label_2
+        for index, train in enumerate(self.ctc.line.train_list):
+            self.BlueTrainsTable.setItem(index, 0, QtWidgets.QTableWidgetItem(str(train.train_id)))
+            self.BlueTrainsTable.setItem(index, 1, QtWidgets.QTableWidgetItem(str(train.location)))
+            self.BlueTrainsTable.setItem(index, 2, QtWidgets.QTableWidgetItem(str(train.destination_station)))
+            self.BlueTrainsTable.setItem(index, 3, QtWidgets.QTableWidgetItem(str(train.arrival_time)))
+            self.BlueTrainsTable.setItem(index, 4, QtWidgets.QTableWidgetItem(str(train.departure_time)))
+        
+            for col in range(5):
+                item1 = self.BlueTrainsTable.item(index, col)
+                item1.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+
+        self.BlueTrainsTable.setColumnCount(5)
+
+        headers = ["Train #", "Current Block", "Next Destination", "Arrival Time", "Yard Departure Time"]
+        for col, header in enumerate(headers):
+            item = self.BlueTrainsTable.horizontalHeaderItem(col)
+            if item is None:
+                item = QtWidgets.QTableWidgetItem()
+                self.BlueTrainsTable.setHorizontalHeaderItem(col, item)
+            item.setText(_translate("mainwindow", header))
+
+        self.BlueTrainsTable.setShowGrid(True)
+
 
     def update_block_occupancies(self, blocks: list):
         # Connected to CTC-Wayside Communication - gets block occupancies from signal
@@ -1364,16 +1396,14 @@ class CTC_frontend(object):
             print("Invalid Destination")
             return
         else:
-            self.ctc.add_new_train_to_line("Green", dest, station)
+            
+            departure_time = self.DepartureSelector.time()
+            print(f"Departure Time = {departure_time.toString()}")
+            depart_time = dt.time(hour=departure_time.hour(),minute=departure_time.minute(),second=departure_time.second())
+            print(depart_time)
+            self.ctc.add_new_train_to_line("Green", dest, station, depart_time)
 
-        self.BlueTrainsTable.clear()
-
-        for index, train in enumerate(self.ctc.line.train_list):
-            self.BlueTrainsTable.setItem(index, 0, QtWidgets.QTableWidgetItem(str(train.train_id)))
-            self.BlueTrainsTable.setItem(index, 1, QtWidgets.QTableWidgetItem(str(train.location)))
-            self.BlueTrainsTable.setItem(index, 2, QtWidgets.QTableWidgetItem(str(train.destination_station)))
-            self.BlueTrainsTable.setItem(index, 4, QtWidgets.QTableWidgetItem(str(train.arrival_time)))
-            self.BlueTrainsTable.setItem(index, 3, QtWidgets.QTableWidgetItem(str(train.departure_time)))
+        self.updateUI()
         
         
     def add_destination(self):
@@ -1396,11 +1426,8 @@ class CTC_frontend(object):
     def upload_schedule(self):
         pass
     
-    def select_block(self):
-        pass
-    
     def upload_layout(self):
-        filename, _ = QFileDialog.getOpenFileName(self, "Select Layout File", os.getcwd(), "Excel File (*.xlsx *.xls)")
+        filename, _ = QFileDialog.getOpenFileName(None, "Select Layout File", os.getcwd(), "Excel File (*.xlsx *.xls)")
         if filename:
             print("filename = ", filename)
             self.ctc.upload_layout_to_line(filename)
@@ -1412,8 +1439,13 @@ class CTC_frontend(object):
         # Update Station Selector
         self.StationSelector.clear()
         stations = self.ctc.get_stations()
+        print("Stations = ", stations)
         self.StationSelector.addItems(stations)
 
+
+    def time_step(self):
+        self.wall_clock_time = self.wall_clock_time + dt.timedelta(milliseconds=100)
+        self.updateUI()
         
 
         
@@ -1423,6 +1455,7 @@ class CTC_frontend(object):
 
 
 if __name__ == "__main__":
+    
     """"Main"""
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
