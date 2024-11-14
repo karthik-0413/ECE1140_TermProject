@@ -8,6 +8,7 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import Qt, QCoreApplication, pyqtSignal, QObject, QTimer
 from PyQt6.QtGui import QDoubleValidator
+from TrainController.TrainControllerHW import send_numbers_to_pi
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from Resources.TrainTrainControllerComm import TrainTrainController as Communicate
@@ -153,6 +154,10 @@ class PowerCommand(QObject):
         self.tuning = tuning
         self.brake_status = brake_status
         self.module = 1     # 1 for Software, 0 for Hardware
+        self.raspberry_pi_hostname = '192.168.0.204'
+        self.raspberry_pi_port = 22
+        self.raspberry_pi_username = 'maj214'
+        self.raspberry_pi_password = 'password'
         
     def update_kp(self, kp):
         self.tuning.kp = kp
@@ -253,7 +258,10 @@ class PowerCommand(QObject):
                 self.uk_previous = self.uk_current
                 
             elif self.module == 0:
-                pass
+                result = send_numbers_to_pi(self.raspberry_pi_hostname, self.raspberry_pi_port, self.raspberry_pi_username, self.raspberry_pi_password, [desired_velocity, current_velocity, self.ek_current, self.max_power, self.uk_current, self.uk_previous, self.ek_previous, self.tuning.kp, self.tuning.ki])
+                print(f"Result:{result}")
+                if result:
+                    self.power_command, self.ek_previous, self.uk_previous, self.uk_current, self.ek_current = result
             # self.power_command, self.ek_previous, self.uk_previous = find_power_command(desired_velocity, current_velocity, self.ek_current, self.max_power, self.uk_current, self.uk_previous, self.ek_previous, self.tuning.kp, self.tuning.ki)
             # self.power_command_signal.emit(self.power_command)
             
@@ -638,7 +646,7 @@ class Position(QObject):
     
     def __init__(self, doors: Doors, failure_modes: FailureModes, speed_control: SpeedControl, power_class: PowerCommand, communicator: Communicate, lights: Lights, brake_status: BrakeStatus):
         super().__init__()
-        self.commanded_authority = 25 + 1   # int
+        self.commanded_authority = 3 + 1   # int
         self.station_name = 'Shadyside' # string
         self.announcement = '' # string
         self.polarity = True   # boolean
@@ -743,15 +751,15 @@ class Position(QObject):
             # print("Doors closed")
             
     def calculate_desired_speed(self):
-        if self.commanded_authority == 2:
-            self.speed_control.desired_velocity = 10
-            self.brake_status.reaching_station = True
-            self.power_class.update_power_command(self.speed_control.current_velocity, self.speed_control.desired_velocity)
-        elif self.commanded_authority == 1:
-            self.speed_control.desired_velocity = 5
-            self.brake_status.reaching_station = True
-            self.power_class.update_power_command(self.speed_control.current_velocity, self.speed_control.desired_velocity)
-        elif self.commanded_authority == 0:
+        # if self.commanded_authority == 2:
+        #     self.speed_control.desired_velocity = 10
+        #     self.brake_status.reaching_station = True
+        #     self.power_class.update_power_command(self.speed_control.current_velocity, self.speed_control.desired_velocity)
+        # if self.commanded_authority == 1:
+        #     self.speed_control.desired_velocity = 5
+        #     self.brake_status.reaching_station = True
+        #     self.power_class.update_power_command(self.speed_control.current_velocity, self.speed_control.desired_velocity)
+        if self.commanded_authority == 0:
             self.speed_control.desired_velocity = 0
             self.brake_status.reaching_station = True
             self.power_class.update_power_command(self.speed_control.current_velocity, self.speed_control.desired_velocity)

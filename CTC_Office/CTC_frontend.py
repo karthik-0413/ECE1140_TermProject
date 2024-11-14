@@ -6,6 +6,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 from CTC_Office.CTC_logic import CTC_logic
 from TrainModel.CTC_communicate import CTC_Train_Model_Communicate
 from Resources.CTCWaysideComm import CTCWaysideControllerComm
+from Resources.CTCTrain import CTCTrain
 
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtWidgets import QApplication, QFileDialog
@@ -14,9 +15,12 @@ import datetime as dt
 import time
 
 class CTC_frontend(object):
-    def __init__(self, ctc_train_communicate: CTC_Train_Model_Communicate, wayside_communicate: CTCWaysideControllerComm):
+    def __init__(self, ctc_train_communicate: CTCTrain, wayside_communicate: CTCWaysideControllerComm):
         self.ctc = CTC_logic(ctc_train_communicate, wayside_communicate)
         self.wayside_communicate = wayside_communicate
+        self.ctc_train_communicate = ctc_train_communicate
+        
+        
 
         self.wayside_communicate.block_occupancy_signal.connect(self.update_block_occupancies)
         self.wall_clock_time = dt.datetime.now()
@@ -1387,6 +1391,7 @@ class CTC_frontend(object):
         self.updateUI()
 
     def dispatch_train(self):
+            
 
         station = self.StationSelector.currentText()
         print(f"Selected Station = {station}")
@@ -1402,6 +1407,7 @@ class CTC_frontend(object):
             depart_time = dt.time(hour=departure_time.hour(),minute=departure_time.minute(),second=departure_time.second())
             print(depart_time)
             self.ctc.add_new_train_to_line("Green", dest, station, depart_time)
+            self.ctc_train_communicate.dispatch_train_signal.emit(1)
 
         self.updateUI()
         
@@ -1460,7 +1466,7 @@ if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
 
-    comm = CTC_Train_Model_Communicate()
+    comm = CTCTrain()
 
     ui = CTC_frontend(comm)
     ui.setupUi(MainWindow)

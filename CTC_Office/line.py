@@ -58,6 +58,7 @@ class Line():
         # while the current block of calculation is not the destination
         while curr != end:
             authority = authority + 1
+            print("Current block: ", curr)
             traverse_time = traverse_time + self.layout[curr].ideal_traverse_time
             print("Traversal time: ", traverse_time)
 

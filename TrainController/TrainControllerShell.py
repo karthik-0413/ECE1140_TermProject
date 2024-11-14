@@ -169,7 +169,7 @@ class TrainControllerShell:
         
     def update_commanded_speed(self, commanded_speed: list):
         for i in range(len(commanded_speed)):
-            self.train_controller_list[i].speed_control.handle_commanded_speed(commanded_speed[i])
+            self.train_controller_list[0].speed_control.handle_commanded_speed(commanded_speed[0])
             # print(f"Commanded Speed: {commanded_speed[i]}")
 
     def update_commanded_authority(self, commanded_authority: list):
