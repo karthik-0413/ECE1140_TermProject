@@ -31,13 +31,12 @@ class CTC_logic():
 
 
     def write_to_communicate_objects(self):
-        pass
         print("Writing to communicate objects")
 
         # Write all buffered information to the communicate objects
         # self.train_model_communicate.dispatch_train_signal.emit(self.num_trains)
-        # self.wayside_communicate.suggested_speed_signal.emit(self.suggested_speed_list)
-        # self.wayside_communicate.suggested_authority_signal.emit(self.suggested_authority_list)
+        self.wayside_communicate.suggested_speed_signal.emit(self.suggested_speed_list)
+        self.wayside_communicate.suggested_authority_signal.emit(self.suggested_authority_list)
 
     def upload_layout_to_line(self, path_to_layout:str):
         self.line.read_excel_layout(path_to_layout)

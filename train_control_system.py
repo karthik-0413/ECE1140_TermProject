@@ -62,6 +62,9 @@ if __name__ == '__main__':
     
     # Train Model -> Train Controller Communication
     comm5 = TrainTrainController()
+
+    # CTC <-> Wayside Controller Communication
+    comm4 = CTCWaysideControllerComm()
     
     
     # CTC Office
