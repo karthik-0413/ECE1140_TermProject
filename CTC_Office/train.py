@@ -4,21 +4,30 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 
 from CTC_Office.block import Block
-import datetime as dt
 
 
 class Train(): 
-    def __init__(self, train_id, destination, destination_station):
+    def __init__(self, train_id, destination, destination_station, departure_time):
+        """Initialize a train object
+        destination is the block number
+        destination_station is the station name
+        """
         self.train_id = train_id
         self.suggested_speed = 0
         self.authority = 0
         self.location = 0
         self.prev_location = -1
 
-        self.destinations = []
-        self.destination_strings = []
 
-        self.schedule_times = []
+        self.destination = destination
+        self.destination_station = destination_station
+        self.departure_time = departure_time
+        self.arrival_time = -1
+
+        # For implementing multiple destinations
+        #self.destinations = []
+        #self.destination_strings = []
+        #self.schedule_times = []
 
         self.to_yard = False
         
@@ -27,12 +36,6 @@ class Train():
     def dispatch_train(self):
         """Send message to Train Model to create a new train"""
         pass
-
-    def change_destination(self, old_destination, new_destination, station_name):
-        """Change the destination of the train"""
-        index = self.destinations.index(old_destination)
-        self.destinations[index] = new_destination
-        self.destination_strings[index] = station_name
 
     def add_destination(self, destination, station_name):
         """Add a destination to the train"""
