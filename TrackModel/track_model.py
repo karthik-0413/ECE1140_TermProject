@@ -4,13 +4,13 @@ from PyQt6 import QtWidgets, QtCore, QtGui
 from PyQt6.QtCore import (QObject, pyqtSignal)
 
 
-from TrackModel.track_model_ui import Ui_TrackModel
-from TrackModel.TrackTrainCommunicate import TrackTrainComms as TrainComms
-from TrackModel.WaysideTrackCommunicate import WaysideTrackComms as WaysideComms
+# from TrackModel.track_model_ui import Ui_TrackModel
+# from TrackModel.TrackTrainCommunicate import TrackTrainComms as TrainComms
+# from TrackModel.WaysideTrackCommunicate import WaysideTrackComms as WaysideComms
 
-# from track_model_ui import Ui_TrackModel
-# from TrackTrainCommunicate import TrackTrainComms as TrainComms
-# from WaysideTrackCommunicate import WaysideTrackComms as WaysideComms
+from track_model_ui import Ui_TrackModel
+from TrackTrainCommunicate import TrackTrainComms as TrainComms
+from WaysideTrackCommunicate import WaysideTrackComms as WaysideComms
 
 class Block():
     def __init__(self, line, section, number: int, length: float, grade: float, speedLimit: float, infrastructure: str, side, elevation: float, cumulativeElevation: float, polarity: bool):
@@ -69,8 +69,9 @@ class track_model:
         self.ui.breakStatus2.toggled.connect(self.handle_power_failure_checkbox)
         self.ui.breakStatus3.toggled.connect(self.handle_rail_failure_checkbox)
 
-        self.read_train()
-        self.read_wayside()
+        # remove comments for testing
+        # self.read_train()
+        # self.read_wayside()
         self.update_block_values()
 
     # important arrays
@@ -254,26 +255,28 @@ class track_model:
     #
     ############################################################################################################
 
-    def read_train(self):
-        self.train_communicator.number_passenger_leaving_signal.connect(self.handle_num_passenger_leaving_signal)
-        self.train_communicator.seat_vacancy_signal.connect(self.handle_seat_vacancy_signal)
-        self.train_communicator.position_signal.connect(self.handle_position_signal)
+    # uncomment for testing
+    # def read_train(self):
+    #     self.train_communicator.number_passenger_leaving_signal.connect(self.handle_num_passenger_leaving_signal)
+    #     self.train_communicator.seat_vacancy_signal.connect(self.handle_seat_vacancy_signal)
+    #     self.train_communicator.position_signal.connect(self.handle_position_signal)
 
-    def read_wayside(self):
-        self.wayside_communicator.switch_cmd_signal.connect(self.handle_switch_cmd_signal)
-        self.wayside_communicator.signal_cmd_signal.connect(self.handle_signal_cmd_signal)
-        self.wayside_communicator.crossing_cmd_signal.connect(self.handle_crossing_cmd_signal)
-        self.wayside_communicator.commanded_speed_signal.connect(self.handle_commanded_speed_signal)
-        self.wayside_communicator.commanded_authority_signal.connect(self.handle_commanded_authority_signal)
+    # def read_wayside(self):
+    #     self.wayside_communicator.switch_cmd_signal.connect(self.handle_switch_cmd_signal)
+    #     self.wayside_communicator.signal_cmd_signal.connect(self.handle_signal_cmd_signal)
+    #     self.wayside_communicator.crossing_cmd_signal.connect(self.handle_crossing_cmd_signal)
+    #     self.wayside_communicator.commanded_speed_signal.connect(self.handle_commanded_speed_signal)
+    #     self.wayside_communicator.commanded_authority_signal.connect(self.handle_commanded_authority_signal)
 
-    def write(self):
-        self.train_communicator.number_passenger_boarding_signal.emit(self.num_passengers_embarking)
-        self.train_communicator.polarity_signal.emit(self.polarity_values)
-        self.train_communicator.block_grade_signal.emit(self.grade_values)
-        self.train_communicator.block_elevation_signal.emit(self.elevation_values)
-        self.train_communicator.commanded_speed_signal.emit(self.cmd_speeds_train)
-        self.train_communicator.commanded_authority_signal.emit(self.cmd_authorities_train)
-        self.wayside_communicator.block_occupancies_signal.emit(self.occupancies)
+    # def write(self):
+    #     self.train_communicator.number_passenger_boarding_signal.emit(self.num_passengers_embarking)
+    #     self.train_communicator.polarity_signal.emit(self.polarity_values)
+    #     self.train_communicator.block_grade_signal.emit(self.grade_values)
+    #     self.train_communicator.block_elevation_signal.emit(self.elevation_values)
+    #     self.train_communicator.commanded_speed_signal.emit(self.cmd_speeds_train)
+    #     self.train_communicator.commanded_authority_signal.emit(self.cmd_authorities_train)
+    #     self.wayside_communicator.block_occupancies_signal.emit(self.occupancies)
+
 
         # Update UI
         self.update_ui_list()
@@ -838,7 +841,9 @@ class track_ui(QtWidgets.QMainWindow, Ui_TrackModel):
         super().__init__()
         self.setupUi(self)
 
-# if __name__ == "__main__":
-#     app = QtWidgets.QApplication([])
-#     object = track_model(TrainComms, WaysideComms)
-#     sys.exit(app.exec())
+
+#comment out for testing
+if __name__ == "__main__":
+    app = QtWidgets.QApplication([])
+    object = track_model(TrainComms, WaysideComms)
+    sys.exit(app.exec())
