@@ -21,6 +21,8 @@ class TrainControllerShell:
         # Initializing the variables needed
         self.current_train_id = 1
         self.train_count = 1
+        self.total_commanded_authority = []
+        self.previous_commanded_authority = []
         
         # Calling all of the necessary __init__ functions
         self.create_and_add_train_controller_and_engineer_ui()
@@ -168,14 +170,49 @@ class TrainControllerShell:
         # self.communicator.train_count_signal.connect(self.update_train_count)
         
     def update_commanded_speed(self, commanded_speed: list):
-        for i in range(len(commanded_speed)):
-            self.train_controller_list[0].speed_control.handle_commanded_speed(commanded_speed[0])
-            # print(f"Commanded Speed: {commanded_speed[i]}")
+        print(f"Commanded Speed in shell class: {commanded_speed}")
+        if len(commanded_speed):
+            if commanded_speed[0] == 0:
+                self.train_controller_list[0].speed_control.handle_commanded_speed(30)
+            else:
+                for i in range(len(commanded_speed)):
+                    self.train_controller_list[0].speed_control.handle_commanded_speed(commanded_speed[0])
+                    # print(f"Commanded Speed: {commanded_speed[i]}")
 
     def update_commanded_authority(self, commanded_authority: list):
-        for i in range(len(commanded_authority)):
-            self.train_controller_list[0].position.handle_commanded_authority(commanded_authority[0])
-        # print(f"Commanded Authority: {commanded_authority}")
+        self.previous_commanded_authority = self.total_commanded_authority
+        self.total_commanded_authority = commanded_authority    # current c_auth
+
+        if len(self.total_commanded_authority):
+            if len(self.previous_commanded_authority):
+                if self.total_commanded_authority[0] != self.previous_commanded_authority[0]:
+                    for j in range(len(self.total_commanded_authority)):
+                        self.train_controller_list[0].position.handle_commanded_authority(commanded_authority[0])
+            else:
+                self.train_controller_list[0].position.handle_commanded_authority(commanded_authority[0])
+
+
+
+
+
+
+
+
+        # elif commanded_authority[0] == 0:
+        #     return
+        # elif len(self.total_commanded_authority) > 0:
+        #     for i in range(len(self.total_commanded_authority)):
+        #         if self.total_commanded_authority[0] != commanded_authority[0]:
+        #             for j in range(len(self.total_commanded_authority)):
+        #                 self.train_controller_list[0].position.handle_commanded_authority(commanded_authority[0])
+
+
+
+
+
+        # for i in range(len(commanded_authority)):
+        #     self.train_controller_list[0].position.handle_commanded_authority(commanded_authority[0])
+        # # print(f"Commanded Authority: {commanded_authority}")
 
     def update_current_velocity(self, current_velocity: list):
         for i in range(len(current_velocity)):

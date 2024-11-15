@@ -399,23 +399,26 @@ class SpeedControl(QObject):
     def find_max_speed(self):
         # Commanded speed already in m/s, so no need to convert
         # Speed limit already in m/s, so no need to convert)
-        self.max_speed = min(self.speed_limit, self.commanded_speed)
+        # self.max_speed = min(self.speed_limit, self.commanded_speed)
+        self.max_speed = self.commanded_speed
         # print(f"Speed Limit: {self.speed_limit}")
         # print(f"Commanded Speed: {self.commanded_speed}")
         # print(f"Max Speed: {self.max_speed}")
         # print(f"Max Speed: {self.max_speed}")
         
     def update_speed_limit(self, speed: float):
+        pass
         # km/hr to m/s
-        self.prev_speed_limit = self.speed_limit
-        self.speed_limit = speed / 3.6
+        # self.prev_speed_limit = self.speed_limit
+        # self.speed_limit = speed / 3.6
+        # self.find_max_speed()
         
-        if self.speed_limit < self.prev_speed_limit:
-            self.brake_status.entered_lower = True
-            self.desired_velocity = self.speed_limit
-            self.power_class.update_power_command(self.current_velocity, self.desired_velocity)
-            # print("Entered Lower")
-        # print(f"Speed Limit: {self.speed_limit} Km/Hr")
+        # if self.speed_limit < self.prev_speed_limit:
+        #     self.brake_status.entered_lower = True
+        #     self.desired_velocity = self.speed_limit
+        #     self.power_class.update_power_command(self.current_velocity, self.desired_velocity)
+        #     # print("Entered Lower")
+        # # print(f"Speed Limit: {self.speed_limit} Km/Hr")
         
     def handle_current_velocity(self, speed: float):
         if speed == 0:
@@ -475,16 +478,16 @@ class SpeedControl(QObject):
         
     def handle_commanded_speed(self, speed: float):
         # km/hr to m/s
-        if self.commanded_speed > (speed / 3.6):
-            self.brake_status.entered_lower = True
-            self.find_max_speed()
-            self.desired_velocity = self.max_speed
-            self.power_class.update_power_command(self.current_velocity, self.desired_velocity)
+        # if self.commanded_speed > (speed / 3.6):
+        #     self.brake_status.entered_lower = True
+        #     self.find_max_speed()
+        #     self.desired_velocity = self.max_speed
+        #     self.power_class.update_power_command(self.current_velocity, self.desired_velocity)
             
         self.commanded_speed = speed / 3.6
         # print(f"Commanded Speed: {self.commanded_speed:.2f} m/s")
         self.find_max_speed()
-        self.commanded_speed_signal.emit(self.max_speed)
+        self.commanded_speed_signal.emit(self.commanded_speed)
         # print(f"Commanded Speed: {self.commanded_speed:.2f} m/s")
     
     def set_manual_mode(self):
@@ -645,7 +648,7 @@ class Position(QObject):
     
     def __init__(self, doors: Doors, failure_modes: FailureModes, speed_control: SpeedControl, power_class: PowerCommand, communicator: Communicate, lights: Lights, brake_status: BrakeStatus):
         super().__init__()
-        self.commanded_authority = 3 + 1   # int
+        self.commanded_authority = 11 + 1   # int
         self.station_name = 'Shadyside' # string
         self.announcement = '' # string
         self.polarity = True   # boolean
@@ -665,8 +668,8 @@ class Position(QObject):
         self.green_speed_limit = []
         self.green_underground = []
         self.default_path_blocks = [
-            0, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100,
-            85, 84, 83, 82, 81, 80, 79, 78, 77, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124,
+            0, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, # 39
+            85, 84, 83, 82, 81, 80, 79, 78, 77, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, # 33
             125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 29, 28, 27, 26, 25, 24, 23,
             22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 151, 6, 5, 4, 3, 2, 1, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
             32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57
@@ -693,12 +696,14 @@ class Position(QObject):
     def handle_polarity_change(self, polarity: bool):
         if polarity != self.polarity:
             self.polarity = polarity
-            self.speed_control.update_speed_limit(self.green_speed_limit[self.current_block])
+            # self.speed_control.update_speed_limit(self.green_speed_limit[self.current_block])
             if self.commanded_authority >= 1:
                 self.commanded_authority -= 1
+                # print(f"Commanded authority: {self.commanded_authority}")
                 self.commanded_authority_signal.emit(self.commanded_authority)
-                if self.commanded_authority == 0:
+                if self.commanded_authority == 1:
                     self.calculate_desired_speed()
+                    self.check_current_block()
             
             # Looping around the green line of the track
             if self.current_block == 57:
@@ -713,7 +718,7 @@ class Position(QObject):
             # self.check_current_block()
             self.check_block_underground()
             # self.calculate_desired_speed()
-            # print(f"Polarity: {self.polarity}")
+        # print(f"Polarity: {self.polarity}")
         
     def check_block_underground(self):
         if "UNDERGROUND" in self.green_underground[self.current_block]:
@@ -728,30 +733,32 @@ class Position(QObject):
             
     def check_current_block(self):
         # print(f"Current Block: {self.current_block}")
-        if self.commanded_authority == 0:
+        # if self.commanded_authority == 0:
             # Open Doors
-            if "Left" in self.green_station_door[self.current_block] and  "Right" not in self.green_station_door[self.current_block]:
-                self.door.open_left_door()
-                # print("Left door opened")
-            elif "Right" in self.green_station_door[self.current_block] and  "Left" not in self.green_station_door[self.current_block]:
-                self.door.open_right_door()
-                # print("Right door opened")
-            elif "Left" in self.green_station_door[self.current_block] and  "Right" in self.green_station_door[self.current_block]:
-                self.door.open_left_door()
-                self.door.open_right_door()
-                # print("Both doors opened")
-            else:
-                self.door.close_left_door()
-                self.door.close_right_door()
-                # print("No doors opened")
-                
-            self.find_station_name()
-            # Close doors after 60 seconds
-            time.sleep(60)
-            self.door.left_door = False
-            self.door.right_door = False
-            # print("Doors closed")
+        if "Left" in self.green_station_door[self.current_block] and  "Right" not in self.green_station_door[self.current_block]:
+            self.door.open_left_door()
+            # print("Left door opened")
+        elif "Right" in self.green_station_door[self.current_block] and  "Left" not in self.green_station_door[self.current_block]:
+            self.door.open_right_door()
+            # print("Right door opened")
+        elif "Left" in self.green_station_door[self.current_block] and  "Right" in self.green_station_door[self.current_block]:
+            self.door.open_left_door()
+            self.door.open_right_door()
+            # print("Both doors opened")
+        else:
+            self.door.close_left_door()
+            self.door.close_right_door()
+            # print("No doors opened")
             
+        # Close doors after 60 seconds
+        # Close doors after 60 seconds
+        QTimer.singleShot(60000, self.close_doors)
+
+    def close_doors(self):
+        self.door.close_left_door()
+        self.door.close_right_door()
+        # print("Doors closed")
+        
     def calculate_desired_speed(self):
         # if self.commanded_authority == 2:
         #     self.speed_control.desired_velocity = 10
@@ -761,7 +768,7 @@ class Position(QObject):
         #     self.speed_control.desired_velocity = 5
         #     self.brake_status.reaching_station = True
         #     self.power_class.update_power_command(self.speed_control.current_velocity, self.speed_control.desired_velocity)
-
+        # if self.commanded_authority == 0:
         self.speed_control.desired_velocity = 0
         self.brake_status.reaching_station = True
         self.power_class.update_power_command(self.speed_control.current_velocity, self.speed_control.desired_velocity)

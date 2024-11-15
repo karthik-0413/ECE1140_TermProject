@@ -19,6 +19,11 @@ class Line():
         self.excel_layout = {}
         self.excel_schedule = {}
 
+        self.final_destination = 1
+
+        self.send_new_values = True
+        self.just_reached_station = True
+
     def read_excel_layout(self, path_to_layout:str):
         self.excel_layout = pd.read_excel(path_to_layout, sheet_name=None)
 
@@ -52,20 +57,27 @@ class Line():
         else:
             start, end = self.train_list[train_id].location, 0
 
+
         curr = start
         prev = self.train_list[train_id].prev_location
 
         # while the current block of calculation is not the destination
-        while curr != end:
+        while True:
             authority = authority + 1
-            print("Current block: ", curr)
+            #print("Current block: ", curr)
             traverse_time = traverse_time + self.layout[curr].ideal_traverse_time
-            print("Traversal time: ", traverse_time)
+            #print("Traversal time: ", traverse_time)
 
             # calculate the next block to travel to
             temp = curr
             curr = self.layout[curr].next_block(prev)
             prev = temp
+
+            # Break out of loop
+            if curr == end:
+                authority = authority + 1
+                traverse_time = traverse_time + self.layout[curr].ideal_traverse_time
+                break
             
 
 
@@ -77,10 +89,16 @@ class Line():
         datetime = dt.datetime.combine(date, self.train_list[train_id].departure_time)
         datetime = datetime + dt.timedelta(seconds=traverse_time)
         self.train_list[train_id].arrival_time = datetime.time()
+
+
             
 
     def calc_speed(self, train_id:int):
-            index = self.train_list.index(train_id)
+            
+            for train in self.train_list:
+                if train.train_id == train_id:
+                    index = self.train_list.index(train)
+
             self.train_list[index].suggested_speed = self.layout[self.train_list[index].location].speed_limit
 
     def create_train(self, destination, destination_station, departure_time):
@@ -95,8 +113,22 @@ class Line():
         self.train_list[train_id].remove_destination(destination)
 
     # consider this
-    def on_correct_path():
-        pass
+    def at_destination(self):
+
+
+        if len(self.train_list):
+
+            if self.train_list[0].actual_arrival <= dt.datetime.now().time():
+                # go to yard if after time to leave
+                self.train_list[0].to_yard = True
+                self.train_list[0].destination = 0
+
+            elif self.train_list[0].location == self.train_list[0].destination and self.train_list[0].actual_arrival == dt.time(0,0,0):
+                # actual arrival time is set to current time plus 1 minute
+                date = dt.datetime.now()
+                date = date + dt.timedelta(minutes=1)
+                self.train_list[0].actual_arrival = date.time()
+
 
     def toggle_block_maintenance(self, block_number):
         self.layout[block_number].update_maintenance()
@@ -107,12 +139,21 @@ class Line():
 
     def update_train_locations(self):
         # Update the locations stored by the Trains
+        print("Updating train locations")
+
+
 
         for train in self.train_list:
             next = self.layout[train.location].next_block(train.prev_location)
-            if self.layout[train.location].occupied:
+            print("Current location: ", train.location)
+            print("Next location: ", next)
+            print("Next Occupied: ", self.layout[next].occupied)
+
+            if self.layout[next].occupied:
+                print("Train location updated")
                 train.prev_location = train.location
-                train.location = next.block_number
+                train.location = next
+
 
     def get_stations(self):
         stations = []
