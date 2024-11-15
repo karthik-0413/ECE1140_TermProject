@@ -8,7 +8,8 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import Qt, QCoreApplication, pyqtSignal, QObject, QTimer
 from PyQt6.QtGui import QDoubleValidator
-from TrainController.TrainControllerHW import send_numbers_to_pi
+# from TrainController.TrainControllerHW import send_numbers_to_pi
+from TrainControllerHW import send_numbers_to_pi
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from Resources.TrainTrainControllerComm import TrainTrainController as Communicate
