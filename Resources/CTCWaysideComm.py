@@ -3,9 +3,9 @@ from PyQt6.QtCore import pyqtSignal, QObject
 class CTCWaysideControllerComm(QObject):
     
     # CTC -> Wayside
-    suggested_speed_signal = pyqtSignal(list)    # km/hr
-    suggested_authority_signal = pyqtSignal(list) # Blocks
-    current_block_number_signal = pyqtSignal(list)
+    suggested_speed_signal = pyqtSignal(list)     # km/hr SSpeed of every block - (If no train exists at location, speed = None)
+    suggested_authority_signal = pyqtSignal(list) # Blocks same here as above None = no train
+
     
     # Wayside -> CTC
-    block_occupancy_signal = pyqtSignal(list)
+    block_occupancy_signal = pyqtSignal(list)     # bools

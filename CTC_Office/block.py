@@ -1,6 +1,5 @@
 from enum import Enum
 import re
-from numpy import nan
 
 class Signal(Enum):
     RED = 1
@@ -10,17 +9,23 @@ class Signal(Enum):
 class Block():
     def __init__(self,
                 section:str,
-                station_name:str,
                 block_number:str,
+                block_length:str,
                 speed_limit:str,
-                infrastructure:str
+                infrastructure:str,
+                next_block_string:str
                 ):
 
         self.section = str(section)
-        self.station_name = str(station_name)
+        self.block_length = int(block_length)
         self.block_number = int(block_number)
         self.speed_limit = int(speed_limit)
         self.infrastructure = str(infrastructure)
+        self.next_block_string = str(next_block_string)
+
+        self.ideal_traverse_time = int((self.block_length / (self.speed_limit * 1000)) * 3600)
+
+        self.station_name = None
 
         self.occupied = False
         self.failure = False
@@ -31,15 +36,25 @@ class Block():
         # Choose which optional block characteristics to include
 
         self.set_infrastructure()
+        print("Block number: ", self.block_number, "\nStation : ", self.station_name)
+        self.add_next_blocks()
 
 
     def set_infrastructure(self):
         # Check the infrastructure column to see if block has a station
-        if re.search("Station", self.infrastructure):
-            pattern = r"Station\s+([A-Za-z0-9]+)"
+        if re.search("STATION", self.infrastructure):
+            pattern = r"STATION;\s([A-Z]+)"
             match = re.search(pattern, self.infrastructure, re.IGNORECASE)
             if match:
+                print("Station found: ", match.group(1))
                 self.station_name = match.group(1)
+            else:
+                print("Station not found")
+
+    def add_next_blocks(self):
+        blocks = self.next_block_string.split(',')
+        self.next_block_list = [int(block.strip()) for block in blocks]
+
 
     def update_occupancy(self, occupancy:bool):
         self.occupied = occupancy
@@ -63,6 +78,7 @@ class Block():
         elif prev_block > self.block_number:
             return self.next_block_list[0]
         # prev_block should never be equal to self.block_number
+
         
 
     
