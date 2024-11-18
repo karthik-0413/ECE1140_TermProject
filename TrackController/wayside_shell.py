@@ -573,6 +573,9 @@ class wayside_shell_class:
 
             # Run PLC programs in separate processes
             self.execute_files(file_paths)
+            
+    def upload_plc_program(self, file_paths):
+        self.execute_files(file_paths)
 
     # Execute the selected Python files
     def execute_files(self, file_paths):

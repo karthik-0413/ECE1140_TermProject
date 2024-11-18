@@ -69,6 +69,9 @@ class green_line_plc_1_class:
     ##################################
     #           Methods
     ##################################
+    
+    def is_created(self):
+        return True
 
     # Update block occupancies
     def update_block_occupancies(self):

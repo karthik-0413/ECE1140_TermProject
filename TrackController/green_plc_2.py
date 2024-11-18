@@ -62,6 +62,9 @@ class green_line_plc_2_class:
         self.sec_array = [H, I, J, K, L, M, T, U, V, W, X, Y, Z]
 
     # Methods
+    def is_created(self):
+        return True
+    
     def update_block_occupancies(self):
 
         # Update Yard Occupancy
