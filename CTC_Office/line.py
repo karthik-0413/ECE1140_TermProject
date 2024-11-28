@@ -38,7 +38,7 @@ class Line():
                     next_block_string=row['Next Block']
                 )
                 self.layout.append(block)
-                print(f"Block number: {block.block_number}  Block length: {block.block_length}  Section: {block.section}  Infrastructure: {block.infrastructure}")
+                # print(f"Block number: {block.block_number}  Block length: {block.block_length}  Section: {block.section}  Infrastructure: {block.infrastructure}")
 
 
     def read_excel_schedule():
@@ -64,9 +64,9 @@ class Line():
         # while the current block of calculation is not the destination
         while True:
             authority = authority + 1
-            #print("Current block: ", curr)
+            ## print("Current block: ", curr)
             traverse_time = traverse_time + self.layout[curr].ideal_traverse_time
-            #print("Traversal time: ", traverse_time)
+            ## print("Traversal time: ", traverse_time)
 
             # calculate the next block to travel to
             temp = curr
@@ -139,18 +139,18 @@ class Line():
 
     def update_train_locations(self):
         # Update the locations stored by the Trains
-        print("Updating train locations")
+        # print("Updating train locations")
 
 
 
         for train in self.train_list:
             next = self.layout[train.location].next_block(train.prev_location)
-            print("Current location: ", train.location)
-            print("Next location: ", next)
-            print("Next Occupied: ", self.layout[next].occupied)
+            # print("Current location: ", train.location)
+            # print("Next location: ", next)
+            # print("Next Occupied: ", self.layout[next].occupied)
 
             if self.layout[next].occupied:
-                print("Train location updated")
+                # print("Train location updated")
                 train.prev_location = train.location
                 train.location = next
 

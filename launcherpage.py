@@ -14,61 +14,33 @@ from TrackModel.track_model_ui import Ui_TrackModel
 from Resources.TrackTrainComm import TrackTrainModelComm
 from TrackModel.track_model import track_model
 from Resources.WaysideTrackComm import WaysideControllerTrackComm
-
 from TrackController.wayside_shell import wayside_shell_class
 
+from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget
+from PyQt6.QtCore import QTimer
 import sys
 
 # Function to be triggered by clock tick
-def handle_clock_tick(seconds, train_controller_shell: TrainControllerShell, train_model_data: MainWindow, track_model_backend: track_model, wayside_shell_object: wayside_shell_class, ctc_frontend: CTC_frontend):
-    # # print(f"Clock tick {seconds} seconds")
+def handle_clock_tick(seconds, train_controller_shell, train_model_data, track_model_backend, wayside_shell_object, ctc_frontend):
     if seconds % 2 == 0:
         ctc_frontend.ctc.write_to_communicate_objects()
-        ## print("Writing to communicate objects")
         wayside_shell_object.write()
         track_model_backend.write()
         train_model_data.train_data.write_to_trainController_trackModel()
         train_controller_shell.write_to_train_model()
-    # Create a QTimer to call handle_clock_tick every second
-    # else:
-    #     pass
-
-
-def get_seconds_elapsed(seconds):
-    # # print(f"Elapsed time: {seconds} seconds")
-    return seconds
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     
-    # CTC Setup
-    ctc_window = QMainWindow()
-
-    # Train Model Setup
-    # (No need to create another QApplication)
-    
-    # Train Controller Setup
-    # (No need to create another QApplication)
-
-    # CTC -> Train Model Communication
+    # Instantiate components
     comm1 = CTCTrain()
-
-    # Wayside Controller -> Track Model Communication
     comm2 = WaysideControllerTrackComm()
-
-    # Track Model -> Train Model Communication
     comm3 = TrackTrainModelComm()
-    
     comm4 = CTCWaysideControllerComm()
-    
-    # Train Model -> Train Controller Communication
     comm5 = TrainTrainController()
 
-    # CTC <-> Wayside Controller Communication
-    comm4 = CTCWaysideControllerComm()
-    
-    
     # CTC Office
+    ctc_window = QMainWindow()
     ctc_ui = CTC_frontend(comm1, comm4)
     ctc_ui.setupUi(ctc_window)
 
@@ -81,7 +53,7 @@ if __name__ == '__main__':
 
     # Train Model
     tm_window = MainWindow(comm1, comm5, comm3)
-    
+
     # Train Controller
     doors = Doors()
     tuning = Tuning()
@@ -92,30 +64,54 @@ if __name__ == '__main__':
     lights = Lights(speed_control)
     temperature = Temperature()
     position = Position(doors, failure_modes, speed_control, power_class, comm5, lights, brake_status)
-    
     tc_window = TrainControllerUI(comm5, doors, tuning, brake_status, power_class, speed_control, failure_modes, position, lights, temperature)
     tc_shell_window = TrainControllerShell(comm5, tc_window)
 
-    # Show all windows
-    ctc_window.show()
-    tm_window.show()
-    
     # Clock Setup
     clock = StopwatchEngine()
     clock.initiate()
-    
-    
+
     timer = QTimer()
     timer.timeout.connect(lambda: handle_clock_tick(clock.elapsed_seconds, tc_shell_window, tm_window, track_model_backend, wayside_shell_object, ctc_ui))
     timer.start(100)
-    
-    clockUI = ClockDisplay(clock)
-    clockUI.show()
-    
-    # Timer to update every 
-    # Use QTimer to trigger `handle_clock_tick` every second
-    # while True:
-    #     handle_clock_tick(tc_shell_window, tm_window, clock)
 
+    clockUI = ClockDisplay(clock)
+
+    # Launcher Page
+    class LauncherWindow(QMainWindow):
+        def __init__(self):
+            super().__init__()
+            self.setWindowTitle("Launcher")
+            self.setGeometry(100, 100, 300, 400)
+
+            layout = QVBoxLayout()
+
+            # Add buttons for each UI
+            self.ctc_button = QPushButton("Open CTC UI")
+            self.ctc_button.clicked.connect(ctc_window.show)
+            layout.addWidget(self.ctc_button)
+
+            self.train_model_button = QPushButton("Open Train Model UI")
+            self.train_model_button.clicked.connect(tm_window.show)
+            layout.addWidget(self.train_model_button)
+
+            self.train_controller_button = QPushButton("Open Train Controller UI")
+            self.train_controller_button.clicked.connect(tc_window.show)
+            layout.addWidget(self.train_controller_button)
+
+            self.track_model_button = QPushButton("Open Track Model UI")
+            # self.track_model_button.clicked.connect(track_model_ui.show)
+            layout.addWidget(self.track_model_button)
+
+            self.clock_ui_button = QPushButton("Open Clock UI")
+            self.clock_ui_button.clicked.connect(clockUI.show)
+            layout.addWidget(self.clock_ui_button)
+
+            container = QWidget()
+            container.setLayout(layout)
+            self.setCentralWidget(container)
+
+    launcher = LauncherWindow()
+    launcher.show()
 
     sys.exit(app.exec())

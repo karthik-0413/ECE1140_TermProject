@@ -1844,7 +1844,7 @@ class Ui_MainWindow(QWidget):
 
         #                 # Add the process to the list of running processes
         #                 self.processes.append(process)
-        #                 print(f"Running {file_path}")
+        #                 # print(f"Running {file_path}")
 
         
 

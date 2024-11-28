@@ -31,10 +31,10 @@ class CTC_logic():
 
 
     def write_to_communicate_objects(self):
-        print("Writing to communicate objects")
-        #print("self.line.send_new_values = ", self.line.send_new_values)
+        # print("Writing to communicate objects")
+        ## print("self.line.send_new_values = ", self.line.send_new_values)
 
-        print("authority = ", self.suggested_authority_list)
+        # print("authority = ", self.suggested_authority_list)
         # Write all buffered information to the communicate objects
         # self.train_model_communicate.dispatch_train_signal.emit(self.num_trains)
         self.wayside_communicate.suggested_speed_signal.emit(self.suggested_speed_list)
@@ -54,9 +54,9 @@ class CTC_logic():
         
         # Add destinations to the train object 
         self.line.create_train(destination, destination_station, departure_time)
-        print("Adding train")
+        # print("Adding train")
         self.num_trains = len(self.line.train_list)
-        print("Num trains = ", self.num_trains)
+        # print("Num trains = ", self.num_trains)
 
         #self.train_model_communicate.current_train_count_signal.emit(self.num_trains)
 
@@ -72,7 +72,7 @@ class CTC_logic():
             self.suggested_authority_list[train.location] = train.authority
 
     def update_suggested_speed_list(self):
-        print("updating speed")
+        # print("updating speed")
 
         self.suggested_speed_list = [None for _ in self.suggested_speed_list]
 
@@ -108,7 +108,7 @@ class CTC_logic():
 
     def toggle_automatic_manual(self):
         self.automatic = not self.automatic
-        print("Toggled")
+        # print("Toggled")
 
     def get_stations(self):
         return self.line.get_stations()

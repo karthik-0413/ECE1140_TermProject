@@ -47,7 +47,7 @@ class green_line_plc_1_class:
     # Default Constructor
     def __init__(self):
 
-        print("Green Line PLC 1 Initialized")
+        # print("Green Line PLC 1 Initialized")
 
         self.DEF_direction = 0
         self.DEF_direction_update = 1

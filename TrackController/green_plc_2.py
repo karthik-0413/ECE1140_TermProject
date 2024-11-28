@@ -39,7 +39,7 @@ class green_line_plc_2_class:
     # Constructor
     def __init__(self):
 
-        print("Green Line PLC 2 Initialized")
+        # print("Green Line PLC 2 Initialized")
         # self.sec_array = sections
         self.yard_occupancy = 0
         self.yard_stop_go = 1
@@ -456,7 +456,7 @@ class green_line_plc_2_class:
 
     def read_sugg_speed_handler(self, sugg_speed_array):
 
-        #print("in plc 2 read sugg speed handler")
+        ## print("in plc 2 read sugg speed handler")
         self.read_sugg_speed_array = sugg_speed_array
         self.sugg_speed_check = 1
 
@@ -482,7 +482,7 @@ class green_line_plc_2_class:
 
     def read_sugg_authority_handler(self, sugg_authority_array):
 
-        #print("in plc 2 read sugg authority handler")
+        ## print("in plc 2 read sugg authority handler")
         self.read_sugg_authority_array = sugg_authority_array
         self.sugg_authority_check = 1
 
