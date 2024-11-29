@@ -749,9 +749,9 @@ class Position(QObject):
         
     # Connect function for the Communicate class
     def handle_commanded_authority(self, authority: int):
-        pass
-        # self.commanded_authority = authority - 1
-        # self.commanded_authority_signal.emit(self.commanded_authority)
+        # pass
+        self.commanded_authority = authority - 1
+        self.commanded_authority_signal.emit(self.commanded_authority)
         # # print(f"Commanded authority: {self.commanded_authority}")
         
     # Connect function for the Communicate class
