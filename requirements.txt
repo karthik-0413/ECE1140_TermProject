@@ -3,3 +3,4 @@ PyQt6==6.7.1
 datetime==5.5
 numpy==1.26.4
 paramiko==3.5.0
+openpyxl==3.1.5
