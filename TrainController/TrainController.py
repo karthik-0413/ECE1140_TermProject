@@ -84,6 +84,7 @@ class BrakeStatus(QObject):
         self.entered_lower = False
         self.reaching_station = False
         self.no_again = True
+        self.station_auto_mode = False
         self.communicator = communicator
         
     def apply_emergency_brake(self):
@@ -187,125 +188,130 @@ class PowerCommand(QObject):
         # if desired_velocity > current_velocity:
         #     self.brake_status.no_apply_service_brake()
         
-        if self.brake_status.reaching_station:
+        if self.brake_status.station_auto_mode == True:
             self.power_command = 0
             self.power_command_signal.emit(self.power_command)
-            self.brake_status.apply_service_brake()
-            if current_velocity == 0.0:
-                self.brake_status.no_apply_service_brake()
-                self.brake_status.reaching_station = False
         
-        elif self.brake_status.entered_lower == True:
-            # # print("Entered Lower")
-            self.power_command = 0
-            self.power_command_signal.emit(self.power_command)
-            self.brake_status.apply_service_brake()
-            if current_velocity < desired_velocity or current_velocity == 0.0:
-                print("Entered Lower")
-                self.brake_status.no_apply_service_brake()
-                self.brake_status.entered_lower = False
-                self.brake_status.no_again = False
-                self.power_command = 0.0
-        
-        # Murphy Failures
-        elif desired_velocity == 0.0:
-            self.power_command = 0
-            self.power_command_signal.emit(self.power_command)
-            self.brake_status.apply_emergency_brake()
-            if current_velocity == 0.0:
-                self.brake_status.no_apply_emergency_brake()
-            # Put Brake Status has OFF
-            # self.brake_status.no_apply_service_brake()
-            # self.brake_status.no_apply_emergency_brake()
-            
-        elif self.brake_status.driver_emergency_brake_command:
-            self.power_command = 0
-            self.power_command_signal.emit(self.power_command)
-            # self.brake_status.apply_emergency_brake()
-            # if current_velocity == 0.0:
-            #     self.brake_status.no_apply_emergency_brake()
-
-            
-        elif round(desired_velocity, 2) == round(current_velocity, 2):
-            self.power_command = 0
-            # Put Brake Status has OFF
-            # self.brake_status.no_apply_service_brake()
-            self.power_command_signal.emit(self.power_command)
-            
-        elif current_velocity > desired_velocity:
-            self.power_command = 0
-            self.power_command_signal.emit(self.power_command)
-            # Slow down until it reaches desired velocity
-            if current_velocity > desired_velocity:
+        else:
+            if self.brake_status.reaching_station:
+                self.power_command = 0
+                self.power_command_signal.emit(self.power_command)
                 self.brake_status.apply_service_brake()
+                if current_velocity == 0.0:
+                    self.brake_status.no_apply_service_brake()
+                    self.brake_status.reaching_station = False
+            
+            elif self.brake_status.entered_lower == True:
+                # # print("Entered Lower")
+                self.power_command = 0
+                self.power_command_signal.emit(self.power_command)
+                self.brake_status.apply_service_brake()
+                if current_velocity < desired_velocity or current_velocity == 0.0:
+                    print("Entered Lower")
+                    self.brake_status.no_apply_service_brake()
+                    self.brake_status.entered_lower = False
+                    self.brake_status.no_again = False
+                    self.power_command = 0.0
+            
+            # Murphy Failures
+            elif desired_velocity == 0.0:
+                self.power_command = 0
+                self.power_command_signal.emit(self.power_command)
+                self.brake_status.apply_emergency_brake()
+                if current_velocity == 0.0:
+                    self.brake_status.no_apply_emergency_brake()
+                # Put Brake Status has OFF
+                # self.brake_status.no_apply_service_brake()
+                # self.brake_status.no_apply_emergency_brake()
+                
+            elif self.brake_status.driver_emergency_brake_command:
+                self.power_command = 0
+                self.power_command_signal.emit(self.power_command)
+                # self.brake_status.apply_emergency_brake()
+                # if current_velocity == 0.0:
+                #     self.brake_status.no_apply_emergency_brake()
+
+                
+            elif round(desired_velocity, 2) == round(current_velocity, 2):
+                self.power_command = 0
+                # Put Brake Status has OFF
+                # self.brake_status.no_apply_service_brake()
+                self.power_command_signal.emit(self.power_command)
+                
+            elif current_velocity > desired_velocity:
+                self.power_command = 0
+                self.power_command_signal.emit(self.power_command)
+                # Slow down until it reaches desired velocity
+                if current_velocity > desired_velocity:
+                    self.brake_status.apply_service_brake()
+                elif current_velocity < desired_velocity:
+                    self.brake_status.no_apply_service_brake()
+                
             elif current_velocity < desired_velocity:
                 self.brake_status.no_apply_service_brake()
-            
-        elif current_velocity < desired_velocity:
-            self.brake_status.no_apply_service_brake()
-            if self.module == 1:
-                # self.brake_status.no_apply_service_brake()
-                # # print(f"Desired Speed: {desired_velocity:.2f} m/s, Current Speed: {current_velocity:.2f} m/s")
-                
-                # Finding the velocity error
-                self.ek_current = desired_velocity - current_velocity
-                
-                # Using the different cases from lecture slides
-                if self.power_command < self.max_power:
-                    self.uk_current = self.uk_previous + (0.25 / 2) * (self.ek_current + self.ek_previous)
-                else:
-                    self.uk_current = self.uk_previous
-                
-                # Finding the power command
-                self.power_command = self.tuning.kp * self.ek_current + self.tuning.ki * self.uk_current
-
-                # Updating the previous variables for the next iteration
-                self.ek_previous = self.ek_current
-                self.uk_previous = self.uk_current
-                
-            elif self.module == 0:
-                result = send_numbers_to_pi(self.raspberry_pi_hostname, self.raspberry_pi_port, self.raspberry_pi_username, self.raspberry_pi_password, [desired_velocity, current_velocity, self.ek_current, self.max_power, self.uk_current, self.uk_previous, self.ek_previous, self.tuning.kp, self.tuning.ki])
-                # print(f"Result:{result}")
-                if result:
-                    self.power_command, self.ek_previous, self.uk_previous, self.uk_current, self.ek_current = result
-            
-            
-            # Power command bound
-            if self.power_command > self.max_power:
-                self.power_command = self.max_power
-                self.power_command_signal.emit(self.power_command)
-                # Put Brake Status has OFF
-                # self.brake_status.driver_brake_status = False
-                # self.brake_status.driver_service_brake_command = False
-                # self.brake_status.driver_brake_status = False
-                # self.brake_status.driver_emergency_brake_command = False
-                # self.brake_status.no_apply_service_brake()
-                # self.brake_status.no_apply_emergency_brake()
-                
-            elif self.power_command <= 0:
-                self.power_command_signal.emit(self.power_command)
-                # print("NEGAIVE POWER COMMAND")
-                # Brake until current velocity is equal to desired velocity, so until power_command = 0
-                self.power_command = 0
-                # self.brake_status.driver_service_brake_command = True
-                # self.brake_status.driver_brake_status = True
-                # self.brake_status.driver_emergency_brake_command = False
-                # # print("Service Brake Applied")
-                # self.brake_status.no_apply_service_brake()
-                # self.brake_status.no_apply_emergency_brake()
-                
-            else:
-                self.power_command = self.power_command
-                self.power_command_signal.emit(self.power_command)
-                # self.reset_service_brake_button_style()
-                # self.brake_status.driver_service_brake_command = False
-                # self.brake_status.driver_brake_status = False
-                # self.brake_status.driver_emergency_brake_command = False
-                # self.brake_status.no_apply_service_brake()
-                # self.brake_status.no_apply_emergency_brake()
-            
-                # Call hardware function here
+                if self.module == 1:
+                    # self.brake_status.no_apply_service_brake()
+                    # # print(f"Desired Speed: {desired_velocity:.2f} m/s, Current Speed: {current_velocity:.2f} m/s")
                     
+                    # Finding the velocity error
+                    self.ek_current = desired_velocity - current_velocity
+                    
+                    # Using the different cases from lecture slides
+                    if self.power_command < self.max_power:
+                        self.uk_current = self.uk_previous + (0.25 / 2) * (self.ek_current + self.ek_previous)
+                    else:
+                        self.uk_current = self.uk_previous
+                    
+                    # Finding the power command
+                    self.power_command = self.tuning.kp * self.ek_current + self.tuning.ki * self.uk_current
+
+                    # Updating the previous variables for the next iteration
+                    self.ek_previous = self.ek_current
+                    self.uk_previous = self.uk_current
+                    
+                elif self.module == 0:
+                    result = send_numbers_to_pi(self.raspberry_pi_hostname, self.raspberry_pi_port, self.raspberry_pi_username, self.raspberry_pi_password, [desired_velocity, current_velocity, self.ek_current, self.max_power, self.uk_current, self.uk_previous, self.ek_previous, self.tuning.kp, self.tuning.ki])
+                    # print(f"Result:{result}")
+                    if result:
+                        self.power_command, self.ek_previous, self.uk_previous, self.uk_current, self.ek_current = result
+                
+                
+                # Power command bound
+                if self.power_command > self.max_power:
+                    self.power_command = self.max_power
+                    self.power_command_signal.emit(self.power_command)
+                    # Put Brake Status has OFF
+                    # self.brake_status.driver_brake_status = False
+                    # self.brake_status.driver_service_brake_command = False
+                    # self.brake_status.driver_brake_status = False
+                    # self.brake_status.driver_emergency_brake_command = False
+                    # self.brake_status.no_apply_service_brake()
+                    # self.brake_status.no_apply_emergency_brake()
+                    
+                elif self.power_command <= 0:
+                    self.power_command_signal.emit(self.power_command)
+                    # print("NEGAIVE POWER COMMAND")
+                    # Brake until current velocity is equal to desired velocity, so until power_command = 0
+                    self.power_command = 0
+                    # self.brake_status.driver_service_brake_command = True
+                    # self.brake_status.driver_brake_status = True
+                    # self.brake_status.driver_emergency_brake_command = False
+                    # # print("Service Brake Applied")
+                    # self.brake_status.no_apply_service_brake()
+                    # self.brake_status.no_apply_emergency_brake()
+                    
+                else:
+                    self.power_command = self.power_command
+                    self.power_command_signal.emit(self.power_command)
+                    # self.reset_service_brake_button_style()
+                    # self.brake_status.driver_service_brake_command = False
+                    # self.brake_status.driver_brake_status = False
+                    # self.brake_status.driver_emergency_brake_command = False
+                    # self.brake_status.no_apply_service_brake()
+                    # self.brake_status.no_apply_emergency_brake()
+                
+                    # Call hardware function here
+                        
                 # self.power_command_signal.emit(self.power_command)
                 # # print(f"Power Command in Train Controller: {self.power_command}")
         # elif self.speed_control.operation_mode == 1:
@@ -385,7 +391,7 @@ class SpeedControl(QObject):
     
     def __init__(self, power_class: PowerCommand, brake_status: BrakeStatus, communicator: Communicate):
         super().__init__()
-        self.commanded_speed = 100.0
+        self.commanded_speed = 0.0
         self.setpoint_speed = 0.0
         self.setpoint_speed_submit = False
         self.speed_limit = 100.0
@@ -786,6 +792,7 @@ class Position(QObject):
         if self.speed_control.current_velocity == 0.0 and not self.repeat:
             self.check_current_block()
             self.find_station_name()
+            self.brake_status.station_auto_mode = True
         elif self.speed_control.current_velocity != 0.0 and self.repeat:
             self.repeat = False
             self.timer.stop()
@@ -827,6 +834,7 @@ class Position(QObject):
         self.door.close_left_door()
         self.door.close_right_door()
         self.repeat = True
+        self.brake_status.station_auto_mode = False
         # # print("Doors closed")
         
     def calculate_desired_speed(self):
