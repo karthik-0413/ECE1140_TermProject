@@ -708,7 +708,9 @@ class Position(QObject):
     
     def __init__(self, doors: Doors, failure_modes: FailureModes, speed_control: SpeedControl, power_class: PowerCommand, communicator: Communicate, lights: Lights, brake_status: BrakeStatus):
         super().__init__()
+        self.prev_authority = 0 # int
         self.commanded_authority = 11 + 1 - 1   # int
+        self.next_authority = 0 # int
         self.station_name = 'Shadyside' # string
         self.announcement = '' # string
         self.polarity = True   # boolean
@@ -722,6 +724,7 @@ class Position(QObject):
         self.brake_status = brake_status
         self.iterate = True
         self.repeat = False
+        self.accept_authority = False
         
         # Variables needed for the Track Layouts (GREEN LINE)
         self.green_station = []
@@ -749,10 +752,13 @@ class Position(QObject):
         
     # Connect function for the Communicate class
     def handle_commanded_authority(self, authority: int):
-        # pass
-        self.commanded_authority = authority - 1
-        self.commanded_authority_signal.emit(self.commanded_authority)
-        # # print(f"Commanded authority: {self.commanded_authority}")
+        if self.accept_authority == True:
+            self.commanded_authority = self.commanded_authority
+            self.commanded_authority_signal.emit(self.commanded_authority)
+        elif self.accept_authority == False:
+            self.commanded_authority = authority - 1
+            self.commanded_authority_signal.emit(self.commanded_authority)
+            # # print(f"Commanded authority: {self.commanded_authority}")
         
     # Connect function for the Communicate class
     def handle_polarity_change(self, polarity: bool):
@@ -764,6 +770,7 @@ class Position(QObject):
                 # # print(f"Commanded authority: {self.commanded_authority}")
                 self.commanded_authority_signal.emit(self.commanded_authority)
                 if self.commanded_authority == 0:
+                    self.accept_authority = True
                     self.calculate_desired_speed()
                     # If current velocity is 0
                     # Start a timer to check every 100 ms
@@ -793,6 +800,7 @@ class Position(QObject):
             self.check_current_block()
             self.find_station_name()
             self.brake_status.station_auto_mode = True
+            self.accept_authority = True
         elif self.speed_control.current_velocity != 0.0 and self.repeat:
             self.repeat = False
             self.timer.stop()
@@ -835,6 +843,7 @@ class Position(QObject):
         self.door.close_right_door()
         self.repeat = True
         self.brake_status.station_auto_mode = False
+        self.accept_authority = False
         # # print("Doors closed")
         
     def calculate_desired_speed(self):

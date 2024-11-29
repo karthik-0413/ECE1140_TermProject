@@ -34,3 +34,14 @@ Finally, to run the project, execute the appropriate command in your terminal.
 ```bash
 python train_control_system.py
 ```
+
+### Process of Initializing Modules
+There are certain chronological steps that need to be taken in order to successfully launch the project.
+
+1. First, upload the Track Layout to the Track Model by clicking the 'Upload Layout' button in the Train Model UI.
+
+2. Second, upload the corresponding PLC programs to the Waysides by clicking the 'Upload' button in the Wayside Controller UI.
+
+3. Finally, upload the Track Layout to the CTC by clicking the 'Upload Layout' button in the 'Block View' tab in the CTC UI.
+
+Now, the Train System is initialized in the proper manner in order for the simulation to function as intended.
