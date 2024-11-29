@@ -242,8 +242,8 @@ class PowerCommand(QObject):
                 self.brake_status.no_apply_service_brake()
             
         elif current_velocity < desired_velocity:
+            self.brake_status.no_apply_service_brake()
             if self.module == 1:
-                self.brake_status.no_apply_service_brake()
                 # self.brake_status.no_apply_service_brake()
                 # # print(f"Desired Speed: {desired_velocity:.2f} m/s, Current Speed: {current_velocity:.2f} m/s")
                 
@@ -487,6 +487,9 @@ class SpeedControl(QObject):
         if self.operation_mode == 1 and self.desired_velocity > speed / 3.6:
             self.commanded_speed = speed / 3.6
             self.update_setpoint_speed_calculations(speed)
+        elif self.operation_mode == 0 and self.desired_velocity > speed / 3.6:
+            self.commanded_speed = speed / 3.6
+            self.update_setpoint_speed_auto()
         # Only goes through this if statement one time (when the commanded speed is processed to be lower than current commanded speed)
         elif self.commanded_speed > (speed / 3.6):
                 # self.brake_status.entered_lower = True
@@ -699,7 +702,7 @@ class Position(QObject):
     
     def __init__(self, doors: Doors, failure_modes: FailureModes, speed_control: SpeedControl, power_class: PowerCommand, communicator: Communicate, lights: Lights, brake_status: BrakeStatus):
         super().__init__()
-        self.commanded_authority = 11 + 1   # int
+        self.commanded_authority = 11 + 1 - 1   # int
         self.station_name = 'Shadyside' # string
         self.announcement = '' # string
         self.polarity = True   # boolean
@@ -712,20 +715,21 @@ class Position(QObject):
         self.light = lights
         self.brake_status = brake_status
         self.iterate = True
+        self.repeat = False
         
         # Variables needed for the Track Layouts (GREEN LINE)
         self.green_station = []
         self.green_station_door = []
         self.green_speed_limit = []
         self.green_underground = []
-        self.default_path_blocks = [
+        self.green_default_path_blocks = [
             0, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, # 39
             85, 84, 83, 82, 81, 80, 79, 78, 77, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, # 33
             125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 29, 28, 27, 26, 25, 24, 23,
             22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 151, 6, 5, 4, 3, 2, 1, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
             32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57
         ]
-        self.current_block = self.default_path_blocks[0]  # int
+        self.current_block = self.green_default_path_blocks[0]  # int
         
         # Load the track layout data from GreenLine.json file in Track Layouts folder
         with open(os.path.join(os.path.dirname(__file__), 'Track Layouts', 'GreenLine.json'), 'r') as file:
@@ -739,8 +743,9 @@ class Position(QObject):
         
     # Connect function for the Communicate class
     def handle_commanded_authority(self, authority: int):
-        self.commanded_authority = authority
-        self.commanded_authority_signal.emit(self.commanded_authority)
+        pass
+        # self.commanded_authority = authority - 1
+        # self.commanded_authority_signal.emit(self.commanded_authority)
         # # print(f"Commanded authority: {self.commanded_authority}")
         
     # Connect function for the Communicate class
@@ -754,7 +759,11 @@ class Position(QObject):
                 self.commanded_authority_signal.emit(self.commanded_authority)
                 if self.commanded_authority == 0:
                     self.calculate_desired_speed()
-                    self.check_current_block()
+                    # If current velocity is 0
+                    # Start a timer to check every 100 ms
+                    self.timer = QTimer()
+                    self.timer.timeout.connect(self.check_current)
+                    self.timer.start(100)
             
             # Looping around the green line of the track
             if self.current_block == 57:
@@ -763,13 +772,23 @@ class Position(QObject):
                 self.iterate = False
             else:
                 if self.iterate == True:
-                    current_index = self.default_path_blocks.index(self.current_block)
-                    self.current_block = self.default_path_blocks[current_index + 1]
+                    current_index = self.green_default_path_blocks.index(self.current_block)
+                    self.current_block = self.green_default_path_blocks[current_index + 1]
                 
             # self.check_current_block()
             self.check_block_underground()
             # self.calculate_desired_speed()
         # # print(f"Polarity: {self.polarity}")
+        
+    def check_current(self):
+        print(f"Current Velocity: {self.speed_control.current_velocity}")
+        print(f"Current Block: {self.current_block}")
+        if self.speed_control.current_velocity == 0.0 and not self.repeat:
+            self.check_current_block()
+            self.find_station_name()
+        elif self.speed_control.current_velocity != 0.0 and self.repeat:
+            self.repeat = False
+            self.timer.stop()
         
     def check_block_underground(self):
         if "UNDERGROUND" in self.green_underground[self.current_block]:
@@ -802,12 +821,12 @@ class Position(QObject):
             # # print("No doors opened")
             
         # Close doors after 60 seconds
-        # Close doors after 60 seconds
         QTimer.singleShot(60000, self.close_doors)
 
     def close_doors(self):
         self.door.close_left_door()
         self.door.close_right_door()
+        self.repeat = True
         # # print("Doors closed")
         
     def calculate_desired_speed(self):
