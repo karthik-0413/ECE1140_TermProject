@@ -862,20 +862,21 @@ class Position(QObject):
         
     def find_station_name(self):
         # Split the string by ';' and take the second part (station name)
-        # try:
-        #     parts = self.green_station[self.current_block].split(';')
-        #     if len(parts) > 1:
-        #         self.station_name = parts[1].strip()
-        #         self.announcement = f"Welcome to {self.station_name} Station"
-        #         # print(f"Station Name: {self.station_name}")
-        #     else:
-        #         # Handle cases where the expected format is not present
-        #         self.station_name = "Unknown"
-        #         self.announcement = "Welcome to the station"
-        # except IndexError:
-        #     self.station_name = "Unknown"
-        #     self.announcement = "Welcome to the station"
-        pass
+        try:
+            parts = self.green_station[self.current_block].split(';')
+            if len(parts) > 1:
+                self.station_name = parts[1].strip()
+                self.announcement = f"Welcome to {self.station_name} Station"
+                print(f"Station Name: {self.station_name}")
+                # print(f"Station Name: {self.station_name}")
+            else:
+                # Handle cases where the expected format is not present
+                self.station_name = "Unknown"
+                self.announcement = "Welcome to the station"
+        except IndexError:
+            self.station_name = "Unknown"
+            self.announcement = "Welcome to the station"
+        # pass
 
 class Temperature(QObject):
     current_temperature_signal = pyqtSignal(float)
@@ -1563,17 +1564,19 @@ class TrainControllerUI(QWidget):
                 self.doors.open_left_door()
             
     def handle_interior_lights(self):
-        if self.lights.interior_lights:
-            self.lights.turn_off_interior_lights()
-        else:
-            # # print("Turning on interior lights")
-            self.lights.turn_on_interior_lights()
+        if self.speed_control.operation_mode == 1:
+            if self.lights.interior_lights:
+                self.lights.turn_off_interior_lights()
+            else:
+                # # print("Turning on interior lights")
+                self.lights.turn_on_interior_lights()
             
     def handle_exterior_lights(self):
-        if self.lights.exterior_lights:
-            self.lights.turn_off_exterior_lights()
-        else:
-            self.lights.turn_on_exterior_lights()
+        if self.speed_control.operation_mode == 1:
+            if self.lights.exterior_lights:
+                self.lights.turn_off_exterior_lights()
+            else:
+                self.lights.turn_on_exterior_lights()
             
     def update_exterior_lights(self, lights_status: bool):
         if lights_status:
