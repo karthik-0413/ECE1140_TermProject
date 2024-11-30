@@ -95,7 +95,7 @@ class BrakeStatus(QObject):
         
     def manual_no_apply_service_brake(self):
         self.manual_driver_service_brake_command = False
-        self.service_brake_signal.emit(self.driver_service_brake_command)
+        self.service_brake_signal.emit(self.manual_driver_service_brake_command)
         # # print("Service Brake Released")
         
     def apply_emergency_brake(self):
@@ -613,8 +613,30 @@ class Lights(QObject):
     def __init__(self, speed_control: SpeedControl):
         super().__init__()
         self.exterior_lights = False
+        self.manual_exterior_lights = False
         self.interior_lights = False
+        self.manual_interior_lights = False
         self.speed_control = speed_control
+        
+    def manual_turn_on_exterior_lights(self):
+        self.manual_exterior_lights = True
+        self.exterior_lights_signal.emit(self.manual_exterior_lights)
+        # # print("Exterior Lights: ON")
+        
+    def manual_turn_off_exterior_lights(self):
+        self.manual_exterior_lights = False
+        self.exterior_lights_signal.emit(self.manual_exterior_lights)
+        # # print("Exterior Lights: OFF")
+        
+    def manual_turn_on_interior_lights(self):
+        self.manual_interior_lights = True
+        self.interior_lights_signal.emit(self.manual_interior_lights)
+        # # print("Interior Lights: ON")
+        
+    def manual_turn_off_interior_lights(self):
+        self.manual_interior_lights = False
+        self.interior_lights_signal.emit(self.manual_interior_lights)
+        # # print("Interior Lights: OFF")
             
     def turn_on_exterior_lights(self):
         self.exterior_lights = True
@@ -665,7 +687,7 @@ class Position(QObject):
         self.green_speed_limit = []
         self.green_underground = []
         self.green_default_path_blocks = [
-            0, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, # 39
+            0, 36, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, # 39
             85, 84, 83, 82, 81, 80, 79, 78, 77, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, # 33
             125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 29, 28, 27, 26, 25, 24, 23, # 33
             22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 151, 6, 5, 4, 3, 2, 1, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, # 42
@@ -745,9 +767,9 @@ class Position(QObject):
             self.light.turn_on_exterior_lights()
             self.light.turn_on_interior_lights()
             # # print("Underground Block")
-        # elif "UNDERGROUND" not in self.green_underground[self.current_block]:
-        #     self.light.turn_off_exterior_lights()
-        #     self.light.turn_off_interior_lights()
+        elif "UNDERGROUND" not in self.green_underground[self.current_block] and (not self.light.manual_exterior_lights and not self.light.manual_interior_lights):  # Must check that the manual lights are not on
+            self.light.turn_off_exterior_lights()
+            self.light.turn_off_interior_lights()
         #     # # print("Above Ground Block")
             
             
@@ -1446,11 +1468,11 @@ class TrainControllerUI(QWidget):
             # self.divet_in_emergency_brake_buttons()
 
     def toggle_service_brake_button(self):
-        if self.brake_class.driver_service_brake_command:
-            self.brake_class.no_apply_service_brake()
+        if self.brake_class.manual_driver_service_brake_command:
+            self.brake_class.manual_no_apply_service_brake()
             self.reset_service_brake_button_style()
         else:
-            self.brake_class.apply_service_brake()
+            self.brake_class.manual_apply_service_brake()
             self.divet_in_service_brake_button()
 
 
@@ -1501,18 +1523,18 @@ class TrainControllerUI(QWidget):
             
     def handle_interior_lights(self):
         if self.speed_control.operation_mode == 1:
-            if self.lights.interior_lights:
-                self.lights.turn_off_interior_lights()
+            if self.lights.manual_interior_lights:
+                self.lights.manual_turn_off_interior_lights()
             else:
                 # # print("Turning on interior lights")
-                self.lights.turn_on_interior_lights()
+                self.lights.manual_turn_on_interior_lights()
             
     def handle_exterior_lights(self):
         if self.speed_control.operation_mode == 1:
-            if self.lights.exterior_lights:
-                self.lights.turn_off_exterior_lights()
+            if self.lights.manual_exterior_lights:
+                self.lights.manual_turn_off_exterior_lights()
             else:
-                self.lights.turn_on_exterior_lights()
+                self.lights.manual_turn_on_exterior_lights()
             
     def update_exterior_lights(self, lights_status: bool):
         if lights_status:
@@ -1682,7 +1704,7 @@ class TrainControllerUI(QWidget):
         # Turn the brake status to OFF
         self.brake_status.setText("OFF")
         self.brake_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
-        self.reset_brake_status()
+        # self.reset_brake_status()
 
     def divet_in_emergency_brake_buttons(self):
         self.emergency_brake_button.setStyleSheet("border: 3px solid black; margin-left: 40px; background-color: darkred; color: white; font-size: 20px; font-weight: bold; padding: 50px; border-radius: 10px;")
