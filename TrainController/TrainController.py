@@ -710,7 +710,7 @@ class Position(QObject):
         super().__init__()
         self.prev_authority = 0 # int
         self.commanded_authority = 11 + 1 - 1   # int
-        self.next_authority = 0 # int
+        self.next_authority = 1 # int
         self.station_name = 'Shadyside' # string
         self.announcement = '' # string
         self.polarity = True   # boolean
@@ -734,9 +734,9 @@ class Position(QObject):
         self.green_default_path_blocks = [
             0, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, # 39
             85, 84, 83, 82, 81, 80, 79, 78, 77, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, # 33
-            125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 29, 28, 27, 26, 25, 24, 23,
-            22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 151, 6, 5, 4, 3, 2, 1, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
-            32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57
+            125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 29, 28, 27, 26, 25, 24, 23, # 33
+            22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 151, 6, 5, 4, 3, 2, 1, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, # 42
+            32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57 # 26
         ]
         self.current_block = self.green_default_path_blocks[0]  # int
         
@@ -750,15 +750,13 @@ class Position(QObject):
                 self.green_station_door.append(entry['Station Side'])
                 self.green_speed_limit.append(entry['Speed Limit (Km/Hr)'])
         
-    # Connect function for the Communicate class
+    # Connect function for the Communicate class (Function is called every time the authority is changed OR decreased by 1)
     def handle_commanded_authority(self, authority: int):
-        if self.accept_authority == True:
-            self.commanded_authority = self.commanded_authority
-            self.commanded_authority_signal.emit(self.commanded_authority)
-        elif self.accept_authority == False:
-            self.commanded_authority = authority - 1
-            self.commanded_authority_signal.emit(self.commanded_authority)
-            # # print(f"Commanded authority: {self.commanded_authority}")
+        # print(f"Commanded Authority: {authority}")
+        # # When the commanded authority goes from 1 -> 0, this print statement is not displayed, but it is displayed for 166 blocks
+        
+        self.commanded_authority = authority - 1
+        self.commanded_authority_signal.emit(self.commanded_authority)
         
     # Connect function for the Communicate class
     def handle_polarity_change(self, polarity: bool):

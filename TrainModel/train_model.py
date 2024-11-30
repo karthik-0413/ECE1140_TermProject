@@ -341,7 +341,9 @@ class TrainModelPage(BasePage):
             else:
                 value = 0  # Default value when list is empty or index out of range
             unit = self.get_unit(var_name)
-            if isinstance(value, int):
+            if value is None:
+                value_text = f"N/A {unit}".strip()
+            elif isinstance(value, int):
                 value_text = f"{value} {unit}".strip()
             else:
                 value_text = f"{value:.2f} {unit}".strip()
