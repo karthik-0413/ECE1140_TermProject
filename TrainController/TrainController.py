@@ -185,7 +185,7 @@ class PowerCommand(QObject):
         
         
     def update_power_command(self, current_velocity: float, desired_velocity: float):
-        print(f"Current Speed: {current_velocity:.2f} m/s, Desired Speed: {desired_velocity:.2f} m/s")
+        # print(f"Current Speed: {current_velocity:.2f} m/s, Desired Speed: {desired_velocity:.2f} m/s")
 
         if self.brake_status.station_auto_mode == True:
             self.power_command = 0
@@ -223,7 +223,7 @@ class PowerCommand(QObject):
                 # self.brake_status.no_apply_service_brake()
                 # self.brake_status.no_apply_emergency_brake()
                 
-            elif self.brake_status.driver_emergency_brake_command:
+            elif self.brake_status.driver_emergency_brake_command or self.brake_status.driver_service_brake_command or self.brake_status.manual_driver_service_brake_command:
                 self.power_command = 0
                 self.power_command_signal.emit(self.power_command)
                 # self.brake_status.apply_emergency_brake()
@@ -413,7 +413,7 @@ class SpeedControl(QObject):
         # # print(f"Current Speed: {self.current_velocity:.2f} m/s")
         
     def handle_commanded_speed(self, speed: float):
-        print(f"Commanded Speed: {speed:.2f} km/hr")
+        # print(f"Commanded Speed: {speed:.2f} km/hr")
         if self.operation_mode == 1 and self.desired_velocity > speed / 3.6:
             self.commanded_speed = speed / 3.6
             self.update_setpoint_speed_calculations(speed / 3.6)
@@ -1633,13 +1633,13 @@ class TrainControllerUI(QWidget):
             
     def update_service_brake_status(self, brake_status: bool):
         if brake_status:
-            self.brake_status.setText("ON")
-            self.brake_status.setStyleSheet("background-color: #f5c842; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
+            # self.brake_status.setText("ON")
+            # self.brake_status.setStyleSheet("background-color: #f5c842; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
             # Divet in service break in UI
             self.divet_in_service_brake_button()
         else:
-            self.brake_status.setText("OFF")
-            self.brake_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
+            # self.brake_status.setText("OFF")
+            # self.brake_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
             self.reset_service_brake_button_style()
             
     def update_emergency_brake_status(self, brake_status: bool):

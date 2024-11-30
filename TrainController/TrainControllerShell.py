@@ -332,6 +332,7 @@ class TrainControllerShell:
 
     def handle_service_brake_status(self, service_brake_status: bool):
         if self.train_controller_list:
+            # print(f"Service Brake Status: {service_brake_status}")    # Displays True only once when it is pressed, but remains True until speed = 0 and then becomes False
             self.train_controller_list[self.current_train_id - 1].update_service_brake_status(service_brake_status)
             self.train_controller_list[self.current_train_id - 1].brake_class.driver_service_brake_command = service_brake_status
 
