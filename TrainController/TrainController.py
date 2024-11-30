@@ -754,7 +754,7 @@ class Position(QObject):
     def handle_commanded_authority(self, authority: int):
         # print(f"Commanded Authority: {authority}")
         # # When the commanded authority goes from 1 -> 0, this print statement is not displayed, but it is displayed for 166 blocks
-        
+      
         self.commanded_authority = authority - 1
         self.commanded_authority_signal.emit(self.commanded_authority)
         
@@ -769,6 +769,7 @@ class Position(QObject):
                 self.commanded_authority_signal.emit(self.commanded_authority)
                 if self.commanded_authority == 0:
                     self.accept_authority = True
+                    self.commanded_authority_signal.emit(0)
                     self.calculate_desired_speed()
                     # If current velocity is 0
                     # Start a timer to check every 100 ms
@@ -842,6 +843,7 @@ class Position(QObject):
         self.repeat = True
         self.brake_status.station_auto_mode = False
         self.accept_authority = False
+        self.commanded_authority_signal.emit(self.commanded_authority)
         # # print("Doors closed")
         
     def calculate_desired_speed(self):
