@@ -78,6 +78,7 @@ class BrakeStatus(QObject):
     def __init__(self, communicator: Communicate):
         super().__init__()
         self.driver_service_brake_command = False
+        self.manual_driver_service_brake_command = False
         self.driver_emergency_brake_command = False
         self.driver_brake_status = False
         self.passenger_brake = False
@@ -86,6 +87,16 @@ class BrakeStatus(QObject):
         self.no_again = True
         self.station_auto_mode = False
         self.communicator = communicator
+        
+    def manual_apply_service_brake(self):
+        self.manual_driver_service_brake_command = True
+        self.service_brake_signal.emit(self.manual_driver_service_brake_command)
+        # # print("Service Brake Applied")
+        
+    def manual_no_apply_service_brake(self):
+        self.manual_driver_service_brake_command = False
+        self.service_brake_signal.emit(self.driver_service_brake_command)
+        # # print("Service Brake Released")
         
     def apply_emergency_brake(self):
         # Always going to go to 0
@@ -235,7 +246,7 @@ class PowerCommand(QObject):
                     self.brake_status.no_apply_service_brake()
                 
             elif current_velocity < desired_velocity:
-                self.brake_status.no_apply_service_brake()
+                # self.brake_status.no_apply_service_brake()
                 if self.module == 1:
                     # self.brake_status.no_apply_service_brake()
                     # # print(f"Desired Speed: {desired_velocity:.2f} m/s, Current Speed: {current_velocity:.2f} m/s")
@@ -439,7 +450,19 @@ class SpeedControl(QObject):
                     self.power_class.update_power_command(self.current_velocity, self.desired_velocity)
                 else:
                     if self.brake_status.driver_service_brake_command:
-                        self.brake_status.no_apply_service_brake()
+                        if not self.brake_status.manual_driver_service_brake_command:
+                            
+                            
+                            # CAUSES BREAK TO NOT STOP RIGHT BEFORE GOING BELOW THE COMMANDED SPEED (JUST GOES TO ZERO)
+                            self.brake_status.no_apply_service_brake()
+                            
+                        elif self.brake_status.manual_driver_service_brake_command:
+                            pass
+                        
+                        # If driver manually applies service brake, then the no_apply_service_brake() function should NOT be called
+                        
+                        
+                        
                         print(f"Commanded Speed: {self.commanded_speed:.2f} m/s")
                         self.desired_velocity = self.commanded_speed
                         print(f"Desired Speed: {self.desired_velocity:.2f} m/s")
@@ -665,7 +688,10 @@ class Position(QObject):
         # print(f"Commanded Authority: {authority}")
         # # When the commanded authority goes from 1 -> 0, this print statement is not displayed, but it is displayed for 166 blocks
       
-        self.commanded_authority = authority - 1
+        if authority is not None:
+            self.commanded_authority = authority - 1
+        else:
+            self.commanded_authority = 0
         self.commanded_authority_signal.emit(self.commanded_authority)
         
     # Connect function for the Communicate class
@@ -1118,8 +1144,8 @@ class TrainControllerUI(QWidget):
         self.brake_button.setStyleSheet("margin-top: 40px; background-color: yellow; font-size: 16px; border-radius: 10px; font-weight: bold; color: black; border: 3px solid black; padding-top: 20px; max-width: 150px; padding-bottom: 20px")
         self.brake_button.pressed.connect(self.divet_in_service_brake_button)
         self.brake_button.released.connect(self.reset_service_brake_button_style)
-        self.brake_button.pressed.connect(self.brake_class.apply_service_brake)
-        self.brake_button.released.connect(self.brake_class.no_apply_service_brake)
+        self.brake_button.pressed.connect(self.brake_class.manual_apply_service_brake)
+        self.brake_button.released.connect(self.brake_class.manual_no_apply_service_brake)
         main_grid.addWidget(self.brake_button, 8, 0)  # Ensure it spans across two columns
         
         
