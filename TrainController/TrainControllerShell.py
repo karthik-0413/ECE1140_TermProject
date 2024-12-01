@@ -126,7 +126,7 @@ class TrainControllerShell:
                 if self.train_controller_list:
                     self.trainControllerUI = self.train_controller_list[self.current_train_id - 1]
                     
-                self.update_UI()
+                # self.update_UI()    
                 # self.connect_signals()
             
         

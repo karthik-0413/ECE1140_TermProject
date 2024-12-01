@@ -1057,9 +1057,8 @@ class TrainControllerUI(QWidget):
             self.dropdown.addItem("No Trains Available")
         self.dropdown.setStyleSheet("font: Times New Roman; font-size: 20px; padding: 5px; margin-left: 10px; border: 2px solid black;")  # Style the dropdown with black border
         self.dropdown.setFixedWidth(150)  # Set a fixed width for the dropdown if desired
-        if self.train_id_list:
-            self.dropdown.currentIndexChanged.connect(self.save_dropdown_selection)  # Connect to a method to save the selection
-            
+        self.dropdown.currentIndexChanged.connect(self.save_dropdown_selection)  # Connect to a method to save the selection
+        
         self.communicator2.train_id_list.connect(self.change_train_id)
 
         # Add dropdown to the title banner layout
