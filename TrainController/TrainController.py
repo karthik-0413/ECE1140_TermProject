@@ -994,11 +994,13 @@ class TrainControllerUI(QWidget):
         self.train_id_list = train_id_list
         print(f"Train ID List Received in Controller File: {self.train_id_list}")
         
-        # self.selected_train_id = 0
-        # self.communicator2.selected_train_id.emit(self.selected_train_id)
 
         # Clear the dropdown before updating items
-        self.dropdown.clear()
+        # SHOULD ONLY CLEAR IF THE ONLY ITEM IN THE DROPDOWN IS "No Trains Available"
+        if self.dropdown.itemText(0) == "No Trains Available":
+            self.dropdown.clear()
+            self.selected_train_id = 0
+            self.communicator2.selected_train_id.emit(self.selected_train_id)
 
         # Add all train IDs to the dropdown
         for train_id in self.train_id_list:
@@ -1692,8 +1694,15 @@ class TrainControllerUI(QWidget):
         # # print(f"Desired Temperature: {self.temperature.desired_temperature}")
         
     def save_dropdown_selection(self):
+        # If Train 1 is selected, then the currentIndex is 0 AND we should emit 1 as the train id to the shell class
         self.communicator2.selected_train_id.emit(self.dropdown.currentIndex() + 1)
+        
+        # Index of the selected train id. eg. If Train 1 is selected, then the index is 0
         index_of_train_id = self.dropdown.currentIndex()
+        
+        print(f"Index of Train ID: {index_of_train_id}")
+        
+        # We want to index the variable lists in the shell class with this index
         self.selected_train_id = self.train_id_list[index_of_train_id]
         # # print(f"Selected Train ID: {self.train_id}")
         
