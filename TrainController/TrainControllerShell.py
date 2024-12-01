@@ -23,6 +23,7 @@ class TrainControllerShell:
         self.trainControllerUI = trainControllerUI
         
         # Initializing the variables needed
+        self.counter = 0
         self.current_train_id = 1
         self.train_count = 1
         self.previous_train_id = None
@@ -108,11 +109,23 @@ class TrainControllerShell:
                 
                 
                 if train_id > len(self.train_controller_list):
-                    self.create_and_add_train_controller_and_engineer_ui()
-                    self.connect_signals()
-                    self.read_from_train_model() 
-                    print(f"Train ID List: {self.train_id_list}")
-                    self.communicator2.train_id_list.emit(self.train_id_list)
+                    self.counter += 1
+                    
+                    # Want Software for all trains except for the second train dispatched
+                    if self.counter != 2:
+                        self.create_and_add_train_controller_and_engineer_ui(True)
+                        self.connect_signals()
+                        self.read_from_train_model() 
+                        print(f"Train ID List: {self.train_id_list}")
+                        self.communicator2.train_id_list.emit(self.train_id_list)
+                        
+                    # Only want Hardware for second Train that was dispatched
+                    elif self.counter == 2:
+                        self.create_and_add_train_controller_and_engineer_ui(False)
+                        self.connect_signals()
+                        self.read_from_train_model() 
+                        print(f"Train ID List: {self.train_id_list}")
+                        self.communicator2.train_id_list.emit(self.train_id_list)
                 elif train_id < len(self.train_controller_list):
                     self.remove_train_controller_and_engineer_ui(self.train_controller_list[0], self.train_engineer_list[0])
                     
@@ -141,19 +154,19 @@ class TrainControllerShell:
             self.train_id_list.pop(0)
             self.communicator2.train_id_list.emit(self.train_id_list)
 
-    def create_and_add_train_controller_and_engineer_ui(self):
-        new_train_controller_ui, new_train_engineer_ui = self.create_new_train_controller_and_engineer_ui()
+    def create_and_add_train_controller_and_engineer_ui(self, module: bool):
+        new_train_controller_ui, new_train_engineer_ui = self.create_new_train_controller_and_engineer_ui(module)
         self.train_controller_list.append(new_train_controller_ui)
         self.train_engineer_list.append(new_train_engineer_ui)
         if len(self.train_controller_list) == 1:
             new_train_controller_ui.show()
             new_train_engineer_ui.show()
             
-    def create_new_train_controller_and_engineer_ui(self):
+    def create_new_train_controller_and_engineer_ui(self, module: bool):
         doors = Doors()
         tuning = Tuning()
         brake_status = BrakeStatus(self.communicator)
-        power_class = PowerCommand(brake_status, tuning)
+        power_class = PowerCommand(brake_status, tuning, module)
         speed_control = SpeedControl(power_class, brake_status, self.communicator)
         failure_modes = FailureModes(speed_control, power_class)
         lights = Lights(speed_control)

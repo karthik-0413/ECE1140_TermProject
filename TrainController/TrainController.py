@@ -158,7 +158,7 @@ class BrakeStatus(QObject):
 class PowerCommand(QObject):
     power_command_signal = pyqtSignal(float)
     
-    def __init__(self, brake_status: BrakeStatus, tuning: Tuning):
+    def __init__(self, brake_status: BrakeStatus, tuning: Tuning, module: bool = True):
         super().__init__()
         self.max_power = 120000
         self.uk_current = 0.0
@@ -168,7 +168,7 @@ class PowerCommand(QObject):
         self.power_command = 0.0
         self.tuning = tuning
         self.brake_status = brake_status
-        self.module = 1     # 1 for Software, 0 for Hardware
+        self.module = module     # 1 for Software, 0 for Hardware
         self.raspberry_pi_hostname = '192.168.0.204'
         self.raspberry_pi_port = 22
         self.raspberry_pi_username = 'maj214'
