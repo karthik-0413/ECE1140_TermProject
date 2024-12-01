@@ -547,7 +547,7 @@ class TrainData(QObject):
         self.tc_communicate.actual_temperature_signal.emit(self.cabin_temperature)  # Fahrenheit
         self.tc_communicate.polarity_signal.emit(self.polarity)  # Pass polarity to Train Controller
         self.tc_communicate.passenger_brake_command_signal.emit(self.passenger_emergency_brake)
-        # self.tc_communicate.train_count_signal.emit(self.train_count)
+        self.tc_communicate.train_count_signal.emit(self.train_count)
 
         # Send data to Track Model
         self.tm_communicate.position_signal.emit(self.current_position)  # meters

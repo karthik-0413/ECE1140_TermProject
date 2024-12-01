@@ -4,31 +4,38 @@ import os
 import os
 from PyQt6.QtWidgets import QApplication
 
+# from TrainController import *
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from TrainController.TrainController import *
 from Resources.TrainTrainControllerComm import TrainTrainController as Communicate
+from TrainController.ControllerToShellCommuicate import *
 
 class TrainControllerShell:
-    def __init__(self, communicator: Communicate, trainControllerUI: TrainControllerUI):
+    def __init__(self, communicator: Communicate, trainControllerUI: TrainControllerUI, communicator2: ControllerToShellCommunicate):
         # Making a list of needed Train Controller UI instances
         self.train_controller_list: list[TrainControllerUI] = []
         self.train_engineer_list: list[TrainEngineerUI] = []
         
         # Setting up the parameters
         self.communicator = communicator
+        self.communicator2 = communicator2
         self.trainControllerUI = trainControllerUI
         
         # Initializing the variables needed
         self.current_train_id = 1
         self.train_count = 1
+        self.previous_train_id = None
+        self.total_train_id = None
+        self.train_id_list = []
         self.total_commanded_authority = []
         self.previous_commanded_authority = []
         
         # Calling all of the necessary __init__ functions
-        self.create_and_add_train_controller_and_engineer_ui()
-        self.connect_signals()
-        # self.communicator.train_count_signal.connect(self.handle_train_id)
-        self.read_from_train_model()
+        # self.create_and_add_train_controller_and_engineer_ui()
+        # self.connect_signals()
+        self.communicator.train_count_signal.connect(self.handle_train_id)
+        # self.read_from_train_model()
         
         
     
@@ -82,14 +89,46 @@ class TrainControllerShell:
     ############################
         
     def handle_train_id(self, train_id: int):
-        # # print(f"Train ID: {train_id}")
-        self.current_train_id = train_id
-        
-        # Set self.trainControllerUI to the current train controller UI in the list
-        self.trainControllerUI = self.train_controller_list[self.current_train_id - 1]
-        # self.update_UI()
-        # self.connect_signals()
-        
+        if train_id != 0:
+            self.previous_train_id = self.total_train_id
+            self.total_train_id = train_id
+            if self.total_train_id != self.previous_train_id:
+                print(f"Train ID: {train_id}")
+                self.train_id_list.append(train_id)
+                print(f"Train ID List: {self.train_id_list}")
+                self.communicator2.train_id_list.emit(self.train_id_list)
+                print("Updated Train ID List Emitted")
+                
+                
+                # Need a list of train ids to keep track of the number of trains on track. eg. [0, 1, 2] means there are 3 trains on track
+                # This list should be sent to the TrainControllerUI everytime it is updated to update the dropdown options
+                # Use the index of the selected train id in the dropdown in the train id list in order to index all of the variables eg. this value should be the current_train_id value
+                # The TrainControllerShell should also have a signal that sends the selected train id to the TrainControllerUI to update the UI with the corresponding train controller values
+                # When a train arrives back to the yard and is removed, then the train id should be removed from the list and the train controller/engineer UI should be removed from the list in order to align the train id list with the number of trains on track
+                
+                
+                
+                
+                if train_id > len(self.train_controller_list):
+                    self.create_and_add_train_controller_and_engineer_ui()
+                    self.connect_signals()
+                    self.read_from_train_model() 
+                elif train_id < len(self.train_controller_list):
+                    self.remove_train_controller_and_engineer_ui(self.train_controller_list[0], self.train_engineer_list[0])
+                    
+                
+                
+                # BEFORE:
+                # # print(f"Train ID: {train_id}")
+                self.current_train_id = train_id
+                
+                # Set self.trainControllerUI to the current train controller UI in the list
+                if self.train_controller_list:
+                    self.trainControllerUI = self.train_controller_list[self.current_train_id - 1]
+                    
+                self.update_UI()
+                # self.connect_signals()
+            
         
     ###########################################################
     # IMPLEMENT ADD/REMOVE TRAIN CONTROLLER UI FUNCTIONS HERE #
@@ -99,6 +138,8 @@ class TrainControllerShell:
         if train_controller_ui in self.train_controller_list and train_engineer_ui in self.train_engineer_list:
             self.train_controller_list.remove(train_controller_ui)
             self.train_engineer_list.remove(train_engineer_ui)
+            self.train_id_list.pop(0)
+            self.communicator2.train_id_list.emit(self.train_id_list)
 
     def create_and_add_train_controller_and_engineer_ui(self):
         new_train_controller_ui, new_train_engineer_ui = self.create_new_train_controller_and_engineer_ui()
@@ -119,7 +160,7 @@ class TrainControllerShell:
         temperature = Temperature()
         position = Position(doors, failure_modes, speed_control, power_class, self.communicator, lights, brake_status)
         
-        train_controller_ui = TrainControllerUI(self.communicator, doors, tuning, brake_status, power_class, speed_control, failure_modes, position, lights, temperature)
+        train_controller_ui = TrainControllerUI(self.communicator, self.communicator2, doors, tuning, brake_status, power_class, speed_control, failure_modes, position, lights, temperature)
         train_engineer_ui = TrainEngineerUI(tuning, power_class)
         return train_controller_ui, train_engineer_ui
     
@@ -171,12 +212,13 @@ class TrainControllerShell:
         
     def update_commanded_speed(self, commanded_speed: list):
         # For all Trains - WORKS
-        if len(commanded_speed):
-            for i in range(len(commanded_speed)):
-                if commanded_speed[i] == 0:
-                    self.train_controller_list[i].speed_control.handle_commanded_speed(0)
-                else:
-                    self.train_controller_list[i].speed_control.handle_commanded_speed(commanded_speed[i])
+        if len(self.train_controller_list):
+            if len(commanded_speed):
+                for i in range(len(commanded_speed)):
+                    if commanded_speed[i] == 0:
+                        self.train_controller_list[i].speed_control.handle_commanded_speed(0)
+                    else:
+                        self.train_controller_list[i].speed_control.handle_commanded_speed(commanded_speed[i])
         
         
         
@@ -194,15 +236,17 @@ class TrainControllerShell:
         self.previous_commanded_authority = self.total_commanded_authority
         self.total_commanded_authority = commanded_authority    # current c_auth
         
-        # For all Trains - WORKS
-        if len(self.total_commanded_authority):
-            if len(self.previous_commanded_authority):
-                for i in range(len(self.total_commanded_authority)):
-                    if self.total_commanded_authority[i] != self.previous_commanded_authority[i]:
-                        self.train_controller_list[i].position.handle_commanded_authority(commanded_authority[i])
-            else:
-                for i in range(len(self.total_commanded_authority)):
-                    self.train_controller_list[i].position.handle_commanded_authority(commanded_authority[i])
+        if len(self.train_controller_list):
+            # For all Trains - WORKS
+            if len(self.total_commanded_authority):
+                if len(self.previous_commanded_authority):
+                    for i in range(len(self.total_commanded_authority)):
+                        if self.total_commanded_authority[i] != self.previous_commanded_authority[i]:
+                            self.train_controller_list[i].position.handle_commanded_authority(commanded_authority[i])
+                else:
+                    if len(self.train_controller_list):
+                        for i in range(len(self.total_commanded_authority)):
+                            self.train_controller_list[i].position.handle_commanded_authority(commanded_authority[i])
         
         # BEFORE:
         # if len(self.total_commanded_authority):
@@ -214,31 +258,36 @@ class TrainControllerShell:
         #         self.train_controller_list[0].position.handle_commanded_authority(commanded_authority[0])
 
     def update_current_velocity(self, current_velocity: list):
-        for i in range(len(current_velocity)):
-            self.train_controller_list[i].speed_control.handle_current_velocity(current_velocity[i])
-        # # print(f"Current Velocity: {current_velocity}")
+        if len(self.train_controller_list):
+            for i in range(len(current_velocity)):
+                self.train_controller_list[i].speed_control.handle_current_velocity(current_velocity[i])
+            # # print(f"Current Velocity: {current_velocity}")
 
     def update_engine_failure(self, engine_failure: list):
-        for i in range(len(engine_failure)):
-            self.train_controller_list[i].failure_modes.handle_engine_failure(engine_failure[i])
-        # # print(f"Engine Failure: {engine_failure}")
+        if len(self.train_controller_list):
+            for i in range(len(engine_failure)):
+                self.train_controller_list[i].failure_modes.handle_engine_failure(engine_failure[i])
+            # # print(f"Engine Failure: {engine_failure}")
 
     def update_brake_failure(self, brake_failure: list):
-        for i in range(len(brake_failure)):
-            self.train_controller_list[i].failure_modes.handle_brake_failure(brake_failure[i])
-        # # print(f"Brake Failure: {brake_failure}")
+        if len(self.train_controller_list):
+            for i in range(len(brake_failure)):
+                self.train_controller_list[i].failure_modes.handle_brake_failure(brake_failure[i])
+            # # print(f"Brake Failure: {brake_failure}")
 
     def update_signal_failure(self, signal_failure: list):
-        for i in range(len(signal_failure)):
-            self.train_controller_list[i].failure_modes.handle_signal_failure(signal_failure[i])
-        # # print(f"Signal Failure: {signal_failure}")
+        if len(self.train_controller_list):
+            for i in range(len(signal_failure)):
+                self.train_controller_list[i].failure_modes.handle_signal_failure(signal_failure[i])
+            # # print(f"Signal Failure: {signal_failure}")
 
     def update_passenger_brake_command(self, passenger_brake_command: list):
-        for i in range(len(passenger_brake_command)):
-            self.train_controller_list[i].brake_class.handle_passenger_brake_command(passenger_brake_command[i])
-            if passenger_brake_command[i]:
-                self.train_controller_list[i].speed_control.desired_velocity = 0
-        # # print(f"Passenger Brake Command: {passenger_brake_command}")
+        if len(self.train_controller_list):
+            for i in range(len(passenger_brake_command)):
+                self.train_controller_list[i].brake_class.handle_passenger_brake_command(passenger_brake_command[i])
+                if passenger_brake_command[i]:
+                    self.train_controller_list[i].speed_control.desired_velocity = 0
+            # # print(f"Passenger Brake Command: {passenger_brake_command}")
 
     def update_actual_temperature(self, actual_temperature: list):
         pass
@@ -247,9 +296,10 @@ class TrainControllerShell:
         # # print(f"Actual Temperature: {actual_temperature}")
 
     def update_polarity(self, polarity: list):
-        for i in range(len(polarity)):
-            self.train_controller_list[i].position.handle_polarity_change(polarity[i])
-        ## print(f"Polarity: {polarity}")
+        if len(self.train_controller_list):
+            for i in range(len(polarity)):
+                self.train_controller_list[i].position.handle_polarity_change(polarity[i])
+                ## print(f"Polarity: {polarity}")
 
     # def update_train_count(self, train_count: int):
     #     if self.train_count > train_count:
@@ -371,7 +421,7 @@ class TrainControllerShell:
 #     failure_modes = FailureModes(speed_control, power_class)
 #     lights = Lights(speed_control)
 #     temperature = Temperature()
-#     position = Position(doors, failure_modes, speed_control, power_class, train_trainControllerComm, lights)
+#     position = Position(doors, failure_modes, speed_control, power_class, train_trainControllerComm, lights, brake_status)
     
 #     trainControllerUI = TrainControllerUI(train_trainControllerComm, doors, tuning, brake_status, power_class, speed_control, failure_modes, position, lights, temperature)
 

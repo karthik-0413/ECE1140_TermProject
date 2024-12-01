@@ -7,6 +7,7 @@ from Resources.CTCTrain import CTCTrain
 from Resources.CTCWaysideComm import CTCWaysideControllerComm
 from Resources.Clock import *
 from Resources.TrainTrainControllerComm import TrainTrainController
+from TrainController.ControllerToShellCommuicate import *
 from TrainController.TrainController import *
 from TrainController.TrainControllerShell import TrainControllerShell
 from TrainModel.train_data import TrainData
@@ -67,6 +68,9 @@ if __name__ == '__main__':
     # CTC <-> Wayside Controller Communication
     comm4 = CTCWaysideControllerComm()
     
+    # Train Controller -> Train Controller Shell Communication
+    comm6 = ControllerToShellCommunicate()
+    
     
     # CTC Office
     ctc_ui = CTC_frontend(comm1, comm4)
@@ -93,8 +97,8 @@ if __name__ == '__main__':
     temperature = Temperature()
     position = Position(doors, failure_modes, speed_control, power_class, comm5, lights, brake_status)
     
-    tc_window = TrainControllerUI(comm5, doors, tuning, brake_status, power_class, speed_control, failure_modes, position, lights, temperature)
-    tc_shell_window = TrainControllerShell(comm5, tc_window)
+    tc_window = TrainControllerUI(comm5, comm6, doors, tuning, brake_status, power_class, speed_control, failure_modes, position, lights, temperature)
+    tc_shell_window = TrainControllerShell(comm5, tc_window, comm6)
 
     # Show all windows
     ctc_window.show()

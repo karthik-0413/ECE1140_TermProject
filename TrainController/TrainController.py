@@ -9,6 +9,7 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt, QCoreApplication, pyqtSignal, QObject, QTimer
 from PyQt6.QtGui import QDoubleValidator
 from TrainController.TrainControllerHW import send_numbers_to_pi
+from TrainController.ControllerToShellCommuicate import ControllerToShellCommunicate as Communicate2
 # from TrainControllerHW import send_numbers_to_pi
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -716,6 +717,7 @@ class Position(QObject):
       
         if authority is not None:
             self.commanded_authority = authority - 1
+            print(f"Commanded Authority: {self.commanded_authority}")
         else:
             self.commanded_authority = 0
         self.commanded_authority_signal.emit(self.commanded_authority)
@@ -986,12 +988,25 @@ class TrainEngineerUI(QWidget):
 class TrainControllerUI(QWidget):
     # Pyqtsignals for UI Changes for Shell Class depending on the Train ID Selected
     train_id_signal = pyqtSignal(int)
+    train_id_list_signal = pyqtSignal(list)
     
-    def __init__(self, communicator: Communicate, doors: Doors, tuning: Tuning, brake_class: BrakeStatus, power_class: PowerCommand, speed_control: SpeedControl, failure_modes: FailureModes, position: Position, lights: Lights, temperature: Temperature):
+    def change_train_id(self, train_id_list):
+        self.train_id_list = train_id_list
+        print(f"Train ID List Received in Controller File: {self.train_id_list}")
+        self.dropdown.clear()
+        self.selected_train_id = 0
+        self.communicator2.selected_train_id.emit(self.selected_train_id)
+        self.dropdown.addItems([f"Train {train_id}" for train_id in self.train_id_list])
+        # Print Items in Dropdown
+        for i in range(self.dropdown.count()):
+            print(self.dropdown.itemText(i))
+    
+    def __init__(self, communicator: Communicate, communicator2: Communicate2, doors: Doors, tuning: Tuning, brake_class: BrakeStatus, power_class: PowerCommand, speed_control: SpeedControl, failure_modes: FailureModes, position: Position, lights: Lights, temperature: Temperature):
         super().__init__()
     
-        # Train ID Variable
-        self.train_id = 1
+        # Train ID Variables
+        self.selected_train_id = 0
+        self.train_id_list = []
         
         # Make a copy of all sub-classes
         self.doors = doors
@@ -1006,6 +1021,7 @@ class TrainControllerUI(QWidget):
         
         # PyqtSignal Class to communicate with the Train Model
         self.communicator = communicator
+        self.communicator2 = communicator2
         
         # self.power_class.power_command_signal.connect(self.change_power_UI)
         
@@ -1035,11 +1051,16 @@ class TrainControllerUI(QWidget):
 
         # Dropdown (ComboBox)
         self.dropdown = QComboBox()
-        self.dropdown.addItems(["Train 1", "Train 2", "Train 3"])  # Add your options here
+        if self.train_id_list:
+            self.dropdown.addItems([f"Train {train_id}" for train_id in self.train_id_list])
+        else:
+            self.dropdown.addItem("No Trains Available")
         self.dropdown.setStyleSheet("font: Times New Roman; font-size: 20px; padding: 5px; margin-left: 10px; border: 2px solid black;")  # Style the dropdown with black border
         self.dropdown.setFixedWidth(150)  # Set a fixed width for the dropdown if desired
-        self.dropdown.setEnabled(False)  # Enable the dropdown
-        self.dropdown.currentIndexChanged.connect(self.save_dropdown_selection)  # Connect to a method to save the selection
+        if self.train_id_list:
+            self.dropdown.currentIndexChanged.connect(self.save_dropdown_selection)  # Connect to a method to save the selection
+            
+        self.communicator2.train_id_list.connect(self.change_train_id)
 
         # Add dropdown to the title banner layout
         title_banner.addWidget(self.dropdown)
@@ -1661,8 +1682,9 @@ class TrainControllerUI(QWidget):
         # # print(f"Desired Temperature: {self.temperature.desired_temperature}")
         
     def save_dropdown_selection(self):
-        self.train_id_signal.emit(self.dropdown.currentIndex() + 1)
-        self.train_id = self.dropdown.currentIndex() + 1
+        self.communicator2.selected_train_id.emit(self.dropdown.currentIndex() + 1)
+        index_of_train_id = self.dropdown.currentIndex()
+        self.selected_train_id = self.train_id_list[index_of_train_id]
         # # print(f"Selected Train ID: {self.train_id}")
         
         
