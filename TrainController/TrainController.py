@@ -1043,7 +1043,7 @@ class TrainControllerUI(QWidget):
 
         # Title Label
         title_label = QLabel("Train Controller")
-        title_label.setStyleSheet("font: Times New Roman; font-size: 30px; font-weight: bold; color: white; background-color: blue; border-radius: 10px; padding: 10px;")
+        title_label.setStyleSheet("font: Times New Roman; font-size: 30px; font-weight: bold; color: white; background-color: #0055FF; border-radius: 10px; padding: 10px;")
         title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         # Add the title label to the banner layout
@@ -1067,7 +1067,7 @@ class TrainControllerUI(QWidget):
         # Title Container
         title_container = QWidget()
         title_container.setLayout(title_banner)
-        title_container.setStyleSheet("background-color: blue; border-radius: 10px;")  # Set background color and border radius
+        title_container.setStyleSheet("background-color: #0055FF; border-radius: 10px;")  # Set background color and border radius
         title_container.setContentsMargins(0, 0, 0, 0)
 
         # Add the title container to the main layout
