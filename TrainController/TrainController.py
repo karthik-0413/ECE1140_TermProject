@@ -993,13 +993,24 @@ class TrainControllerUI(QWidget):
     def change_train_id(self, train_id_list):
         self.train_id_list = train_id_list
         print(f"Train ID List Received in Controller File: {self.train_id_list}")
+        
+        # self.selected_train_id = 0
+        # self.communicator2.selected_train_id.emit(self.selected_train_id)
+
+        # Clear the dropdown before updating items
         self.dropdown.clear()
-        self.selected_train_id = 0
-        self.communicator2.selected_train_id.emit(self.selected_train_id)
-        self.dropdown.addItems([f"Train {train_id}" for train_id in self.train_id_list])
-        # Print Items in Dropdown
+
+        # Add all train IDs to the dropdown
+        for train_id in self.train_id_list:
+            train_str = f"Train {train_id}"
+            print(f"Train String: {train_str}")
+            self.dropdown.addItem(train_str)
+            print(f"Train ID Added: {train_str}")
+
+        # Print Items in Dropdown - Works just not updating properly
         for i in range(self.dropdown.count()):
-            print(self.dropdown.itemText(i))
+            print(f"Item in Dropdown: {self.dropdown.itemText(i)}")
+
     
     def __init__(self, communicator: Communicate, communicator2: Communicate2, doors: Doors, tuning: Tuning, brake_class: BrakeStatus, power_class: PowerCommand, speed_control: SpeedControl, failure_modes: FailureModes, position: Position, lights: Lights, temperature: Temperature):
         super().__init__()

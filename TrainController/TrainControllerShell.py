@@ -95,8 +95,6 @@ class TrainControllerShell:
             if self.total_train_id != self.previous_train_id:
                 print(f"Train ID: {train_id}")
                 self.train_id_list.append(train_id)
-                print(f"Train ID List: {self.train_id_list}")
-                self.communicator2.train_id_list.emit(self.train_id_list)
                 print("Updated Train ID List Emitted")
                 
                 
@@ -113,6 +111,8 @@ class TrainControllerShell:
                     self.create_and_add_train_controller_and_engineer_ui()
                     self.connect_signals()
                     self.read_from_train_model() 
+                    print(f"Train ID List: {self.train_id_list}")
+                    self.communicator2.train_id_list.emit(self.train_id_list)
                 elif train_id < len(self.train_controller_list):
                     self.remove_train_controller_and_engineer_ui(self.train_controller_list[0], self.train_engineer_list[0])
                     
