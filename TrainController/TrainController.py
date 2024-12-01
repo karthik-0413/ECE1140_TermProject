@@ -413,8 +413,12 @@ class SpeedControl(QObject):
         # # print(f"Current Speed: {self.current_velocity:.2f} m/s")
         
     def handle_commanded_speed(self, speed: float):
+        if speed == 0:
+            self.desired_velocity = 0.0
+            self.power_class.update_power_command(self.current_velocity, self.desired_velocity)
+            # Brake to 0 with E-Brake
         # print(f"Commanded Speed: {speed:.2f} km/hr")
-        if self.operation_mode == 1 and self.desired_velocity > speed / 3.6:
+        elif self.operation_mode == 1 and self.desired_velocity > speed / 3.6:
             self.commanded_speed = speed / 3.6
             self.update_setpoint_speed_calculations(speed / 3.6)
         elif self.operation_mode == 0 and self.desired_velocity > speed / 3.6:
