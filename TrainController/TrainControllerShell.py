@@ -175,9 +175,9 @@ class TrainControllerShell:
         new_train_controller_ui, new_train_engineer_ui = self.create_new_train_controller_and_engineer_ui(module)
         self.train_controller_list.append(new_train_controller_ui)
         self.train_engineer_list.append(new_train_engineer_ui)
-        if len(self.train_controller_list) == 1:
-            new_train_controller_ui.show()
-            new_train_engineer_ui.show()
+        if self.counter == 1:
+            self.train_controller_list[0].show()
+            self.train_engineer_list[0].show()
             
     def create_new_train_controller_and_engineer_ui(self, module: bool):
         doors = Doors()
