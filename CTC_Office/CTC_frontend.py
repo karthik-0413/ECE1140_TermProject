@@ -1040,7 +1040,7 @@ class CTC_frontend(object):
             depart_time = dt.time(hour=departure_time.hour(),minute=departure_time.minute(),second=departure_time.second())
             print(depart_time)
             self.ctc.add_new_train_to_line("Green", dest, station, depart_time)
-            self.ctc_train_communicate.dispatch_train_signal.emit(1)
+            self.ctc_train_communicate.dispatch_train_signal.emit(len(self.ctc.line.train_list))
 
         self.updateUI()
         
