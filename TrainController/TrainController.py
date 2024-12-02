@@ -479,11 +479,11 @@ class SpeedControl(QObject):
         
     def handle_commanded_speed(self, speed: float):
         # km/hr to m/s
-        if self.commanded_speed > (speed / 3.6):
-            self.brake_status.entered_lower = True
-            self.find_max_speed()
-            self.desired_velocity = self.max_speed
-            self.power_class.update_power_command(self.current_velocity, self.desired_velocity)
+        # if self.commanded_speed > (speed / 3.6):
+        #     self.brake_status.entered_lower = True
+        #     self.find_max_speed()
+        #     self.desired_velocity = self.max_speed
+        #     self.power_class.update_power_command(self.current_velocity, self.desired_velocity)
             
         self.commanded_speed = speed / 3.6
         # print(f"Commanded Speed: {self.commanded_speed:.2f} m/s")
@@ -702,7 +702,7 @@ class Position(QObject):
                 self.commanded_authority -= 1
                 # print(f"Commanded authority: {self.commanded_authority}")
                 self.commanded_authority_signal.emit(self.commanded_authority)
-                if self.commanded_authority == 0:
+                if self.commanded_authority == 1:
                     self.calculate_desired_speed()
                     self.check_current_block()
             
@@ -753,7 +753,7 @@ class Position(QObject):
             
         # Close doors after 60 seconds
         # Close doors after 60 seconds
-        QTimer.singleShot(10000, self.close_doors)
+        QTimer.singleShot(60000, self.close_doors)
 
     def close_doors(self):
         self.door.close_left_door()

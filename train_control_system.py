@@ -14,7 +14,6 @@ from TrackModel.track_model_ui import Ui_TrackModel
 from Resources.TrackTrainComm import TrackTrainModelComm
 from TrackModel.track_model import track_model
 from Resources.WaysideTrackComm import WaysideControllerTrackComm
-
 from TrackController.wayside_shell import wayside_shell_class
 
 import sys
@@ -25,7 +24,7 @@ def handle_clock_tick(seconds, train_controller_shell: TrainControllerShell, tra
     if seconds % 2 == 0:
         ctc_frontend.ctc.write_to_communicate_objects()
         #print("Writing to communicate objects")
-        # wayside_shell.write()
+        wayside_shell_object.write()
         track_model_backend.write()
         train_model_data.train_data.write_to_trainController_trackModel()
         train_controller_shell.write_to_train_model()
