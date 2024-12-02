@@ -123,7 +123,7 @@ class TrainControllerTestBenchUI(QWidget):
         new_value = not current_value
         button.setProperty("toggled", new_value)
         button.setStyleSheet("background-color: red; color: white; border-radius: 5px; border: 2px solid black; padding: 5px" if new_value else "background-color: green; color: white; border-radius: 5px; border: 2px solid black; padding: 5px")
-        print(f"{variable_name} is now {'enabled' if new_value else 'disabled'}")
+        # print(f"{variable_name} is now {'enabled' if new_value else 'disabled'}")
         
         # Emit the corresponding signal
         if variable_name == "train_engine_failure":
@@ -138,7 +138,7 @@ class TrainControllerTestBenchUI(QWidget):
         new_value = not current_value
         self.passenger_brake_button.setProperty("toggled", new_value)
         self.passenger_brake_button.setStyleSheet("background-color: red; color: white; font-weight: bold; border-radius: 5px; border: 2px solid black; padding: 5px;" if new_value else "background-color: red; color: white; font-weight: bold; border-radius: 5px; border: 2px solid black; padding: 5px;")
-        print(f"Passenger brake command is now {'enabled' if new_value else 'disabled'}")
+        # print(f"Passenger brake command is now {'enabled' if new_value else 'disabled'}")
         
         # Emit the signal
         self.communicator.passenger_brake_command_signal.emit(new_value)
@@ -156,45 +156,45 @@ class TrainControllerTestBenchUI(QWidget):
             current_speed = float(variables['current_speed'])
             self.communicator.current_velocity_signal.emit(current_speed)
         except ValueError:
-            print("Invalid current speed input")
+            # print("Invalid current speed input")
 
         try:
             commanded_speed = float(variables['commanded_speed'])
             self.communicator.commanded_speed_signal.emit(commanded_speed)
         except ValueError:
-            print("Invalid commanded speed input")
+            # print("Invalid commanded speed input")
 
         try:
             commanded_authority = float(variables['commanded_authority'])
             self.communicator.commanded_authority_signal.emit(commanded_authority)
         except ValueError:
-            print("Invalid commanded authority input")
+            # print("Invalid commanded authority input")
         
-        # Print all variables to the terminal
-        print("Current Speed:", variables['current_speed'])
-        print("Commanded Speed:", variables['commanded_speed'])
-        print("Commanded Authority:", variables['commanded_authority'])
-        print("Beacon Destination Location:", variables['beacon_destination_location'])
-        print("Changes applied")
+        # # print all variables to the terminal
+        # print("Current Speed:", variables['current_speed'])
+        # print("Commanded Speed:", variables['commanded_speed'])
+        # print("Commanded Authority:", variables['commanded_authority'])
+        # print("Beacon Destination Location:", variables['beacon_destination_location'])
+        # print("Changes applied")
         
     # Slots to handle signals
     def handle_engine_failure(self, state):
-        print(f"Engine failure state changed to: {state}")
+        # print(f"Engine failure state changed to: {state}")
         
     def handle_brake_failure(self, state):
-        print(f"Brake failure state changed to: {state}")
+        # print(f"Brake failure state changed to: {state}")
         
     def handle_signal_failure(self, state):
-        print(f"Signal failure state changed to: {state}")
+        # print(f"Signal failure state changed to: {state}")
         
     def handle_passenger_brake_command(self, state):
-        print(f"Passenger brake command state changed to: {state}")
+        # print(f"Passenger brake command state changed to: {state}")
         
     def handle_commanded_speed(self, speed):
-        print(f"Commanded speed changed to: {speed}")
+        # print(f"Commanded speed changed to: {speed}")
         
     def handle_commanded_authority(self, authority):
-        print(f"Commanded authority changed to: {authority}")
+        # print(f"Commanded authority changed to: {authority}")
         
     # Handle announcement output
     def announcement_output_to_testbench(self, announcement):

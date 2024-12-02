@@ -12,12 +12,13 @@ from TrainModel.base_page import BasePage
 # from TrainModel.train_controller_communicate import TrainControllerCommunicate
 from Resources.TrainTrainControllerComm import TrainTrainController
 from TrainModel.track_model_communicate import TrackModelCommunicate
+from Resources.CTCTrain import CTCTrain
 from TrainModel.CTC_communicate import CTC_Train_Model_Communicate
 
 class MainWindow(QMainWindow):
     """Main window of the application."""
 
-    def __init__(self, ctc_train_communicate: CTC_Train_Model_Communicate, tc_communicate: TrainTrainController):
+    def __init__(self, ctc_train_communicate: CTCTrain, tc_communicate: TrainTrainController, tm_communicate: TrackModelCommunicate):
         super().__init__()
 
         self.setWindowTitle("Train Control Application")
@@ -25,12 +26,12 @@ class MainWindow(QMainWindow):
 
         # Create communication instances
         self.tc_communicate = tc_communicate
-        self.tm_communicate = TrackModelCommunicate()
+        self.tm_communicate = tm_communicate
         self.ctc_communicate = ctc_train_communicate
 
         # Create TrainData instance
         self.train_data = TrainData(self.tc_communicate, self.tm_communicate, self.ctc_communicate)
-        print("TrainData instance created")
+        # print("TrainData instance created")
 
         # Create tab widget
         self.tabs = QTabWidget()
@@ -60,7 +61,7 @@ class MainWindow(QMainWindow):
 
 def main():
     app = QApplication(sys.argv)
-    ctc_communicate = CTC_Train_Model_Communicate()
+    ctc_communicate = CTCTrain()
     tc_communicate = TrainTrainController()
     window = MainWindow(ctc_communicate, tc_communicate)
     window.show()
