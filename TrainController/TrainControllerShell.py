@@ -188,7 +188,7 @@ class TrainControllerShell:
         failure_modes = FailureModes(speed_control, power_class)
         lights = Lights(speed_control)
         temperature = Temperature()
-        position = Position(doors, failure_modes, speed_control, power_class, self.communicator, lights, brake_status)
+        position = Position(doors, failure_modes, speed_control, power_class, self.communicator, lights, brake_status, 'Green')
         
         train_controller_ui = TrainControllerUI(self.communicator, self.communicator2, doors, tuning, brake_status, power_class, speed_control, failure_modes, position, lights, temperature)
         train_engineer_ui = TrainEngineerUI(tuning, power_class)

@@ -666,7 +666,7 @@ class Lights(QObject):
 class Position(QObject):
     commanded_authority_signal = pyqtSignal(int)
     
-    def __init__(self, doors: Doors, failure_modes: FailureModes, speed_control: SpeedControl, power_class: PowerCommand, communicator: Communicate, lights: Lights, brake_status: BrakeStatus):
+    def __init__(self, doors: Doors, failure_modes: FailureModes, speed_control: SpeedControl, power_class: PowerCommand, communicator: Communicate, lights: Lights, brake_status: BrakeStatus, line: str):
         super().__init__()
         self.prev_authority = 0 # int
         self.commanded_authority = 111 + 1 - 1   # int
@@ -685,12 +685,17 @@ class Position(QObject):
         self.iterate = True
         self.repeat = False
         self.accept_authority = False
+        self.line = line
         
         # Variables needed for the Track Layouts (GREEN LINE)
         self.green_station = []
+        self.red_station = []
         self.green_station_door = []
+        self.red_station_door = []
         self.green_speed_limit = []
+        self.red_speed_limit = []
         self.green_underground = []
+        self.red_underground = []
         self.green_default_path_blocks = [
             0, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, # 39
             85, 84, 83, 82, 81, 80, 79, 78, 77, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, # 33
@@ -698,7 +703,16 @@ class Position(QObject):
             22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 151, 6, 5, 4, 3, 2, 1, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, # 42
             32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57 # 26
         ]
-        self.current_block = self.green_default_path_blocks[0]  # int
+        self.red_default_path_blocks = [
+            0, 9, 8, 7, 5, 4, 3, 2, 1, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48,
+            49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 52, 51, 50, 49, 48, 47, 46, 45, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35, 34, 33, 72, 73,
+            74, 75, 76, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10
+        ]
+        
+        if self.line == 'Green':
+            self.current_block = self.green_default_path_blocks[0]  # int
+        elif self.line == 'Red':
+            self.current_block = self.red_default_path_blocks[0]    # int
         
         # Load the track layout data from GreenLine.json file in Track Layouts folder
         with open(os.path.join(os.path.dirname(__file__), 'Track Layouts', 'GreenLine.json'), 'r') as file:
@@ -709,6 +723,16 @@ class Position(QObject):
                 self.green_underground.append(entry['Infrastructure'])
                 self.green_station_door.append(entry['Station Side'])
                 self.green_speed_limit.append(entry['Speed Limit (Km/Hr)'])
+                
+         # Load the track layout data from RedLine.json file in Track Layouts folder
+        with open(os.path.join(os.path.dirname(__file__), 'Track Layouts', 'RedLine.json'), 'r') as file:
+            data = json.load(file)
+            
+            for entry in data:
+                self.red_station.append(entry['Infrastructure'])
+                self.red_underground.append(entry['Infrastructure'])
+                self.red_station_door.append(entry['Station Side'])
+                self.red_speed_limit.append(entry['Speed Limit (Km/Hr)'])
         
     # Connect function for the Communicate class (Function is called every time the authority is changed OR decreased by 1)
     def handle_commanded_authority(self, authority: int):
@@ -740,21 +764,38 @@ class Position(QObject):
                     self.timer = QTimer()
                     self.timer.timeout.connect(self.check_current)
                     self.timer.start(100)
+                    
             
-            # Looping around the green line of the track
-            if self.current_block == 57:
-                self.current_block = 0
-                # stop iterating over the blocks
-                self.iterate = False
-            else:
-                if self.iterate == True:
-                    current_index = self.green_default_path_blocks.index(self.current_block)
-                    self.current_block = self.green_default_path_blocks[current_index + 1]
-                
-            # self.check_current_block()
-            self.check_block_underground()
-            # self.calculate_desired_speed()
-        # # print(f"Polarity: {self.polarity}")
+            if self.line == 'Green':
+                # Looping around the green line of the track
+                if self.current_block == 57:
+                    self.current_block = 0
+                    # stop iterating over the blocks
+                    self.iterate = False
+                else:
+                    if self.iterate == True:
+                        current_index = self.green_default_path_blocks.index(self.current_block)
+                        self.current_block = self.green_default_path_blocks[current_index + 1]
+                    
+                # self.check_current_block()
+                self.check_block_underground()
+                # self.calculate_desired_speed()
+                # # print(f"Polarity: {self.polarity}")
+            elif self.line == 'Red':
+                # Looping around the green line of the track
+                if self.current_block == 10:
+                    self.current_block = 0
+                    # stop iterating over the blocks
+                    self.iterate = False
+                else:
+                    if self.iterate == True:
+                        current_index = self.red_default_path_blocks.index(self.current_block)
+                        self.current_block = self.red_default_path_blocks[current_index + 1]
+                    
+                # self.check_current_block()
+                self.check_block_underground()
+                # self.calculate_desired_speed()
+                # # print(f"Polarity: {self.polarity}")
         
     def check_current(self):
         print(f"Current Velocity: {self.speed_control.current_velocity}")
@@ -769,37 +810,67 @@ class Position(QObject):
             self.timer.stop()
         
     def check_block_underground(self):
-        if "UNDERGROUND" in self.green_underground[self.current_block]:
-            self.light.turn_on_exterior_lights()
-            self.light.turn_on_interior_lights()
-            # # print("Underground Block")
-        elif "UNDERGROUND" not in self.green_underground[self.current_block] and (not self.light.manual_exterior_lights and not self.light.manual_interior_lights):  # Must check that the manual lights are not on
-            self.light.turn_off_exterior_lights()
-            self.light.turn_off_interior_lights()
-        #     # # print("Above Ground Block")
+        if self.line == 'Green':
+            if "UNDERGROUND" in self.green_underground[self.current_block]:
+                self.light.turn_on_exterior_lights()
+                self.light.turn_on_interior_lights()
+                # # print("Underground Block")
+            elif "UNDERGROUND" not in self.green_underground[self.current_block] and (not self.light.manual_exterior_lights and not self.light.manual_interior_lights):  # Must check that the manual lights are not on
+                self.light.turn_off_exterior_lights()
+                self.light.turn_off_interior_lights()
+            #     # # print("Above Ground Block")
+        elif self.line == 'Red':
+            if "UNDERGROUND" in self.red_underground[self.current_block]:
+                self.light.turn_on_exterior_lights()
+                self.light.turn_on_interior_lights()
+                # # print("Underground Block")
+            elif "UNDERGROUND" not in self.red_underground[self.current_block] and (not self.light.manual_exterior_lights and not self.light.manual_interior_lights):
+                self.light.turn_off_exterior_lights()
+                self.light.turn_off_interior_lights()
+            #     # # print("Above Ground Block")
             
             
     def check_current_block(self):
         # # print(f"Current Block: {self.current_block}")
         # if self.commanded_authority == 0:
             # Open Doors
-        if "Left" in self.green_station_door[self.current_block] and  "Right" not in self.green_station_door[self.current_block]:
-            self.door.open_left_door()
-            # # print("Left door opened")
-        elif "Right" in self.green_station_door[self.current_block] and  "Left" not in self.green_station_door[self.current_block]:
-            self.door.open_right_door()
-            # # print("Right door opened")
-        elif "Left" in self.green_station_door[self.current_block] and  "Right" in self.green_station_door[self.current_block]:
-            self.door.open_left_door()
-            self.door.open_right_door()
-            # # print("Both doors opened")
-        else:
-            self.door.close_left_door()
-            self.door.close_right_door()
-            # # print("No doors opened")
+        if self.line == 'Green':
+            if "Left" in self.green_station_door[self.current_block] and  "Right" not in self.green_station_door[self.current_block]:
+                self.door.open_left_door()
+                # # print("Left door opened")
+            elif "Right" in self.green_station_door[self.current_block] and  "Left" not in self.green_station_door[self.current_block]:
+                self.door.open_right_door()
+                # # print("Right door opened")
+            elif "Left" in self.green_station_door[self.current_block] and  "Right" in self.green_station_door[self.current_block]:
+                self.door.open_left_door()
+                self.door.open_right_door()
+                # # print("Both doors opened")
+            else:
+                self.door.close_left_door()
+                self.door.close_right_door()
+                # # print("No doors opened")
+                
+            # Close doors after 60 seconds
+            QTimer.singleShot(60000, self.close_doors)
             
-        # Close doors after 60 seconds
-        QTimer.singleShot(60000, self.close_doors)
+        elif self.line == 'Red':
+            if "Left" in self.red_station_door[self.current_block] and  "Right" not in self.red_station_door[self.current_block]:
+                self.door.open_left_door()
+                # # print("Left door opened")
+            elif "Right" in self.red_station_door[self.current_block] and  "Left" not in self.red_station_door[self.current_block]:
+                self.door.open_right_door()
+                # # print("Right door opened")
+            elif "Left" in self.red_station_door[self.current_block] and  "Right" in self.red_station_door[self.current_block]:
+                self.door.open_left_door()
+                self.door.open_right_door()
+                # # print("Both doors opened")
+            else:
+                self.door.close_left_door()
+                self.door.close_right_door()
+                # # print("No doors opened")
+                
+            # Close doors after 60 seconds
+            QTimer.singleShot(60000, self.close_doors)
 
     def close_doors(self):
         self.door.close_left_door()
@@ -826,21 +897,38 @@ class Position(QObject):
         
     def find_station_name(self):
         # Split the string by ';' and take the second part (station name)
-        try:
-            parts = self.green_station[self.current_block].split(';')
-            if len(parts) > 1:
-                self.station_name = parts[1].strip()
-                self.announcement = f"Welcome to {self.station_name} Station"
-                print(f"Station Name: {self.station_name}")
-                # print(f"Station Name: {self.station_name}")
-            else:
-                # Handle cases where the expected format is not present
+        if self.line == 'Green':
+            try:
+                parts = self.green_station[self.current_block].split(';')
+                if len(parts) > 1:
+                    self.station_name = parts[1].strip()
+                    self.announcement = f"Welcome to {self.station_name} Station"
+                    print(f"Station Name: {self.station_name}")
+                    # print(f"Station Name: {self.station_name}")
+                else:
+                    # Handle cases where the expected format is not present
+                    self.station_name = "Unknown"
+                    self.announcement = "Welcome to the station"
+            except IndexError:
                 self.station_name = "Unknown"
                 self.announcement = "Welcome to the station"
-        except IndexError:
-            self.station_name = "Unknown"
-            self.announcement = "Welcome to the station"
-        # pass
+            # pass
+        elif self.line == 'Red':
+            try:
+                parts = self.red_station[self.current_block].split(';')
+                if len(parts) > 1:
+                    self.station_name = parts[1].strip()
+                    self.announcement = f"Welcome to {self.station_name} Station"
+                    print(f"Station Name: {self.station_name}")
+                    # print(f"Station Name: {self.station_name}")
+                else:
+                    # Handle cases where the expected format is not present
+                    self.station_name = "Unknown"
+                    self.announcement = "Welcome to the station"
+            except IndexError:
+                self.station_name = "Unknown"
+                self.announcement = "Welcome to the station"
+            # pass
 
 class Temperature(QObject):
     current_temperature_signal = pyqtSignal(float)
