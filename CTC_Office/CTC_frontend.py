@@ -1027,20 +1027,21 @@ class CTC_frontend(object):
             
 
         station = self.StationSelector.currentText()
-        # print(f"Selected Station = {station}")
+        print(f"Selected Station = {station}")
 
         dest = self.ctc.find_destination(station)
         if dest == -1:
-            # print("Invalid Destination")
+            print("Invalid Destination")
             return
         else:
             
             departure_time = self.DepartureSelector.time()
-            # print(f"Departure Time = {departure_time.toString()}")
+        #     print(f"Departure Time = {departure_time.toString()}")
             depart_time = dt.time(hour=departure_time.hour(),minute=departure_time.minute(),second=departure_time.second())
-            # print(depart_time)
+        #     print(depart_time)
             self.ctc.add_new_train_to_line("Green", dest, station, depart_time)
-            self.ctc_train_communicate.dispatch_train_signal.emit(1)
+        #     print(f"Number of Trains = {len(self.ctc.line.train_list)}")
+            self.ctc_train_communicate.dispatch_train_signal.emit(len(self.ctc.line.train_list))
 
         self.updateUI()
         
@@ -1068,7 +1069,7 @@ class CTC_frontend(object):
     def upload_layout(self):
         filename, _ = QFileDialog.getOpenFileName(None, "Select Layout File", os.getcwd(), "Excel File (*.xlsx *.xls)")
         if filename:
-            # print("filename = ", filename)
+            print("filename = ", filename)
             self.ctc.upload_layout_to_line(filename)
 
         # Update Lines Selector
@@ -1078,7 +1079,7 @@ class CTC_frontend(object):
         # Update Station Selector
         self.StationSelector.clear()
         stations = self.ctc.get_stations()
-        # print("Stations = ", stations)
+        print("Stations = ", stations)
         self.StationSelector.addItems(stations)
 
         self.updateUI()

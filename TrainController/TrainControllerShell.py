@@ -127,22 +127,22 @@ class TrainControllerShell:
                     self.counter += 1
                     
                     # Want Software for all trains except for the second train dispatched
-                    if self.counter != 2:
-                        self.create_and_add_train_controller_and_engineer_ui(True)
-                        # self.current_train_id = train_id
-                        self.connect_signals()  # Connect Signals for the newly added trains with the for-loop inside of the connect_signals function
-                        self.read_from_train_model() 
-                        print(f"Train ID List: {self.train_id_list}")
-                        self.communicator2.train_id_list.emit(self.train_id_list)
+                    # if self.counter != 2:
+                    self.create_and_add_train_controller_and_engineer_ui(True)
+                    # self.current_train_id = train_id
+                    self.connect_signals()  # Connect Signals for the newly added trains with the for-loop inside of the connect_signals function
+                    self.read_from_train_model() 
+                    print(f"Train ID List: {self.train_id_list}")
+                    self.communicator2.train_id_list.emit(self.train_id_list)
                         
                     # Only want Hardware for second Train that was dispatched
-                    elif self.counter == 2:
-                        self.create_and_add_train_controller_and_engineer_ui(False)
-                        # self.current_train_id = train_id
-                        self.connect_signals()
-                        self.read_from_train_model() 
-                        print(f"Train ID List: {self.train_id_list}")
-                        self.communicator2.train_id_list.emit(self.train_id_list)
+                    # elif self.counter == 2:
+                    #     self.create_and_add_train_controller_and_engineer_ui(False)
+                    #     # self.current_train_id = train_id
+                    #     self.connect_signals()
+                    #     self.read_from_train_model() 
+                    #     print(f"Train ID List: {self.train_id_list}")
+                    #     self.communicator2.train_id_list.emit(self.train_id_list)
                 elif train_id < len(self.train_controller_list):
                     self.remove_train_controller_and_engineer_ui(self.train_controller_list[0], self.train_engineer_list[0])
                     
