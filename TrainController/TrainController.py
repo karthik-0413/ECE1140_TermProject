@@ -1092,9 +1092,11 @@ class TrainControllerUI(QWidget):
 
         # Add all train IDs to the dropdown
         for train_id in self.train_id_list:
-            train_str = f"Train {train_id}"
+            if f"Train {train_id}" not in [self.dropdown.itemText(i) for i in range(self.dropdown.count())]:
+                train_str = f"Train {train_id}"
+                self.dropdown.addItem(train_str)
             # print(f"Train String: {train_str}")
-            self.dropdown.addItem(train_str)
+            # self.dropdown.addItem(train_str)
             # print(f"Train ID Added: {train_str}")
 
         # Print Items in Dropdown - Works just not updating properly
