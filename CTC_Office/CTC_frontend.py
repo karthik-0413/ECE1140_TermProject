@@ -753,7 +753,7 @@ class CTC_frontend(object):
         self.suggested_speed_display.setObjectName("suggested_speed_display")
         self.train_outputs_layout.addWidget(self.suggested_speed_display, 1, 1, 1, 1)
         self.train_number_selector = QtWidgets.QSpinBox(parent=self.gridLayoutWidget_6)
-        self.train_number_selector.setEnabled(False)
+        self.train_number_selector.setEnabled(True)
         self.train_number_selector.setStyleSheet("font: 13pt \"Arial\";\n"
 "color: black;")
         self.train_number_selector.setObjectName("train_number_selector")
@@ -948,8 +948,8 @@ class CTC_frontend(object):
             for index, train in enumerate(self.ctc.line.train_list):
                 self.train_table.setItem(index, 0, QtWidgets.QTableWidgetItem(str(train.train_id)))
                 self.train_table.setItem(index, 1, QtWidgets.QTableWidgetItem(str(train.location)))
-                self.train_table.setItem(index, 2, QtWidgets.QTableWidgetItem(str(train.destination_station)))
-                self.train_table.setItem(index, 3, QtWidgets.QTableWidgetItem(str(train.arrival_time.strftime("%H:%M"))))
+                self.train_table.setItem(index, 2, QtWidgets.QTableWidgetItem(str(train.destination_strings[0])))
+                self.train_table.setItem(index, 3, QtWidgets.QTableWidgetItem(str(train.arrival_times[0].strftime("%H:%M"))))
                 self.train_table.setItem(index, 4, QtWidgets.QTableWidgetItem(str(train.departure_time.strftime("%H:%M"))))
         
                 for col in range(5):
@@ -1009,9 +1009,19 @@ class CTC_frontend(object):
             _translate = QtCore.QCoreApplication.translate
             item.setText(_translate("mainwindow", header))
 
+        if self.ctc.num_trains > 0:
+            self.train_number_selector.setRange(1, self.ctc.num_trains)
+        else:
+            self.train_number_selector.setRange(0, 0)
+
         if len(self.ctc.line.train_list):
-            self.suggested_speed_display.setText(str(self.ctc.line.train_list[self.train_number_selector.value()].suggested_speed))
-            self.authority_display.setText(str(self.ctc.line.train_list[self.train_number_selector.value()].authority))
+            
+            train_index = [train.train_id for train in self.ctc.line.train_list].index(self.train_number_selector.value())
+            self.suggested_speed_display.setText(str(self.ctc.line.train_list[train_index].suggested_speed))
+            self.authority_display.setText(str(self.ctc.line.train_list[train_index].authority))
+
+            
+            
 
 
     def update_block_occupancies(self, blocks: list):
@@ -1039,8 +1049,9 @@ class CTC_frontend(object):
             print(f"Departure Time = {departure_time.toString()}")
             depart_time = dt.time(hour=departure_time.hour(),minute=departure_time.minute(),second=departure_time.second())
             print(depart_time)
-            self.ctc.add_new_train_to_line("Green", dest, station, depart_time)
-            self.ctc_train_communicate.dispatch_train_signal.emit(1)
+            self.ctc.add_new_train_to_line(dest, depart_time, station)
+            self.ctc.line.train_list[-1].dispatch_train()
+            self.ctc_train_communicate.dispatch_train_signal.emit(self.ctc.num_trains)
 
         self.updateUI()
         
