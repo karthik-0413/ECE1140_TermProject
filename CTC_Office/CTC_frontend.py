@@ -126,6 +126,7 @@ class CTC_frontend(object):
         self.automatic_manual_toggle.setStyleSheet("background-color: rgb(255, 143, 27);\n"
 "color:black;")
         self.automatic_manual_toggle.setObjectName("automatic_manual_toggle")
+        self.automatic_manual_toggle.clicked.connect(self.auto_manual_toggle)
         self.InfoLayout.addWidget(self.automatic_manual_toggle, 3, 1, 1, 1, QtCore.Qt.AlignmentFlag.AlignHCenter|QtCore.Qt.AlignmentFlag.AlignVCenter)
         self.ScheduleFrame = QtWidgets.QFrame(parent=self.TrainTab)
         self.ScheduleFrame.setMinimumSize(QtCore.QSize(570, 200))
@@ -931,6 +932,7 @@ class CTC_frontend(object):
 
         _translate = QtCore.QCoreApplication.translate
 
+        self.wall_clock_time = dt.datetime.now()
         self.TimeLabel.setText(self.wall_clock_time.strftime("%H:%M"))
         self.TimeLabel_pg2.setText(self.wall_clock_time.strftime("%H:%M"))
         #self.ThroughputDisplay.setText(self.ctc.get_throughput())
@@ -1093,19 +1095,6 @@ class CTC_frontend(object):
         self.StationSelector.addItems(stations)
 
         self.updateUI()
-
-  
-
-    def time_step(self):
-
-        date = dt.datetime.now().date()
-        datetime = dt.datetime.combine(date, self.wall_clock_time)
-        datetime = datetime + dt.timedelta(milliseconds=100)
-
-        self.wall_clock_time = datetime.time()
-
-        self.updateUI()
-
 
 if __name__ == "__main__":
     

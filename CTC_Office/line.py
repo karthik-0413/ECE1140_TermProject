@@ -206,7 +206,7 @@ class Line():
             arrival_time = self.train_list[train_index].arrival_times[train_index]
             self.train_list[train_index].remove_destination(self.train_list[train_index].destinations[train_index])
             self.add_train_destination(train_id, dest, arrival_time, dest_string)
-            
+
         # send train 
         for train in self.train_list:
             if not train.destinations:
