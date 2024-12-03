@@ -741,7 +741,7 @@ class Position(QObject):
       
         if authority is not None:
             self.commanded_authority = authority - 1
-            print(f"Commanded Authority: {self.commanded_authority}")
+            # print(f"Commanded Authority: {self.commanded_authority}")
         else:
             self.commanded_authority = 0
         self.commanded_authority_signal.emit(self.commanded_authority)
@@ -1080,7 +1080,7 @@ class TrainControllerUI(QWidget):
     
     def change_train_id(self, train_id_list):
         self.train_id_list = train_id_list
-        print(f"Train ID List Received in Controller File: {self.train_id_list}")
+        # print(f"Train ID List Received in Controller File: {self.train_id_list}")
         
 
         # Clear the dropdown before updating items
@@ -1093,13 +1093,14 @@ class TrainControllerUI(QWidget):
         # Add all train IDs to the dropdown
         for train_id in self.train_id_list:
             train_str = f"Train {train_id}"
-            print(f"Train String: {train_str}")
+            # print(f"Train String: {train_str}")
             self.dropdown.addItem(train_str)
-            print(f"Train ID Added: {train_str}")
+            # print(f"Train ID Added: {train_str}")
 
         # Print Items in Dropdown - Works just not updating properly
         for i in range(self.dropdown.count()):
-            print(f"Item in Dropdown: {self.dropdown.itemText(i)}")
+            pass
+            # print(f"Item in Dropdown: {self.dropdown.itemText(i)}")
 
     
     def __init__(self, communicator: Communicate, communicator2: Communicate2, doors: Doors, tuning: Tuning, brake_class: BrakeStatus, power_class: PowerCommand, speed_control: SpeedControl, failure_modes: FailureModes, position: Position, lights: Lights, temperature: Temperature):
@@ -1507,7 +1508,7 @@ class TrainControllerUI(QWidget):
         self.temp_input.setStyleSheet("max-width: 100px; color: black; margin-left: 40px; border: 2px solid black; border-radius: 5px; padding: 3px;")
         self.temp_input.setAlignment(Qt.AlignmentFlag.AlignLeft)
         self.temp_input.setPlaceholderText("Enter temperature (70°F to 100°F)")  # Optional placeholder text
-        self.temp_input.editingFinished.connect(self.send_desired_temperature)
+        # self.temp_input.editingFinished.connect(self.send_desired_temperature)
         self.temp_input.editingFinished.connect(lambda: self.temperature.update_desired_temperature(float(self.temp_input.text())))
         self.desired_temp_box.addWidget(self.desired_temp_label)
         self.desired_temp_box.addWidget(self.temp_input)
@@ -1777,9 +1778,9 @@ class TrainControllerUI(QWidget):
             self.brake_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
             self.reset_emergency_brake_button_style()
         
-    def send_desired_temperature(self):
-        self.temperature.desired_temperature = float(self.temp_input.text())
-        # # print(f"Desired Temperature: {self.temperature.desired_temperature}")
+    # def send_desired_temperature(self):
+    #     self.temperature.desired_temperature = float(self.temp_input.text())
+    #     # # print(f"Desired Temperature: {self.temperature.desired_temperature}")
         
     def save_dropdown_selection(self):
         # If Train 1 is selected, then the currentIndex is 0 AND we should emit 1 as the train id to the shell class
@@ -1788,7 +1789,7 @@ class TrainControllerUI(QWidget):
         # Index of the selected train id. eg. If Train 1 is selected, then the index is 0
         index_of_train_id = self.dropdown.currentIndex()
         
-        print(f"Index of Train ID: {index_of_train_id}")
+        # print(f"Index of Train ID: {index_of_train_id}")
         
         # We want to index the variable lists in the shell class with this index
         self.selected_train_id = self.train_id_list[index_of_train_id]
