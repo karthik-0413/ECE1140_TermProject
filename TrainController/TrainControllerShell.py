@@ -96,7 +96,7 @@ class TrainControllerShell:
         self.trainControllerUI.update_passenger_brake_status(self.trainControllerUI.brake_class.passenger_brake)
         # self.write_to_train_model()
         
-    
+
     ############################
     # TRAIN ID HANDLE FROM CTC #
     ############################
@@ -318,11 +318,13 @@ class TrainControllerShell:
                     for i in range(len(self.total_commanded_authority)):
                         if i < len(self.train_controller_list):
                             if self.total_commanded_authority[i] != self.previous_commanded_authority[i]:
+                                # print(f"Commanded Authority {i + 1}: {self.total_commanded_authority[i]}")
                                 self.train_controller_list[i].position.handle_commanded_authority(commanded_authority[i])
                 else:
                     if len(self.train_controller_list):
                         for i in range(len(self.total_commanded_authority)):
                             if i < len(self.train_controller_list):
+                                # print(f"Commanded Authority {i + 1}: {self.total_commanded_authority[i]}")
                                 self.train_controller_list[i].position.handle_commanded_authority(commanded_authority[i])
         
         # BEFORE:
@@ -339,6 +341,7 @@ class TrainControllerShell:
             for i in range(len(current_velocity)):
                 if i < len(self.train_controller_list):
                     self.train_controller_list[i].speed_control.handle_current_velocity(current_velocity[i])
+                    # print(f"Current Velocity {i + 1}: {current_velocity[i]}")
             # # print(f"Current Velocity: {current_velocity}")
 
     def update_engine_failure(self, engine_failure: list):
