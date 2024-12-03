@@ -86,7 +86,7 @@ class CTC_logic():
     def confirm_train_paths():
         pass
 
-    def select_line_for_maintenance(self, line_name:str, block_number:int):
+    def select_line_for_maintenance(self, block_number:int):
         self.line.toggle_block_maintenance(block_number)
 
     def update_blocks_on_line(self, block_occupancies: list):

@@ -17,11 +17,11 @@ class CTC_frontend(object):
         self.ctc = CTC_logic(ctc_train_communicate, wayside_communicate)
         self.wayside_communicate = wayside_communicate
         self.ctc_train_communicate = ctc_train_communicate
-        
-        
-
         self.wayside_communicate.block_occupancy_signal.connect(self.update_block_occupancies)
+
         self.wall_clock_time = dt.datetime.now()
+        self.selected_block = 0
+
 
     def setupUi(self, mainwindow):
         mainwindow.setObjectName("mainwindow")
@@ -416,6 +416,7 @@ class CTC_frontend(object):
 "\n"
 "color:black;")
         self.MaintenanceButton.setObjectName("MaintenanceButton")
+        self.MaintenanceButton.clicked.connect(self.maintenance_mode)
         self.MaintenanceLayout.addWidget(self.MaintenanceButton, 0, QtCore.Qt.AlignmentFlag.AlignHCenter)
         self.InfoLayout_pg2.addWidget(self.MaintenanceFrame, 1, 0, 2, 1)
         self.ThroughputFrame_pg2 = QtWidgets.QFrame(parent=self.gridLayoutWidget_5)
@@ -557,15 +558,17 @@ class CTC_frontend(object):
 "color:black;")
         self.block_page_block_selector.setObjectName("block_page_block_selector")
         self.BlockSearchSubLayout.addWidget(self.block_page_block_selector, 1, 1, 1, 1, QtCore.Qt.AlignmentFlag.AlignHCenter)
+        self.block_page_block_selector.valueChanged.connect(self.select_block)
         self.SearchLayout.addLayout(self.BlockSearchSubLayout)
-        self.SelectBlockButton = QtWidgets.QPushButton(parent=self.verticalLayoutWidget_6)
-        self.SelectBlockButton.setMaximumSize(QtCore.QSize(150, 16777215))
-        self.SelectBlockButton.setStyleSheet("font: 18pt \"Arial\";\n"
+        self.block_maintenance_button = QtWidgets.QPushButton(parent=self.verticalLayoutWidget_6)
+        self.block_maintenance_button.setMaximumSize(QtCore.QSize(150, 16777215))
+        self.block_maintenance_button.setStyleSheet("font: 18pt \"Arial\";\n"
 "background-color: rgb(0, 209, 41);\n"
 "border: 1px solid;\n"
 "color:black;")
-        self.SelectBlockButton.setObjectName("SelectBlockButton")
-        self.SearchLayout.addWidget(self.SelectBlockButton, 0, QtCore.Qt.AlignmentFlag.AlignHCenter)
+        self.block_maintenance_button.setObjectName("block_maintenance_button")
+        self.block_maintenance_button.clicked.connect(self.toggle_block_maintenance)
+        self.SearchLayout.addWidget(self.block_maintenance_button, 0, QtCore.Qt.AlignmentFlag.AlignHCenter)
         self.InfoLayout_pg2.addWidget(self.SearchFrame, 1, 1, 2, 1)
         self.block_table = QtWidgets.QTableWidget(parent=self.gridLayoutWidget_5)
         self.block_table.setEnabled(True)
@@ -829,6 +832,7 @@ class CTC_frontend(object):
         self.spinBox.setStyleSheet("color: black;")
         self.spinBox.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.spinBox.setObjectName("spinBox")
+        self.spinBox.valueChanged.connect(self.select_block)
         self.horizontalLayout.addWidget(self.spinBox)
         self.TestBenchLayout.addWidget(self.BlockSelectorFrame, 1, 0, 1, 1)
         self.HeaderFrame_pg3.raise_()
@@ -844,6 +848,7 @@ class CTC_frontend(object):
         self.train_vew_line_selector.setCurrentIndex(2)
         self.LineSelectorComboBox.setCurrentIndex(2)
         QtCore.QMetaObject.connectSlotsByName(mainwindow)
+        self.updateUI()
 
     def retranslateUi(self, mainwindow):
         _translate = QtCore.QCoreApplication.translate
@@ -891,7 +896,7 @@ class CTC_frontend(object):
         self.LineSelectorComboBox.setItemText(2, _translate("mainwindow", "Green"))
         self.SearchLineLabel.setText(_translate("mainwindow", "Line:"))
         self.BlockSelectorLabel.setText(_translate("mainwindow", "Block:"))
-        self.SelectBlockButton.setText(_translate("mainwindow", "Select Block"))
+        self.block_maintenance_button.setText(_translate("mainwindow", "Block Maintenance"))
         self.block_table.setSortingEnabled(True)
         item = self.block_table.horizontalHeaderItem(0)
         item.setText(_translate("mainwindow", "Block #"))
@@ -928,6 +933,7 @@ class CTC_frontend(object):
         self.DepartureSelector.setTime(QtCore.QTime.currentTime())
 
 
+
     def updateUI(self):
 
         _translate = QtCore.QCoreApplication.translate
@@ -938,11 +944,7 @@ class CTC_frontend(object):
         #self.ThroughputDisplay.setText(self.ctc.get_throughput())
         #self.ThroughputDisplay_pg2.setText(self.ctc.get_throughput())
         #self.ThroughputDisplay_pg3.setText(self.ctc.get_throughput())
-        #self.SimulationTimeDisplay.setText(self.ctc.get_time())
-        #self.suggested_speed_display.setText(self.ctc.get_suggested_speed())
-        #self.label_3.setText(self.ctc.get_authority())
-        #self.label.setText(self.ctc.get_suggested_speed())
-        
+
         self.train_table.clear()
         self.train_table.setRowCount(len(self.ctc.line.train_list))
 
@@ -1011,6 +1013,13 @@ class CTC_frontend(object):
             _translate = QtCore.QCoreApplication.translate
             item.setText(_translate("mainwindow", header))
 
+        if self.ctc.line.layout:
+            self.block_page_block_selector.setRange(0, len(self.ctc.line.layout)-1)
+            self.spinBox.setRange(0, len(self.ctc.line.layout)-1)
+        else:
+            self.block_page_block_selector.setRange(0, 0)
+            self.spinBox.setRange(0, 0)
+
         if self.ctc.num_trains > 0:
             self.train_number_selector.setRange(1, self.ctc.num_trains)
         else:
@@ -1021,10 +1030,6 @@ class CTC_frontend(object):
             train_index = [train.train_id for train in self.ctc.line.train_list].index(self.train_number_selector.value())
             self.suggested_speed_display.setText(str(self.ctc.line.train_list[train_index].suggested_speed))
             self.authority_display.setText(str(self.ctc.line.train_list[train_index].authority))
-
-            
-            
-
 
     def update_block_occupancies(self, blocks: list):
         # Connected to CTC-Wayside Communication - gets block occupancies from signal
@@ -1037,7 +1042,6 @@ class CTC_frontend(object):
 
     def dispatch_train(self):
             
-
         station = self.StationSelector.currentText()
         print(f"Selected Station = {station}")
 
@@ -1056,24 +1060,33 @@ class CTC_frontend(object):
             self.ctc_train_communicate.dispatch_train_signal.emit(self.ctc.num_trains)
 
         self.updateUI()
-        
-        
+           
     def add_destination(self):
         pass
     
     def select_block(self):
-        pass
+        self.selected_block = self.block_page_block_selector.value()
     
     def maintenance_mode(self):
-        pass
+        self.ctc.toggle_maintenance_mode()
+        if self.ctc.maintenance_mode:
+            self.MaintenanceButton.setText("Exit Maintenance Mode")
+        else:
+            self.MaintenanceButton.setText("Enter Maintenance Mode")
+
+    def toggle_block_maintenance(self):
+        self.ctc.select_line_for_maintenance(self.selected_block)
+        self.updateUI()
     
     def auto_manual_toggle(self):
         self.ctc.toggle_automatic_manual()
         _translate = QtCore.QCoreApplication.translate
         if self.ctc.automatic:
             self.automatic_manual_toggle.setText(_translate("mainwindow", "Manual Mode"))
+            #TODO - Disable UI Elements only available in Manual Mode
         else:
             self.automatic_manual_toggle.setText(_translate("mainwindow", "Auto Mode"))
+            #TODO - Enable UI Elements only available in Manual Mode
     
     def upload_schedule(self):
         pass
