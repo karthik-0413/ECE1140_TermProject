@@ -1706,8 +1706,8 @@ class TrainControllerUI(QWidget):
                 
     def update_current_temperature(self, current_temperature: float):
         self.current_temp_edit.setText(f"{current_temperature:.2f} °F")
-        if current_temperature == self.temperature.desired_temperature:
-            self.temp_input.clear()
+        # if current_temperature == self.temperature.desired_temperature:
+        #     self.temp_input.clear()
     
     def update_passenger_brake_status(self, passenger_brake: bool):
         if passenger_brake:

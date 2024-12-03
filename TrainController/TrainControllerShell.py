@@ -54,6 +54,10 @@ class TrainControllerShell:
         if self.train_counter == len(self.train_controller_list):
             # print(f"Inside If Statement in connect_signals function - Train Counter: {self.train_counter}")   # This works
             for train_controller in self.train_controller_list:
+            
+            
+            # ALL OF THE VALUES ARE ONLY ONE (NOT A LIST)
+            
                 train_controller.speed_control.current_velocity_signal.connect(self.handle_current_speed)
                 train_controller.speed_control.commanded_speed_signal.connect(self.handle_commanded_speed)
                 train_controller.position.commanded_authority_signal.connect(self.handle_commanded_authority)
@@ -308,8 +312,8 @@ class TrainControllerShell:
         #             # # print(f"Commanded Speed: {commanded_speed[i]}")
 
     def update_commanded_authority(self, commanded_authority: list):
-        self.previous_commanded_authority = self.total_commanded_authority
-        self.total_commanded_authority = commanded_authority    # current c_auth
+        self.previous_commanded_authority = self.total_commanded_authority.copy()
+        self.total_commanded_authority = commanded_authority.copy()    # current c_auth
         
         if len(self.train_controller_list):
             # For all Trains - WORKS
@@ -341,7 +345,7 @@ class TrainControllerShell:
             for i in range(len(current_velocity)):
                 if i < len(self.train_controller_list):
                     self.train_controller_list[i].speed_control.handle_current_velocity(current_velocity[i])
-                    # print(f"Current Velocity {i + 1}: {current_velocity[i]}")
+                    print(f"Current Velocity {i + 1}: {current_velocity[i]}")
             # # print(f"Current Velocity: {current_velocity}")
 
     def update_engine_failure(self, engine_failure: list):
@@ -375,10 +379,11 @@ class TrainControllerShell:
             # # print(f"Passenger Brake Command: {passenger_brake_command}")
 
     def update_actual_temperature(self, actual_temperature: list):
-        pass
-        # for i in range(len(actual_temperature)):
-        #     self.train_controller_list[i].temperature.update_current_temp_display(actual_temperature[i])
-        # # print(f"Actual Temperature: {actual_temperature}")
+        if len(self.train_controller_list):
+            for i in range(len(actual_temperature)):
+                if i < len(self.train_controller_list):
+                    self.train_controller_list[i].temperature.update_current_temp_display(actual_temperature[i])
+        # print(f"Actual Temperature: {actual_temperature}")
 
     def update_polarity(self, polarity: list):
         if len(self.train_controller_list):
@@ -417,8 +422,8 @@ class TrainControllerShell:
 
     def handle_current_temperature(self, current_temperature: float):
         if self.train_controller_list:
-            # self.train_controller_list[self.current_train_id - 1].update_current_temperature(current_temperature)
-            self.update_UI()
+            self.train_controller_list[self.current_train_id - 1].update_current_temperature(current_temperature)
+            # self.update_UI()
             self.train_controller_list[self.current_train_id - 1].temperature.current_temperature = current_temperature
 
     def handle_engine_failure_status(self, engine_failure: bool):
