@@ -207,7 +207,7 @@ class PowerCommand(QObject):
                 self.power_command_signal.emit(self.power_command)
                 self.brake_status.apply_service_brake()
                 if current_velocity < desired_velocity or current_velocity == 0.0:
-                    print("Entered Lower")
+                    # print("Entered Lower")
                     self.brake_status.no_apply_service_brake()
                     self.brake_status.entered_lower = False
                     self.brake_status.no_again = False
@@ -429,7 +429,7 @@ class SpeedControl(QObject):
         elif self.commanded_speed > (speed / 3.6):
                 # self.brake_status.entered_lower = True
                 self.commanded_speed = speed / 3.6
-                print(f"Commanded Speed: {self.commanded_speed:.2f} m/s")
+                # print(f"Commanded Speed: {self.commanded_speed:.2f} m/s")
                 # self.find_max_speed()
                 # self.desired_velocity = self.commanded_speed
                 # self.update_setpoint_speed_auto(self.commanded_speed)
@@ -468,9 +468,9 @@ class SpeedControl(QObject):
                         
                         
                         
-                        print(f"Commanded Speed: {self.commanded_speed:.2f} m/s")
+                        # print(f"Commanded Speed: {self.commanded_speed:.2f} m/s")
                         self.desired_velocity = self.commanded_speed
-                        print(f"Desired Speed: {self.desired_velocity:.2f} m/s")
+                        # print(f"Desired Speed: {self.desired_velocity:.2f} m/s")
                         self.power_class.update_power_command(self.current_velocity, self.desired_velocity)
                     else:
                         self.power_class.update_power_command(self.current_velocity, self.desired_velocity)
@@ -798,8 +798,8 @@ class Position(QObject):
                 # # print(f"Polarity: {self.polarity}")
         
     def check_current(self):
-        print(f"Current Velocity: {self.speed_control.current_velocity}")
-        print(f"Current Block: {self.current_block}")
+        # print(f"Current Velocity: {self.speed_control.current_velocity}")
+        # print(f"Current Block: {self.current_block}")
         if self.speed_control.current_velocity == 0.0 and not self.repeat:
             self.check_current_block()
             self.find_station_name()
@@ -903,7 +903,7 @@ class Position(QObject):
                 if len(parts) > 1:
                     self.station_name = parts[1].strip()
                     self.announcement = f"Welcome to {self.station_name} Station"
-                    print(f"Station Name: {self.station_name}")
+                    # print(f"Station Name: {self.station_name}")
                     # print(f"Station Name: {self.station_name}")
                 else:
                     # Handle cases where the expected format is not present
@@ -919,7 +919,7 @@ class Position(QObject):
                 if len(parts) > 1:
                     self.station_name = parts[1].strip()
                     self.announcement = f"Welcome to {self.station_name} Station"
-                    print(f"Station Name: {self.station_name}")
+                    # print(f"Station Name: {self.station_name}")
                     # print(f"Station Name: {self.station_name}")
                 else:
                     # Handle cases where the expected format is not present
@@ -1786,7 +1786,7 @@ class TrainControllerUI(QWidget):
         
     def save_dropdown_selection(self):
         # If Train 1 is selected, then the currentIndex is 0 AND we should emit 1 as the train id to the shell class
-        self.communicator2.selected_train_id.emit(self.dropdown.currentIndex() + 1)
+        # self.communicator2.selected_train_id.emit(self.dropdown.currentIndex() + 1)
         
         # Index of the selected train id. eg. If Train 1 is selected, then the index is 0
         index_of_train_id = self.dropdown.currentIndex()
@@ -1795,7 +1795,9 @@ class TrainControllerUI(QWidget):
         
         # We want to index the variable lists in the shell class with this index
         self.selected_train_id = self.train_id_list[index_of_train_id]
-        # # print(f"Selected Train ID: {self.train_id}")
+        
+        self.communicator2.selected_train_id.emit(self.selected_train_id)
+        print(f"Selected Train ID: {self.selected_train_id}")
         
         
     ####################################################################
