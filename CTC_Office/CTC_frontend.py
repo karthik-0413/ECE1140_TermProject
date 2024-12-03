@@ -21,6 +21,7 @@ class CTC_frontend(object):
 
         self.wall_clock_time = dt.datetime.now()
         self.selected_block = 0
+        self.selected_train = 1
 
 
     def setupUi(self, mainwindow):
@@ -198,26 +199,25 @@ class CTC_frontend(object):
         self.DispatchButton.setCheckable(False)
         self.DispatchButton.setObjectName("DispatchButton")
         self.DispatchButton.clicked.connect(self.dispatch_train)
-        self.LineLabel = QtWidgets.QLabel(parent=self.ScheduleFrame)
-        self.LineLabel.setGeometry(QtCore.QRect(10, 50, 41, 41))
+        self.train_label = QtWidgets.QLabel(parent=self.ScheduleFrame)
+        self.train_label.setGeometry(QtCore.QRect(10, 50, 60, 40))
         font = QtGui.QFont()
         font.setFamily("Arial")
         font.setPointSize(18)
-        self.LineLabel.setFont(font)
-        self.LineLabel.setStyleSheet("border: 0px;\n"
+        self.train_label.setFont(font)
+        self.train_label.setStyleSheet("border: 0px;\n"
 "color:black;")
-        self.LineLabel.setObjectName("LineLabel")
-        self.train_vew_line_selector = QtWidgets.QComboBox(parent=self.ScheduleFrame)
-        self.train_vew_line_selector.setEnabled(False)
-        self.train_vew_line_selector.setGeometry(QtCore.QRect(80, 50, 100, 40))
-        self.train_vew_line_selector.setMinimumSize(QtCore.QSize(90, 0))
-        self.train_vew_line_selector.setMaximumSize(QtCore.QSize(100, 40))
-        self.train_vew_line_selector.setStyleSheet("font: 18pt \"Arial\";\n"
+        self.train_label.setObjectName("train_label")
+        self.Train_view_train_selector = QtWidgets.QSpinBox(parent=self.ScheduleFrame)
+        self.Train_view_train_selector.setEnabled(True)
+        self.Train_view_train_selector.setRange(0, 0)
+        self.Train_view_train_selector.setGeometry(QtCore.QRect(80, 50, 100, 40))
+        self.Train_view_train_selector.setMinimumSize(QtCore.QSize(90, 0))
+        self.Train_view_train_selector.setMaximumSize(QtCore.QSize(100, 40))
+        self.Train_view_train_selector.setStyleSheet("font: 18pt \"Arial\";\n"
 "color:black;")
-        self.train_vew_line_selector.setObjectName("train_vew_line_selector")
-        self.train_vew_line_selector.addItem("")
-        self.train_vew_line_selector.addItem("")
-        self.train_vew_line_selector.addItem("")
+        self.Train_view_train_selector.setObjectName("Train_view_train_selector")
+        self.Train_view_train_selector.valueChanged.connect(self.select_train )
         self.add_destination_button = QtWidgets.QPushButton(parent=self.ScheduleFrame)
         self.add_destination_button.setEnabled(False)
         self.add_destination_button.setGeometry(QtCore.QRect(420, 160, 141, 32))
@@ -243,7 +243,7 @@ class CTC_frontend(object):
         self.scroll_area_contents = QtWidgets.QWidget()
         self.scroll_area_contents.setGeometry(QtCore.QRect(0, 0, 167, 57))
         self.scroll_area_contents.setObjectName("scroll_area_contents")
-        self.destination_list = QtWidgets.QListView(parent=self.scroll_area_contents)
+        self.destination_list = QtWidgets.QListWidget(parent=self.scroll_area_contents)
         self.destination_list.setEnabled(False)
         self.destination_list.setGeometry(QtCore.QRect(-10, -10, 181, 71))
         self.destination_list.setStyleSheet("font: 13pt \"Arial\";\n"
@@ -845,7 +845,6 @@ class CTC_frontend(object):
 
         self.retranslateUi(mainwindow)
         self.pagetab.setCurrentIndex(0)
-        self.train_vew_line_selector.setCurrentIndex(2)
         self.LineSelectorComboBox.setCurrentIndex(2)
         QtCore.QMetaObject.connectSlotsByName(mainwindow)
         self.updateUI()
@@ -871,10 +870,7 @@ class CTC_frontend(object):
         self.departureLabel.setText(_translate("mainwindow", "Departure Time:"))
         self.ArrivalLabel.setText(_translate("mainwindow", "Arrival Time:"))
         self.DispatchButton.setText(_translate("mainwindow", "Dispatch Train"))
-        self.LineLabel.setText(_translate("mainwindow", "Line:"))
-        self.train_vew_line_selector.setItemText(0, _translate("mainwindow", "Blue"))
-        self.train_vew_line_selector.setItemText(1, _translate("mainwindow", "Red"))
-        self.train_vew_line_selector.setItemText(2, _translate("mainwindow", "Green"))
+        self.train_label.setText(_translate("mainwindow", "Train #"))
         self.add_destination_button.setText(_translate("mainwindow", "Add Destination"))
         self.destination_list_label.setText(_translate("mainwindow", "Destinations:"))
         self.HeaderLabel.setText(_translate("mainwindow", "CTC"))
@@ -1022,14 +1018,21 @@ class CTC_frontend(object):
 
         if self.ctc.num_trains > 0:
             self.train_number_selector.setRange(1, self.ctc.num_trains)
+            self.Train_view_train_selector.setRange(1, self.ctc.num_trains)
         else:
             self.train_number_selector.setRange(0, 0)
+            self.Train_view_train_selector.setRange(0, 0)
 
         if len(self.ctc.line.train_list):
             
             train_index = [train.train_id for train in self.ctc.line.train_list].index(self.train_number_selector.value())
             self.suggested_speed_display.setText(str(self.ctc.line.train_list[train_index].suggested_speed))
             self.authority_display.setText(str(self.ctc.line.train_list[train_index].authority))
+
+            selector_index = [train.train_id for train in self.ctc.line.train_list].index(self.Train_view_train_selector.value())
+            self.destination_list.clear()
+            self.destination_list.addItems(self.ctc.line.train_list[selector_index].destination_strings)
+
 
     def update_block_occupancies(self, blocks: list):
         # Connected to CTC-Wayside Communication - gets block occupancies from signal
@@ -1066,6 +1069,9 @@ class CTC_frontend(object):
     
     def select_block(self):
         self.selected_block = self.block_page_block_selector.value()
+
+    def select_train(self):
+        self.selected_train = self.Train_view_train_selector.value()
     
     def maintenance_mode(self):
         self.ctc.toggle_maintenance_mode()
