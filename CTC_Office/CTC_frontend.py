@@ -1027,11 +1027,11 @@ class CTC_frontend(object):
             
 
         station = self.StationSelector.currentText()
-        print(f"Selected Station = {station}")
+        # print(f"Selected Station = {station}")
 
         dest = self.ctc.find_destination(station)
         if dest == -1:
-            print("Invalid Destination")
+        #     print("Invalid Destination")
             return
         else:
             
@@ -1069,7 +1069,7 @@ class CTC_frontend(object):
     def upload_layout(self):
         filename, _ = QFileDialog.getOpenFileName(None, "Select Layout File", os.getcwd(), "Excel File (*.xlsx *.xls)")
         if filename:
-            print("filename = ", filename)
+        #     print("filename = ", filename)
             self.ctc.upload_layout_to_line(filename)
 
         # Update Lines Selector
@@ -1079,7 +1079,7 @@ class CTC_frontend(object):
         # Update Station Selector
         self.StationSelector.clear()
         stations = self.ctc.get_stations()
-        print("Stations = ", stations)
+        # print("Stations = ", stations)
         self.StationSelector.addItems(stations)
 
         self.updateUI()

@@ -72,6 +72,7 @@ class Tuning(QObject):
        
 class BrakeStatus(QObject):
     service_brake_signal = pyqtSignal(bool)
+    manual_service_brake_signal = pyqtSignal(bool)
     emergency_brake_signal = pyqtSignal(bool)
     passenger_brake_command_signal = pyqtSignal(bool)
     driver_brake_signal = pyqtSignal(bool)
@@ -81,6 +82,7 @@ class BrakeStatus(QObject):
         self.driver_service_brake_command = False
         self.manual_driver_service_brake_command = False
         self.driver_emergency_brake_command = False
+        self.manual_driver_emergency_brake_command = False
         self.driver_brake_status = False
         self.passenger_brake = False
         self.entered_lower = False
@@ -91,12 +93,22 @@ class BrakeStatus(QObject):
         
     def manual_apply_service_brake(self):
         self.manual_driver_service_brake_command = True
-        self.service_brake_signal.emit(self.manual_driver_service_brake_command)
+        self.manual_service_brake_signal.emit(self.manual_driver_service_brake_command)
         # # print("Service Brake Applied")
         
     def manual_no_apply_service_brake(self):
         self.manual_driver_service_brake_command = False
-        self.service_brake_signal.emit(self.manual_driver_service_brake_command)
+        self.manual_service_brake_signal.emit(self.manual_driver_service_brake_command)
+        # # print("Service Brake Released")
+        
+    def manual_apply_emergency_brake(self):
+        self.manual_driver_emergency_brake_command = True
+        self.emergency_brake_signal.emit(self.manual_driver_emergency_brake_command)
+        # # print("Service Brake Applied")
+        
+    def manual_no_apply_emergency_brake(self):
+        self.manual_driver_emergency_brake_command = False
+        self.emergency_brake_signal.emit(self.manual_driver_emergency_brake_command)
         # # print("Service Brake Released")
         
     def apply_emergency_brake(self):
@@ -492,7 +504,7 @@ class SpeedControl(QObject):
         elif self.commanded_speed > (speed / 3.6):
                 # self.brake_status.entered_lower = True
                 self.commanded_speed = speed / 3.6
-                print(f"Commanded Speed: {self.commanded_speed:.2f} m/s")
+                # print(f"Commanded Speed: {self.commanded_speed:.2f} m/s")
                 # self.find_max_speed()
                 # self.desired_velocity = self.commanded_speed
                 # self.update_setpoint_speed_auto(self.commanded_speed)
@@ -531,9 +543,9 @@ class SpeedControl(QObject):
                         
                         
                         
-                        print(f"Commanded Speed: {self.commanded_speed:.2f} m/s")
+                        # print(f"Commanded Speed: {self.commanded_speed:.2f} m/s")
                         self.desired_velocity = self.commanded_speed
-                        print(f"Desired Speed: {self.desired_velocity:.2f} m/s")
+                        # print(f"Desired Speed: {self.desired_velocity:.2f} m/s")
                         self.power_class.update_power_command(self.current_velocity, self.desired_velocity)
                     else:
                         self.power_class.update_power_command(self.current_velocity, self.desired_velocity)
@@ -804,7 +816,7 @@ class Position(QObject):
       
         if authority is not None:
             self.commanded_authority = authority - 1
-            print(f"Commanded Authority: {self.commanded_authority}")
+            # print(f"Commanded Authority: {self.commanded_authority}")
         else:
             self.commanded_authority = 0
         self.commanded_authority_signal.emit(self.commanded_authority)
@@ -861,8 +873,8 @@ class Position(QObject):
                 # # print(f"Polarity: {self.polarity}")
         
     def check_current(self):
-        print(f"Current Velocity: {self.speed_control.current_velocity}")
-        print(f"Current Block: {self.current_block}")
+        # print(f"Current Velocity: {self.speed_control.current_velocity}")
+        # print(f"Current Block: {self.current_block}")
         if self.speed_control.current_velocity == 0.0 and not self.repeat:
             self.check_current_block()
             self.find_station_name()
@@ -966,7 +978,7 @@ class Position(QObject):
                 if len(parts) > 1:
                     self.station_name = parts[1].strip()
                     self.announcement = f"Welcome to {self.station_name} Station"
-                    print(f"Station Name: {self.station_name}")
+                    # print(f"Station Name: {self.station_name}")
                     # print(f"Station Name: {self.station_name}")
                 else:
                     # Handle cases where the expected format is not present
@@ -982,7 +994,7 @@ class Position(QObject):
                 if len(parts) > 1:
                     self.station_name = parts[1].strip()
                     self.announcement = f"Welcome to {self.station_name} Station"
-                    print(f"Station Name: {self.station_name}")
+                    # print(f"Station Name: {self.station_name}")
                     # print(f"Station Name: {self.station_name}")
                 else:
                     # Handle cases where the expected format is not present
@@ -1143,7 +1155,7 @@ class TrainControllerUI(QWidget):
     
     def change_train_id(self, train_id_list):
         self.train_id_list = train_id_list
-        print(f"Train ID List Received in Controller File: {self.train_id_list}")
+        # print(f"Train ID List Received in Controller File: {self.train_id_list}")
         
 
         # Clear the dropdown before updating items
@@ -1155,14 +1167,17 @@ class TrainControllerUI(QWidget):
 
         # Add all train IDs to the dropdown
         for train_id in self.train_id_list:
-            train_str = f"Train {train_id}"
-            print(f"Train String: {train_str}")
-            self.dropdown.addItem(train_str)
-            print(f"Train ID Added: {train_str}")
+            if f"Train {train_id}" not in [self.dropdown.itemText(i) for i in range(self.dropdown.count())]:
+                train_str = f"Train {train_id}"
+                self.dropdown.addItem(train_str)
+            # print(f"Train String: {train_str}")
+            # self.dropdown.addItem(train_str)
+            # print(f"Train ID Added: {train_str}")
 
         # Print Items in Dropdown - Works just not updating properly
         for i in range(self.dropdown.count()):
-            print(f"Item in Dropdown: {self.dropdown.itemText(i)}")
+            pass
+            # print(f"Item in Dropdown: {self.dropdown.itemText(i)}")
 
     
     def __init__(self, communicator: Communicate, communicator2: Communicate2, doors: Doors, tuning: Tuning, brake_class: BrakeStatus, power_class: PowerCommand, speed_control: SpeedControl, failure_modes: FailureModes, position: Position, lights: Lights, temperature: Temperature):
@@ -1364,8 +1379,8 @@ class TrainControllerUI(QWidget):
         self.emergency_brake_button.setStyleSheet("border: 3px solid black; margin-left: 40px; background-color: red; color: white; font-size: 20px; font-weight: bold; padding: 50px; border-radius: 10px;")
         self.emergency_brake_button.pressed.connect(self.divet_in_emergency_brake_buttons)
         self.emergency_brake_button.released.connect(self.reset_emergency_brake_button_style)
-        self.emergency_brake_button.pressed.connect(self.brake_class.apply_emergency_brake)
-        self.emergency_brake_button.released.connect(self.brake_class.no_apply_emergency_brake)
+        self.emergency_brake_button.pressed.connect(self.brake_class.manual_apply_emergency_brake)
+        self.emergency_brake_button.released.connect(self.brake_class.manual_no_apply_emergency_brake)
         
         # self.emergency_brake_button.pressed.connect(self.handle_emergency_brake_button)
         # self.emergency_brake_button.pressed.connect(self.divet_in_emergency_brake_buttons)
@@ -1570,7 +1585,7 @@ class TrainControllerUI(QWidget):
         self.temp_input.setStyleSheet("max-width: 100px; color: black; margin-left: 40px; border: 2px solid black; border-radius: 5px; padding: 3px;")
         self.temp_input.setAlignment(Qt.AlignmentFlag.AlignLeft)
         self.temp_input.setPlaceholderText("Enter temperature (70°F to 100°F)")  # Optional placeholder text
-        self.temp_input.editingFinished.connect(self.send_desired_temperature)
+        # self.temp_input.editingFinished.connect(self.send_desired_temperature)
         self.temp_input.editingFinished.connect(lambda: self.temperature.update_desired_temperature(float(self.temp_input.text())))
         self.desired_temp_box.addWidget(self.desired_temp_label)
         self.desired_temp_box.addWidget(self.temp_input)
@@ -1766,12 +1781,12 @@ class TrainControllerUI(QWidget):
                 
     def update_current_temperature(self, current_temperature: float):
         self.current_temp_edit.setText(f"{current_temperature:.2f} °F")
-        if current_temperature == self.temperature.desired_temperature:
-            self.temp_input.clear()
+        # if current_temperature == self.temperature.desired_temperature:
+        #     self.temp_input.clear()
     
     def update_passenger_brake_status(self, passenger_brake: bool):
         if passenger_brake:
-            if self.brake_class.passenger_brake:
+            if self.brake_class.passenger_brake and not self.brake_class.manual_driver_emergency_brake_command:
                 self.passenger_brake_status.setText("ON")
                 self.passenger_brake_status.setStyleSheet("background-color: #f5c842; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
             self.divet_in_emergency_brake_buttons()
@@ -1820,7 +1835,8 @@ class TrainControllerUI(QWidget):
             self.brake_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
             
     def update_service_brake_status(self, brake_status: bool):
-        if brake_status:
+        if brake_status or self.brake_class.manual_driver_service_brake_command:
+            print(f"Service Brake Status: {brake_status}")
             # self.brake_status.setText("ON")
             # self.brake_status.setStyleSheet("background-color: #f5c842; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
             # Divet in service break in UI
@@ -1832,30 +1848,33 @@ class TrainControllerUI(QWidget):
             
     def update_emergency_brake_status(self, brake_status: bool):
         if brake_status:
-            self.brake_status.setText("ON")
-            self.brake_status.setStyleSheet("background-color: #f5c842; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
+            print(f"Emergency Brake Status: {brake_status}")
+            # self.brake_status.setText("ON")
+            # self.brake_status.setStyleSheet("background-color: #f5c842; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
             self.divet_in_emergency_brake_buttons()
         else:
-            self.brake_status.setText("OFF")
-            self.brake_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
+            # self.brake_status.setText("OFF")
+            # self.brake_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
             self.reset_emergency_brake_button_style()
         
-    def send_desired_temperature(self):
-        self.temperature.desired_temperature = float(self.temp_input.text())
-        # # print(f"Desired Temperature: {self.temperature.desired_temperature}")
+    # def send_desired_temperature(self):
+    #     self.temperature.desired_temperature = float(self.temp_input.text())
+    #     # # print(f"Desired Temperature: {self.temperature.desired_temperature}")
         
     def save_dropdown_selection(self):
         # If Train 1 is selected, then the currentIndex is 0 AND we should emit 1 as the train id to the shell class
-        self.communicator2.selected_train_id.emit(self.dropdown.currentIndex() + 1)
+        # self.communicator2.selected_train_id.emit(self.dropdown.currentIndex() + 1)
         
         # Index of the selected train id. eg. If Train 1 is selected, then the index is 0
         index_of_train_id = self.dropdown.currentIndex()
         
-        print(f"Index of Train ID: {index_of_train_id}")
+        # print(f"Index of Train ID: {index_of_train_id}")
         
         # We want to index the variable lists in the shell class with this index
         self.selected_train_id = self.train_id_list[index_of_train_id]
-        # # print(f"Selected Train ID: {self.train_id}")
+        
+        self.communicator2.selected_train_id.emit(self.selected_train_id)
+        print(f"Selected Train ID: {self.selected_train_id}")
         
         
     ####################################################################
@@ -1891,34 +1910,31 @@ class TrainControllerUI(QWidget):
     
     def divet_in_service_brake_button(self):
         self.brake_button.setStyleSheet("margin-top: 40px; background-color: #B8860B; font-size: 16px; border-radius: 10px; font-weight: bold; color: black; border: 3px solid black; padding-top: 20px; max-width: 150px; padding-bottom: 20px;")
-        # Put button status in UI to ON
-        self.brake_status.setText("ON")
-        self.brake_status.setStyleSheet("background-color: #f5c842; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
-
+        self.reset_brake_status(self.brake_class.driver_service_brake_command, self.brake_class.driver_emergency_brake_command)
+        
     def reset_service_brake_button_style(self):
         self.brake_button.setStyleSheet("margin-top: 40px; background-color: yellow; font-size: 16px; border-radius: 10px; font-weight: bold; color: black; border: 3px solid black; padding-top: 20px; max-width: 150px; padding-bottom: 20px;")
-        # Turn the brake status to OFF
-        self.brake_status.setText("OFF")
-        self.brake_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
-        # self.reset_brake_status()
-
+        self.reset_brake_status(self.brake_class.driver_service_brake_command, self.brake_class.driver_emergency_brake_command)
+        
     def divet_in_emergency_brake_buttons(self):
         self.emergency_brake_button.setStyleSheet("border: 3px solid black; margin-left: 40px; background-color: darkred; color: white; font-size: 20px; font-weight: bold; padding: 50px; border-radius: 10px;")
-        # Put button status in UI to ON
-        self.brake_status.setText("ON")
-        self.brake_status.setStyleSheet("background-color: #f5c842; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
+        self.reset_brake_status(self.brake_class.driver_service_brake_command, self.brake_class.driver_emergency_brake_command)
         
     def reset_emergency_brake_button_style(self):
         self.emergency_brake_button.setStyleSheet("border: 3px solid black; margin-left: 40px; background-color: red; color: white; font-size: 20px; font-weight: bold; padding: 50px; border-radius: 10px;")
         # Turn the brake status to OFF
-        self.brake_status.setText("OFF")
-        self.brake_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
-        self.reset_brake_status()
+        # self.brake_status.setText("OFF")
+        # self.brake_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
+        self.reset_brake_status(self.brake_class.driver_service_brake_command, self.brake_class.driver_emergency_brake_command)
 
-    def reset_brake_status(self):
-        self.brake_status.setText("OFF")
-        self.brake_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
-        
+    def reset_brake_status(self, service_brake: bool = False, emergency_brake: bool = False):
+        if service_brake or emergency_brake:
+            self.brake_status.setText("ON")
+            self.brake_status.setStyleSheet("background-color: #f5c842; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
+        else:
+            self.brake_status.setText("OFF")
+            self.brake_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
+    
     # def change_power_UI(self):
     #     self.power_command_edit.setText(f"{self.power_class.power_command / 1000:.2f}")
 
