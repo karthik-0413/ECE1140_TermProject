@@ -379,11 +379,7 @@ class PowerCommand(QObject):
             else:
                 print(f"Element {index} '{element}' is neither 'True' nor 'False', returning as is")
                 return element
-
-
-                    
-                
-                
+                       
 class SpeedControl(QObject):
     commanded_speed_signal = pyqtSignal(float)
     current_velocity_signal = pyqtSignal(float)
