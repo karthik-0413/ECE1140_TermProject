@@ -1772,24 +1772,26 @@ class TrainControllerUI(QWidget):
             self.brake_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
             
     def update_service_brake_status(self, brake_status: bool):
-        if brake_status:
-            self.brake_status.setText("ON")
-            self.brake_status.setStyleSheet("background-color: #f5c842; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
+        if brake_status or self.brake_class.manual_driver_service_brake_command:
+            print(f"Service Brake Status: {brake_status}")
+            # self.brake_status.setText("ON")
+            # self.brake_status.setStyleSheet("background-color: #f5c842; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
             # Divet in service break in UI
             self.divet_in_service_brake_button()
         else:
-            self.brake_status.setText("OFF")
-            self.brake_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
+            # self.brake_status.setText("OFF")
+            # self.brake_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
             self.reset_service_brake_button_style()
             
     def update_emergency_brake_status(self, brake_status: bool):
         if brake_status:
-            self.brake_status.setText("ON")
-            self.brake_status.setStyleSheet("background-color: #f5c842; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
+            print(f"Emergency Brake Status: {brake_status}")
+            # self.brake_status.setText("ON")
+            # self.brake_status.setStyleSheet("background-color: #f5c842; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
             self.divet_in_emergency_brake_buttons()
         else:
-            self.brake_status.setText("OFF")
-            self.brake_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
+            # self.brake_status.setText("OFF")
+            # self.brake_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
             self.reset_emergency_brake_button_style()
         
     # def send_desired_temperature(self):
@@ -1845,34 +1847,31 @@ class TrainControllerUI(QWidget):
     
     def divet_in_service_brake_button(self):
         self.brake_button.setStyleSheet("margin-top: 40px; background-color: #B8860B; font-size: 16px; border-radius: 10px; font-weight: bold; color: black; border: 3px solid black; padding-top: 20px; max-width: 150px; padding-bottom: 20px;")
-        # Put button status in UI to ON
-        self.brake_status.setText("ON")
-        self.brake_status.setStyleSheet("background-color: #f5c842; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
-
+        self.reset_brake_status(self.brake_class.driver_service_brake_command, self.brake_class.driver_emergency_brake_command)
+        
     def reset_service_brake_button_style(self):
         self.brake_button.setStyleSheet("margin-top: 40px; background-color: yellow; font-size: 16px; border-radius: 10px; font-weight: bold; color: black; border: 3px solid black; padding-top: 20px; max-width: 150px; padding-bottom: 20px;")
-        # Turn the brake status to OFF
-        self.brake_status.setText("OFF")
-        self.brake_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
-        # self.reset_brake_status()
-
+        self.reset_brake_status(self.brake_class.driver_service_brake_command, self.brake_class.driver_emergency_brake_command)
+        
     def divet_in_emergency_brake_buttons(self):
         self.emergency_brake_button.setStyleSheet("border: 3px solid black; margin-left: 40px; background-color: darkred; color: white; font-size: 20px; font-weight: bold; padding: 50px; border-radius: 10px;")
-        # Put button status in UI to ON
-        self.brake_status.setText("ON")
-        self.brake_status.setStyleSheet("background-color: #f5c842; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
+        self.reset_brake_status(self.brake_class.driver_service_brake_command, self.brake_class.driver_emergency_brake_command)
         
     def reset_emergency_brake_button_style(self):
         self.emergency_brake_button.setStyleSheet("border: 3px solid black; margin-left: 40px; background-color: red; color: white; font-size: 20px; font-weight: bold; padding: 50px; border-radius: 10px;")
         # Turn the brake status to OFF
-        self.brake_status.setText("OFF")
-        self.brake_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
-        self.reset_brake_status()
+        # self.brake_status.setText("OFF")
+        # self.brake_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
+        self.reset_brake_status(self.brake_class.driver_service_brake_command, self.brake_class.driver_emergency_brake_command)
 
-    def reset_brake_status(self):
-        self.brake_status.setText("OFF")
-        self.brake_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
-        
+    def reset_brake_status(self, service_brake: bool = False, emergency_brake: bool = False):
+        if service_brake or emergency_brake:
+            self.brake_status.setText("ON")
+            self.brake_status.setStyleSheet("background-color: #f5c842; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
+        else:
+            self.brake_status.setText("OFF")
+            self.brake_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
+    
     # def change_power_UI(self):
     #     self.power_command_edit.setText(f"{self.power_class.power_command / 1000:.2f}")
 
