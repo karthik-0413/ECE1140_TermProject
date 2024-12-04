@@ -55,8 +55,8 @@ class CTC_logic():
         self.num_trains = len(self.line.train_list)
         print("Num trains = ", self.num_trains)
 
-    def add_new_pending_train(self, destination:int, arrival_time, destination_station:str=None):
-        self.line.add_pending_train(destination, arrival_time, destination_station)
+    def add_new_pending_train(self, destination:int, arrival_time, destination_station:str=None, depart_time:str=None):
+        self.line.add_pending_train(destination, arrival_time, destination_station, depart_time)
 
     def dispatch_pending_train(self, train_id):
         self.line.dispatch_pending_train(train_id)

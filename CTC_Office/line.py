@@ -164,20 +164,22 @@ class Line():
 
     def create_train(self, destination, arrival_time, destination_station=None):
         """ Directly add a train to the line """
-        self.train_list.append(Train(self.next_train_id, destination, arrival_time, destination_station))
+        self.train_list.append(Train(self.next_train_id, destination, arrival_time, destination_station, departure_time=dt.datetime.now().time()))
         self.next_train_id += 1
         self.train_list[-1].path.append(self.calc_path(0, destination))
         self.calc_auth(self.train_list[-1].train_id)
 
-    def add_pending_train(self, destination, arrival_time, destination_station=None):
+    def add_pending_train(self, destination, arrival_time, destination_station=None, depart_time:str=None):
         """ Add a train to be dispatched later"""
-        self.pending_trains.append(Train(self.next_train_id, destination, arrival_time, destination_station))
+        self.pending_trains.append(Train(self.next_train_id, destination, arrival_time, destination_station, depart_time))
+        self.pending_trains[-1].path.append(self.calc_path(0, destination))
         self.next_train_id += 1
 
     def dispatch_pending_train(self, train_id):
         """ Dispatch a train that was pending departure """
         train_index = [train.train_id for train in self.pending_trains].index(train_id)
         self.train_list.append(self.pending_trains.pop(train_index))
+        self.calc_auth(train_id)
 
     def remove_train(self, train_id):
         self.train_list.pop(train_id)

@@ -186,7 +186,7 @@ class CTC_frontend(object):
 "color:black;")
         self.ArrivalLabel.setObjectName("ArrivalLabel")
         self.ArrivalSelector = QtWidgets.QTimeEdit(parent=self.ScheduleFrame)
-        self.ArrivalSelector.setEnabled(False)
+        self.ArrivalSelector.setEnabled(True)
         self.ArrivalSelector.setGeometry(QtCore.QRect(310, 160, 101, 24))
         self.ArrivalSelector.setStyleSheet("font: 13pt \"Arial\";\n"
 "color:black;")
@@ -220,7 +220,7 @@ class CTC_frontend(object):
         self.Train_view_train_selector.setObjectName("Train_view_train_selector")
         self.Train_view_train_selector.valueChanged.connect(self.select_train )
         self.add_destination_button = QtWidgets.QPushButton(parent=self.ScheduleFrame)
-        self.add_destination_button.setEnabled(False)
+        self.add_destination_button.setEnabled(True)
         self.add_destination_button.setGeometry(QtCore.QRect(420, 160, 141, 32))
         self.add_destination_button.setStyleSheet("background-color: rgb(133, 239, 128);\n"
 "font: 18pt \"Arial\";\n"
@@ -228,6 +228,7 @@ class CTC_frontend(object):
 "color:black;")
         self.add_destination_button.setCheckable(False)
         self.add_destination_button.setObjectName("add_destination_button")
+        self.add_destination_button.clicked.connect(self.add_destination)
         self.destination_list_label = QtWidgets.QLabel(parent=self.ScheduleFrame)
         self.destination_list_label.setGeometry(QtCore.QRect(10, 100, 111, 41))
         font = QtGui.QFont()
@@ -870,6 +871,7 @@ class CTC_frontend(object):
         self.destinationLabel.setText(_translate("mainwindow", "Destination Station:"))
         self.departureLabel.setText(_translate("mainwindow", "Departure Time:"))
         self.ArrivalLabel.setText(_translate("mainwindow", "Arrival Time:"))
+        self.ArrivalSelector.setDisplayFormat(_translate("mainwindow", "hh:mm"))
         self.DispatchButton.setText(_translate("mainwindow", "Dispatch Train"))
         self.train_label.setText(_translate("mainwindow", "Train #"))
         self.add_destination_button.setText(_translate("mainwindow", "Add Destination"))
@@ -928,6 +930,7 @@ class CTC_frontend(object):
         self.pagetab.setTabToolTip(self.pagetab.indexOf(self.TestTab), _translate("mainwindow", "Test I/O operation"))
 
         self.DepartureSelector.setTime(QtCore.QTime.currentTime())
+        self.ArrivalSelector.setTime(QtCore.QTime.currentTime())
 
 
 
@@ -1053,35 +1056,55 @@ class CTC_frontend(object):
         print(f"Selected Station = {station}")
 
         dest = self.ctc.find_destination(station)
+
         if dest == -1:
             print("Invalid Destination")
             return
         else:
             
             departure_time = self.DepartureSelector.time()
-            print(f"Departure Time = {departure_time.toString()}")
+            arrival_time = self.ArrivalSelector.time()
             depart_time = dt.time(hour=departure_time.hour(),minute=departure_time.minute(),second=departure_time.second())
-            print(depart_time)
-            self.ctc.add_new_train_to_line(dest, depart_time, station)
-            self.ctc.line.train_list[-1].dispatch_train()
+            arrive_time = dt.time(hour=arrival_time.hour(),minute=arrival_time.minute(),second=arrival_time.second())
+            
+            # Dispatch immediately if departure time is current time
+            if self.departure_ready(dt.datetime.now().time(), depart_time):
+                self.ctc.add_new_train_to_line(dest, arrive_time, station)
+
+            # Otherwise, add to pending dispatches
+            else:
+                self.ctc.add_new_pending_train(dest, arrive_time, station, depart_time)
+
+
             self.ctc_train_communicate.dispatch_train_signal.emit(self.ctc.num_trains)
 
         self.updateUI()
 
     def check_departures(self):
         for train in self.ctc.line.train_list:
-            if train.departure_time <= self.wall_clock_time.time():
-                train.dispatch_train()
+            if self.departure_ready(dt.datetime.now().time(), train.departure_time):
+                self.ctc.dispatch_pending_train(train.train_id)
 
-    def departure_ready(curr, depart):
+    def departure_ready(self, curr, depart):
         if curr.hour >= depart.hour and curr.minute >= depart.minute:
             return True
         else:
             return False
+        
+    def remove_train(self, train_id):
+        self.ctc.remove_train_from_line(train_id)
+        self.updateUI()
            
     def add_destination(self):
-        pass
-    
+        station_name = self.StationSelector.currentText()
+        destination = self.ctc.find_destination(station_name)
+        train_id = self.train_number_selector.value()
+        arrival_time = self.ArrivalSelector.time()
+        arrival_time_formatted = dt.time(hour=arrival_time.hour(),minute=arrival_time.minute(),second=arrival_time.second())
+        
+        self.ctc.add_train_destination_on_line(train_id, destination, arrival_time_formatted, station_name)
+        self.updateUI()
+
     def select_block(self):
         self.selected_block = self.block_page_block_selector.value()
 

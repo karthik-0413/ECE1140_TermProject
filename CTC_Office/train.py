@@ -42,8 +42,9 @@ class Train():
 
     def dispatch_train(self):
         """Send message to Train Model to create a new train"""
-        self.departure_time = dt.datetime.now().time()
-        pass
+        if self.departure_time == None:
+            self.departure_time = dt.datetime.now().time()
+        
 
     def add_destination(self, destination, arrival_time, station_name=None):
         """Add a destination to the train"""
