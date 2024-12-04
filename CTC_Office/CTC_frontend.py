@@ -1069,7 +1069,7 @@ class CTC_frontend(object):
     def upload_layout(self):
         filename, _ = QFileDialog.getOpenFileName(None, "Select Layout File", os.getcwd(), "Excel File (*.xlsx *.xls)")
         if filename:
-            print("filename = ", filename)
+        #     print("filename = ", filename)
             self.ctc.upload_layout_to_line(filename)
 
         # Update Lines Selector

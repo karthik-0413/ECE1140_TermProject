@@ -72,6 +72,7 @@ class Tuning(QObject):
        
 class BrakeStatus(QObject):
     service_brake_signal = pyqtSignal(bool)
+    manual_service_brake_signal = pyqtSignal(bool)
     emergency_brake_signal = pyqtSignal(bool)
     passenger_brake_command_signal = pyqtSignal(bool)
     driver_brake_signal = pyqtSignal(bool)
@@ -81,6 +82,7 @@ class BrakeStatus(QObject):
         self.driver_service_brake_command = False
         self.manual_driver_service_brake_command = False
         self.driver_emergency_brake_command = False
+        self.manual_driver_emergency_brake_command = False
         self.driver_brake_status = False
         self.passenger_brake = False
         self.entered_lower = False
@@ -91,12 +93,22 @@ class BrakeStatus(QObject):
         
     def manual_apply_service_brake(self):
         self.manual_driver_service_brake_command = True
-        self.service_brake_signal.emit(self.manual_driver_service_brake_command)
+        self.manual_service_brake_signal.emit(self.manual_driver_service_brake_command)
         # # print("Service Brake Applied")
         
     def manual_no_apply_service_brake(self):
         self.manual_driver_service_brake_command = False
-        self.service_brake_signal.emit(self.manual_driver_service_brake_command)
+        self.manual_service_brake_signal.emit(self.manual_driver_service_brake_command)
+        # # print("Service Brake Released")
+        
+    def manual_apply_emergency_brake(self):
+        self.manual_driver_emergency_brake_command = True
+        self.emergency_brake_signal.emit(self.manual_driver_emergency_brake_command)
+        # # print("Service Brake Applied")
+        
+    def manual_no_apply_emergency_brake(self):
+        self.manual_driver_emergency_brake_command = False
+        self.emergency_brake_signal.emit(self.manual_driver_emergency_brake_command)
         # # print("Service Brake Released")
         
     def apply_emergency_brake(self):
@@ -1304,8 +1316,8 @@ class TrainControllerUI(QWidget):
         self.emergency_brake_button.setStyleSheet("border: 3px solid black; margin-left: 40px; background-color: red; color: white; font-size: 20px; font-weight: bold; padding: 50px; border-radius: 10px;")
         self.emergency_brake_button.pressed.connect(self.divet_in_emergency_brake_buttons)
         self.emergency_brake_button.released.connect(self.reset_emergency_brake_button_style)
-        self.emergency_brake_button.pressed.connect(self.brake_class.apply_emergency_brake)
-        self.emergency_brake_button.released.connect(self.brake_class.no_apply_emergency_brake)
+        self.emergency_brake_button.pressed.connect(self.brake_class.manual_apply_emergency_brake)
+        self.emergency_brake_button.released.connect(self.brake_class.manual_no_apply_emergency_brake)
         
         # self.emergency_brake_button.pressed.connect(self.handle_emergency_brake_button)
         # self.emergency_brake_button.pressed.connect(self.divet_in_emergency_brake_buttons)
@@ -1711,7 +1723,7 @@ class TrainControllerUI(QWidget):
     
     def update_passenger_brake_status(self, passenger_brake: bool):
         if passenger_brake:
-            if self.brake_class.passenger_brake:
+            if self.brake_class.passenger_brake and not self.brake_class.manual_driver_emergency_brake_command:
                 self.passenger_brake_status.setText("ON")
                 self.passenger_brake_status.setStyleSheet("background-color: #f5c842; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
             self.divet_in_emergency_brake_buttons()
@@ -1761,13 +1773,13 @@ class TrainControllerUI(QWidget):
             
     def update_service_brake_status(self, brake_status: bool):
         if brake_status:
-            # self.brake_status.setText("ON")
-            # self.brake_status.setStyleSheet("background-color: #f5c842; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
+            self.brake_status.setText("ON")
+            self.brake_status.setStyleSheet("background-color: #f5c842; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
             # Divet in service break in UI
             self.divet_in_service_brake_button()
         else:
-            # self.brake_status.setText("OFF")
-            # self.brake_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
+            self.brake_status.setText("OFF")
+            self.brake_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
             self.reset_service_brake_button_style()
             
     def update_emergency_brake_status(self, brake_status: bool):
