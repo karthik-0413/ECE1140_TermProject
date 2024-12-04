@@ -22,6 +22,7 @@ class CTC_frontend(object):
         self.wall_clock_time = dt.datetime.now()
         self.selected_block = 0
         self.selected_train = 1
+        
 
 
     def setupUi(self, mainwindow):
@@ -1040,6 +1041,9 @@ class CTC_frontend(object):
         # Updates Block Occupancies and Updates: Train Locations, Authorities, Speeds, Throughput
         self.ctc.update_blocks_on_line(blocks)
 
+        # Time based updates
+        self.check_departures()
+
         # Once calculations have been made, update the UI
         self.updateUI()
 
@@ -1063,6 +1067,17 @@ class CTC_frontend(object):
             self.ctc_train_communicate.dispatch_train_signal.emit(self.ctc.num_trains)
 
         self.updateUI()
+
+    def check_departures(self):
+        for train in self.ctc.line.train_list:
+            if train.departure_time <= self.wall_clock_time.time():
+                train.dispatch_train()
+
+    def departure_ready(curr, depart):
+        if curr.hour >= depart.hour and curr.minute >= depart.minute:
+            return True
+        else:
+            return False
            
     def add_destination(self):
         pass
@@ -1114,6 +1129,8 @@ class CTC_frontend(object):
         self.StationSelector.addItems(stations)
 
         self.updateUI()
+
+    
 
 if __name__ == "__main__":
     

@@ -15,6 +15,10 @@ class Line():
         self.train_list = []
         self.throughput = 0
 
+        self.next_train_id = 1
+
+        self.pending_trains = []
+
         self.excel_layout = {}
         self.excel_schedule = {}
 
@@ -33,7 +37,6 @@ class Line():
                 )
                 self.layout.append(block)
                 print(f"Block number: {block.block_number}  Block length: {block.block_length}  Section: {block.section}  Infrastructure: {block.infrastructure}")
-
 
     def read_excel_schedule():
         pass
@@ -87,7 +90,6 @@ class Line():
 
             else:
                 self.train_list[train_index].authority = 0
-
 
     def calc_speed(self, train_id:int):
             
@@ -161,9 +163,21 @@ class Line():
                 train.arrival_times.append(datetime.time())
 
     def create_train(self, destination, arrival_time, destination_station=None):
-        self.train_list.append(Train(len(self.train_list)+1, destination, arrival_time, destination_station))
+        """ Directly add a train to the line """
+        self.train_list.append(Train(self.next_train_id, destination, arrival_time, destination_station))
+        self.next_train_id += 1
         self.train_list[-1].path.append(self.calc_path(0, destination))
         self.calc_auth(self.train_list[-1].train_id)
+
+    def add_pending_train(self, destination, arrival_time, destination_station=None):
+        """ Add a train to be dispatched later"""
+        self.pending_trains.append(Train(self.next_train_id, destination, arrival_time, destination_station))
+        self.next_train_id += 1
+
+    def dispatch_pending_train(self, train_id):
+        """ Dispatch a train that was pending departure """
+        train_index = [train.train_id for train in self.pending_trains].index(train_id)
+        self.train_list.append(self.pending_trains.pop(train_index))
 
     def remove_train(self, train_id):
         self.train_list.pop(train_id)
