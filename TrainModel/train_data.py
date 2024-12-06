@@ -300,7 +300,7 @@ class TrainData(QObject):
         self.tc_communicate.announcement_signal.connect(self.set_announcement)
 
         # Connect incoming signals from Track Model
-        self.tm_communicate.commanded_speed_signal.connect(self.set_track_commanded_speed)
+        # self.tm_communicate.commanded_speed_signal.connect(self.set_track_commanded_speed)
         self.tm_communicate.commanded_authority_signal.connect(self.set_track_commanded_authority)
         self.tm_communicate.block_grade_signal.connect(self.set_block_grade)
         self.tm_communicate.block_elevation_signal.connect(self.set_block_elevation)
@@ -318,6 +318,7 @@ class TrainData(QObject):
             # Add new trains
             for _ in range(ctc_train_count - current_train_count):
                 self.initialize_train()
+                # self.commanded_speed_tc.append(30)  # km/h from Track Model
         elif ctc_train_count < current_train_count:
             # Remove earliest trains
             for _ in range(current_train_count - ctc_train_count):
@@ -539,6 +540,7 @@ class TrainData(QObject):
         """Send updated data to Train Controller and Track Model via communication classes."""
         # Send data to Train Controller
         self.tc_communicate.commanded_speed_signal.emit(self.commanded_speed_tc)  # mph for UI
+        print(f"Commanded Speed in Train Model: {self.commanded_speed_tc}")
         self.tc_communicate.commanded_authority_signal.emit(self.commanded_authority)
         self.tc_communicate.current_velocity_signal.emit(self.current_speed)  # m/s
         self.tc_communicate.engine_failure_signal.emit(self.engine_failure)
