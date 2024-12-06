@@ -29,13 +29,15 @@ class CTC_logic():
         self.wayside_communicate = wayside_communicate
 
     def write_to_communicate_objects(self):
-        print("Writing to communicate objects")
-        #print("self.line.send_new_values = ", self.line.send_new_values)
+        # print("Writing to communicate objects")
+        ## print("self.line.send_new_values = ", self.line.send_new_values)
 
         #print("authority = ", self.suggested_authority_list)
         # Write all buffered information to the communicate objects
         self.wayside_communicate.suggested_speed_signal.emit(self.suggested_speed_list)
         self.wayside_communicate.suggested_authority_signal.emit(self.suggested_authority_list)
+        print("CTC Speed list = ", [speed for speed in self.suggested_speed_list if speed is not None])
+        print("CTC Authority list = ", [auth for auth in self.suggested_authority_list if auth is not None])
 
     def upload_layout_to_line(self, path_to_layout:str):
         self.line.read_excel_layout(path_to_layout)
@@ -53,7 +55,7 @@ class CTC_logic():
         self.line.create_train(destination, arrival_time, destination_station)
         print("Adding train")
         self.num_trains = len(self.line.train_list)
-        print("Num trains = ", self.num_trains)
+        # print("Num trains = ", self.num_trains)
 
     def add_new_pending_train(self, destination:int, arrival_time, destination_station:str=None, depart_time:str=None):
         self.line.add_pending_train(destination, arrival_time, destination_station, depart_time)
@@ -77,7 +79,7 @@ class CTC_logic():
             self.suggested_authority_list[train.location] = train.authority
 
     def update_suggested_speed_list(self):
-        print("updating speed")
+        # print("updating speed")
 
         self.suggested_speed_list = [None for _ in self.suggested_speed_list]
 
@@ -113,7 +115,7 @@ class CTC_logic():
 
     def toggle_automatic_manual(self):
         self.automatic = not self.automatic
-        print("Toggled")
+        # print("Toggled")
 
     def get_stations(self):
         return self.line.get_stations()

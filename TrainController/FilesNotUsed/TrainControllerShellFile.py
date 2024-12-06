@@ -67,7 +67,7 @@ class TrainControllerShell:
 
     def update_power_command(self, power_command: float):
         # for train_controller in self.train_controller_list:
-        # print(f"In shell case: {power_command}")
+        # # print(f"In shell case: {power_command}")
         self.train_controller_list[self.train_id - 1].update_power_command(power_command)
         self.write_to_train_model()
             # self.update_UI()
@@ -76,7 +76,7 @@ class TrainControllerShell:
         self.train_controller_list[self.train_id - 1].update_exterior_lights(exterior_lights)
 
     def update_interior_lights(self, interior_lights: bool):
-        # print("Updating interior lights")
+        # # print("Updating interior lights")
         self.train_controller_list[self.train_id - 1].update_interior_lights(interior_lights)
 
     def update_left_door(self, left_door: bool):
@@ -105,7 +105,7 @@ class TrainControllerShell:
         # self.trainControllerUI.current_velocity_signal.emit(self.train_controller_list[self.train_id - 1].speed_control.current_velocity)
         # self.trainControllerUI.commanded_speed_signal.emit(self.train_controller_list[self.train_id - 1].speed_control.commanded_speed)
         # self.trainControllerUI.commanded_authority_signal.emit(self.train_controller_list[self.train_id - 1].position.commanded_authority)
-        # # print(f"Power commanddddd: {self.train_controller_list[self.train_id - 1].power_class.power_command}")
+        # # # print(f"Power commanddddd: {self.train_controller_list[self.train_id - 1].power_class.power_command}")
         # self.trainControllerUI.update_power_command(self.train_controller_list[self.train_id - 1].power_class.power_command)
         # self.trainControllerUI.engine_failure_signal.emit(self.train_controller_list[self.train_id - 1].failure_modes.engine_fail)
         # self.trainControllerUI.brake_failure_signal.emit(self.train_controller_list[self.train_id - 1].failure_modes.brake_fail)
@@ -128,7 +128,7 @@ class TrainControllerShell:
         self.trainControllerUI.update_current_speed(self.train_controller_list[self.train_id - 1].speed_control.current_velocity)
         self.trainControllerUI.update_commanded_speed(self.train_controller_list[self.train_id - 1].speed_control.commanded_speed)
         self.trainControllerUI.update_commanded_authority(self.train_controller_list[self.train_id - 1].position.commanded_authority)
-        # print(f"Power commanddddd: {self.train_controller_list[self.train_id - 1].power_class.power_command}")
+        # # print(f"Power commanddddd: {self.train_controller_list[self.train_id - 1].power_class.power_command}")
         self.trainControllerUI.update_power_command(self.train_controller_list[self.train_id - 1].power_class.power_command)
         self.trainControllerUI.update_engine_failure_status(self.train_controller_list[self.train_id - 1].failure_modes.engine_fail)
         self.trainControllerUI.update_brake_failure_status(self.train_controller_list[self.train_id - 1].failure_modes.brake_fail)
@@ -187,7 +187,7 @@ class TrainControllerShell:
         self.train_count = count
         
     def handle_train_id(self, train_id: int):
-        # print(f"Train ID: {train_id}")
+        # # print(f"Train ID: {train_id}")
         self.train_id = train_id
         
         self.trainControllerUI = self.train_controller_list[self.train_id - 1]

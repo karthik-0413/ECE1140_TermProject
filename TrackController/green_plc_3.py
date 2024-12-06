@@ -43,7 +43,7 @@ class green_line_plc_3_class:
     # Default Constructor
     def __init__(self):
         
-        print("Green Line PLC 3 Initialized")
+        # print("Green Line PLC 3 Initialized")
 
         self.N_direction = 0
         self.N_direction_update = 1
@@ -65,6 +65,9 @@ class green_line_plc_3_class:
     ##################################
     #           Methods
     ##################################
+    
+    def is_created(self):
+        return True
 
     # Update block occupancies
     def update_block_occupancies(self):

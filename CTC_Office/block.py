@@ -36,7 +36,7 @@ class Block():
         # Choose which optional block characteristics to include
 
         self.set_infrastructure()
-        print("Block number: ", self.block_number, "\nStation : ", self.station_name)
+        # print("Block number: ", self.block_number, "\nStation : ", self.station_name)
         self.add_next_blocks()
 
 
@@ -46,10 +46,11 @@ class Block():
             pattern = r"STATION;\s(.*?);"
             match = re.search(pattern, self.infrastructure, re.IGNORECASE)
             if match:
-                print("Station found: ", match.group(1))
+                # print("Station found: ", match.group(1))
                 self.station_name = match.group(1)
             else:
-                print("Station not found")
+                pass
+                # print("Station not found")
 
     def add_next_blocks(self):
         blocks = self.next_block_string.split(',')

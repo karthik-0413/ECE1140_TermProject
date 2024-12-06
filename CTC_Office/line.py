@@ -237,16 +237,18 @@ class Line():
 
     def update_train_locations(self):
         # Update the locations stored by the Trains
-        print("Updating train locations")
+        # print("Updating train locations")
+
+
 
         for train in self.train_list:
             next = self.layout[train.location].next_block(train.prev_location)
-            print("Current location: ", train.location)
-            print("Next location: ", next)
-            print("Next Occupied: ", self.layout[next].occupied)
+            # print("Current location: ", train.location)
+            # print("Next location: ", next)
+            # print("Next Occupied: ", self.layout[next].occupied)
 
             if self.layout[next].occupied:
-                print("Train location updated")
+                # print("Train location updated")
                 train.prev_location = train.location
                 train.location = next
 
