@@ -282,6 +282,7 @@ class TrainControllerShell:
         
     def update_commanded_speed(self, commanded_speed: list):
         # For all Trains - WORKS
+        print(f"Commanded Speed in Train Controller Shel = {commanded_speed}")
         if len(self.train_controller_list):
             if len(commanded_speed):
                 for i in range(len(commanded_speed)):
@@ -294,7 +295,7 @@ class TrainControllerShell:
                     
                     for i in range(len(self.train_controller_list)):
                         pass
-                        print(f"Commanded Speed {i + 1}: {self.train_controller_list[i].speed_control.commanded_speed}")
+                        #print(f"Commanded Speed {i + 1}: {self.train_controller_list[i].speed_control.commanded_speed}")
         
         
         
@@ -345,7 +346,7 @@ class TrainControllerShell:
             for i in range(len(current_velocity)):
                 if i < len(self.train_controller_list):
                     self.train_controller_list[i].speed_control.handle_current_velocity(current_velocity[i])
-                    print(f"Current Velocity {i + 1}: {current_velocity[i]}")
+                    #print(f"Current Velocity {i + 1}: {current_velocity[i]}")
             # # print(f"Current Velocity: {current_velocity}")
 
     def update_engine_failure(self, engine_failure: list):

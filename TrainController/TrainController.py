@@ -1832,7 +1832,7 @@ class TrainControllerUI(QWidget):
             
     def update_service_brake_status(self, brake_status: bool):
         if brake_status or self.brake_class.manual_driver_service_brake_command:
-            print(f"Service Brake Status: {brake_status}")
+            #print(f"Service Brake Status: {brake_status}")
             # self.brake_status.setText("ON")
             # self.brake_status.setStyleSheet("background-color: #f5c842; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
             # Divet in service break in UI
