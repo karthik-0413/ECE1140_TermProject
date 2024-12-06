@@ -1,0 +1,5 @@
+.venv
+.vscode
+.DS_Store
+CTC_Office/__pycache__
+*.xlsx
