@@ -330,8 +330,6 @@ class track_model:
                 if (block_start <= position_value < block_end):
                     self.all_blocks[self.defaultGreenPath[i]].occupied = True
                     self.current_block.append(self.all_blocks[self.defaultGreenPath[i]].number)
-                else:
-                    self.all_blocks[self.defaultGreenPath[i]].occupied = False
                 block_start = block_end
         for block in self.all_blocks:
             self.occupancies.append(block.occupied)
