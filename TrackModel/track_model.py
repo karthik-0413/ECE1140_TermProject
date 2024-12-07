@@ -4,13 +4,13 @@ from PyQt6 import QtWidgets, QtCore, QtGui
 from PyQt6.QtCore import (QObject, pyqtSignal)
 
 
-# from TrackModel.track_model_ui import Ui_TrackModel
-# from TrackModel.TrackTrainCommunicate import TrackTrainComms as TrainComms
-# from TrackModel.WaysideTrackCommunicate import WaysideTrackComms as WaysideComms
-
 from TrackModel.track_model_ui import Ui_TrackModel
-from TrackTrainCommunicate import TrackTrainComms as TrainComms
-from WaysideTrackCommunicate import WaysideTrackComms as WaysideComms
+from TrackModel.TrackTrainCommunicate import TrackTrainComms as TrainComms
+from TrackModel.WaysideTrackCommunicate import WaysideTrackComms as WaysideComms
+
+#from TrackModel.track_model_ui import Ui_TrackModel
+#from TrackTrainCommunicate import TrackTrainComms as TrainComms
+#from WaysideTrackCommunicate import WaysideTrackComms as WaysideComms
 
 class Block():
     def __init__(self, line, section, number: int, length: float, grade: float, speedLimit: float, infrastructure: str, side, elevation: float, cumulativeElevation: float, polarity: bool):

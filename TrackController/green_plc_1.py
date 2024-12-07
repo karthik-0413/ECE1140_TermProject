@@ -70,7 +70,7 @@ class green_line_plc_1_class:
     #           Methods
     ##################################
     
-    def is_created(self):
+    def green_plc_1_is_created(self):
         return True
 
     # Update block occupancies
@@ -341,14 +341,14 @@ class green_line_plc_1_class:
                         if j == 0: # Block 29
 
                             # Check if any trains are heading away from loop based on occupancy
-                            if self.sec_array[5].switch_cmd == 0:
+                            if self.write_switch_cmd_array[1] == 0:
                                 self.sec_array[5].block_stop_go[7] = 0 # Block 28
                                 self.sec_array[5].block_stop_go[6] = 0 # Block 27
 
                         elif j == 2: # block 30
 
                             # Check if any trains are heading towards loop based on occupancy
-                            if self.sec_array[5].switch_cmd == 0: 
+                            if self.write_signal_cmd_array[1] == 1: 
                                 self.sec_array[5].block_stop_go[7] = 0 # Block 28
 
                             self.sec_array[6].block_stop_go[0] = 0 # Block 29
