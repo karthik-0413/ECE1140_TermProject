@@ -9,11 +9,11 @@ class TrainEngineer:
         
     def set_kp(self, kp):
         self._kp = kp
-        # print(f"Kp set to {self._kp}")
+        # # print(f"Kp set to {self._kp}")
         
     def set_ki(self, ki):
         self._ki = ki
-        # print(f"Ki set to {self._ki}")
+        # # print(f"Ki set to {self._ki}")
         
     def get_kp(self):
         return self._kp

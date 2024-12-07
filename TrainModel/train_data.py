@@ -300,7 +300,7 @@ class TrainData(QObject):
         self.tc_communicate.announcement_signal.connect(self.set_announcement)
 
         # Connect incoming signals from Track Model
-        self.tm_communicate.commanded_speed_signal.connect(self.set_track_commanded_speed)
+        # self.tm_communicate.commanded_speed_signal.connect(self.set_track_commanded_speed)
         self.tm_communicate.commanded_authority_signal.connect(self.set_track_commanded_authority)
         self.tm_communicate.block_grade_signal.connect(self.set_block_grade)
         self.tm_communicate.block_elevation_signal.connect(self.set_block_elevation)
@@ -318,6 +318,7 @@ class TrainData(QObject):
             # Add new trains
             for _ in range(ctc_train_count - current_train_count):
                 self.initialize_train()
+                # self.commanded_speed_tc.append(30)  # km/h from Track Model
         elif ctc_train_count < current_train_count:
             # Remove earliest trains
             for _ in range(current_train_count - ctc_train_count):
@@ -325,7 +326,7 @@ class TrainData(QObject):
 
         # Update train count
         self.train_count = ctc_train_count
-        # print("Train Count:", self.train_count)  # # print for debugging
+        # # print("Train Count:", self.train_count)  # # # print for debugging
 
         # Send current train count to Train Controller
         # self.tc_communicate.train_count_signal.emit(self.train_count)
@@ -338,8 +339,8 @@ class TrainData(QObject):
     # Handler methods for incoming signals from Train Controller
     def set_power_command(self, power_list):
         """Handle power command signals from Train Controller."""
-        # # print power_list for debugging
-        # print("Power Command List in Train Model:", power_list)
+        # # # print power_list for debugging
+        # # print("Power Command List in Train Model:", power_list)
         if len(power_list) < max(1, self.train_count):
             # Ensure the list is long enough
             power_list = power_list + [0] * (max(1, self.train_count) - len(power_list))
@@ -348,7 +349,7 @@ class TrainData(QObject):
 
     def set_service_brake(self, state_list):
         """Handle service brake signals from Train Controller."""
-        # print("Service Brake List in Train Model:", state_list)
+        # # print("Service Brake List in Train Model:", state_list)
         if len(state_list) < max(1, self.train_count):
             state_list = state_list + [False] * (max(1, self.train_count) - len(state_list))
         self.service_brake = state_list
@@ -357,9 +358,9 @@ class TrainData(QObject):
     def set_emergency_brake(self, state_list: list):
         """Handle emergency brake signals from Train Controller."""
         # if True in state_list:
-        # print("Emergency Brake List in Train Model:", state_list)
+        # # print("Emergency Brake List in Train Model:", state_list)
             # self.passenger_emergency_brake = state_list
-        # print("Emergency Brake List in Train Model:", state_list)
+        # # print("Emergency Brake List in Train Model:", state_list)
         if len(state_list) < max(1, self.train_count):
             state_list = state_list + [False] * (max(1, self.train_count) - len(state_list))
         self.emergency_brake = state_list
@@ -421,11 +422,11 @@ class TrainData(QObject):
         if len(speed_list):
             if speed_list[0] == 0:
                 self.commanded_speed_tc[0] = 0
-                print(f"Commanded Speed in Train Model is 0 - : {self.commanded_speed_tc}")
+                # print(f"Commanded Speed in Train Model is 0 - : {self.commanded_speed_tc}")
             elif len(speed_list) < max(1, self.train_count):
                 speed_list = speed_list + [0] * (max(1, self.train_count) - len(speed_list))
             self.commanded_speed_tc = speed_list
-            print(f"Commanded Speed in Train Model: {self.commanded_speed_tc}")
+            # print(f"Commanded Speed in Train Model: {self.commanded_speed_tc}")
             # Convert km/h to m/s for calculations
             self.commanded_speed = [speed / 3.6 for speed in speed_list]  #UUU
             # Convert m/s to mph for UI
@@ -460,7 +461,7 @@ class TrainData(QObject):
         if len(polarity_list) < max(1, self.train_count):
             polarity_list = polarity_list + [True] * (max(1, self.train_count) - len(polarity_list))
         self.polarity = polarity_list
-        # print(f"train: {self.polarity}")
+        # # print(f"train: {self.polarity}")
         self.data_changed.emit()
 
     def set_passenger_boarding(self, boarding_list):
@@ -539,6 +540,7 @@ class TrainData(QObject):
         """Send updated data to Train Controller and Track Model via communication classes."""
         # Send data to Train Controller
         self.tc_communicate.commanded_speed_signal.emit(self.commanded_speed_tc)  # mph for UI
+        print(f"Commanded Speed in Train Model: {self.commanded_speed_tc}")
         self.tc_communicate.commanded_authority_signal.emit(self.commanded_authority)
         self.tc_communicate.current_velocity_signal.emit(self.current_speed)  # m/s
         self.tc_communicate.engine_failure_signal.emit(self.engine_failure)
@@ -547,7 +549,7 @@ class TrainData(QObject):
         self.tc_communicate.actual_temperature_signal.emit(self.cabin_temperature)  # Fahrenheit
         self.tc_communicate.polarity_signal.emit(self.polarity)  # Pass polarity to Train Controller
         self.tc_communicate.passenger_brake_command_signal.emit(self.passenger_emergency_brake)
-        # self.tc_communicate.train_count_signal.emit(self.train_count)
+        self.tc_communicate.train_count_signal.emit(self.train_count)
 
         # Send data to Track Model
         self.tm_communicate.position_signal.emit(self.current_position)  # meters

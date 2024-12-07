@@ -615,13 +615,13 @@ class TrainIntegratedControllerUI(QWidget):
     
         
     def handle_current_speed(self):
-        # print(f"Current Speed: {self.current_velocity}")
+        # # print(f"Current Speed: {self.current_velocity}")
         self.current_speed_edit.setText(f"{self.current_velocity * 2.23694:.2f} mph")
         
     def updated_set_kp(self, kp: float):
         if self.current_position == 0 or self.current_velocity == 0.0:
             self.kp = kp
-            # print(f"Updated Kp: {self.kp}")
+            # # print(f"Updated Kp: {self.kp}")
         else:
             # Pop up saying cannot change Kp while train is moving
             msg_box = QMessageBox()
@@ -634,7 +634,7 @@ class TrainIntegratedControllerUI(QWidget):
     def updated_set_ki(self, ki: float):
         if self.current_position == 0 or self.current_velocity == 0.0:
             self.ki = ki
-            # print(f"Updated Ki: {self.ki}")
+            # # print(f"Updated Ki: {self.ki}")
         else:
             # Pop up saying cannot change Kp while train is moving
             msg_box = QMessageBox()
@@ -646,7 +646,7 @@ class TrainIntegratedControllerUI(QWidget):
 
     def handle_station_name(self, station_name: str):
         self.next_station = station_name
-        # print(f"Next Station: {self.next_station}")
+        # # print(f"Next Station: {self.next_station}")
         
     
     
@@ -658,9 +658,9 @@ class TrainIntegratedControllerUI(QWidget):
         temp = float(self.temp_input.text())
         if 60 <= temp <= 75:
             self.desired_temperature = temp
-            # print(f"Desired temperature set to: {self.desired_temperature}°F")
+            # # print(f"Desired temperature set to: {self.desired_temperature}°F")
         else:
-            # print("Temperature out of range. Please enter a value between 60°F and 75.")
+            # # print("Temperature out of range. Please enter a value between 60°F and 75.")
             
         self.send_desired_temperature_command(self.desired_temperature)
     
@@ -674,7 +674,7 @@ class TrainIntegratedControllerUI(QWidget):
         self.operation_mode = 1
         # Disable the setpoint speed input field
         self.setpoint_speed_edit.setEnabled(True)
-        # print("Operation Mode set to Manual")
+        # # print("Operation Mode set to Manual")
 
     def set_automatic_mode(self):
         self.operation_mode = 0
@@ -702,7 +702,7 @@ class TrainIntegratedControllerUI(QWidget):
     
         # Disable the setpoint speed input field
         self.setpoint_speed_edit.setEnabled(False)
-        # print("Operation Mode set to Automatic")
+        # # print("Operation Mode set to Automatic")
 
 
     
@@ -747,7 +747,7 @@ class TrainIntegratedControllerUI(QWidget):
                 self.communicator.announcement_signal.emit(f"Arrived at {self.next_station} Station")
                 self.commanded_authority_edit.setText("0.00 ft")
                 self.commanded_authority = 0.0
-                # print("Authority reached 0.0 ft")
+                # # print("Authority reached 0.0 ft")
     
     
     
@@ -761,13 +761,13 @@ class TrainIntegratedControllerUI(QWidget):
             self.interior_lights_status.setText("OFF")
             self.interior_lights_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
             self.send_interior_lights_command(self.interior_lights)
-            # print("Interior lights turned OFF")
+            # # print("Interior lights turned OFF")
         elif not status and self.operation_mode == 1:
             self.interior_lights = True
             self.interior_lights_status.setText("ON")
             self.interior_lights_status.setStyleSheet("background-color: #f5c842; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
             self.send_interior_lights_command(self.interior_lights)
-            # print("Interior lights turned ON")
+            # # print("Interior lights turned ON")
 
     def toggle_exterior_lights(self, status: bool):
         if status and self.operation_mode == 1:
@@ -775,13 +775,13 @@ class TrainIntegratedControllerUI(QWidget):
             self.exterior_lights_status.setText("OFF")
             self.exterior_lights_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
             self.send_exterior_lights_command(self.exterior_lights)
-            # print("Exterior lights turned OFF")
+            # # print("Exterior lights turned OFF")
         elif not status and self.operation_mode == 1:
             self.exterior_lights = True
             self.exterior_lights_status.setText("ON")
             self.exterior_lights_status.setStyleSheet("background-color: #f5c842; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
             self.send_exterior_lights_command(self.exterior_lights)
-            # print("Exterior lights turned ON")
+            # # print("Exterior lights turned ON")
             
     def toggle_right_door(self, status: bool):
         if status and self.current_velocity == 0.0 and self.operation_mode == 1:
@@ -789,13 +789,13 @@ class TrainIntegratedControllerUI(QWidget):
             self.right_door_status.setText("CLOSE")
             self.right_door_status.setStyleSheet("background-color: red; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
             self.send_right_door_command(self.right_door)
-            # print("Right door closed")
+            # # print("Right door closed")
         elif not status and self.current_velocity == 0.0 and self.operation_mode == 1:
             self.right_door = True
             self.right_door_status.setText("OPEN")
             self.right_door_status.setStyleSheet("background-color: green; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
             self.send_right_door_command(self.right_door)
-            # print("Right door opened")
+            # # print("Right door opened")
             
     def toggle_left_door(self, status: bool):
         if status and self.current_velocity == 0.0 and self.operation_mode == 1:
@@ -803,13 +803,13 @@ class TrainIntegratedControllerUI(QWidget):
             self.left_door_status.setText("CLOSE")
             self.left_door_status.setStyleSheet("background-color: red; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
             self.send_left_door_command(self.right_door)
-            # print("Left door closed")
+            # # print("Left door closed")
         elif not status and self.current_velocity == 0.0 and self.operation_mode == 1:
             self.left_door = True
             self.left_door_status.setText("OPEN")
             self.left_door_status.setStyleSheet("background-color: green; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
             self.send_left_door_command(self.right_door)
-            # print("Left door opened")
+            # # print("Left door opened")
 
    
    
@@ -820,22 +820,22 @@ class TrainIntegratedControllerUI(QWidget):
     def apply_emergency_brake(self):
         self.driver_emergency_brake_command = True
         self.send_emergency_brake_command(self.driver_emergency_brake_command)
-        # print("Emergency Brake Activated!")
+        # # print("Emergency Brake Activated!")
         
     def apply_service_brake(self):
         self.driver_service_brake_command = True
         self.send_service_brake_command(self.driver_service_brake_command)
-        # print("Service Brake Applied.")
+        # # print("Service Brake Applied.")
         
     def no_apply_emergency_brake(self):
         self.driver_emergency_brake_command = False
         self.send_emergency_brake_command(self.driver_emergency_brake_command)
-        # print("Emergency Brake Deactivated!")
+        # # print("Emergency Brake Deactivated!")
         
     def no_apply_service_brake(self):
         self.driver_service_brake_command = False
         self.send_service_brake_command(self.driver_service_brake_command)
-        # print("Service Brake Released.")
+        # # print("Service Brake Released.")
         
     def calculate_brake_distance(self):
         # Calculate the brake distance
@@ -849,8 +849,8 @@ class TrainIntegratedControllerUI(QWidget):
             # Undivet the service brake
             self.reset_service_brake_button_style()
             
-        # print(f"Commanded Authority: {self.commanded_authority:.2f} ft")
-        # print(f"Brake Distance: {brake_distance:.2f} m")
+        # # print(f"Commanded Authority: {self.commanded_authority:.2f} ft")
+        # # print(f"Brake Distance: {brake_distance:.2f} m")
         
     
     ##########################
@@ -866,7 +866,7 @@ class TrainIntegratedControllerUI(QWidget):
             
             return self.power_command
 
-        # print(f"Desired Speed: {self.desired_velocity:.2f} m/s, Current Speed: {self.current_velocity:.2f} m/s")
+        # # print(f"Desired Speed: {self.desired_velocity:.2f} m/s, Current Speed: {self.current_velocity:.2f} m/s")
         
         # Finding the velocity error
         self.ek_current = self.desired_velocity - self.current_velocity
@@ -890,7 +890,7 @@ class TrainIntegratedControllerUI(QWidget):
             self.reset_service_brake_button_style()
         elif self.power_command <= 0:
             self.power_command = 0
-            # print("Service Brake Applied")
+            # # print("Service Brake Applied")
             # Press the service brake button in UI
             self.divet_in_service_brake_button()
         else:
@@ -911,7 +911,7 @@ class TrainIntegratedControllerUI(QWidget):
     def update_setpoint_speed_calculations(self):  
         # Put the setpoint speed input in a variable in m/s even though it is in mph
         max_speed = min(self.speed_limit, self.commanded_speed)
-        # print(f"Min Speed: {max_speed}")
+        # # print(f"Min Speed: {max_speed}")
         
         self.desired_velocity = float(self.setpoint_speed_edit.text()) * 0.44704
         
@@ -919,13 +919,13 @@ class TrainIntegratedControllerUI(QWidget):
             self.desired_velocity = max_speed
             self.setpoint_speed_edit.setText(f"{max_speed * 2.237:.2f}")
                     
-        # print(f"Desired Speed: {self.desired_velocity} m/s")    # Good updated value
+        # # print(f"Desired Speed: {self.desired_velocity} m/s")    # Good updated value
         
         self.power_command = self.update_power_command()
         self.send_power_command(self.power_command)
         # Update the power command display
         self.power_command_edit.setText(f"{self.power_command:.2f}")
-        # print(f"Power Command: {self.power_command} kW")
+        # # print(f"Power Command: {self.power_command} kW")
         
     
     
@@ -987,7 +987,7 @@ class TrainIntegratedControllerUI(QWidget):
                         self.toggle_exterior_lights(False)
                         break
                         
-            # print(f"Current Position: {self.current_position:.2f} m")
+            # # print(f"Current Position: {self.current_position:.2f} m")
             
    
    
@@ -1086,14 +1086,14 @@ class TrainIntegratedControllerUI(QWidget):
             self.commanded_speed = self.speed_limit
             self.commanded_speed_edit.setText(f"{self.commanded_speed * 2.237:.2f} mph")
             
-        # print(f"Commanded speed: {self.commanded_speed}")
+        # # print(f"Commanded speed: {self.commanded_speed}")
         
         if self.operation_mode == 0:
             self.set_automatic_mode()
     
     def handle_commanded_authority(self, authority: float):
         self.commanded_authority = authority / 3.281
-        # print(f"Commanded authority: {self.commanded_authority}")
+        # # print(f"Commanded authority: {self.commanded_authority}")
         # MUST close both doors here in UI
         self.left_door = False
         self.right_door = False
@@ -1109,7 +1109,7 @@ class TrainIntegratedControllerUI(QWidget):
     def handle_current_velocity(self, velocity: float):
         # Convert velocity to m/s
         self.current_velocity = velocity / 2.23694
-        # print(f"Current Velocity: {self.current_velocity}")
+        # # print(f"Current Velocity: {self.current_velocity}")
         self.current_speed_edit.setText(f"{self.current_velocity * 2.23694:.2f} mph")
         self.power_command = self.update_power_command()
         self.send_power_command(self.power_command)
@@ -1168,20 +1168,20 @@ class TrainIntegratedControllerUI(QWidget):
     def handle_actual_temperature(self, temperature: float):
         self.current_temperature = temperature
         self.current_temp_edit.setText(f"{self.current_temperature:.2f} °F")
-        # print(f"Current Temperature: {self.current_temperature} °F")
+        # # print(f"Current Temperature: {self.current_temperature} °F")
     
     def handle_blocks_between_stations(self, blocks: list[int]):
         self.final_beacon_block_numbers_inputs = [block - 1 for block in blocks]
-        # print(f"Final Beacon Block Numbers: {self.final_beacon_block_numbers_inputs}")
+        # # print(f"Final Beacon Block Numbers: {self.final_beacon_block_numbers_inputs}")
     
     def handle_switch_status(self, status: bool):
         if self.enable_switch_status:
             self.switch_status = status
-            # print(f"Switch Status: {self.switch_status}")
+            # # print(f"Switch Status: {self.switch_status}")
         
     def handle_enable_switch_status(self, status: bool):
         self.enable_switch_status = status
-        # print(f"Enable Switch Status: {self.enable_switch_status}")
+        # # print(f"Enable Switch Status: {self.enable_switch_status}")
     
     
     
