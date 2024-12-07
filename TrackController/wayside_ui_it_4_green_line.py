@@ -2435,8 +2435,8 @@ class wayside_ui_green_line(object):
                 # Set new switch commands
                 self.ui_switches = switch_cmds.copy()
                 self.ui_switches[0] = not self.ui_switches[0]
-                self.ui_switches[3] = not self.ui_switches[1]
-                self.ui_switches[4] = not self.ui_switches[2]
+                self.ui_switches[3] = not self.ui_switches[3]
+                self.ui_switches[4] = not self.ui_switches[4]
 
                 # Set new crossing commands
                 self.ui_crossings = crossing_cmds.copy()

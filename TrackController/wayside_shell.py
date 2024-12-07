@@ -86,7 +86,7 @@ class wayside_shell_class:
     write_cmd_speed = [None] * 152
     write_cmd_authority = [None] * 152
 
-    #                    D  F  I  K  N1  N2   
+    #                    D  F   I   K  N1  N2   
     write_switch_cmd = [ 1, 1,  0,  0,  0,  0]
 
     #                    C   D   F   G   J   K  N1  N2   O   R  Yard 
