@@ -514,7 +514,7 @@ class TrainData(QObject):
         """Send updated data to Train Controller and Track Model via communication classes."""
         # Send data to Train Controller
         self.tc_communicate.commanded_speed_signal.emit(self.commanded_speed_tc)  # mph for UI
-        print(f"Commanded Speed in Train Model: {self.commanded_speed_tc}")
+        # print(f"Commanded Speed in Train Model: {self.commanded_speed_tc}")
         self.tc_communicate.commanded_authority_signal.emit(self.commanded_authority)
         self.tc_communicate.current_velocity_signal.emit(self.current_speed)  # m/s
         self.tc_communicate.engine_failure_signal.emit(self.engine_failure)
