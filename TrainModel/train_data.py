@@ -135,9 +135,9 @@ class TrainData(QObject):
 
         # Train Control Input Variables
         self.commanded_power.append(0)  # kW
-        self.commanded_speed_tc.append(0)  # km/h from Track Model
-        self.commanded_speed.append(0)     # Convert km/h to m/s
-        self.commanded_speed_UI.append(0)  # Convert km/h to mph
+        self.commanded_speed_tc.append(40)  # km/h from Track Model
+        self.commanded_speed.append(40)     # Convert km/h to m/s
+        self.commanded_speed_UI.append(40)  # Convert km/h to mph
         self.authority.append(20)           # authority in blocks
         self.commanded_authority.append(20) # Blocks
         self.service_brake.append(False)
@@ -300,7 +300,7 @@ class TrainData(QObject):
         self.tc_communicate.announcement_signal.connect(self.set_announcement)
 
         # Connect incoming signals from Track Model
-        self.tm_communicate.commanded_speed_signal.connect(self.set_track_commanded_speed)
+        # self.tm_communicate.commanded_speed_signal.connect(self.set_track_commanded_speed)
         self.tm_communicate.commanded_authority_signal.connect(self.set_track_commanded_authority)
         self.tm_communicate.block_grade_signal.connect(self.set_block_grade)
         self.tm_communicate.block_elevation_signal.connect(self.set_block_elevation)

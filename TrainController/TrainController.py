@@ -199,11 +199,11 @@ class PowerCommand(QObject):
     # def hardware_update_power_command(self, power: float):
         
         
-    def update_power_command(self, current_velocity: float, desired_velocity: float):
+    def update_power_command(self, current_velocity: float, desired_velocity: float, operation_mode: int = 0):
         # print(f"Current Speed: {current_velocity:.2f} m/s, Desired Speed: {desired_velocity:.2f} m/s")
 
         if self.module == 1:
-            if self.brake_status.station_auto_mode == True:
+            if self.brake_status.station_auto_mode == True and operation_mode == 0:
                 self.power_command = 0
                 self.power_command_signal.emit(self.power_command)
             
@@ -591,7 +591,7 @@ class SpeedControl(QObject):
                     
         # # print(f"Desired Speed: {self.desired_velocity} m/s")    # Good updated value
         
-        self.power_class.update_power_command(self.current_velocity, self.desired_velocity)
+        self.power_class.update_power_command(self.current_velocity, self.desired_velocity, 1)
         self.power_class.power_command_signal.emit(self.power_class.power_command)
         if self.power_class.power_command == 0.0 and self.brake_status.driver_service_brake_command and self.current_velocity == 0.0:
             self.desired_velocity = 0
@@ -610,7 +610,7 @@ class SpeedControl(QObject):
             if (self.desired_velocity) > self.max_speed:
                 self.desired_velocity = self.max_speed
                     
-            self.power_class.update_power_command(self.current_velocity, self.desired_velocity)
+            self.power_class.update_power_command(self.current_velocity, self.desired_velocity, 0)
             self.power_class.power_command_signal.emit(self.power_class.power_command)
             
             
@@ -879,7 +879,8 @@ class Position(QObject):
         if self.speed_control.current_velocity == 0.0 and not self.repeat:
             self.check_current_block()
             self.find_station_name()
-            self.brake_status.station_auto_mode = True
+            if self.speed_control.operation_mode == 0:
+                self.brake_status.station_auto_mode = True
             self.accept_authority = True
         elif self.speed_control.current_velocity != 0.0 and self.repeat:
             self.repeat = False
@@ -952,7 +953,8 @@ class Position(QObject):
         self.door.close_left_door()
         self.door.close_right_door()
         self.repeat = True
-        self.brake_status.station_auto_mode = False
+        if self.speed_control.operation_mode == 0:
+            self.brake_status.station_auto_mode = False
         self.accept_authority = False
         self.commanded_authority_signal.emit(self.commanded_authority)
         # # print("Doors closed")

@@ -266,7 +266,7 @@ class TrainControllerShell:
         self.train_engineer_list.append(new_train_engineer_ui)
         self.train_controller_list[self.train_counter - 1].show()
         self.train_engineer_list[self.train_counter - 1].show()
-        QApplication.processEvents()
+        # QApplication.processEvents()
         self.connect_signals_and_update_UI()
         # self.update_UI()
         
@@ -496,18 +496,6 @@ class TrainControllerShell:
                 if i < len(self.train_controller_list):
                     self.train_controller_list[i].position.handle_polarity_change(polarity[i])
                 ## print(f"Polarity: {polarity}")
-
-    # def update_train_count(self, train_count: int):
-    #     if self.train_count > train_count:
-    #         self.remove_train_controller_and_engineer_ui(self.train_controller_list[0], self.train_engineer_list[0])
-    #         # # print(f"Train count decreased to {train_count}")
-    #     elif self.train_count < train_count:
-    #         self.create_and_add_train_controller_and_engineer_ui()
-    #         # # print(f"Train count increased to {train_count}")
-    #     self.train_count = train_count
-            
-    #     self.train_count = train_count
-        
         
     ################################################################
     # IMPLEMENT CONNECT UI CHANGES TRAIN CONTROLLER FUNCTIONS HERE #
