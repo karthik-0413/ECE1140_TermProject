@@ -671,7 +671,7 @@ class wayside_shell_class:
                     self.ui.UploadPLCButton.setEnabled(False)
 
     # Initialize the Wayside UI Interface
-    def __init__(self, ctc_wayside, wayside_track, line_color):
+    def __init__(self, ctc_wayside, wayside_track, line_color='Green'):
 
         # Initialize line color
         self.line_color = line_color
