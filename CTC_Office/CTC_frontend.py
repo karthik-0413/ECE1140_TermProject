@@ -941,6 +941,9 @@ class CTC_frontend(object):
         self.wall_clock_time = dt.datetime.now()
         self.TimeLabel.setText(self.wall_clock_time.strftime("%H:%M"))
         self.TimeLabel_pg2.setText(self.wall_clock_time.strftime("%H:%M"))
+
+        if (dt.time(hour=self.DepartureSelector.time().hour(), minute=self.DepartureSelector.time().minute()) < self.wall_clock_time.time()):
+                self.DepartureSelector.setTime(QtCore.QTime(self.wall_clock_time.hour, self.wall_clock_time.minute, self.wall_clock_time.second))
         #self.ThroughputDisplay.setText(self.ctc.get_throughput())
         #self.ThroughputDisplay_pg2.setText(self.ctc.get_throughput())
         #self.ThroughputDisplay_pg3.setText(self.ctc.get_throughput())
@@ -1064,8 +1067,8 @@ class CTC_frontend(object):
             
             departure_time = self.DepartureSelector.time()
             arrival_time = self.ArrivalSelector.time()
-            depart_time = dt.time(hour=departure_time.hour(),minute=departure_time.minute(),second=departure_time.second())
-            arrive_time = dt.time(hour=arrival_time.hour(),minute=arrival_time.minute(),second=arrival_time.second())
+            depart_time = dt.time(hour=departure_time.hour(),minute=departure_time.minute(), second=0)
+            arrive_time = dt.time(hour=arrival_time.hour(),minute=arrival_time.minute(),second=0)
             
             # Dispatch immediately if departure time is current time
             if self.departure_ready(dt.datetime.now().time(), depart_time):
@@ -1081,14 +1084,16 @@ class CTC_frontend(object):
         self.updateUI()
 
     def check_departures(self):
-        for train in self.ctc.line.train_list:
+        for train in self.ctc.line.pending_trains:
             if self.departure_ready(dt.datetime.now().time(), train.departure_time):
                 self.ctc.dispatch_pending_train(train.train_id)
 
     def departure_ready(self, curr, depart):
         if curr.hour >= depart.hour and curr.minute >= depart.minute:
+            print("curr = ", curr, "depart = ", depart)
             return True
         else:
+            print("FALSE")
             return False
         
     def remove_train(self, train_id):
