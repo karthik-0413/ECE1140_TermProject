@@ -816,7 +816,7 @@ class Position(QObject):
         # # When the commanded authority goes from 1 -> 0, this print statement is not displayed, but it is displayed for 166 blocks
       
         if authority is not None:
-            self.commanded_authority = authority - 1
+            self.commanded_authority = authority
             # print(f"Commanded Authority: {self.commanded_authority}")
         else:
             self.commanded_authority = 0
