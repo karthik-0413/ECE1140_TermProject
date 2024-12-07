@@ -486,20 +486,25 @@ class SpeedControl(QObject):
         
     def handle_commanded_speed(self, speed: float):
         if speed == 0:
+            self.commanded_speed = 0.0
             self.desired_velocity = 0.0
+            self.commanded_speed_signal.emit(self.commanded_speed)
             self.power_class.update_power_command(self.current_velocity, self.desired_velocity)
             # Brake to 0 with E-Brake
         # print(f"Commanded Speed: {speed:.2f} km/hr")
         elif self.operation_mode == 1 and self.desired_velocity > speed / 3.6:
             self.commanded_speed = speed / 3.6
+            self.commanded_speed_signal.emit(self.commanded_speed)
             self.update_setpoint_speed_calculations(speed / 3.6)
         elif self.operation_mode == 0 and self.desired_velocity > speed / 3.6:
             self.commanded_speed = speed / 3.6
+            self.commanded_speed_signal.emit(self.commanded_speed)
             self.update_setpoint_speed_auto(self.commanded_speed)
         # Only goes through this if statement one time (when the commanded speed is processed to be lower than current commanded speed)
         elif self.commanded_speed > (speed / 3.6):
                 # self.brake_status.entered_lower = True
                 self.commanded_speed = speed / 3.6
+                self.commanded_speed_signal.emit(self.commanded_speed)
                 # print(f"Commanded Speed: {self.commanded_speed:.2f} m/s")
                 # self.find_max_speed()
                 # self.desired_velocity = self.commanded_speed

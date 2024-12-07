@@ -327,28 +327,42 @@ class TrainControllerShell:
         #             # # print(f"Commanded Speed: {commanded_speed[i]}")
 
     def update_commanded_authority(self, commanded_authority: list):
-        self.previous_commanded_authority = self.total_commanded_authority.copy()
-        self.total_commanded_authority = commanded_authority.copy()    # current c_auth
-        print(f"Commanded Authority in Train Controller Shell = {commanded_authority}")
-        
+        # I THINK THIS IS CORRECT                 
         if len(self.train_controller_list):
-            # For all Trains - WORKS
-            if len(self.total_commanded_authority):
-                # Subsequent times the commanded authority is received
-                if len(self.previous_commanded_authority):
-                    for i in range(len(self.total_commanded_authority)):
-                        if i < len(self.train_controller_list):
-                            if self.total_commanded_authority[i] != self.previous_commanded_authority[i]:
-                                # print(f"Commanded Authority {i + 1}: {self.total_commanded_authority[i]}")
-                                self.train_controller_list[i].position.handle_commanded_authority(commanded_authority[i])
+            if len(commanded_authority):
+                for i in range(len(commanded_authority)):
+                    if i < len(self.train_controller_list):
+                        # print(f"Index: {i}")
+                        self.train_controller_list[i].position.handle_commanded_authority(commanded_authority[i])
+                    
+                    # for i in range(len(self.train_controller_list)):
+                    #     pass
+                    #     # print(f"Commanded Speed {i + 1}: {self.train_controller_list[i].speed_control.commanded_speed}")
+        
+        
+        # self.previous_commanded_authority = self.total_commanded_authority.copy()
+        # self.total_commanded_authority = commanded_authority.copy()    # current c_auth
+        # print(f"Commanded Authority in Train Controller Shell = {commanded_authority}")
+        
+        # if len(self.train_controller_list):
+        #     # For all Trains - WORKS
+        #     if len(self.total_commanded_authority):
+        #         # Subsequent times the commanded authority is received
+        #         if len(self.previous_commanded_authority):
+        #             for i in range(len(self.total_commanded_authority)):
+        #                 if i < len(self.train_controller_list):
+        #                     if self.total_commanded_authority[i] != self.previous_commanded_authority[i]:
+        #                         # print(f"Commanded Authority {i + 1}: {self.total_commanded_authority[i]}")
+        #                         self.train_controller_list[i].position.handle_commanded_authority(commanded_authority[i])
                                 
-                # First time the commanded authority is received
-                else:
-                    if len(self.train_controller_list):
-                        for i in range(len(self.total_commanded_authority)):
-                            if i < len(self.train_controller_list):
-                                # print(f"Commanded Authority {i + 1}: {self.total_commanded_authority[i]}")
-                                self.train_controller_list[i].position.handle_commanded_authority(commanded_authority[i])
+        #         # First time the commanded authority is received
+        #         else:
+        #             if len(self.train_controller_list):
+        #                 for i in range(len(self.total_commanded_authority)):
+        #                     if i < len(self.train_controller_list):
+        #                         # print(f"Commanded Authority {i + 1}: {self.total_commanded_authority[i]}")
+        #                         self.train_controller_list[i].position.handle_commanded_authority(commanded_authority[i])
+               
         
         # BEFORE:
         # if len(self.total_commanded_authority):
@@ -358,6 +372,25 @@ class TrainControllerShell:
         #                 self.train_controller_list[0].position.handle_commanded_authority(commanded_authority[0])
         #     else:
         #         self.train_controller_list[0].position.handle_commanded_authority(commanded_authority[0])
+        
+    # def update_commanded_authority(self, commanded_authority: list):
+    #     self.previous_commanded_authority = self.total_commanded_authority.copy()
+    #     self.total_commanded_authority = commanded_authority.copy()  # Current commanded authority
+    #     print(f"Commanded Authority in Train Controller Shell = {commanded_authority}")
+        
+    #     # Initialize tracking list if not already done
+    #     if not hasattr(self, 'processed_indices'):
+    #         self.processed_indices = [False] * len(self.train_controller_list)
+        
+    #     if len(self.train_controller_list):
+    #         for i in range(len(self.total_commanded_authority)):
+    #             if i < len(self.train_controller_list):
+    #                 # Check if this index has already been processed
+    #                 if not self.processed_indices[i] and self.total_commanded_authority[i] is not None:
+    #                     # Process this index for the first time
+    #                     self.train_controller_list[i].position.handle_commanded_authority(self.total_commanded_authority[i])
+    #                     self.processed_indices[i] = True  # Mark as processed
+
 
     def update_current_velocity(self, current_velocity: list):
         if len(self.train_controller_list):
