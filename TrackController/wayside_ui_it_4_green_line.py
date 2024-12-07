@@ -1528,7 +1528,7 @@ class wayside_ui_green_line(object):
                         # Set columns
                         self.DataTable.setColumnCount(9)
                         self.DataTable.horizontalHeader().setDefaultSectionSize(51)
-                        self.DataTable.setHorizontalHeaderLabels(['1', '2', '3', '4', '5', '6', '7', '8', '9'])
+                        self.DataTable.setHorizontalHeaderLabels(['', '', '', '', '', '', '', '', ''])
 
                         # Set row count
                         self.DataTable.setRowCount(32)
