@@ -1,4 +1,51 @@
-1. Only need one UI present in the screen.
+To ensure that multiple UI instances update simultaneously, you'll need to adjust your handler functions so that they correctly update each UI instance in your `train_controller_list`. Currently, your handler functions are only updating the last train controller in the list due to the condition `if self.train_counter == len(self.train_controller_list):`. This condition means that only when the counter reaches the total number of train controllers will the update occur, which is not suitable for updating multiple UIs concurrently.
 
-2. The values within those UIs should be dependent on the currently selected Train ID by the dropdown.
-    a. The default value for the selected Train ID is 1.
+Here are the steps you should take to modify your code:
+
+1. **Remove the Condition in Handler Functions**:
+
+    In each of your handler functions (e.g., `handle_commanded_speed`, `handle_current_speed`, etc.), you have a loop that checks for `if self.train_counter == len(self.train_controller_list):`. This condition prevents the loop from iterating over all train controllers each time the signal is emitted. Remove this condition to allow the loop to process all train controllers every time.
+
+    **Example**:
+
+    ```python
+    def handle_commanded_speed(self, commanded_speed: float):
+         if self.train_controller_list:
+              for i in range(len(self.train_controller_list)):
+                    self.train_controller_list[i].update_commanded_speed(commanded_speed)
+                    self.train_controller_list[i].speed_control.commanded_speed = commanded_speed
+    ```
+
+2. **Ensure Signals Are Connected Properly**:
+
+    Make sure that the signals for each train controller are connected to the appropriate handler functions. In your `connect_signals_and_update_UI` function, you already loop through the controllers to connect the signals, which is good. Ensure that this function is called whenever a new train controller is added.
+
+3. **Update All UIs in Handler Functions**:
+
+    Adjust all handler functions to iterate over all train controllers and update their respective UIs. By looping through `self.train_controller_list`, each handler function can update the state and UI of each train controller.
+
+    **Example**:
+
+    ```python
+    def handle_current_speed(self, current_speed: float):
+         if self.train_controller_list:
+              for i in range(len(self.train_controller_list)):
+                    self.train_controller_list[i].update_current_speed(current_speed)
+                    self.train_controller_list[i].speed_control.current_velocity = current_speed
+    ```
+
+4. **Consistent State Management**:
+
+    Ensure that any state variables that are specific to each train controller are managed within their respective instances rather than in the shell. Avoid using shared counters like `self.train_counter` to control the flow for individual train controllers.
+
+5. **Test with Multiple Trains**:
+
+    After making these changes, test your application by creating multiple train controllers and verify that all UI instances are updating correctly and independently of each other.
+
+6. **Optional - Refactor for Clarity**:
+
+    For better code maintainability, consider refactoring your code to separate concerns more clearly. For instance, you might want to create a `TrainControllerManager` class to handle the collection of train controllers.
+
+**Summary**:
+
+By removing the condition that limits updates to only when `self.train_counter == len(self.train_controller_list)`, and by ensuring that all your handler functions loop through and update all train controller instances, your UIs should be able to update simultaneously.

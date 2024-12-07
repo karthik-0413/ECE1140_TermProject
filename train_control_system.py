@@ -7,7 +7,7 @@ from Resources.CTCTrain import CTCTrain
 from Resources.CTCWaysideComm import CTCWaysideControllerComm
 from Resources.Clock import *
 from Resources.TrainTrainControllerComm import TrainTrainController
-from TrainController.ControllerToShellCommuicate import *
+from TrainController.ControllerToShellCommuicate import *   
 from TrainController.TrainController import *
 from TrainController.TrainControllerShell import TrainControllerShell
 from TrainModel.train_data import TrainData

@@ -136,7 +136,7 @@ class track_model:
 
     def handle_position_signal(self, positions: list):
         self.position_list = positions
-        print(f"received position: {self.position_list}")
+        # print(f"received position: {self.position_list}")
         self.set_train_occupancies()
         self.update_polarity_values()
 
