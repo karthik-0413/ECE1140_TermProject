@@ -86,7 +86,7 @@ class wayside_shell_class:
     write_cmd_authority = [None] * 152
 
     #                    D   F   I   K  N1  N2   
-    #write_switch_cmd = [ 1,  1,  0,  0,  0,  0]
+    write_switch_cmd = [ 0, 0,  1,  1,  1,  1]
 
     #                    C   D   F   G   J   K  N1  N2   O   R  Yard 
     #write_signal_cmd = [ 0,  1,  0,  1,  1,  0,  0,  1,  0,  1,  0 ]
@@ -96,7 +96,7 @@ class wayside_shell_class:
 
     # Test Values
 
-    write_switch_cmd = [ 1,  1,  0,  0,  0,  0]
+    #write_switch_cmd = [ 0,  1,  0,  0,  0,  0]
 
     #                    C   D   F   G   J   K  N1  N2   O   R  Yard 
     write_signal_cmd = [ 0,  1,  0,  1,  1,  0,  0,  1,  0,  1,  0 ]
@@ -395,8 +395,6 @@ class wayside_shell_class:
         self.write_switch_cmd[3] = not switch_cmd_array[1] # K
 
     def green_line_plc_2_signal_cmd_handler(self, signal_cmd_array):
-        print(f'\n{len(signal_cmd_array)},\t{signal_cmd_array}\n')
-
         self.write_signal_cmd[10] = signal_cmd_array[0] # Yard
         self.write_signal_cmd[4] = signal_cmd_array[1]  # J
         self.write_signal_cmd[5] = signal_cmd_array[2]  # K
@@ -468,6 +466,7 @@ class wayside_shell_class:
             self.write_cmd_authority[i] = cmd_authority_array[i-74]
 
     def green_line_plc_3_switch_cmd_handler(self, switch_cmd_array):
+        print(f'--------\nswitch_cmd_array: {switch_cmd_array[0]}, {switch_cmd_array[1]}\n--------')
         self.write_switch_cmd[4] = not switch_cmd_array[0] # N1
         self.write_switch_cmd[5] = switch_cmd_array[1] # N2
 
@@ -514,8 +513,6 @@ class wayside_shell_class:
         ####################################
         #     Green Line Emit Signals
         ####################################
-        print('Wayside occ', self.write_block_occupancy)
-
         # CTC Office
         self.ctc_wayside_comm_object.block_occupancy_signal.emit(self.write_block_occupancy)
 
@@ -532,22 +529,25 @@ class wayside_shell_class:
 
         # Commanded Speed
         if len(self.write_cmd_speed):
-            self.ui.green_line_cmd_speed = self.write_cmd_speed
+            self.ui.green_line_cmd_speed = self.write_cmd_speed.copy()
 
         # Commanded Authority
         if len(self.write_cmd_authority):
-            self.ui.green_line_cmd_auth = self.write_cmd_authority
+            self.ui.green_line_cmd_auth = self.write_cmd_authority.copy()
 
         # Switch Command
-        self.ui.past_sw_cmd = self.ui.green_line_sw_cmd
-        self.ui.green_line_sw_cmd = self.write_switch_cmd
+        self.ui.past_sw_cmd = self.ui.green_line_sw_cmd.copy()
+        self.ui.green_line_sw_cmd = self.write_switch_cmd.copy()
+        self.ui.green_line_sw_cmd[0] = not self.ui.green_line_sw_cmd[0]
+        self.ui.green_line_sw_cmd[3] = not self.ui.green_line_sw_cmd[3]
+        self.ui.green_line_sw_cmd[4] = not self.ui.green_line_sw_cmd[4]
 
         # Signal Command
-        self.ui.past_sig_cmd = self.ui.green_line_sig_cmd
-        self.ui.green_line_sig_cmd = self.write_signal_cmd
+        self.ui.past_sig_cmd = self.ui.green_line_sig_cmd.copy()
+        self.ui.green_line_sig_cmd = self.write_signal_cmd.copy()
 
         # Crossing Command
-        self.ui.green_line_cross_cmd = self.write_crossing_cmd
+        self.ui.green_line_cross_cmd = self.write_crossing_cmd.copy()
 
         # Update Wayside user interface data table
         self.ui.update_table()
@@ -608,6 +608,17 @@ class wayside_shell_class:
             # PLC Program 3
             self.plc_program_3 = self.plc_3.green_line_plc_3_class()
 
+            # Test
+            self.call_green_line_plc_1_operation_handlers()
+            self.call_green_line_plc_2_operation_handlers()
+            self.call_green_line_plc_3_operation_handlers()
+
+            print('shell before: ', self.write_switch_cmd)
+            self.write()
+
+            print('shell after: ', self.write_switch_cmd)
+            print('UI: ', self.ui.green_line_sw_cmd)
+
 
 
     # Initialize the Wayside UI Interface
@@ -645,6 +656,8 @@ class wayside_shell_class:
 
         # Connect to upload button
         self.ui.UploadPLCButton.clicked.connect(self.open_file_dialog)
+
+        self.write()
 
         
 
