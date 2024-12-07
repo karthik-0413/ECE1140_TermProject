@@ -112,7 +112,7 @@ class wayside_shell_class:
 
     # Inputs from CTC Office
     def read_sugg_speed_handler(self, sugg_speed_array):
-        print(f'read_sugg_speed_handler, {sugg_speed_array[0] if len(sugg_speed_array) else 'empty'}')
+        # print(f'read_sugg_speed_handler, {sugg_speed_array[0] if len(sugg_speed_array) else 'empty'}')
 
         self.read_sugg_speed = sugg_speed_array
 
@@ -133,20 +133,20 @@ class wayside_shell_class:
                 # Call PLC Program handler functions
                 if self.plc_program_1 != None and self.plc_program_2 != None and self.plc_program_3 != None:
                     
-                    print('Calling PLC Program read functions')
+                    # print('Calling PLC Program read functions')
                     # Read incoming data
                     self.call_green_line_plc_1_read_handlers()
                     self.call_green_line_plc_2_read_handlers()
                     self.call_green_line_plc_3_read_handlers()
 
-                    print("Calling PLC Program operation functions")
+                    # print("Calling PLC Program operation functions")
                     # Process incoming data
                     self.call_green_line_plc_1_operation_handlers()
                     self.call_green_line_plc_2_operation_handlers()
                     self.call_green_line_plc_3_operation_handlers()
 
     def read_sugg_authority_handler(self, sugg_authority_array):
-        print(f'read_sugg_authority_handler, {sugg_authority_array[0] if len(sugg_authority_array) else 'empty'}')
+        # print(f'read_sugg_authority_handler, {sugg_authority_array[0] if len(sugg_authority_array) else 'empty'}')
 
         self.read_sugg_authority = sugg_authority_array
 
@@ -167,13 +167,13 @@ class wayside_shell_class:
                 # Call PLC Program handler functions
                 if self.plc_program_1 != None and self.plc_program_2 != None and self.plc_program_3 != None:
                     
-                    print('Calling PLC Program read functions')
+                    # print('Calling PLC Program read functions')
                     # Read incoming data
                     self.call_green_line_plc_1_read_handlers()
                     self.call_green_line_plc_2_read_handlers()
                     self.call_green_line_plc_3_read_handlers()
 
-                    print("Calling PLC Program operation functions")
+                    # print("Calling PLC Program operation functions")
                     # Process incoming data
                     self.call_green_line_plc_1_operation_handlers()
                     self.call_green_line_plc_2_operation_handlers()
@@ -206,13 +206,13 @@ class wayside_shell_class:
                 # Call PLC Program handler functions
                 if self.plc_program_1 != None and self.plc_program_2 != None and self.plc_program_3 != None:
                     
-                    print('Calling PLC Program read functions')
+                    # print('Calling PLC Program read functions')
                     # Read incoming data
                     self.call_green_line_plc_1_read_handlers()
                     self.call_green_line_plc_2_read_handlers()
                     self.call_green_line_plc_3_read_handlers()
 
-                    print("Calling PLC Program operation functions")
+                    # print("Calling PLC Program operation functions")
                     # Process incoming data
                     self.call_green_line_plc_1_operation_handlers()
                     self.call_green_line_plc_2_operation_handlers()
@@ -395,6 +395,8 @@ class wayside_shell_class:
         self.write_switch_cmd[3] = not switch_cmd_array[1] # K
 
     def green_line_plc_2_signal_cmd_handler(self, signal_cmd_array):
+        # print(f'\n{len(signal_cmd_array)},\t{signal_cmd_array}\n')
+
         self.write_signal_cmd[10] = signal_cmd_array[0] # Yard
         self.write_signal_cmd[4] = signal_cmd_array[1]  # J
         self.write_signal_cmd[5] = signal_cmd_array[2]  # K
@@ -513,8 +515,11 @@ class wayside_shell_class:
         ####################################
         #     Green Line Emit Signals
         ####################################
+        # print('Wayside occ', self.write_block_occupancy)
+
         # CTC Office
         self.ctc_wayside_comm_object.block_occupancy_signal.emit(self.write_block_occupancy)
+        #print("Wayside block occupancy = ")
 
         # Track Model
         self.wayside_track_comm_object.commanded_speed_signal.emit(self.write_cmd_speed)
@@ -522,6 +527,7 @@ class wayside_shell_class:
         self.wayside_track_comm_object.switch_cmd_signal.emit(self.write_switch_cmd)
         self.wayside_track_comm_object.signal_cmd_signal.emit(self.write_signal_cmd)
         self.wayside_track_comm_object.crossing_cmd_signal.emit(self.write_crossing_cmd)
+
 
         ####################################
         #    Green Line Update UI
@@ -573,6 +579,9 @@ class wayside_shell_class:
 
             # Run PLC programs in separate processes
             self.execute_files(file_paths)
+            
+    def upload_plc_program(self, file_paths):
+        self.execute_files(file_paths)
 
     # Execute the selected Python files
     def execute_files(self, file_paths):
@@ -674,7 +683,7 @@ class wayside_shell_ui(wayside_ui.QtWidgets.QMainWindow, wayside_ui.Ui_MainWindo
                     
                     process.terminate()
 
-                    print('Terminated process')
+                    # print('Terminated process')
 
             # Close the window
             event.accept()

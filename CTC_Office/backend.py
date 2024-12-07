@@ -33,7 +33,7 @@ class CTC_Controller():
 
     def create_graph(self):
         self.graph = Graph()
-        ## print(f"num nodes: {len(self.layout)}")
+        ## # print(f"num nodes: {len(self.layout)}")
         for block in self.layout:
 
             # if block has a station
@@ -75,9 +75,9 @@ class CTC_Controller():
     def calculate_authority(self):
         for train in self.trains:
             authority = 0
-            # print(f"Train Destination: {train.destination.block_number}")
+            # # print(f"Train Destination: {train.destination.block_number}")
             num_blocks, predecessors = self.graph.distanceBetweenNodes(train.location.block_number, train.destination.block_number)
-            # print(predecessors)
+            # # print(predecessors)
             for blk in predecessors:
                 authority += self.layout[self.layout.index(blk)].block_length
 
@@ -108,7 +108,7 @@ class CTC_Controller():
                                 delta = dt.timedelta(minutes=float(timediff))
                                 train.arrival_time = (dt.datetime.combine(dt.date(1, 1, 1),train.departure_time) + delta).time()
                                 train.task = True
-                                # print(f"Schedule:\n {row}")
+                                # # print(f"Schedule:\n {row}")
 
 
     def upload_layout(self, path_to_layout:str):
@@ -129,14 +129,14 @@ class CTC_Controller():
                     cummulative_elevation=row['CUMALTIVE ELEVATION (M)']
                 )
                 self.layout.append(block)
-                # print(f"Block number: {block.block_number}  Section: {block.section}  Infrastructure: {block.infrastructure}")
+                # # print(f"Block number: {block.block_number}  Section: {block.section}  Infrastructure: {block.infrastructure}")
 
     def schedule_new_train(self, train:Train):
         pass
 
     def display_layout(self):
         for block in self.layout:
-            # print(f'''Line: {block.line},
+            # # print(f'''Line: {block.line},
                 Section: {block.section}, 
                 Block Number: {block.block_number}, 
                 Block Length: {block.length}, 
@@ -171,33 +171,33 @@ if __name__ == '__main__':
     #for i in range(11):
 
     #    ctc.increment_time()
-    #    # print(f"Real time      = {dt.datetime.now().time()}")
+    #    # # print(f"Real time      = {dt.datetime.now().time()}")
         #sleep(1)
-    #    # print(f"Simulated Time = {ctc.simulation_time}")
+    #    # # print(f"Simulated Time = {ctc.simulation_time}")
 
     #time2 = ctc.simulation_time
-    ## print(f"Time difference = {time2} - {time1} = {(dt.datetime.combine(dt.date(1,1,1),time2) - dt.datetime.combine(dt.date(1,1,1),time1))}")
+    ## # print(f"Time difference = {time2} - {time1} = {(dt.datetime.combine(dt.date(1,1,1),time2) - dt.datetime.combine(dt.date(1,1,1),time1))}")
 
 
     # confirm layout import
     #for i in range(len(ctc.layout)):
-    #    # print(ctc.layout[i].block_number)
+    #    # # print(ctc.layout[i].block_number)
 
-    ## print("nodes")
-    ## print(len(ctc.graph.nodes))
+    ## # print("nodes")
+    ## # print(len(ctc.graph.nodes))
 
 
     # confirm correct edges
     #for i in range(len(ctc.graph.nodes)):
     #    for j in range(len(ctc.graph.nodes[i].edge_list)):
-    #        # print(ctc.graph.nodes[i].index.block_number, " ", ctc.graph.nodes[i].node_type, " ",ctc.graph.nodes[i].edge_list[j][0].index.block_number)
+    #        # # print(ctc.graph.nodes[i].index.block_number, " ", ctc.graph.nodes[i].node_type, " ",ctc.graph.nodes[i].edge_list[j][0].index.block_number)
 
 
     ctc.create_train()
     ctc.upload_schedule("../Blue Line Schedule - Station B.xlsx")
     ctc.update_schedule()
 
-    # print(ctc.trains[0].location.block_number)
+    # # print(ctc.trains[0].location.block_number)
 
 
-    # print("done")
+    # # print("done")
