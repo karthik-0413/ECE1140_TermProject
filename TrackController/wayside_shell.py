@@ -657,7 +657,7 @@ class wayside_shell_class:
         # Connect to upload button
         self.ui.UploadPLCButton.clicked.connect(self.open_file_dialog)
 
-        self.write()
+        #self.write()
 
         
 
