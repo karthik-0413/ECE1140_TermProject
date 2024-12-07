@@ -8,7 +8,7 @@ from PyQt6.QtCore import (QObject, pyqtSignal)
 # from TrackModel.TrackTrainCommunicate import TrackTrainComms as TrainComms
 # from TrackModel.WaysideTrackCommunicate import WaysideTrackComms as WaysideComms
 
-from track_model_ui import Ui_TrackModel
+from TrackModel.track_model_ui import Ui_TrackModel
 from TrackTrainCommunicate import TrackTrainComms as TrainComms
 from WaysideTrackCommunicate import WaysideTrackComms as WaysideComms
 
