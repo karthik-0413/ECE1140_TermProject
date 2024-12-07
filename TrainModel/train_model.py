@@ -371,25 +371,25 @@ class TrainModelPage(BasePage):
         if len(self.train_data.interior_light_on) > index:
             interior_light_on = self.train_data.interior_light_on[index]
         else:
-            interior_light_on = False  # Default to 'Off'
+            interior_light_on = False
 
         # Exterior Light
         if len(self.train_data.exterior_light_on) > index:
             exterior_light_on = self.train_data.exterior_light_on[index]
         else:
-            exterior_light_on = False  # Default to 'Off'
+            exterior_light_on = False
 
         # Left Door
         if len(self.train_data.left_door_open) > index:
             left_door_open = self.train_data.left_door_open[index]
         else:
-            left_door_open = False  # Default to 'Closed'
+            left_door_open = False
 
         # Right Door
         if len(self.train_data.right_door_open) > index:
             right_door_open = self.train_data.right_door_open[index]
         else:
-            right_door_open = False  # Default to 'Closed'
+            right_door_open = False
 
         self.set_light_button_style(self.interior_light_button, interior_light_on, "Interior Light", button_font, button_size)
         self.set_light_button_style(self.exterior_light_button, exterior_light_on, "Exterior Light", button_font, button_size)
@@ -406,15 +406,18 @@ class TrainModelPage(BasePage):
 
     def update_train_id_list(self, train_ids):
         """Update the train ID combo box."""
+        #changed12/7 begin - do not reset current_train_index, do not call update_display here
+        current_id = self.train_id_combo.currentText()
         self.train_id_combo.blockSignals(True)
         self.train_id_combo.clear()
         if train_ids:
             self.train_id_combo.addItems(train_ids)
-            self.train_id_combo.setCurrentIndex(0)
-            self.current_train_index = 0
+            if current_id in train_ids:
+                self.train_id_combo.setCurrentText(current_id)  # Keep previous selection if it still exists #changed12/7
+            else:
+                self.train_id_combo.setCurrentIndex(0)
         else:
             self.train_id_combo.addItem("N/A")
             self.train_id_combo.setCurrentIndex(0)
-            self.current_train_index = 0
         self.train_id_combo.blockSignals(False)
-        self.update_display()
+        #changed12/7 end

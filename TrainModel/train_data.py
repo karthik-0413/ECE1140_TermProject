@@ -48,13 +48,13 @@ class TrainData(QObject):
         self.commanded_speed_tc = []    # from Track Model, in km/h
         self.commanded_speed = []       # converted to m/s
         self.commanded_speed_UI = []    # converted to mph for UI
-        self.authority = []             # from Track Model, in blocks
-        self.commanded_authority = []   # Blocks
+        self.authority = []
+        self.commanded_authority = []
         self.service_brake = []
         self.exterior_light = []
         self.interior_light = []
         self.emergency_brake = []
-        self.beacon = []  # List to store beacon messages
+        self.beacon = []
 
         # Cabin Control Variables
         self.desired_temperature = []
@@ -83,7 +83,7 @@ class TrainData(QObject):
         self.static_empty_train_weight = []
 
         # Position Variables
-        self.current_position = []  # in meters
+        self.current_position = []
         self.grade = []
         self.elevation = []
         self.polarity = []
@@ -138,19 +138,19 @@ class TrainData(QObject):
         self.commanded_speed.append(40)     # Convert km/h to m/s
         self.commanded_speed_UI.append(40)  # Convert km/h to mph
         self.authority.append(20)           # authority in blocks
-        self.commanded_authority.append(20) # Blocks
+        self.commanded_authority.append(20)
         self.service_brake.append(False)
         self.exterior_light.append(False)
         self.interior_light.append(False)
         self.emergency_brake.append(False)
-        self.beacon.append("")  # Initialize beacon message
+        self.beacon.append("")
 
         # Cabin Control Variables
         self.desired_temperature.append(76)
         self.train_left_door.append(False)
         self.train_right_door.append(False)
         self.advertisement.append("Picture1")
-        self.passenger_boarding.append(0)  # Initialize to 0
+        self.passenger_boarding.append(0)
 
         # Variables for the buttons
         self.interior_light_on.append(False)
@@ -160,19 +160,19 @@ class TrainData(QObject):
         self.passenger_emergency_brake.append(False)
 
         # Added variables for dynamic information
-        self.current_acceleration.append(0.0)  # m/s^2
+        self.current_acceleration.append(0.0)
         self.available_seats.append(self.maximum_capacity[-1] - self.passenger_count[-1])
-        self.current_train_weight.append(40.9)  # tons
+        self.current_train_weight.append(40.9)
 
         # Variables for static information
         self.static_cars.append(1)
-        self.static_length.append(self.train_length[-1])  # meters
-        self.static_width.append(self.train_width[-1])    # meters
-        self.static_height.append(self.train_height[-1])  # meters
-        self.static_empty_train_weight.append(40.9)       # tons
+        self.static_length.append(self.train_length[-1])
+        self.static_width.append(self.train_width[-1])
+        self.static_height.append(self.train_height[-1])
+        self.static_empty_train_weight.append(40.9)
 
         # Position Variables
-        self.current_position.append(0.0)  # meters
+        self.current_position.append(0.0)
         self.grade.append(0.0)
         self.elevation.append(0.0)
         self.polarity.append(True)
@@ -274,7 +274,6 @@ class TrainData(QObject):
 
     def read_from_trainController_trackModel(self):
         """Connect incoming signals from Train Controller and Track Model."""
-        # Connect incoming signals from Train Controller
         self.tc_communicate.power_command_signal.connect(self.set_power_command)
         self.tc_communicate.service_brake_command_signal.connect(self.set_service_brake)
         self.tc_communicate.emergency_brake_command_signal.connect(self.set_emergency_brake)
@@ -324,6 +323,8 @@ class TrainData(QObject):
     # Handler methods for incoming signals from Train Controller
     def set_power_command(self, power_list):
         """Handle power command signals from Train Controller."""
+        # # # print power_list for debugging
+        # # print("Power Command List in Train Model:", power_list)
         if len(power_list) < max(1, self.train_count):
             power_list = power_list + [0] * (max(1, self.train_count) - len(power_list))
         self.commanded_power = power_list
@@ -331,6 +332,7 @@ class TrainData(QObject):
 
     def set_service_brake(self, state_list):
         """Handle service brake signals from Train Controller."""
+        # # print("Service Brake List in Train Model:", state_list)
         if len(state_list) < max(1, self.train_count):
             state_list = state_list + [False] * (max(1, self.train_count) - len(state_list))
         self.service_brake = state_list
@@ -385,6 +387,7 @@ class TrainData(QObject):
 
     def set_announcement(self, announcement_list):
         """Handle announcement signals from Train Controller."""
+        # Ensure the list has at least one element
         if len(announcement_list) < max(1, self.train_count):
             announcement_list = announcement_list + [""] * (max(1, self.train_count) - len(announcement_list))
         self.announcement_text = announcement_list
@@ -394,6 +397,7 @@ class TrainData(QObject):
     # Handler methods for incoming signals from Track Model
     def set_track_commanded_speed(self, speed_list):
         """Handle commanded speed signals from Track Model."""
+        # Ensure the list is long enough
         if len(speed_list):
             if speed_list[0] == 0:
                 self.commanded_speed_tc[0] = 0
@@ -401,6 +405,7 @@ class TrainData(QObject):
             elif len(speed_list) < max(1, self.train_count):
                 speed_list = speed_list + [0] * (max(1, self.train_count) - len(speed_list))
             self.commanded_speed_tc = speed_list
+            # print(f"Commanded Speed in Train Model: {self.commanded_speed_tc}")
             # Convert km/h to m/s for calculations
             self.commanded_speed = [speed / 3.6 for speed in speed_list]  #UUU
             # Convert m/s to mph for UI
@@ -409,6 +414,7 @@ class TrainData(QObject):
 
     def set_track_commanded_authority(self, authority_list):
         """Handle commanded authority signals from Track Model."""
+        # Ensure the list is long enough
         if len(authority_list) < max(1, self.train_count):
             authority_list = authority_list + [0] * (max(1, self.train_count) - len(authority_list))
         self.authority = authority_list
@@ -439,6 +445,7 @@ class TrainData(QObject):
 
     def set_passenger_boarding(self, boarding_list):
         """Handle passenger boarding signals from Track Model."""
+        # Ensure the list is long enough
         if len(boarding_list) < max(1, self.train_count):
             boarding_list = boarding_list + [0] * (max(1, self.train_count) - len(boarding_list))
         self.passenger_boarding = boarding_list
@@ -451,6 +458,8 @@ class TrainData(QObject):
             
 
         for index in range(self.train_count):
+            # if self.emergency_brake[index] and self.current_speed[0] == 0.0:
+            #     self.emergency_brake[index] = False
             # Calculate train speed; brake logic is handled in power.py
             calculate_train_speed(self, index)
 
