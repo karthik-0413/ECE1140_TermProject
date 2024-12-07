@@ -1,3 +1,4 @@
+#main
 import sys
 from PyQt6.QtWidgets import QApplication, QMainWindow, QTabWidget
 from PyQt6.QtCore import Qt
@@ -9,7 +10,6 @@ from TrainModel.train_model import TrainModelPage
 from TrainModel.base_page import BasePage
 
 # Communication classes
-# from TrainModel.train_controller_communicate import TrainControllerCommunicate
 from Resources.TrainTrainControllerComm import TrainTrainController
 from TrainModel.track_model_communicate import TrackModelCommunicate
 from Resources.CTCTrain import CTCTrain
@@ -31,7 +31,6 @@ class MainWindow(QMainWindow):
 
         # Create TrainData instance
         self.train_data = TrainData(self.tc_communicate, self.tm_communicate, self.ctc_communicate)
-        # # print("TrainData instance created")
 
         # Create tab widget
         self.tabs = QTabWidget()

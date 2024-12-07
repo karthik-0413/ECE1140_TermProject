@@ -16,7 +16,7 @@ class TrainTrainController(QObject):
     # Train Model -> Train Controller
     current_velocity_signal = pyqtSignal(list) # float  km/h
     commanded_speed_signal = pyqtSignal(list) # int     km/h
-    commanded_authority_signal = pyqtSignal(list)    # int         blocks
+    commanded_authority_signal = pyqtSignal(list)    # int   blocks
     engine_failure_signal = pyqtSignal(list)    # bool
     brake_failure_signal = pyqtSignal(list) # bool
     signal_failure_signal = pyqtSignal(list)    # bool

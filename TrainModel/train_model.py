@@ -64,7 +64,6 @@ class TrainModelPage(BasePage):
             ("Current Train Weight", "current_train_weight", "tons"),
         ]
 
-        # Font settings
         font_label = QFont('Arial', 12)
         font_label.setBold(True)
         font_value = QFont('Arial', 12)
@@ -258,8 +257,6 @@ class TrainModelPage(BasePage):
         # Set content_widget's layout
         content_widget.setLayout(content_vbox)
         scroll_area.setWidget(content_widget)
-
-        # Add scroll area to content_layout
         self.content_layout.addWidget(scroll_area)
 
         # Connect data changed signal
@@ -271,7 +268,6 @@ class TrainModelPage(BasePage):
     def emergency_brake_pressed(self):
         """Handle emergency brake button press."""
         index = self.current_train_index
-        # Set passenger_emergency_brake for current train to True
         if len(self.train_data.passenger_emergency_brake) > index:
             if self.train_data.passenger_emergency_brake[index]:
                 self.train_data.passenger_emergency_brake[index] = False
@@ -280,8 +276,6 @@ class TrainModelPage(BasePage):
                 self.train_data.passenger_emergency_brake[index] = True
                 # Optionally, provide feedback
                 self.emergency_brake_button.setText("Emergency Brake Activated")
-                # Optionally, disable the button if you want to prevent multiple presses
-                # self.emergency_brake_button.setEnabled(False)
             else:
                 # Handle case where index is out of range
                 pass
