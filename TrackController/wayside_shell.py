@@ -10,7 +10,7 @@
 # Created:          11/05/2024
 # Created by:       Zachary McPherson
 #
-# Last Update:      12/07/2024
+# Last Update:      11/13/2024
 # Last Updated by:  Zachary McPherson
 #
 # Python Version:   3.12.6
@@ -36,11 +36,10 @@ import importlib.util
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 
 # PyQt6 libraries
-from PyQt6.QtWidgets import QApplication, QFileDialog, QMainWindow
+from PyQt6.QtWidgets import QApplication, QFileDialog
 
 # Wayside UI Interface
-from TrackController import wayside_ui_it_4_green_line
-from TrackController import wayside_ui_it_4_red_line
+from TrackController import wayside_ui
 
 # CTC Office Communication Files
 from Resources import CTCWaysideComm
@@ -86,8 +85,8 @@ class wayside_shell_class:
     write_cmd_speed = [None] * 152
     write_cmd_authority = [None] * 152
 
-    #                    D  F   I   K  N1  N2   
-    write_switch_cmd = [ 1, 1,  0,  0,  0,  0]
+    #                    D   F   I   K  N1  N2   
+    #write_switch_cmd = [ 1,  1,  0,  0,  0,  0]
 
     #                    C   D   F   G   J   K  N1  N2   O   R  Yard 
     #write_signal_cmd = [ 0,  1,  0,  1,  1,  0,  0,  1,  0,  1,  0 ]
@@ -97,7 +96,7 @@ class wayside_shell_class:
 
     # Test Values
 
-    #write_switch_cmd = [ 0,  1,  0,  0,  0,  0]
+    write_switch_cmd = [ 1,  1,  0,  0,  0,  0]
 
     #                    C   D   F   G   J   K  N1  N2   O   R  Yard 
     write_signal_cmd = [ 0,  1,  0,  1,  1,  0,  0,  1,  0,  1,  0 ]
@@ -396,6 +395,8 @@ class wayside_shell_class:
         self.write_switch_cmd[3] = not switch_cmd_array[1] # K
 
     def green_line_plc_2_signal_cmd_handler(self, signal_cmd_array):
+        # print(f'\n{len(signal_cmd_array)},\t{signal_cmd_array}\n')
+
         self.write_signal_cmd[10] = signal_cmd_array[0] # Yard
         self.write_signal_cmd[4] = signal_cmd_array[1]  # J
         self.write_signal_cmd[5] = signal_cmd_array[2]  # K
@@ -467,7 +468,6 @@ class wayside_shell_class:
             self.write_cmd_authority[i] = cmd_authority_array[i-74]
 
     def green_line_plc_3_switch_cmd_handler(self, switch_cmd_array):
-        print(f'--------\nswitch_cmd_array: {switch_cmd_array[0]}, {switch_cmd_array[1]}\n--------')
         self.write_switch_cmd[4] = not switch_cmd_array[0] # N1
         self.write_switch_cmd[5] = switch_cmd_array[1] # N2
 
@@ -511,12 +511,14 @@ class wayside_shell_class:
 
     def write(self):
 
-        
         ####################################
         #     Green Line Emit Signals
         ####################################
+        # print('Wayside occ', self.write_block_occupancy)
+
         # CTC Office
         self.ctc_wayside_comm_object.block_occupancy_signal.emit(self.write_block_occupancy)
+        #print("Wayside block occupancy = ")
 
         # Track Model
         self.wayside_track_comm_object.commanded_speed_signal.emit(self.write_cmd_speed)
@@ -527,26 +529,33 @@ class wayside_shell_class:
 
 
         ####################################
-        #           Update UI
+        #    Green Line Update UI
         ####################################
 
-        # Speed and Authority
-        if self.read_sugg_speed and self.read_sugg_authority:
+        # Commanded Speed
+        if len(self.write_cmd_speed):
+            self.ui.green_line_cmd_speed = self.write_cmd_speed
 
-            # Call UI handler
-            self.ui.shell_speed_auth_handler(self.read_sugg_speed, self.write_cmd_speed, self.read_sugg_authority, self.write_cmd_authority)
+        # Commanded Authority
+        if len(self.write_cmd_authority):
+            self.ui.green_line_cmd_auth = self.write_cmd_authority
 
-        # Switch, Signal, and Crossing Commands
-        self.ui.shell_switch_signal_crossing_handler(self.write_switch_cmd, self.write_signal_cmd, self.write_crossing_cmd)
+        # Switch Command
+        self.ui.past_sw_cmd = self.ui.green_line_sw_cmd
+        self.ui.green_line_sw_cmd = self.write_switch_cmd
 
-        # Occupancy
-        self.ui.shell_occupancy_handler(self.read_block_occupancy)
-        
-        # Update UI data table
-        self.ui.update_data_table()
+        # Signal Command
+        self.ui.past_sig_cmd = self.ui.green_line_sig_cmd
+        self.ui.green_line_sig_cmd = self.write_signal_cmd
 
-        # Update UI log table
-        self.ui.update_log_table()
+        # Crossing Command
+        self.ui.green_line_cross_cmd = self.write_crossing_cmd
+
+        # Update Wayside user interface data table
+        self.ui.update_table()
+
+        # Update Wayside user interface update log
+        self.ui.update_log()
 
     ####################################################################################################
     #
@@ -564,11 +573,11 @@ class wayside_shell_class:
             # Open a file dialog to select Python files
             file_paths, _ = QFileDialog.getOpenFileNames(self.ui, 'Open Python files', '', 'Python Files (*.py)')
 
-            # Check if any files were selected
-            if file_paths:
-
-                # Run PLC programs in separate processes
-                self.execute_files(file_paths)
+            # Run PLC programs in separate processes
+            self.execute_files(file_paths)
+            
+    def upload_plc_program(self, file_paths):
+        self.execute_files(file_paths)
 
     # Execute the selected Python files
     def execute_files(self, file_paths):
@@ -604,89 +613,21 @@ class wayside_shell_class:
             # PLC Program 3
             self.plc_program_3 = self.plc_3.green_line_plc_3_class()
 
-            # Green Line
-            if self.line_color == 'Green':
 
-                # PLC 1
-                try:
-                    green_1 = self.plc_program_1.green_plc_1_is_created()
-                except:
-                    green_1 = False
-
-                # PLC 2
-                try:
-                    green_2 = self.plc_program_2.green_plc_2_is_created()
-                except:
-                    green_2 = False
-
-                # PLC 3
-                try:
-                    green_3 = self.plc_program_3.green_plc_3_is_created()
-                except:
-                    green_3 = False
-
-                # PLC programs are correctly initialized
-                if green_1 and green_2 and green_3:
-
-                    # Change Upload PLC button text
-                    self.ui.UploadPLCButton.setText('PLCs\nUploaded')
-
-                    # Change Upload PLC button color
-                    self.ui.UploadPLCButton.setStyleSheet("border: 2px solid black; border-radius: 5px; background-color: lime;")
-
-                    # Disable Upload PLC button
-                    self.ui.UploadPLCButton.setEnabled(False)
-
-            # Red Line
-            if self.line_color == 'Red':
-
-                # PLC 1
-                try:
-                    red_1 = self.plc_program_1.red_plc_1_is_created()
-                except:
-                    red_1 = False
-                
-                # PLC 2
-                try:
-                    red_2 = self.plc_program_2.red_plc_2_is_created()
-                except:
-                    red_2 = False
-
-                # PLC 3
-                try:
-                    red_3 = self.plc_program_3.red_plc_3_is_created()
-                except:
-                    red_3 = False
-
-                # PLC programs are correctly initialized
-                if red_1 and red_2 and red_3:
-
-                    # Change Upload PLC button text
-                    self.ui.UploadPLCButton.setText('PLCs\nUploaded')
-
-                    # Change Upload PLC button color
-                    self.ui.UploadPLCButton.setStyleSheet("border: 2px solid black; border-radius: 5px; background-color: lime;")
-
-                    # Disable Upload PLC button
-                    self.ui.UploadPLCButton.setEnabled(False)
 
     # Initialize the Wayside UI Interface
-    def __init__(self, ctc_wayside, wayside_track, line_color='Green'):
+    def __init__(self, ctc_wayside, wayside_track):
 
-        # Initialize line color
-        self.line_color = line_color
-
-        # Initialize run PLC checks
+        # Initialize update UI checks
         self.block_occupancy_check = 0
         self.sugg_speed_check = 0
         self.sugg_authority_check = 0
 
-        # Initialize PLC Program Imports
+        # Define PLC Program Import Variables
         self.plc_1 = None
         self.plc_2 = None
         self.plc_3 = None
 
-        # Initizalize PLC Program objects
         self.plc_program_1 = None
         self.plc_program_2 = None
         self.plc_program_3 = None
@@ -704,64 +645,31 @@ class wayside_shell_class:
         self.connect_track_model_signals()
 
         # Initialize and show the Wayside user interface
-        if line_color == 'Green':
-            self.ui = wayside_shell_ui_green_line()
-        elif line_color == 'Red':
-            self.ui = wayside_shell_ui_red_line()
+        self.ui = wayside_shell_ui()
+        self.ui.show()
 
         # Connect to upload button
         self.ui.UploadPLCButton.clicked.connect(self.open_file_dialog)
 
         
-# Green Line Wayside UI
-class wayside_shell_ui_green_line(QMainWindow, wayside_ui_it_4_green_line.wayside_ui_green_line):
+
+class wayside_shell_ui(wayside_ui.QtWidgets.QMainWindow, wayside_ui.Ui_MainWindow):
     def __init__(self):
-
-        # Initialize the parent classes
         super().__init__()
-
-        # QT Designer
         self.setupUi(self)
 
-        # Show the Wayside UI
-        self.show()
+    # Close the window and terminate all running processes
+    def closeEvent(self, event):
 
-        # Connect signals
-        self.connect_filter_buttons_signals()
-        self.connect_operational_mode_signals()
-        self.connect_wayside_select_signals()
-        self.connect_toggle_switch_signals()
+            # Terminate all running processes
+            for process in self.processes:
+                    
+                    process.terminate()
 
-        # Initial past data
-        self.ui_past_sugg_speed = self.ui_sugg_speed.copy()
-        self.ui_past_cmd_authority = self.ui_cmd_authority.copy()
-        self.ui_past_switches = self.ui_switches.copy()
-        self.ui_past_crossings = self.ui_crossings.copy()
+                    # print('Terminated process')
 
-# Red Line Wayside UI
-class wayside_shell_ui_red_line(QMainWindow, wayside_ui_it_4_red_line.wayside_ui_red_line):
-    def __init__(self):
-
-        # Initialize the parent classes
-        super().__init__()
-        
-        # QT Designer
-        self.setupUi(self)
-
-        # Show the Wayside UI
-        self.show()
-
-        # Connect signals
-        self.connect_filter_buttons_signals()
-        self.connect_operational_mode_signals()
-        self.connect_wayside_select_signals()
-        self.connect_toggle_switch_signals()
-
-        # Initial past data
-        self.ui_past_sugg_speed = self.ui_sugg_speed.copy()
-        self.ui_past_cmd_authority = self.ui_cmd_authority.copy()
-        self.ui_past_switches = self.ui_switches.copy()
-        self.ui_past_crossings = self.ui_crossings.copy()
+            # Close the window
+            event.accept()
 
 ####################################################################################################
 #
@@ -777,6 +685,6 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
 
     # Initialize the Wayside Shell
-    wayside_shell = wayside_shell_class(ctc_wayside, wayside_track, 'Green')
+    wayside_shell = wayside_shell_class(ctc_wayside, wayside_track)
 
     sys.exit(app.exec())
