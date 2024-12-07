@@ -38,7 +38,7 @@ class Line():
                     next_block_string=row['Next Block']
                 )
                 self.layout.append(block)
-                print(f"Block number: {block.block_number}  Block length: {block.block_length}  Section: {block.section}  Infrastructure: {block.infrastructure}")
+                # print(f"Block number: {block.block_number}  Block length: {block.block_length}  Section: {block.section}  Infrastructure: {block.infrastructure}")
 
 
     def read_excel_schedule():
@@ -64,9 +64,9 @@ class Line():
         # while the current block of calculation is not the destination
         while True:
             authority = authority + 1
-            #print("Current block: ", curr)
+            ## print("Current block: ", curr)
             traverse_time = traverse_time + self.layout[curr].ideal_traverse_time
-            #print("Traversal time: ", traverse_time)
+            ## print("Traversal time: ", traverse_time)
 
             # calculate the next block to travel to
             temp = curr
@@ -114,12 +114,20 @@ class Line():
 
     # consider this
     def at_destination(self):
+
+
         if len(self.train_list):
-            if self.train_list[0].location == self.train_list[0].destination:
+
+            if self.train_list[0].actual_arrival <= dt.datetime.now().time():
+                # go to yard if after time to leave
                 self.train_list[0].to_yard = True
                 self.train_list[0].destination = 0
 
-            
+            elif self.train_list[0].location == self.train_list[0].destination and self.train_list[0].actual_arrival == dt.time(0,0,0):
+                # actual arrival time is set to current time plus 1 minute
+                date = dt.datetime.now()
+                date = date + dt.timedelta(minutes=1)
+                self.train_list[0].actual_arrival = date.time()
 
 
     def toggle_block_maintenance(self, block_number):
@@ -131,12 +139,21 @@ class Line():
 
     def update_train_locations(self):
         # Update the locations stored by the Trains
+        # print("Updating train locations")
+
+
 
         for train in self.train_list:
             next = self.layout[train.location].next_block(train.prev_location)
-            if self.layout[train.location].occupied:
+            # print("Current location: ", train.location)
+            # print("Next location: ", next)
+            # print("Next Occupied: ", self.layout[next].occupied)
+
+            if self.layout[next].occupied:
+                # print("Train location updated")
                 train.prev_location = train.location
-                train.location = next.block_number
+                train.location = next
+
 
     def get_stations(self):
         stations = []

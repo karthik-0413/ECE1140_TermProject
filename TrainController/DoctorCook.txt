@@ -1,0 +1,4 @@
+1. Only need one UI present in the screen.
+
+2. The values within those UIs should be dependent on the currently selected Train ID by the dropdown.
+    a. The default value for the selected Train ID is 1.

@@ -4,6 +4,7 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 
 from CTC_Office.block import Block
+import datetime as dt
 
 
 class Train(): 
@@ -23,6 +24,8 @@ class Train():
         self.destination_station = destination_station
         self.departure_time = departure_time
         self.arrival_time = -1
+
+        self.leave_station = dt.time(0, 0, 0)
 
         # For implementing multiple destinations
         #self.destinations = []
