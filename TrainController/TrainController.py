@@ -928,7 +928,9 @@ class Position(QObject):
                 # # print("No doors opened")
                 
             # Close doors after 60 seconds
-            QTimer.singleShot(60000, self.close_doors)
+            self.timer = QTimer(self)
+            self.timer.timeout.connect(self.close_doors)
+            self.timer.start(60000)
             
         elif self.line == 'Red':
             if "Left" in self.red_station_door[self.current_block] and  "Right" not in self.red_station_door[self.current_block]:
