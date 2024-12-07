@@ -112,20 +112,21 @@ class wayside_shell_class:
     ####################################################################################################
 
     # Inputs from CTC Office
-    def read_sugg_speed_handler(self, sugg_speed_array):
-        # print(f'read_sugg_speed_handler, {sugg_speed_array[0] if len(sugg_speed_array) else 'empty'}')
+    def read_sugg_speed_handler(self, sugg_speed_array: list):
+        
 
-        self.read_sugg_speed = sugg_speed_array
+        self.read_sugg_speed = sugg_speed_array.copy()
 
         # Update Wayside user interface table
         if len(self.read_sugg_speed):
-            self.ui.past_sugg_speed = self.ui.green_line_sugg_speed
-            self.ui.green_line_sugg_speed = sugg_speed_array
+            
             self.sugg_speed_check = 1
 
             if self.sugg_speed_check == 1 and self.sugg_authority_check == 1 and self.block_occupancy_check == 1:
 
-                self.ui.update_table()
+                # Update UI suggested speed and authority table
+                self.ui.shell_sugg_speed_auth_handler(self.read_sugg_speed, self.read_sugg_authority)
+                self.ui.shell_occupancy_handler(self.read_block_occupancy)
 
                 self.sugg_speed_check = 0
                 self.sugg_authority_check = 0
@@ -146,20 +147,21 @@ class wayside_shell_class:
                     self.call_green_line_plc_2_operation_handlers()
                     self.call_green_line_plc_3_operation_handlers()
 
-    def read_sugg_authority_handler(self, sugg_authority_array):
+    def read_sugg_authority_handler(self, sugg_authority_array: list):
         # print(f'read_sugg_authority_handler, {sugg_authority_array[0] if len(sugg_authority_array) else 'empty'}')
 
-        self.read_sugg_authority = sugg_authority_array
+        self.read_sugg_authority = sugg_authority_array.copy()
 
         # Update Wayside user interface table
         if len(self.read_sugg_authority):
-            self.ui.past_sugg_authority = self.ui.green_line_sugg_auth
-            self.ui.green_line_sugg_auth = sugg_authority_array
+            
             self.sugg_authority_check = 1
             
             if self.sugg_speed_check == 1 and self.sugg_authority_check == 1 and self.block_occupancy_check == 1:
 
-                self.ui.update_table()
+                # Update UI suggested speed and authority table
+                self.ui.shell_sugg_speed_auth_handler(self.read_sugg_speed, self.read_sugg_authority)
+                self.ui.shell_occupancy_handler(self.read_block_occupancy)
 
                 self.sugg_speed_check = 0
                 self.sugg_authority_check = 0
@@ -187,18 +189,21 @@ class wayside_shell_class:
 #        self.read_maintenance_switch_cmd = maintenance_switch_cmd_array
 
     # Inputs from Track Model
-    def read_block_occupancy_handler(self, block_occupancy_array):
-        self.read_block_occupancy = block_occupancy_array
-        self.write_block_occupancy = block_occupancy_array
+    def read_block_occupancy_handler(self, block_occupancy_array: list):
+
+        self.read_block_occupancy = block_occupancy_array.copy()
+        self.write_block_occupancy = block_occupancy_array.copy()
 
         # Update Wayside user interface table
         if len(self.read_block_occupancy):
-            self.ui.green_line_block_occupancy = block_occupancy_array
+            
             self.block_occupancy_check = 1
             
             if self.sugg_speed_check == 1 and self.sugg_authority_check == 1 and self.block_occupancy_check == 1:
 
-                self.ui.update_table()
+                # Update UI suggested speed and authority table
+                self.ui.shell_sugg_speed_auth_handler(self.read_sugg_speed, self.read_sugg_authority)
+                self.ui.shell_occupancy_handler(self.read_block_occupancy)
 
                 self.sugg_speed_check = 0
                 self.sugg_authority_check = 0
@@ -530,17 +535,11 @@ class wayside_shell_class:
         #           Update UI
         ####################################
 
-        # Speed and Authority
-        if self.read_sugg_speed and self.read_sugg_authority:
-
-            # Call UI handler
-            self.ui.shell_speed_auth_handler(self.read_sugg_speed, self.write_cmd_speed, self.read_sugg_authority, self.write_cmd_authority)
+        # Commanded speed and authority
+        self.ui.shell_cmd_speed_auth_handler(self.write_cmd_speed, self.write_cmd_authority)
 
         # Switch, Signal, and Crossing Commands
         self.ui.shell_switch_signal_crossing_handler(self.write_switch_cmd, self.write_signal_cmd, self.write_crossing_cmd)
-
-        # Occupancy
-        self.ui.shell_occupancy_handler(self.read_block_occupancy)
         
         # Update UI data table
         self.ui.update_data_table()

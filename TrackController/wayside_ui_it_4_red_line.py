@@ -2276,7 +2276,7 @@ class wayside_ui_red_line(object):
                 self.wayside_3_occupied = 0
 
                 # Wayside 1
-                for i in range(24):
+                for i in range(1, 33):
 
                         # Check if block is occupied
                         if self.ui_occupancy[i]:
@@ -2284,9 +2284,21 @@ class wayside_ui_red_line(object):
                                 # Set wayside 1 occupancy
                                 self.wayside_1_occupied = 1
                                 break
+                
+                # Block 150
+                if self.ui_occupancy[150]:
+
+                        # Set wayside 1 occupancy
+                        self.wayside_1_occupied = 1
+
+                # Block 151
+                elif self.ui_occupancy[151]:
+                                
+                        # Set wayside 1 occupancy
+                        self.wayside_1_occupied = 1
 
                 # Wayside 2
-                for i in range(24, 46):
+                for i in range(33, 74):
 
                         # Check if block is occupied
                         if self.ui_occupancy[i]:
@@ -2297,7 +2309,7 @@ class wayside_ui_red_line(object):
                 
                 # Blocks 105 -> 149 and Yard
                 if not self.wayside_2_occupied:
-                        for i in range(68, 78):
+                        for i in range(105, 150):
 
                                 # Check if block is occupied
                                 if self.ui_occupancy[i]:
@@ -2306,8 +2318,14 @@ class wayside_ui_red_line(object):
                                         self.wayside_2_occupied = 1
                                         break
 
+                        # Block 0
+                        if self.ui_occupancy[0]:
+                                        
+                                # Set wayside 2 occupancy
+                                self.wayside_2_occupied = 1
+
                 # Wayside 3
-                for i in range(46, 68):
+                for i in range(74, 105):
 
                         # Check if block is occupied
                         if self.ui_occupancy[i]:
@@ -2337,20 +2355,30 @@ class wayside_ui_red_line(object):
                         # Set operational mode to automatic
                         self.wayside_3_operational_mode = 2
 
-        # Speed and Authority handler
-        def shell_speed_auth_handler(self, sugg_speed: list, cmd_speed: list, sugg_auth: list, cmd_auth: list):
+        # Sugg Speed handler
+        def shell_sugg_speed_auth_handler(self, sugg_speed: list, sugg_auth: list):
 
-                # Set past speed and authority
+                # Set past sugg speed
                 self.ui_past_sugg_speed = self.ui_sugg_speed.copy()
-                self.ui_past_cmd_authority = self.ui_cmd_authority.copy()
 
-                # Set new speed
+                # Set new sugg speed
                 self.ui_sugg_speed = sugg_speed.copy()
+
+                # Set new sugg authority
+                self.ui_sugg_authority = sugg_auth.copy()
+
+        # Commanded Authority handler
+        def shell_cmd_speed_auth_handler(self, cmd_speed: list, cmd_auth: list):
+
+                # Set new commanded speed
                 self.ui_cmd_speed = cmd_speed.copy()
 
-                # Set new authority
-                self.ui_sugg_authority = sugg_auth.copy()
+                # Set past commanded authority
+                self.ui_past_cmd_authority = self.ui_cmd_authority.copy()
+
+                # Set new commanded authority
                 self.ui_cmd_authority = cmd_auth.copy()
+
 
         # Switch, Signal, and Crossing Handler
         def shell_switch_signal_crossing_handler(self, switch_cmds: list, signal_cmds: list, crossing_cmds: list):
@@ -2361,6 +2389,9 @@ class wayside_ui_red_line(object):
 
                 # Set new switch commands
                 self.ui_switches = switch_cmds.copy()
+                self.ui_switches[0] = not self.ui_switches[0]
+                self.ui_switches[3] = not self.ui_switches[3]
+                self.ui_switches[4] = not self.ui_switches[4]
 
                 # Set new crossing commands
                 self.ui_crossings = crossing_cmds.copy()

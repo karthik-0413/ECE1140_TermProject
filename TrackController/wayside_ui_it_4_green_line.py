@@ -2410,20 +2410,30 @@ class wayside_ui_green_line(object):
                         # Set operational mode to automatic
                         self.wayside_3_operational_mode = 2
 
-        # Speed and Authority handler
-        def shell_speed_auth_handler(self, sugg_speed: list, cmd_speed: list, sugg_auth: list, cmd_auth: list):
+        # Sugg Speed handler
+        def shell_sugg_speed_auth_handler(self, sugg_speed: list, sugg_auth: list):
 
-                # Set past speed and authority
+                # Set past sugg speed
                 self.ui_past_sugg_speed = self.ui_sugg_speed.copy()
-                self.ui_past_cmd_authority = self.ui_cmd_authority.copy()
 
-                # Set new speed
+                # Set new sugg speed
                 self.ui_sugg_speed = sugg_speed.copy()
+
+                # Set new sugg authority
+                self.ui_sugg_authority = sugg_auth.copy()
+
+        # Commanded Authority handler
+        def shell_cmd_speed_auth_handler(self, cmd_speed: list, cmd_auth: list):
+
+                # Set new commanded speed
                 self.ui_cmd_speed = cmd_speed.copy()
 
-                # Set new authority
-                self.ui_sugg_authority = sugg_auth.copy()
+                # Set past commanded authority
+                self.ui_past_cmd_authority = self.ui_cmd_authority.copy()
+
+                # Set new commanded authority
                 self.ui_cmd_authority = cmd_auth.copy()
+
 
         # Switch, Signal, and Crossing Handler
         def shell_switch_signal_crossing_handler(self, switch_cmds: list, signal_cmds: list, crossing_cmds: list):
