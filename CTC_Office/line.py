@@ -84,9 +84,19 @@ class Line():
 
                     if not self.train_list[train_index].to_yard:
                         self.remove_train_destination(train_id, end)
-                        if not self.train_list[train_index].destinations:
-                            self.train_list[train_index].to_yard = True
-                            self.self.calc_path(self.train_list[train_index].location, 0)
+                        self.train_list[train_index].path.insert(0, (self.calc_path(self.train_list[train_index].location, 0)))
+                        traverse_time = 0
+                        for block_num in self.train_list[train_index].path[0]:
+                            traverse_time = traverse_time + self.layout[block_num].ideal_traverse_time
+
+                        date = dt.datetime.now()
+                        datetime = date + dt.timedelta(seconds=traverse_time)
+                        self.train_list[train_index].arrival_times.append(datetime.time())
+                        # to_yard set in remove_train_destination
+                        #if not self.train_list[train_index].destinations:
+                            #self.train_list[train_index].to_yard = True
+                        
+                            
 
             else:
                 self.train_list[train_index].authority = 0
@@ -214,7 +224,7 @@ class Line():
         # recalculate path to next destination if it exists
         if train_index in [train.destinations for train in self.train_list]:
 
-            # Remove path to destination.  Then remove the next destination and path to destination, then readd with the recalculated path
+            # Remove path to destination.  Then remove the next destination and path to destination, then read with the recalculated path
             self.train_list[train_index].path.pop(train_index)
             self.train_list[train_index].path.pop(train_index)
             dest = self.train_list[train_index].destinations[train_index]
