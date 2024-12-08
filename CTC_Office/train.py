@@ -8,7 +8,7 @@ import datetime as dt
 
 
 class Train(): 
-    def __init__(self, train_id, destination, destination_station, departure_time):
+    def __init__(self, train_id, destination, arrival_time, destination_station=None, departure_time=None):
         """Initialize a train object
         destination is the block number
         destination_station is the station name
@@ -19,18 +19,22 @@ class Train():
         self.location = 0
         self.prev_location = -1
 
-
-        self.destination = destination
-        self.destination_station = destination_station
         self.departure_time = departure_time
-        self.arrival_time = -1
+        self.departed = False
 
-        self.leave_station = dt.time(0, 0, 0)
+        self.destinations = []
+        self.destination_strings = []
 
-        # For implementing multiple destinations
-        #self.destinations = []
-        #self.destination_strings = []
-        #self.schedule_times = []
+        self.arrivals_calculated = False
+        self.arrival_times = []
+
+        self.path = []
+
+        self.destinations.append(destination)
+        self.arrival_times.append(arrival_time)
+
+        if destination_station != None:
+            self.destination_strings.append(destination_station)
 
         self.to_yard = False
         
@@ -38,12 +42,15 @@ class Train():
 
     def dispatch_train(self):
         """Send message to Train Model to create a new train"""
-        pass
+        if self.departure_time == None:
+            self.departure_time = dt.datetime.now().time()
+        
 
-    def add_destination(self, destination, station_name):
+    def add_destination(self, destination, arrival_time, station_name=None):
         """Add a destination to the train"""
         self.destinations.append(destination)
         self.destination_strings.append(station_name)
+        self.arrival_times.append(arrival_time)
 
     def remove_destination(self, destination):
         """Remove a destination from the train"""
@@ -51,6 +58,8 @@ class Train():
             index = self.destinations.index(destination)
             self.destinations.pop(index)
             self.destination_strings.pop(index)
+            self.path.pop(index)
+            self.arrival_times.pop(index)
             if len(self.destinations) == 0:
                 self.to_yard = True
                 self.destinations.append(0)
