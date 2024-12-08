@@ -1,5 +1,6 @@
 # power.py
 import math
+import time
 def calculate_train_speed(train_data, index):
     """
     Calculate the train's speed based on the commanded power, brake inputs, grade, and other factors.
@@ -65,6 +66,21 @@ def calculate_train_speed(train_data, index):
 
     # Update position
     train_data.current_position[index] += train_data.current_speed[index] * delta_t
+    
+    ### Temperature Calculation Starts Here ###
 
-    # # prints the current positions of the trains
-    # # print(train_data.current_position)
+def reach_temperature(train_data, k=0.3, time_step=0.5):
+        initial_temp = train_data.cabin_temperature
+        desired_temp = train_data.desired_temperature
+
+        current_temp = initial_temp
+        while abs(current_temp - desired_temp) > 0.01:  # Tolerance for stopping
+            dT = k * (desired_temp - current_temp)
+            
+            current_temp += dT
+            
+            train_data.cabin_temperature = current_temp
+            # # print(f"Current Temperature: {current_temp:.2f}°F")
+            time.sleep(time_step)
+
+        # # print(f"Reached Desired Temperature: {current_temp:.2f}°F")

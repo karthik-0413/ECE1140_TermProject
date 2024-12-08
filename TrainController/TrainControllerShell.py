@@ -308,7 +308,10 @@ class TrainControllerShell:
         emergency_brake_commands = [train_controller.brake_class.driver_emergency_brake_command for train_controller in self.train_controller_list]
         self.communicator.emergency_brake_command_signal.emit(emergency_brake_commands)
         
-        desired_temperatures = [train_controller.temperature.desired_temperature for train_controller in self.train_controller_list]
+        # desired_temperatures = [train_controller.temperature.desired_temperature for train_controller in self.train_controller_list]
+        # self.communicator.desired_temperature_signal.emit(desired_temperatures)
+        
+        desired_temperatures = [train_controller.temperature.current_temperature for train_controller in self.train_controller_list]
         self.communicator.desired_temperature_signal.emit(desired_temperatures)
         
         exterior_lights = [train_controller.lights.exterior_lights for train_controller in self.train_controller_list]
@@ -334,7 +337,7 @@ class TrainControllerShell:
         self.communicator.brake_failure_signal.connect(self.update_brake_failure)
         self.communicator.signal_failure_signal.connect(self.update_signal_failure)
         self.communicator.passenger_brake_command_signal.connect(self.update_passenger_brake_command)
-        self.communicator.actual_temperature_signal.connect(self.update_actual_temperature)
+        # self.communicator.actual_temperature_signal.connect(self.update_actual_temperature)
         self.communicator.polarity_signal.connect(self.update_polarity)
         # self.communicator.train_count_signal.connect(self.update_train_count)
         
@@ -484,11 +487,11 @@ class TrainControllerShell:
                         self.train_controller_list[i].speed_control.desired_velocity = 0
             # # print(f"Passenger Brake Command: {passenger_brake_command}")
 
-    def update_actual_temperature(self, actual_temperature: list):
-        if len(self.train_controller_list):
-            for i in range(len(actual_temperature)):
-                if i < len(self.train_controller_list):
-                    self.train_controller_list[i].temperature.update_current_temp_display(actual_temperature[i])
+    # def update_actual_temperature(self, actual_temperature: list):
+    #     if len(self.train_controller_list):
+    #         for i in range(len(actual_temperature)):
+    #             if i < len(self.train_controller_list):
+    #                 self.train_controller_list[i].temperature.update_current_temp_display(actual_temperature[i])
         # print(f"Actual Temperature: {actual_temperature}")
 
     def update_polarity(self, polarity: list):
