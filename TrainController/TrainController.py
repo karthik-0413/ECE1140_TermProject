@@ -200,7 +200,7 @@ class PowerCommand(QObject):
         
         
     def update_power_command(self, current_velocity: float, desired_velocity: float, operation_mode: int = 0):
-        print(f"Current Speed: {current_velocity:.2f} m/s, Desired Speed: {desired_velocity:.2f} m/s in update_power_command")
+        # print(f"Current Speed: {current_velocity:.2f} m/s, Desired Speed: {desired_velocity:.2f} m/s in update_power_command")
 
         if self.module == 1:
             if self.brake_status.station_auto_mode == True and operation_mode == 0:
@@ -1059,37 +1059,37 @@ class Temperature(QObject):
     def update_desired_temperature(self, temp):
         if 60 <= temp <= 75:
             self.desired_temperature = temp
-            # # print(f"Desired temperature set to: {self.desired_temperature}°F")
-            if self.current_temperature < self.desired_temperature:
-                self.desired_temperature += 0.01
-            else:
-                self.desired_temperature -= 0.01
-            self.reach_temperature()
+            # # # print(f"Desired temperature set to: {self.desired_temperature}°F")
+            # if self.current_temperature < self.desired_temperature:
+            #     self.desired_temperature += 0.01
+            # else:
+            #     self.desired_temperature -= 0.01
+            # self.reach_temperature()
         # else:
             
             # # print("Temperature out of range. Please enter a value between 60°F and 75.")
 
-    def reach_temperature(self, k=0.3, time_step=0.5):
-        initial_temp = self.current_temperature
-        desired_temp = self.desired_temperature
+    # def reach_temperature(self, k=0.3, time_step=0.5):
+    #     initial_temp = self.current_temperature
+    #     desired_temp = self.desired_temperature
 
-        current_temp = initial_temp
-        while abs(current_temp - desired_temp) > 0.01:  # Tolerance for stopping
-            dT = k * (desired_temp - current_temp)
+    #     current_temp = initial_temp
+    #     while abs(current_temp - desired_temp) > 0.01:  # Tolerance for stopping
+    #         dT = k * (desired_temp - current_temp)
             
-            current_temp += dT
+    #         current_temp += dT
             
-            self.current_temperature = current_temp
-            self.update_current_temp_display(current_temp)
-            QCoreApplication.processEvents()  # Process events to update the UI
-            # # print(f"Current Temperature: {current_temp:.2f}°F")
-            time.sleep(time_step)
+    #         self.current_temperature = current_temp
+    #         self.update_current_temp_display(current_temp)
+    #         QCoreApplication.processEvents()  # Process events to update the UI
+    #         # # print(f"Current Temperature: {current_temp:.2f}°F")
+    #         time.sleep(time_step)
 
-        # # print(f"Reached Desired Temperature: {current_temp:.2f}°F")
+    #     # # print(f"Reached Desired Temperature: {current_temp:.2f}°F")
 
-    def update_current_temp_display(self, current_temp):
-        self.current_temperature = current_temp
-        self.current_temperature_signal.emit(self.current_temperature)
+    # def update_current_temp_display(self, current_temp):
+    #     self.current_temperature = current_temp
+    #     self.current_temperature_signal.emit(self.current_temperature)
             
 class TrainEngineerUI(QWidget):
     def __init__(self, tuning: Tuning, power_class: PowerCommand):
@@ -1702,6 +1702,10 @@ class TrainControllerUI(QWidget):
 
         # Set Main Layout
         self.setLayout(main_layout)
+        
+    def update_current_temp_display(self, current_temp):
+        self.temperature.current_temperature = current_temp
+        self.current_temp_edit.setText(f"{current_temp:.2f} °F")
         
         
     

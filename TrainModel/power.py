@@ -1,6 +1,7 @@
 # power.py
 import math
 import time
+from PyQt6.QtCore import QCoreApplication
 def calculate_train_speed(train_data, index):
     """
     Calculate the train's speed based on the commanded power, brake inputs, grade, and other factors.
@@ -67,20 +68,56 @@ def calculate_train_speed(train_data, index):
     # Update position
     train_data.current_position[index] += train_data.current_speed[index] * delta_t
     
+    if train_data.cabin_temperature[index] < train_data.desired_temperature[index]:
+        train_data.desired_temperature[index] += 0.01
+    else:
+        train_data.desired_temperature[index] -= 0.01
+    
     ### Temperature Calculation Starts Here ###
+    initial_temp = train_data.cabin_temperature[index]
+    desired_temp = train_data.desired_temperature[index]
+    current_temp = initial_temp
+    k = 0.3
+    time_step = 0.5
+    
+    if abs(current_temp - desired_temp) > 0.01:  # Tolerance for stopping
+        dT = k * (desired_temp - current_temp)
+        current_temp += dT
+        train_data.cabin_temperature[index] = current_temp
+        QCoreApplication.processEvents()  # Process events to update the UI
+        time.sleep(time_step)
 
-def reach_temperature(train_data, k=0.3, time_step=0.5):
-        initial_temp = train_data.cabin_temperature
-        desired_temp = train_data.desired_temperature
+    print(f"Updated Temperature: {train_data.cabin_temperature[index]:.2f}°F")
+    
+    ### Temperature Calculation Starts Here ###
+    
+# def update_desired_temperature(train_data, index, temp):
+#         train_data.desired_temperature[index] = temp
+#         # # print(f"Desired temperature set to: {train_data.desired_temperature[index]}°F")
+#         if train_data.cabin_temperature[index] < train_data.desired_temperature[index]:
+#             train_data.desired_temperature[index] += 0.01
+#         else:
+#             train_data.desired_temperature[index] -= 0.01
+#         reach_temperature(train_data, index)
+#     # else:
+        
+#         # # print("Temperature out of range. Please enter a value between 60°F and 75.")
 
-        current_temp = initial_temp
-        while abs(current_temp - desired_temp) > 0.01:  # Tolerance for stopping
-            dT = k * (desired_temp - current_temp)
+# def reach_temperature(train_data, index, k=0.3, time_step=0.5):
+#         initial_temp = train_data.cabin_temperature[index]
+#         desired_temp = train_data.desired_temperature[index]
+#         print(f"Initial Temperature: {initial_temp:.2f}°F")
+#         print(f"Desired Temperature: {desired_temp:.2f}°F")
+
+#         current_temp = initial_temp
+#         while abs(current_temp - desired_temp) > 0.01:  # Tolerance for stopping
+#             dT = k * (desired_temp - current_temp)
             
-            current_temp += dT
+#             current_temp += dT
             
-            train_data.cabin_temperature = current_temp
-            # # print(f"Current Temperature: {current_temp:.2f}°F")
-            time.sleep(time_step)
+#             train_data.cabin_temperature[index] = current_temp
+#             QCoreApplication.processEvents()  # Process events to update the UI
+#             # # print(f"Current Temperature: {current_temp:.2f}°F")
+#             time.sleep(time_step)
 
-        # # print(f"Reached Desired Temperature: {current_temp:.2f}°F")
+#         # # print(f"Reached Desired Temperature: {current_temp:.2f}°F")

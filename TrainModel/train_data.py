@@ -115,7 +115,7 @@ class TrainData(QObject):
     def initialize_train(self):
         """Initialize data for a new train."""
         # Append default values for a new train
-        self.cabin_temperature.append(78)  # Fahrenheit
+        self.cabin_temperature.append(65)  # Fahrenheit
         self.maximum_capacity.append(222)
         self.passenger_count.append(100)
         self.crew_count.append(2)
@@ -147,7 +147,7 @@ class TrainData(QObject):
         self.beacon.append("")  # Initialize beacon message
 
         # Cabin Control Variables
-        self.desired_temperature.append(76)
+        self.desired_temperature.append(65)
         self.train_left_door.append(False)
         self.train_right_door.append(False)
         self.advertisement.append("Picture1")
@@ -371,7 +371,7 @@ class TrainData(QObject):
         if len(temp_list) < max(1, self.train_count):
             temp_list = temp_list + [0] * (max(1, self.train_count) - len(temp_list))
         self.desired_temperature = temp_list
-        self.cabin_temperature = temp_list  # Assuming desired temp sets cabin temp
+        # self.cabin_temperature = temp_list  # Assuming desired temp sets cabin temp
         self.data_changed.emit()
 
     def set_exterior_light(self, state_list):
