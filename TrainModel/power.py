@@ -14,7 +14,6 @@ def calculate_train_speed(train_data, index):
     emergency_brake_active = train_data.emergency_brake[index]
     service_brake_active = train_data.service_brake[index]
 
-    # Determine acceleration based on brake states
     if emergency_brake_active:
         # Emergency brake: highest priority
         acceleration = -2.73  # m/s²

@@ -9,13 +9,13 @@ from TrainModel.CTC_communicate import CTC_Train_Model_Communicate
 from Resources.CTCWaysideComm import CTCWaysideControllerComm
 from Resources.CTCTrain import CTCTrain
 
+
 class CTC_logic():
     def __init__(self, train_model_communicate: CTCTrain, wayside_communicate: CTCWaysideControllerComm):
         self.line = Line("Green")
-
-
         self.automatic = False
-        self.num_trains = None
+        self.maintenance_mode = False
+        self.num_trains = 0
 
         # Destination list for the User to select from in the UI
         self.destination_list = []
@@ -28,15 +28,12 @@ class CTC_logic():
         self.train_model_communicate = train_model_communicate
         self.wayside_communicate = wayside_communicate
 
-
-
     def write_to_communicate_objects(self):
         # print("Writing to communicate objects")
         ## print("self.line.send_new_values = ", self.line.send_new_values)
 
-        # print("authority = ", self.suggested_authority_list)
+        #print("authority = ", self.suggested_authority_list)
         # Write all buffered information to the communicate objects
-        # self.train_model_communicate.dispatch_train_signal.emit(self.num_trains)
         self.wayside_communicate.suggested_speed_signal.emit(self.suggested_speed_list)
         self.wayside_communicate.suggested_authority_signal.emit(self.suggested_authority_list)
         # print("CTC Speed list = ", [speed for speed in self.suggested_speed_list if speed is not None])
@@ -52,18 +49,26 @@ class CTC_logic():
     def upload_schedule_to_line():
         pass
 
-    def add_new_train_to_line(self, line_name:str, destination:int, destination_station:str, departure_time):
+    def add_new_train_to_line(self, destination:int, arrival_time, destination_station:str=None):
         
         # Add destinations to the train object 
-        self.line.create_train(destination, destination_station, departure_time)
-        # print("Adding train")
+        self.line.create_train(destination, arrival_time, destination_station)
+        print("Adding train")
         self.num_trains = len(self.line.train_list)
         # print("Num trains = ", self.num_trains)
 
-        #self.train_model_communicate.current_train_count_signal.emit(self.num_trains)
+    def add_new_pending_train(self, destination:int, arrival_time, destination_station:str=None, depart_time:str=None):
+        self.line.add_pending_train(destination, arrival_time, destination_station, depart_time)
 
-    def add_train_destination_on_line(self, line_name:str, train_id:int, destination:int, station_name:str):
-        self.line.add_train_destination(train_id, destination, station_name)
+    def dispatch_pending_train(self, train_id):
+        self.line.dispatch_pending_train(train_id)
+
+    def add_train_destination_on_line(self, train_id:int, destination:int, arrival_time, station_name:str=None):
+        self.line.add_train_destination(train_id, destination, arrival_time, station_name)
+
+    def remove_train_destination_on_line(self, train_id:int, destination:int):
+        self.line.remove_train_destination(train_id, destination)
+        self.num_trains = len(self.line.train_list)
 
     def update_authority_list(self):
 
@@ -88,8 +93,8 @@ class CTC_logic():
     def confirm_train_paths():
         pass
 
-    def select_line_for_maintenance(self, line_name:str, block_number:int):
-        self.line.layout[block_number].toggle_maintenance()
+    def select_line_for_maintenance(self, block_number:int):
+        self.line.toggle_block_maintenance(block_number)
 
     def update_blocks_on_line(self, block_occupancies: list):
         # Update block occupancies based on the wayside controller
@@ -117,3 +122,6 @@ class CTC_logic():
     
     def find_destination(self, station_name:str):
         return self.line.find_destination(station_name)
+    
+    def toggle_maintenance_mode(self):
+        self.maintenance_mode = not self.maintenance_mode

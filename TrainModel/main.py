@@ -1,3 +1,4 @@
+#main
 import sys
 from PyQt6.QtWidgets import QApplication, QMainWindow, QTabWidget
 from PyQt6.QtCore import Qt
@@ -9,7 +10,6 @@ from TrainModel.train_model import TrainModelPage
 from TrainModel.base_page import BasePage
 
 # Communication classes
-# from TrainModel.train_controller_communicate import TrainControllerCommunicate
 from Resources.TrainTrainControllerComm import TrainTrainController
 from TrainModel.track_model_communicate import TrackModelCommunicate
 from Resources.CTCTrain import CTCTrain
@@ -46,7 +46,10 @@ class MainWindow(QMainWindow):
         self.tabs.addTab(self.train_model_page, "Train Model")
 
         # Update Train ID lists in all pages
+        #changed12/7 begin
+        self.previous_train_count = self.train_data.train_count  #changed12/7
         self.update_train_id_lists()
+        #changed12/7 end
 
         # Connect data changed signal to update Train IDs when train count changes
         self.train_data.data_changed.connect(self.update_train_id_lists)
@@ -55,9 +58,14 @@ class MainWindow(QMainWindow):
 
     def update_train_id_lists(self):
         """Update Train ID combo boxes in all pages when train count changes."""
-        train_ids = [str(i + 1) for i in range(self.train_data.train_count)]
-        self.murphy_page.update_train_id_list(train_ids)
-        self.train_model_page.update_train_id_list(train_ids)
+        #changed12/7 begin
+        # Only update if train count has actually changed
+        if self.train_data.train_count != self.previous_train_count:
+            self.previous_train_count = self.train_data.train_count
+            train_ids = [str(i + 1) for i in range(self.train_data.train_count)]
+            self.murphy_page.update_train_id_list(train_ids)
+            self.train_model_page.update_train_id_list(train_ids)
+        #changed12/7 end
 
 def main():
     app = QApplication(sys.argv)
