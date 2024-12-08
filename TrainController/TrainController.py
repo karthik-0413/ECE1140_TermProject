@@ -491,7 +491,7 @@ class SpeedControl(QObject):
         self.current_velocity = speed
         if speed > self.desired_velocity:
             self.brake_status.apply_service_brake()
-            print(f"Current Speed: {self.current_velocity:.2f} m/s, Desired Speed: {self.desired_velocity:.2f} m/s in handle_current_velocity")
+            # print(f"Current Speed: {self.current_velocity:.2f} m/s, Desired Speed: {self.desired_velocity:.2f} m/s in handle_current_velocity")
             self.power_class.power_command = 0.0
             if self.operation_mode == 0:
                 self.power_class.update_power_command(self.current_velocity, self.desired_velocity, 0)
@@ -826,6 +826,7 @@ class Position(QObject):
                 self.green_underground.append(entry['Infrastructure'])
                 self.green_station_door.append(entry['Station Side'])
                 self.green_speed_limit.append(entry['Speed Limit (Km/Hr)'])
+            # print(f"Station Door: {self.green_station_door[96]}")
                 
          # Load the track layout data from RedLine.json file in Track Layouts folder
         with open(os.path.join(os.path.dirname(__file__), 'Track Layouts', 'RedLine.json'), 'r') as file:
@@ -844,9 +845,9 @@ class Position(QObject):
       
         if authority is not None:
             self.counter += 1
-            if self.counter == 1:
-                self.commanded_authority_signal.emit(authority - 1)
-            self.commanded_authority = authority - 1
+            if self.counter == 2:
+                self.commanded_authority_signal.emit(authority)
+            self.commanded_authority = authority
             # print(f"Commanded Authority: {self.commanded_authority}")
         else:
             self.commanded_authority = 0
@@ -869,7 +870,7 @@ class Position(QObject):
                 if self.commanded_authority == 0:
                     self.accept_authority = True
                     self.commanded_authority_signal.emit(0)
-                    self.calculate_desired_speed()
+                    self.calculate_desired_speed()  # Enters this for stopping at station
                     # If current velocity is 0
                     # Start a timer to check every 100 ms
                     self.timer = QTimer()
@@ -887,7 +888,7 @@ class Position(QObject):
                     if self.iterate == True:
                         current_index = self.green_default_path_blocks.index(self.current_block)
                         self.current_block = self.green_default_path_blocks[current_index + 1]
-                    
+                print(f"Current Block: {self.current_block}")
                 # self.check_current_block()
                 self.check_block_underground()
                 # self.calculate_desired_speed()
@@ -911,15 +912,18 @@ class Position(QObject):
     def check_current(self):
         # print(f"Current Velocity: {self.speed_control.current_velocity}")
         # print(f"Current Block: {self.current_block}")
+        print("Entered check_current function")
         if self.speed_control.current_velocity == 0.0 and not self.repeat:
+            print("Entered check_current if statement")
             self.check_current_block()
             self.find_station_name()
             if self.speed_control.operation_mode == 0:
                 self.brake_status.station_auto_mode = True
             self.accept_authority = True
-        elif self.speed_control.current_velocity != 0.0 and self.repeat:
-            self.repeat = False
-            self.timer.stop()
+        # elif self.speed_control.current_velocity != 0.0 and self.repeat:
+        #     print("Entered check_current elif statement")
+        #     self.repeat = False
+        #     self.timer.stop()
         
     def check_block_underground(self):
         if self.line == 'Green':
@@ -944,25 +948,36 @@ class Position(QObject):
             
     def check_current_block(self):
         # # print(f"Current Block: {self.current_block}")
+        print("Entered check_current_block")
         # if self.commanded_authority == 0:
             # Open Doors
         if self.line == 'Green':
             if "Left" in self.green_station_door[self.current_block] and  "Right" not in self.green_station_door[self.current_block]:
                 self.door.open_left_door()
+                print("Left door opened")
                 # # print("Left door opened")
             elif "Right" in self.green_station_door[self.current_block] and  "Left" not in self.green_station_door[self.current_block]:
                 self.door.open_right_door()
+                print("Right door opened")
                 # # print("Right door opened")
             elif "Left" in self.green_station_door[self.current_block] and  "Right" in self.green_station_door[self.current_block]:
                 self.door.open_left_door()
                 self.door.open_right_door()
+                print("Both doors opened")
                 # # print("Both doors opened")
             else:
                 self.door.close_left_door()
                 self.door.close_right_door()
+                print("No doors opened")
                 # # print("No doors opened")
                 
+            # Stop any existing timer if there's one
+            if hasattr(self, 'timer') and self.timer.isActive():
+                print("Stopping timer")
+                self.timer.stop()
+            
             # Close doors after 60 seconds
+            print("Starting new timer")
             self.timer = QTimer(self)
             self.timer.timeout.connect(self.close_doors)
             self.timer.start(60000)
@@ -991,7 +1006,7 @@ class Position(QObject):
     def close_doors(self):
         self.door.close_left_door()
         self.door.close_right_door()
-        self.repeat = True
+        # self.repeat = True
         if self.speed_control.operation_mode == 0:
             self.brake_status.station_auto_mode = False
         self.accept_authority = False

@@ -194,35 +194,39 @@ class TrainControllerShell:
                 #     print("No Read from Train Model")
                 
                 if train_id > len(self.train_controller_list):
-                    self.counter += 1
-                    self.train_counter += 1
+                    for _ in range(train_id - self.train_counter):
                     
-                    
-                    ##########################################################################################################
-                    # ERROR: WHEN THE SECOND TRAIN IS DISPATCHED, THE TRAIN CONTROLLER LIST IS NOT GETTING APPENDED PROPERLY #
-                    ##########################################################################################################
-                    # Problem is with the read_from_train_model function. It is not updating the corrent number of trains on track
-                    
-                    # Want Software for all trains except for the second train dispatched
-                    # if self.counter != 2:
-                    self.create_and_add_train_controller_and_engineer_ui(True)
-                    # if not QApplication.instance():
-                    # app = QApplication(sys.argv)
-                    
-                    # sys.exit(app.exec())
-                    # self.current_train_id = train_id
-                    # self.update_signal_connections()  # Connect Signals for smaller classes from the TrainControllerUI file
-                    # print(f"Train ID List: {self.train_id_list}")
-                    # self.communicator2.train_id_list.emit(self.train_id_list)
+                        self.counter += 1
+                        self.train_counter += 1
                         
-                    # Only want Hardware for second Train that was dispatched
-                    # elif self.counter == 2:
-                    #     self.create_and_add_train_controller_and_engineer_ui(False)
-                    #     # self.current_train_id = train_id
-                    #     self.connect_signals_and_update_UI()
-                    #     self.read_from_train_model() 
-                    #     print(f"Train ID List: {self.train_id_list}")
-                    #     self.communicator2.train_id_list.emit(self.train_id_list)
+                        
+                        ##########################################################################################################
+                        # ERROR: WHEN THE SECOND TRAIN IS DISPATCHED, THE TRAIN CONTROLLER LIST IS NOT GETTING APPENDED PROPERLY #
+                        ##########################################################################################################
+                        # Problem is with the read_from_train_model function. It is not updating the corrent number of trains on track
+                        
+                        # Want Software for all trains except for the second train dispatched
+                        # if self.counter != 2:
+                        # for i in range((train_id + 1) - self.train_counter):
+                        #     self.create_and_add_train_controller_and_engineer_ui(True)
+                        self.create_and_add_train_controller_and_engineer_ui(True)
+                        # if not QApplication.instance():
+                        # app = QApplication(sys.argv)
+                        
+                        # sys.exit(app.exec())
+                        # self.current_train_id = train_id
+                        # self.update_signal_connections()  # Connect Signals for smaller classes from the TrainControllerUI file
+                        # print(f"Train ID List: {self.train_id_list}")
+                        # self.communicator2.train_id_list.emit(self.train_id_list)
+                            
+                        # Only want Hardware for second Train that was dispatched
+                        # elif self.counter == 2:
+                        #     self.create_and_add_train_controller_and_engineer_ui(False)
+                        #     # self.current_train_id = train_id
+                        #     self.connect_signals_and_update_UI()
+                        #     self.read_from_train_model() 
+                        #     print(f"Train ID List: {self.train_id_list}")
+                        #     self.communicator2.train_id_list.emit(self.train_id_list)
                 elif train_id < len(self.train_controller_list):
                     self.train_counter -= 1
                     self.remove_train_controller_and_engineer_ui(self.train_controller_list[0], self.train_engineer_list[0])
@@ -383,6 +387,7 @@ class TrainControllerShell:
         #             # # print(f"Commanded Speed: {commanded_speed[i]}")
 
     def update_commanded_authority(self, commanded_authority: list):
+        print(f"Commanded Authority in Train Controller Shell = {commanded_authority}")
         # I THINK THIS IS CORRECT                 
         if len(self.train_controller_list):
             if len(commanded_authority):
@@ -493,7 +498,7 @@ class TrainControllerShell:
                 if i < len(self.train_controller_list):
                     self.train_controller_list[i].temperature.current_temperature = actual_temperature[i]
                     self.train_controller_list[i].update_current_temp_display(actual_temperature[i])
-        print(f"Actual Temperature: {actual_temperature}")
+        # print(f"Actual Temperature: {actual_temperature}")
 
     def update_polarity(self, polarity: list):
         if len(self.train_controller_list):

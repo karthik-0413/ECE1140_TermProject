@@ -86,7 +86,7 @@ def calculate_train_speed(train_data, index):
         QCoreApplication.processEvents()  # Process events to update the UI
         time.sleep(time_step)
 
-    print(f"Updated Temperature: {train_data.cabin_temperature[index]:.2f}°F")
+    # print(f"Updated Temperature: {train_data.cabin_temperature[index]:.2f}°F")
     
     ### Temperature Calculation Starts Here ###
     
