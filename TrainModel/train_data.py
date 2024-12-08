@@ -48,13 +48,13 @@ class TrainData(QObject):
         self.commanded_speed_tc = []    # from Track Model, in km/h
         self.commanded_speed = []       # converted to m/s
         self.commanded_speed_UI = []    # converted to mph for UI
-        self.authority = []             # from Track Model, in blocks
-        self.commanded_authority = []   # Blocks
+        self.authority = []
+        self.commanded_authority = []
         self.service_brake = []
         self.exterior_light = []
         self.interior_light = []
         self.emergency_brake = []
-        self.beacon = []  # List to store beacon messages
+        self.beacon = []
 
         # Cabin Control Variables
         self.desired_temperature = []
@@ -83,7 +83,7 @@ class TrainData(QObject):
         self.static_empty_train_weight = []
 
         # Position Variables
-        self.current_position = []  # in meters
+        self.current_position = []
         self.grade = []
         self.elevation = []
         self.polarity = []
@@ -114,7 +114,6 @@ class TrainData(QObject):
 
     def initialize_train(self):
         """Initialize data for a new train."""
-        # Append default values for a new train
         self.cabin_temperature.append(78)  # Fahrenheit
         self.maximum_capacity.append(222)
         self.passenger_count.append(100)
@@ -139,19 +138,19 @@ class TrainData(QObject):
         self.commanded_speed.append(0)     # Convert km/h to m/s
         self.commanded_speed_UI.append(0)  # Convert km/h to mph
         self.authority.append(20)           # authority in blocks
-        self.commanded_authority.append(20) # Blocks
+        self.commanded_authority.append(20)
         self.service_brake.append(False)
         self.exterior_light.append(False)
         self.interior_light.append(False)
         self.emergency_brake.append(False)
-        self.beacon.append("")  # Initialize beacon message
+        self.beacon.append("")
 
         # Cabin Control Variables
         self.desired_temperature.append(76)
         self.train_left_door.append(False)
         self.train_right_door.append(False)
         self.advertisement.append("Picture1")
-        self.passenger_boarding.append(0)  # Initialize to 0
+        self.passenger_boarding.append(0)
 
         # Variables for the buttons
         self.interior_light_on.append(False)
@@ -161,19 +160,19 @@ class TrainData(QObject):
         self.passenger_emergency_brake.append(False)
 
         # Added variables for dynamic information
-        self.current_acceleration.append(0.0)  # m/s^2
+        self.current_acceleration.append(0.0)
         self.available_seats.append(self.maximum_capacity[-1] - self.passenger_count[-1])
-        self.current_train_weight.append(40.9)  # tons
+        self.current_train_weight.append(40.9)
 
         # Variables for static information
         self.static_cars.append(1)
-        self.static_length.append(self.train_length[-1])  # meters
-        self.static_width.append(self.train_width[-1])    # meters
-        self.static_height.append(self.train_height[-1])  # meters
-        self.static_empty_train_weight.append(40.9)       # tons
+        self.static_length.append(self.train_length[-1])
+        self.static_width.append(self.train_width[-1])
+        self.static_height.append(self.train_height[-1])
+        self.static_empty_train_weight.append(40.9)
 
         # Position Variables
-        self.current_position.append(0.0)  # meters
+        self.current_position.append(0.0)
         self.grade.append(0.0)
         self.elevation.append(0.0)
         self.polarity.append(True)
@@ -184,7 +183,7 @@ class TrainData(QObject):
         self.signal_failure.append(False)
 
         # Dispatch Control
-        self.dispatch_train.append(True)  # Set to True to simulate a dispatched train
+        self.dispatch_train.append(True)
 
         # Initialize previous door states
         self.previous_left_door_open.append(False)
@@ -192,20 +191,7 @@ class TrainData(QObject):
 
     def update_train_count(self, new_train_count):
         """Update the number of trains based on the count received from the CTC."""
-        if new_train_count > self.train_count:
-            # Add new trains
-            for _ in range(new_train_count - self.train_count):
-                self.initialize_train()
-        elif new_train_count < self.train_count:
-            # Remove trains from the left (earliest trains)
-            for _ in range(self.train_count - new_train_count):
-                self.remove_earliest_train()
-        # Update the train count
-        self.train_count = new_train_count
-        # Emit data changed signal
-        self.data_changed.emit()
-        # Send current train count to Train Controller
-        self.tc_communicate.train_count_signal.emit(self.train_count)
+        pass  #changed12/7
 
     def remove_earliest_train(self):
         """Remove data for the first train (front of the list)."""
@@ -288,7 +274,6 @@ class TrainData(QObject):
 
     def read_from_trainController_trackModel(self):
         """Connect incoming signals from Train Controller and Track Model."""
-        # Connect incoming signals from Train Controller
         self.tc_communicate.power_command_signal.connect(self.set_power_command)
         self.tc_communicate.service_brake_command_signal.connect(self.set_service_brake)
         self.tc_communicate.emergency_brake_command_signal.connect(self.set_emergency_brake)
@@ -318,7 +303,6 @@ class TrainData(QObject):
             # Add new trains
             for _ in range(ctc_train_count - current_train_count):
                 self.initialize_train()
-                # self.commanded_speed_tc.append(30)  # km/h from Track Model
         elif ctc_train_count < current_train_count:
             # Remove earliest trains
             for _ in range(current_train_count - ctc_train_count):
@@ -342,7 +326,6 @@ class TrainData(QObject):
         # # # print power_list for debugging
         # # print("Power Command List in Train Model:", power_list)
         if len(power_list) < max(1, self.train_count):
-            # Ensure the list is long enough
             power_list = power_list + [0] * (max(1, self.train_count) - len(power_list))
         self.commanded_power = power_list
         self.data_changed.emit()
@@ -357,10 +340,6 @@ class TrainData(QObject):
 
     def set_emergency_brake(self, state_list: list):
         """Handle emergency brake signals from Train Controller."""
-        # if True in state_list:
-        # # print("Emergency Brake List in Train Model:", state_list)
-            # self.passenger_emergency_brake = state_list
-        # # print("Emergency Brake List in Train Model:", state_list)
         if len(state_list) < max(1, self.train_count):
             state_list = state_list + [False] * (max(1, self.train_count) - len(state_list))
         self.emergency_brake = state_list
@@ -517,11 +496,6 @@ class TrainData(QObject):
 
         # After updating all trains, emit updated lists to Train Controller and Track Model
         self.write_to_trainController_trackModel()
-
-        # After emitting the data, reset passenger_emergency_brake entries
-        # for index in range(self.train_count):
-        #     if self.passenger_emergency_brake[index] and self.current_speed[index] == 0:
-        #         self.passenger_emergency_brake[index] = False
 
         # Emit data_changed signal
         self.data_changed.emit()
