@@ -200,7 +200,7 @@ class PowerCommand(QObject):
         
         
     def update_power_command(self, current_velocity: float, desired_velocity: float, operation_mode: int = 0):
-        # print(f"Current Speed: {current_velocity:.2f} m/s, Desired Speed: {desired_velocity:.2f} m/s")
+        print(f"Current Speed: {current_velocity:.2f} m/s, Desired Speed: {desired_velocity:.2f} m/s in update_power_command")
 
         if self.module == 1:
             if self.brake_status.station_auto_mode == True and operation_mode == 0:
@@ -211,13 +211,14 @@ class PowerCommand(QObject):
                 if self.brake_status.reaching_station:
                     self.power_command = 0
                     self.power_command_signal.emit(self.power_command)
+                    print("Reaching Station")
                     self.brake_status.apply_service_brake()
                     if current_velocity == 0.0:
                         self.brake_status.no_apply_service_brake()
                         self.brake_status.reaching_station = False
                 
                 elif self.brake_status.entered_lower == True:
-                    # # print("Entered Lower")
+                    # print("Entered Lower")
                     self.power_command = 0
                     self.power_command_signal.emit(self.power_command)
                     self.brake_status.apply_service_brake()
@@ -246,13 +247,21 @@ class PowerCommand(QObject):
                     # if current_velocity == 0.0:
                     #     self.brake_status.no_apply_emergency_brake()
                     
-                elif round(desired_velocity, 2) == round(current_velocity, 2):
+                elif (desired_velocity - current_velocity) < 0.1:
                     self.power_command = 0
+                    self.power_command_signal.emit(self.power_command)
                     # Put Brake Status has OFF
                     # self.brake_status.no_apply_service_brake()
-                    self.power_command_signal.emit(self.power_command)
+                    # self.brake_status.no_apply_emergency_brake()
+                    
+                # elif round(desired_velocity, 2) == round(current_velocity, 2):
+                #     self.power_command = 0
+                #     # Put Brake Status has OFF
+                #     # self.brake_status.no_apply_service_brake()
+                #     self.power_command_signal.emit(self.power_command)
                     
                 elif current_velocity > desired_velocity:
+                    print("Current Speed is greater than Desired Speed")
                     self.power_command = 0
                     self.power_command_signal.emit(self.power_command)
                     # Slow down until it reaches desired velocity
@@ -262,7 +271,8 @@ class PowerCommand(QObject):
                         self.brake_status.no_apply_service_brake()
                     
                 elif current_velocity < desired_velocity:
-                    # self.brake_status.no_apply_service_brake()
+                    # if self.brake_status.driver_service_brake_command and not self.brake_status.manual_driver_service_brake_command:
+                        # self.brake_status.no_apply_service_brake()
                     # if self.module == 1:
                     # self.brake_status.no_apply_service_brake()
                     # # print(f"Desired Speed: {desired_velocity:.2f} m/s, Current Speed: {current_velocity:.2f} m/s")
@@ -442,7 +452,8 @@ class SpeedControl(QObject):
             # self.brake_status.driver_brake_status = False
             # self.brake_status.driver_service_brake_command = False
             # self.brake_status.driver_emergency_brake_command = False
-            # self.communicator.passenger_brake_command_signal.emit(False)    
+            # self.communicator.passenger_brake_command_signal.emit(False)  
+        
             
         if self.brake_status.driver_service_brake_command:
             self.prev_service_brake = True
@@ -450,13 +461,13 @@ class SpeedControl(QObject):
         if self.brake_status.driver_emergency_brake_command:
             self.prev_emergency_brake = True
             
-        if not self.brake_status.driver_service_brake_command:
+        if not self.brake_status.driver_service_brake_command and self.operation_mode == 0:
             self.brake_status.no_apply_service_brake()
             if self.prev_service_brake:
                 self.desired_velocity = speed
                 self.prev_service_brake = False
                 
-        if not self.brake_status.driver_emergency_brake_command:
+        if not self.brake_status.driver_emergency_brake_command and self.operation_mode == 0:
             self.brake_status.no_apply_emergency_brake()
             if self.prev_emergency_brake:
                 self.desired_velocity = speed
@@ -474,9 +485,24 @@ class SpeedControl(QObject):
             
         # if self.brake_status.driver_service_brake_command and speed == 0.0:
         #     self.brake_status.no_apply_service_brake()
+        
+        self.find_max_speed()
             
         self.current_velocity = speed
-        self.power_class.update_power_command(self.current_velocity, self.desired_velocity)
+        if speed > self.desired_velocity:
+            self.brake_status.apply_service_brake()
+            print(f"Current Speed: {self.current_velocity:.2f} m/s, Desired Speed: {self.desired_velocity:.2f} m/s in handle_current_velocity")
+            self.power_class.power_command = 0.0
+            if self.operation_mode == 0:
+                self.power_class.update_power_command(self.current_velocity, self.desired_velocity, 0)
+            elif self.operation_mode == 1:
+                self.power_class.update_power_command(self.current_velocity, self.desired_velocity, 1)
+        elif speed < self.desired_velocity:
+            self.brake_status.no_apply_service_brake()
+            if self.operation_mode == 0:
+                self.power_class.update_power_command(self.current_velocity, self.desired_velocity, 0)
+            elif self.operation_mode == 1:
+                self.power_class.update_power_command(self.current_velocity, self.desired_velocity, 1)
         
         if self.power_class.power_command == 0.0 and self.brake_status.driver_service_brake_command and self.current_velocity == 0.0:
             self.desired_velocity = 0
@@ -610,7 +636,7 @@ class SpeedControl(QObject):
             if (self.desired_velocity) > self.max_speed:
                 self.desired_velocity = self.max_speed
                     
-            self.power_class.update_power_command(self.current_velocity, self.desired_velocity, 0)
+            self.power_class.update_power_command(self.current_velocity, self.desired_velocity)
             self.power_class.power_command_signal.emit(self.power_class.power_command)
             
             
@@ -820,7 +846,10 @@ class Position(QObject):
             # print(f"Commanded Authority: {self.commanded_authority}")
         else:
             self.commanded_authority = 0
-        self.commanded_authority_signal.emit(self.commanded_authority)
+        if authority == 1:
+            self.commanded_authority_signal.emit(0)
+        else:
+            self.commanded_authority_signal.emit(self.commanded_authority)
         
     # Connect function for the Communicate class
     def handle_polarity_change(self, polarity: bool):
@@ -830,7 +859,7 @@ class Position(QObject):
             if self.commanded_authority >= 1:
                 self.commanded_authority -= 1
                 # # print(f"Commanded authority: {self.commanded_authority}")
-                self.commanded_authority_signal.emit(self.commanded_authority)
+                # self.commanded_authority_signal.emit(self.commanded_authority)
                 if self.commanded_authority == 0:
                     self.accept_authority = True
                     self.commanded_authority_signal.emit(0)
@@ -931,8 +960,6 @@ class Position(QObject):
             self.timer = QTimer(self)
             self.timer.timeout.connect(self.close_doors)
             self.timer.start(60000)
-            
-            # QTimer.singleShot(60000, self.close_doors)
             
         elif self.line == 'Red':
             if "Left" in self.red_station_door[self.current_block] and  "Right" not in self.red_station_door[self.current_block]:
@@ -1618,12 +1645,14 @@ class TrainControllerUI(QWidget):
         self.manual_button = QPushButton("Manual")
         self.manual_button.setStyleSheet("margin-top: 10px; margin-left: 10px; background-color: gray; color: white; max-width: 100px; border-radius: 5px; padding-top: 10px; padding-bottom: 10px; border: 2px solid black;")
         self.manual_button.clicked.connect(self.send_manual_mode)
+        self.manual_button.setDisabled(self.doors.left_door or self.doors.right_door)
         main_grid.addWidget(self.manual_button, 5, 0)
 
         # AUTOMATIC MODE BUTTON
         self.automatic_button = QPushButton("Automatic")
         self.automatic_button.setStyleSheet("margin-top: 10px; margin-left: 10px; background-color: green; color: white; max-width: 100px; border-radius: 5px; padding-top: 10px; padding-bottom: 10px; border: 2px solid black;")
         self.automatic_button.clicked.connect(self.send_automatic_mode)
+        self.automatic_button.setDisabled(self.doors.left_door or self.doors.right_door)
         main_grid.addWidget(self.automatic_button, 6, 0)
         
         
@@ -1705,17 +1734,25 @@ class TrainControllerUI(QWidget):
         
     def update_left_door(self, door_status: bool):
         if door_status:
+            self.manual_button.setDisabled(True)
+            self.automatic_button.setDisabled(True)
             self.left_door_status.setText("OPEN")
             self.left_door_status.setStyleSheet("background-color: green; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
         else:
+            self.manual_button.setDisabled(False)
+            self.automatic_button.setDisabled(False)
             self.left_door_status.setText("CLOSE")
             self.left_door_status.setStyleSheet("background-color: red; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
             
     def update_right_door(self, door_status: bool):
         if door_status:
+            self.manual_button.setDisabled(True)
+            self.automatic_button.setDisabled(True)
             self.right_door_status.setText("OPEN")
             self.right_door_status.setStyleSheet("background-color: green; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
         else:
+            self.manual_button.setDisabled(False)
+            self.automatic_button.setDisabled(False)
             self.right_door_status.setText("CLOSE")
             self.right_door_status.setStyleSheet("background-color: red; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
         
@@ -1814,7 +1851,8 @@ class TrainControllerUI(QWidget):
         if float(self.setpoint_speed_edit.text()) * 0.44704 < self.speed_control.desired_velocity:
             self.brake_class.entered_lower = True
             self.speed_control.desired_velocity = float(self.setpoint_speed_edit.text()) * 0.44704
-            self.power_class.update_power_command(self.speed_control.current_velocity, self.speed_control.desired_velocity)
+            self.speed_control.update_setpoint_speed_calculations(float(self.setpoint_speed_edit.text()) * 0.44704)
+            # self.power_class.update_power_command(self.speed_control.current_velocity, self.speed_control.desired_velocity)
         else:
             self.speed_control.desired_velocity = float(self.setpoint_speed_edit.text()) * 0.44704
             
@@ -1823,6 +1861,8 @@ class TrainControllerUI(QWidget):
     def send_manual_mode(self):
         # Enable setpoint speed input
         self.setpoint_speed_edit.setEnabled(True)
+        # self.manual_button.setDisabled(self.doors.left_door or self.doors.right_door)
+        # self.automatic_button.setDisabled(self.doors.left_door or self.doors.right_door)
         self.speed_control.set_manual_mode()
         self.manual_button.setStyleSheet("margin-top: 10px; margin-left: 10px; background-color: green; color: white; max-width: 100px; border-radius: 5px; padding-top: 10px; padding-bottom: 10px; border: 2px solid black;")
         self.automatic_button.setStyleSheet("margin-top: 10px; margin-left: 10px; background-color: gray; color: white; max-width: 100px; border-radius: 5px; padding-top: 10px; padding-bottom: 10px; border: 2px solid black;")
@@ -1830,6 +1870,8 @@ class TrainControllerUI(QWidget):
     def send_automatic_mode(self):
         # Disable setpoint speed input
         self.setpoint_speed_edit.setEnabled(False)
+        # self.manual_button.setDisabled(self.doors.left_door or self.doors.right_door)
+        # self.automatic_button.setDisabled(self.doors.left_door or self.doors.right_door)
         # self.setpoint_speed_edit.clear()
         self.speed_control.set_auto_mode()
         self.automatic_button.setStyleSheet("margin-top: 10px; margin-left: 10px; background-color: green; color: white; max-width: 100px; border-radius: 5px; padding-top: 10px; padding-bottom: 10px; border: 2px solid black;")
