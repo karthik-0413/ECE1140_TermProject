@@ -788,6 +788,7 @@ class Position(QObject):
         self.repeat = False
         self.accept_authority = False
         self.line = line
+        self.counter = 0
         
         # Variables needed for the Track Layouts (GREEN LINE)
         self.green_station = []
@@ -842,24 +843,29 @@ class Position(QObject):
         # # When the commanded authority goes from 1 -> 0, this print statement is not displayed, but it is displayed for 166 blocks
       
         if authority is not None:
+            self.counter += 1
+            if self.counter == 1:
+                self.commanded_authority_signal.emit(authority - 1)
             self.commanded_authority = authority - 1
             # print(f"Commanded Authority: {self.commanded_authority}")
         else:
             self.commanded_authority = 0
-        if authority == 1:
-            self.commanded_authority_signal.emit(0)
-        else:
-            self.commanded_authority_signal.emit(self.commanded_authority)
+            
+        # if self.counter == 1:
+        #     self.commanded_authority_signal.emit(authority)
+            
+        # self.commanded_authority_signal.emit(self.commanded_authority)
         
     # Connect function for the Communicate class
     def handle_polarity_change(self, polarity: bool):
         if polarity != self.polarity:
             self.polarity = polarity
+            # self.change_authority()
             # self.speed_control.update_speed_limit(self.green_speed_limit[self.current_block])
             if self.commanded_authority >= 1:
                 self.commanded_authority -= 1
                 # # print(f"Commanded authority: {self.commanded_authority}")
-                # self.commanded_authority_signal.emit(self.commanded_authority)
+                self.commanded_authority_signal.emit(self.commanded_authority)
                 if self.commanded_authority == 0:
                     self.accept_authority = True
                     self.commanded_authority_signal.emit(0)
@@ -1245,7 +1251,7 @@ class TrainControllerUI(QWidget):
         ###############################
         
         # Set the window title and background color
-        self.setWindowTitle("Train Controller")
+        # self.setWindowTitle("Train Controller")
         self.setStyleSheet("background-color: lightgray;")
 
         # Main Layout

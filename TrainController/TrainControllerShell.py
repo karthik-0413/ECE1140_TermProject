@@ -264,6 +264,7 @@ class TrainControllerShell:
         self.train_controller_list.append(new_train_controller_ui)
         # print(f"Size of Train Controller List: {len(self.train_controller_list)}")
         self.train_engineer_list.append(new_train_engineer_ui)
+        self.train_controller_list[self.train_counter - 1].setWindowTitle("Train Controller " + str(self.train_counter))
         self.train_controller_list[self.train_counter - 1].show()
         self.train_engineer_list[self.train_counter - 1].show()
         # QApplication.processEvents()
