@@ -2151,8 +2151,8 @@ class wayside_ui_red_line(object):
                                 self.copy_table_widget_item(temp_text_item, entry)
 
                                 # Set item text (sugg speed)
-                                entry.setText(f'Block {block} sugg speed set to {round(self.ui_sugg_speed[i] / 1.609)} mph\n'
-                                              f'Block {block} cmd speed set to {round(self.ui_cmd_speed[i] / 1.609)} mph')
+                                entry.setText(f'Block {block} sugg speed set to {f'{round(self.ui_sugg_speed[i] / 1.609)} mph' if self.ui_sugg_speed[i] != None else 'None'}\n'
+                                              f'Block {block} cmd  speed set to {f'{round(self.ui_cmd_speed[i] / 1.609)} mph' if self.ui_cmd_speed[i] != None else 'None'}')
                                 
                                 # Add log item
                                 self.add_log_item(entry)
