@@ -1,5 +1,6 @@
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtCore import QObject
+import csv
 
 class Ui_TrackModel(QObject):
         def __init__(self):
@@ -30,13 +31,16 @@ class Ui_TrackModel(QObject):
                 self.heater_status = False
                 self.temperature = 0
 
+                self.greenCoordinates = []
+
         def update_block_table(self):
-                self.update_functional_list()
-                self.update_occupancy_list()
-                self.update_switch_list()
-                self.update_crossing_list()
-                self.update_lights_list()
-                self.update_num_people_at_station_list()
+                # self.update_functional_list()
+                # self.update_occupancy_list()
+                # self.update_switch_list()
+                # self.update_crossing_list()
+                # self.update_lights_list()
+                # self.update_num_people_at_station_list()
+                pass
 
         def update_block_info_table(self):
                 selectedItems = self.blockTable.selectedItems()
@@ -74,62 +78,78 @@ class Ui_TrackModel(QObject):
         def update_temp(self):
                 self.temperature = self.tempStepper.value()   
 
-        def update_functional_list(self):
-                """updates the ui with the functional status of each block"""
-                for i in range(0, len(self.functional_list)):
-                        if self.functional_list[i] == 1:
-                                self.blockTable.setItem(i, 0, QtWidgets.QTableWidgetItem("Functional"))
+        # def update_functional_list(self):
+        #         """updates the ui with the functional status of each block"""
+        #         for i in range(0, len(self.functional_list)):
+        #                 if self.functional_list[i] == 1:
+        #                         self.blockTable.setItem(i, 0, QtWidgets.QTableWidgetItem("Functional"))
 
-                        elif self.functional_list[i] == 2:
-                                self.blockTable.setItem(i, 0, QtWidgets.QTableWidgetItem("Circuit Failure"))
+        #                 elif self.functional_list[i] == 2:
+        #                         self.blockTable.setItem(i, 0, QtWidgets.QTableWidgetItem("Circuit Failure"))
 
-                        elif self.functional_list[i] == 3:
-                                self.blockTable.setItem(i, 0, QtWidgets.QTableWidgetItem("Power Failure"))
+        #                 elif self.functional_list[i] == 3:
+        #                         self.blockTable.setItem(i, 0, QtWidgets.QTableWidgetItem("Power Failure"))
                         
-                        elif self.functional_list[i] == 4:
-                                self.blockTable.setItem(i, 0, QtWidgets.QTableWidgetItem("Rail Failure"))
-                        
-        def update_occupancy_list(self):
-                for i in range(0, len(self.occupancy_list)):
-                        if self.occupancy_list[i] == 1:
-                                self.blockTable.setItem(i, 1, QtWidgets.QTableWidgetItem("Occupied"))
-                        else:
-                                self.blockTable.setItem(i, 1, QtWidgets.QTableWidgetItem("Vacant"))
-
-        def update_switch_list(self):
-                for switch_state in self.switch_list:        
-                        self.blockTable.setItem(switch_state[1], 2, QtWidgets.QTableWidgetItem(switch_state[0]))
-
-        def update_crossing_list(self):
-                for crossing_state in self.crossing_list:
-                        self.blockTable.setItem(crossing_state[1], 3, QtWidgets.QTableWidgetItem(crossing_state[0])) # open or closed
-
-        def update_lights_list(self):
-                for light_state in self.lights_list:
-                        self.blockTable.setItem(light_state[1], 4, QtWidgets.QTableWidgetItem(None))
-                        self.blockTable.item(light_state[1], 4).setBackground(QtGui.QColor(str(light_state[0]))) # red or green
-
-        def update_num_people_at_station_list(self):
-                for people in self.num_people_at_station_list:
-                        self.blockTable.setItem(people[1], 5, QtWidgets.QTableWidgetItem(str(people[0])))
+        #                 elif self.functional_list[i] == 4:
+        #                         self.blockTable.setItem(i, 0, QtWidgets.QTableWidgetItem("Rail Failure"))
                 
-        def initialize_block_table(self, num_blocks: int):
-                self.blockTable.setRowCount(num_blocks)
-                # glorious king zach changing the headers of the rows
-                labels = []
-                for i in range(num_blocks):
-                        if i == 0:
-                                labels.append("Yard")
+                        
+        # def update_occupancy_list(self):
+        #         for i in range(0, len(self.occupancy_list)):
+        #                 if self.occupancy_list[i] == 1:
+        #                         self.blockTable.setItem(i, 1, QtWidgets.QTableWidgetItem("Occupied"))
+        #                 else:
+        #                         self.blockTable.setItem(i, 1, QtWidgets.QTableWidgetItem("Vacant"))
 
-                        else:
-                                labels.append(f"{i}")
+        # def update_switch_list(self):
+        #         for switch_state in self.switch_list:        
+        #                 self.blockTable.setItem(switch_state[1], 2, QtWidgets.QTableWidgetItem(switch_state[0]))
 
-                self.blockTable.setVerticalHeaderLabels(labels)
+        # def update_crossing_list(self):
+        #         for crossing_state in self.crossing_list:
+        #                 self.blockTable.setItem(crossing_state[1], 3, QtWidgets.QTableWidgetItem(crossing_state[0])) # open or closed
+
+        # def update_lights_list(self):
+        #         for light_state in self.lights_list:
+        #                 self.blockTable.setItem(light_state[1], 4, QtWidgets.QTableWidgetItem(None))
+        #                 self.blockTable.item(light_state[1], 4).setBackground(QtGui.QColor(str(light_state[0]))) # red or green
+
+        # def update_num_people_at_station_list(self):
+        #         for people in self.num_people_at_station_list:
+        #                 self.blockTable.setItem(people[1], 5, QtWidgets.QTableWidgetItem(str(people[0])))
+                
+        # def initialize_block_table(self, num_blocks: int):
+        #         self.blockTable.setRowCount(num_blocks)
+        #         # glorious king zach changing the headers of the rows
+        #         labels = []
+        #         for i in range(num_blocks):
+        #                 if i == 0:
+        #                         labels.append("Yard")
+
+        #                 else:
+        #                         labels.append(f"{i}")
+
+        #         self.blockTable.setVerticalHeaderLabels(labels)
+
+        def initialize_map(self):
+                self.blockTable.setColumnCount(35)
+                self.blockTable.setRowCount(40)
+                self.blockTable.horizontalHeader().setDefaultSectionSize(25)
+                self.blockTable.verticalHeader().setDefaultSectionSize(30)
+                for i in range(35):
+                        for j in range(40):
+                                self.blockTable.setItem(j, i, QtWidgets.QTableWidgetItem())
+                                self.blockTable.item(j, i).setBackground(QtGui.QColor("white"))
+                for coord in self.greenCoordinates:
+                        num, col, row = coord
+                        self.blockTable.setItem(row, col, QtWidgets.QTableWidgetItem(str(num)))
+                        self.blockTable.item(row, col).setBackground(QtGui.QColor("green"))
+
 
         def setupUi(self, TrackModel):
                 TrackModel.setObjectName("TrackModel")
                 TrackModel.setWindowModality(QtCore.Qt.WindowModality.WindowModal)
-                TrackModel.resize(890, 859)
+                TrackModel.resize(890, 860)
                 sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Preferred)
                 sizePolicy.setHorizontalStretch(0)
                 sizePolicy.setVerticalStretch(0)
@@ -262,28 +282,6 @@ class Ui_TrackModel(QObject):
                 self.gridLayout_14.addWidget(self.tab1Label, 0, 0, 2, 4)
                 self.blockTable = QtWidgets.QTableWidget(parent=self.tab)
                 self.blockTable.setObjectName("blockTable")
-                self.blockTable.setColumnCount(10)
-                self.blockTable.setRowCount(0)
-                item = QtWidgets.QTableWidgetItem()
-                self.blockTable.setHorizontalHeaderItem(0, item)
-                item = QtWidgets.QTableWidgetItem()
-                self.blockTable.setHorizontalHeaderItem(1, item)
-                item = QtWidgets.QTableWidgetItem()
-                self.blockTable.setHorizontalHeaderItem(2, item)
-                item = QtWidgets.QTableWidgetItem()
-                self.blockTable.setHorizontalHeaderItem(3, item)
-                item = QtWidgets.QTableWidgetItem()
-                self.blockTable.setHorizontalHeaderItem(4, item)
-                item = QtWidgets.QTableWidgetItem()
-                self.blockTable.setHorizontalHeaderItem(5, item)
-                item = QtWidgets.QTableWidgetItem()
-                self.blockTable.setHorizontalHeaderItem(6, item)
-                item = QtWidgets.QTableWidgetItem()
-                self.blockTable.setHorizontalHeaderItem(7, item)
-                item = QtWidgets.QTableWidgetItem()
-                self.blockTable.setHorizontalHeaderItem(8, item)
-                item = QtWidgets.QTableWidgetItem()
-                self.blockTable.setHorizontalHeaderItem(9, item)
                 self.gridLayout_14.addWidget(self.blockTable, 3, 0, 2, 1)
                 self.tabs.addTab(self.tab, "")
                 self.tab_2 = QtWidgets.QWidget()
@@ -434,13 +432,13 @@ class Ui_TrackModel(QObject):
 
                 # self.blockTable.setVerticalHeaderLabels(labels)
 
-                headers = ["Functional", "Occupied", "Switch State", "Crossing State", "Light State", "People at Station"]
-                self.blockTable.setColumnCount(len(headers))
-                self.blockTable.setHorizontalHeaderLabels(headers)
+                # headers = ["Functional", "Occupied", "Switch State", "Crossing State", "Light State", "People at Station"]
+                # self.blockTable.setColumnCount(len(headers))
+                # self.blockTable.setHorizontalHeaderLabels(headers)
 
         def retranslateUi(self, TrackModel):
                 _translate = QtCore.QCoreApplication.translate
-                TrackModel.setWindowTitle(_translate("TrackModel", "MainWindow"))
+                TrackModel.setWindowTitle(_translate("TrackModel", "Track Model"))
                 self.murphyControls.setTitle(_translate("TrackModel", "Murphy\'s Controls"))
                 self.circuitFailureLabel.setText(_translate("TrackModel", "Circuit Failure: Block"))
                 self.breakStatus1.setText(_translate("TrackModel", "BREAK"))
@@ -453,26 +451,26 @@ class Ui_TrackModel(QObject):
                 self.tempLabel.setText(_translate("TrackModel", "Rail Temperature"))
                 self.uploadButton.setText(_translate("TrackModel", "Upload New Layout"))
                 self.tab1Label.setText(_translate("TrackModel", "Track Layout"))
-                item = self.blockTable.horizontalHeaderItem(0)
-                item.setText(_translate("TrackModel", "Line"))
-                item = self.blockTable.horizontalHeaderItem(1)
-                item.setText(_translate("TrackModel", "Section"))
-                item = self.blockTable.horizontalHeaderItem(2)
-                item.setText(_translate("TrackModel", "Number"))
-                item = self.blockTable.horizontalHeaderItem(3)
-                item.setText(_translate("TrackModel", "Length"))
-                item = self.blockTable.horizontalHeaderItem(4)
-                item.setText(_translate("TrackModel", "Grade"))
-                item = self.blockTable.horizontalHeaderItem(5)
-                item.setText(_translate("TrackModel", "Speed Limit"))
-                item = self.blockTable.horizontalHeaderItem(6)
-                item.setText(_translate("TrackModel", "Infrastructure"))
-                item = self.blockTable.horizontalHeaderItem(7)
-                item.setText(_translate("TrackModel", "Elevation"))
-                item = self.blockTable.horizontalHeaderItem(8)
-                item.setText(_translate("TrackModel", "Cumulative Elevation"))
-                item = self.blockTable.horizontalHeaderItem(9)
-                item.setText(_translate("TrackModel", "Occupancy"))
+                # item = self.blockTable.horizontalHeaderItem(0)
+                # item.setText(_translate("TrackModel", "0"))
+                # item = self.blockTable.horizontalHeaderItem(1)
+                # item.setText(_translate("TrackModel", "1"))
+                # item = self.blockTable.horizontalHeaderItem(2)
+                # item.setText(_translate("TrackModel", "2"))
+                # item = self.blockTable.horizontalHeaderItem(3)
+                # item.setText(_translate("TrackModel", "3"))
+                # item = self.blockTable.horizontalHeaderItem(4)
+                # item.setText(_translate("TrackModel", "4"))
+                # item = self.blockTable.horizontalHeaderItem(5)
+                # item.setText(_translate("TrackModel", "5"))
+                # item = self.blockTable.horizontalHeaderItem(6)
+                # item.setText(_translate("TrackModel", "6"))
+                # item = self.blockTable.horizontalHeaderItem(7)
+                # item.setText(_translate("TrackModel", "7"))
+                # item = self.blockTable.horizontalHeaderItem(8)
+                # item.setText(_translate("TrackModel", "8"))
+                # item = self.blockTable.horizontalHeaderItem(9)
+                # item.setText(_translate("TrackModel", "9"))
                 self.tabs.setTabText(self.tabs.indexOf(self.tab), _translate("TrackModel", "Track Layout"))
                 item = self.passInfoTable.verticalHeaderItem(0)
                 item.setText(_translate("TrackModel", "Block 1"))

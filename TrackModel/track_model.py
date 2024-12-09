@@ -4,16 +4,16 @@ from PyQt6 import QtWidgets, QtCore, QtGui
 from PyQt6.QtCore import (QObject, pyqtSignal)
 
 
-# from TrackModel.track_model_ui import Ui_TrackModel
-# from TrackModel.TrackTrainCommunicate import TrackTrainComms as TrainComms
-# from TrackModel.WaysideTrackCommunicate import WaysideTrackComms as WaysideComms
+from TrackModel.track_model_ui import Ui_TrackModel
+from TrackModel.TrackTrainCommunicate import TrackTrainComms as TrainComms
+from TrackModel.WaysideTrackCommunicate import WaysideTrackComms as WaysideComms
 
-from track_model_ui import Ui_TrackModel
-from TrackTrainCommunicate import TrackTrainComms as TrainComms
-from WaysideTrackCommunicate import WaysideTrackComms as WaysideComms
+# from track_model_ui import Ui_TrackModel
+# from TrackTrainCommunicate import TrackTrainComms as TrainComms
+# from WaysideTrackCommunicate import WaysideTrackComms as WaysideComms
 
 class Block():
-    def __init__(self, line, section, number: int, length: float, grade: float, speedLimit: float, infrastructure: str, side, elevation: float, cumulativeElevation: float, polarity: bool):
+    def __init__(self, line, section, number: int, length: float, grade: float, speedLimit: float, infrastructure: str, side, elevation: float, cumulativeElevation: float, polarity: bool, table_column: int, table_row: int):
         self.line = line
         self.section = section
         self.number = number
@@ -27,6 +27,8 @@ class Block():
         self.polarity = polarity
         self.functional = True
         self.occupied = False
+        self.table_column = table_column
+        self.table_row = table_row
 
     # def checkFailure(ui) -> bool:
     #     return any(toggle.isChecked() for toggle in [ui.breakStatus1, ui.breakStatus2, ui.breakStatus3])
@@ -303,10 +305,11 @@ class track_model:
             for row in reader:
                 self.layout_data.append(row)
                 for row in self.layout_data:
-                    line, section, number, length, grade, speedLimit, infrastructure, side, elevation, cumulativeElevation, polarity = row[:11]
-                    temp_block = Block(line,section,int(number),float(length),float(grade),float(speedLimit),infrastructure,side,float(elevation),float(cumulativeElevation),int(polarity)
+                    line, section, number, length, grade, speedLimit, infrastructure, side, elevation, cumulativeElevation, polarity, table_column, table_row = row[:13]
+                    temp_block = Block(line,section,int(number),float(length),float(grade),float(speedLimit),infrastructure,side,float(elevation),float(cumulativeElevation),int(polarity),int(table_column),int(table_row)
                 )
                 self.all_blocks.append(temp_block)
+        self.initialize_coordinates()
         self.initialize_arrays()
         self.update_ui_list()
         # for block in self.all_blocks:
@@ -766,8 +769,13 @@ class track_model:
         self.ui.toggle_circuit_failure = temp_failures
         self.ui.toggle_power_failure = temp_failures
         self.ui.toggle_rail_failure = temp_failures
+
+    def initialize_coordinates(self):
+        for block in self.all_blocks:
+            self.ui.greenCoordinates.append([block.number,block.table_column, block.table_row])       
         
     def initialize_arrays(self):
+        self.ui.initialize_map()
         self.initialize_functional()
         self.initialize_occupancy()
         self.initialize_switches()
@@ -776,7 +784,7 @@ class track_model:
         self.initialize_people()
         self.initialize_failures()
         self.create_length_array()
-        self.ui.initialize_block_table(len(self.all_blocks))
+        
         
     # def updateBlockTable(self) -> None:
     #     blocks = self.all_blocks
