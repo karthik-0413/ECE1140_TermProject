@@ -558,21 +558,6 @@ class green_line_plc_2_class:
     write_signal_cmd_array = [0, 1, 0]
     write_crossing_cmd_array = [0]
 
-####################################################################################################
-#
-#                                         Write Function
-#
-####################################################################################################
-
-# Write to Wayside Shell
-# def write_to_wayside_shell():
-#     green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_cmd_speed.emit(write_cmd_speed_array)
-#     green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_cmd_authority.emit(write_cmd_authority_array)
-#     green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_switch_cmd.emit(write_switch_cmd_array)
-#     green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_signal_cmd.emit(write_signal_cmd_array)
-#     green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_crossing_cmd.emit(write_crossing_cmd_array[0])
-
-
 # Section Class
 class Section:
     
@@ -606,38 +591,6 @@ class Section:
             
         return False
 
-####################################################################################################
-#
-#                                         Main Execution
-#
-####################################################################################################
 
-# Establish connection to Wayside shell
-#green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_maintenance_switch_cmd.connect(read_maintenance_switches_handler)
-# green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_sugg_speed.connect(read_sugg_speed_handler)
-# green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_sugg_authority.connect(read_sugg_authority_handler)
-# green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_block_occupancy.connect(read_block_occupancy_handler)
 
-# while True:
 
-#     if sugg_speed_check and sugg_authority_check and block_occupancy_check:
-
-#         # Update block occupancies
-#         wayside.update_block_occupancies()
-
-#         # Perform computations based on block occupancies
-#         wayside.update_switch_cmd()
-#         wayside.update_signal_cmd()
-#         wayside.update_crossing_cmd()
-#         wayside.update_block_stop_go()
-#         wayside.update_cmd_speed()
-#         wayside.update_cmd_authority()
-        
-#         # Write commands to Wayside shell
-#         write_to_wayside_shell()
-
-#         # Reset checks
-# #        maintenance_switch_check = 0
-#         sugg_speed_check = 0
-#         sugg_authority_check = 0
-#         block_occupancy_check = 0

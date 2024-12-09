@@ -253,8 +253,8 @@ class wayside_shell_class:
     def green_line_plc_1_sugg_authority_handler(self):
         plc_1_sugg_authority = []
 
-        # Check if the sugg_speed_array is empty
-        if len(self.read_sugg_speed):
+        # Check if the sugg_authority_array is empty
+        if len(self.read_sugg_authority):
             for i in range(1, 33):
                 plc_1_sugg_authority.append(self.read_sugg_speed[i])
             plc_1_sugg_authority.append(self.read_sugg_speed[150])
@@ -269,7 +269,7 @@ class wayside_shell_class:
         plc_1_block_occupancy = []
 
         # Check if the sugg_speed_array is empty
-        if len(self.read_sugg_speed):
+        if len(self.read_block_occupancy):
             for i in range(1, 36):
                 plc_1_block_occupancy.append(self.read_block_occupancy[i])
             plc_1_block_occupancy.append(self.read_block_occupancy[150])
