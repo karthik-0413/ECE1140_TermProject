@@ -1,7 +1,7 @@
 import socket
 import time
 
-def send_data_to_pi(parameters, host='10.4.119.113', port=12345):
+def send_data_to_pi(parameters, host='10.4.37.226', port=12345):
     """
     Sends data to the Raspberry Pi server and handles responses.
     """
@@ -55,10 +55,10 @@ def send_data_to_pi(parameters, host='10.4.119.113', port=12345):
     finally:
         print("Client program has ended.")
 
-# Example usage
-if __name__ == "__main__":
-    parameters = [
-        17.0, 0.0, 0.0, 120000.0, 0.0, 0.0, 0.0, 7173.0, 15.0, 
-        True, False, False, False, False, False
-    ]
-    send_data_to_pi(parameters, host='10.4.119.113', port=12345)
+# # Example usage
+# if __name__ == "__main__":
+#     parameters = [
+#         1.0, 0.0, 0.0, 120000.0, 0.0, 0.0, 0.0, 7173.0, 15.0, 
+#         False, False, False, False, False, False, False
+#     ]
+#     send_data_to_pi(parameters, host='10.4.37.226', port=12345)

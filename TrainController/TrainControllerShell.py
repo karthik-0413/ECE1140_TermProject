@@ -149,7 +149,7 @@ class TrainControllerShell:
                     
                     # Want Software for all trains except for the second train dispatched
                     # if self.counter != 2:
-                    self.create_and_add_train_controller_and_engineer_ui(True)
+                    self.create_and_add_train_controller_and_engineer_ui(False)
                     # self.current_train_id = train_id
                     # self.update_signal_connections()  # Connect Signals for smaller classes from the TrainControllerUI file
                     print(f"Train ID List: {self.train_id_list}")
