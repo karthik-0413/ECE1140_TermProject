@@ -518,6 +518,7 @@ class wayside_shell_class:
 
         # CTC Office
         self.ctc_wayside_comm_object.block_occupancy_signal.emit(self.write_block_occupancy)
+        #print("Wayside block occupancy = ")
 
         # Track Model
         self.wayside_track_comm_object.commanded_speed_signal.emit(self.write_cmd_speed)
@@ -525,6 +526,7 @@ class wayside_shell_class:
         self.wayside_track_comm_object.switch_cmd_signal.emit(self.write_switch_cmd)
         self.wayside_track_comm_object.signal_cmd_signal.emit(self.write_signal_cmd)
         self.wayside_track_comm_object.crossing_cmd_signal.emit(self.write_crossing_cmd)
+
 
         ####################################
         #    Green Line Update UI

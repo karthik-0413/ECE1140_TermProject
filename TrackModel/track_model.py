@@ -135,7 +135,7 @@ class track_model:
 
     def handle_position_signal(self, positions: list):
         self.position_list = positions
-        # # print(f"received position: {self.position_list}")
+        # print(f"received position: {self.position_list}")
         self.set_train_occupancies()
         self.update_polarity_values()
 
@@ -323,18 +323,27 @@ class track_model:
         self.current_block.clear()
         for block in self.all_blocks:
             block.occupied = False
+
+        #print(f"Position List: {self.position_list}")
         for position_value in self.position_list:
+            #print(f"Position Value: {position_value}")
+            # Position value confirmed
             block_start = 0
             for i in range(len(self.default_length_array)):
                 block_end = block_start + self.default_length_array[i]
                 if (block_start <= position_value < block_end):
                     self.all_blocks[self.defaultGreenPath[i]].occupied = True
                     self.current_block.append(self.all_blocks[self.defaultGreenPath[i]].number)
-                else:
-                    self.all_blocks[self.defaultGreenPath[i]].occupied = False
+                #else:
+                    #self.all_blocks[self.defaultGreenPath[i]].occupied = False
                 block_start = block_end
+
         for block in self.all_blocks:
             self.occupancies.append(block.occupied)
+
+        # print(f"Occupancy locations: {[block.number for block in self.all_blocks if block.occupied == True]}")
+
+        
 
     def set_failure_occupancies(self):
         for i in range(len(self.all_blocks)):
@@ -577,7 +586,7 @@ class track_model:
                     # Set train commanded speeds to the wayside commanded speeds
                     self.cmd_speeds_train.append(self.cmd_speeds_wayside[self.current_block[i]])
 
-                    # print(f"Train Cmd Speed: {self.cmd_speeds_train[i]}")
+                    # print(f"Train Cmd Speed in Track Model: {self.cmd_speeds_train[i]}")  # This works perfectly fine
 
 ############################################################################################################
 #
