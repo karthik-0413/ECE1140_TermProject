@@ -1,3 +1,4 @@
+#trainController.py
 import time
 import json
 import sys
@@ -1780,12 +1781,10 @@ class TrainControllerUI(QWidget):
             
     def handle_interior_lights(self):
         if self.speed_control.operation_mode == 1:
-            print("Function called")
             if self.lights.manual_interior_lights:
-                print("Turning off interior lights")
                 self.lights.manual_turn_off_interior_lights()
             else:
-                print("Turning on interior lights")
+                # # print("Turning on interior lights")
                 self.lights.manual_turn_on_interior_lights()
             
     def handle_exterior_lights(self):
@@ -1906,8 +1905,8 @@ class TrainControllerUI(QWidget):
         self.communicator.service_brake_command_signal.emit(self.brake_class.driver_service_brake_command)
         self.communicator.emergency_brake_command_signal.emit(self.brake_class.driver_emergency_brake_command) 
         self.communicator.desired_temperature_signal.emit(self.temperature.desired_temperature)
-        self.communicator.exterior_lights_signal.emit(self.lights.interior_lights)
-        self.communicator.interior_lights_signal.emit(self.lights.exterior_lights)
+        self.communicator.exterior_lights_signal.emit([self.lights.interior_lights])
+        self.communicator.interior_lights_signal.emit([self.lights.exterior_lights])
         self.communicator.left_door_signal.emit(self.doors.left_door)
         self.communicator.right_door_signal.emit(self.doors.right_door)
         self.communicator.announcement_signal.emit(self.position.announcement)
