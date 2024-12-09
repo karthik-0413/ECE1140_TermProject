@@ -94,18 +94,7 @@ if __name__ == '__main__':
     tm_window = MainWindow(comm1, comm5, comm3)
     
     # Train Controller
-    doors = Doors()
-    tuning = Tuning()
-    brake_status = BrakeStatus(comm5)
-    power_class = PowerCommand(brake_status, tuning)
-    speed_control = SpeedControl(power_class, brake_status, comm5)
-    failure_modes = FailureModes(speed_control, power_class)
-    lights = Lights(speed_control)
-    temperature = Temperature()
-    position = Position(doors, failure_modes, speed_control, power_class, comm5, lights, brake_status, 'Green')
-    
-    tc_window = TrainControllerUI(comm5, comm6, doors, tuning, brake_status, power_class, speed_control, failure_modes, position, lights, temperature)
-    tc_shell_window = TrainControllerShell(comm5, tc_window, comm6)
+    tc_shell_window = TrainControllerShell(comm5, comm6)
 
     # Show all windows
     ctc_window.show()
