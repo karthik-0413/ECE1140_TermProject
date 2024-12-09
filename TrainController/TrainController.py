@@ -894,7 +894,7 @@ class Position(QObject):
                     if self.iterate == True:
                         current_index = self.green_default_path_blocks.index(self.current_block)
                         self.current_block = self.green_default_path_blocks[current_index + 1]
-                print(f"Current Block: {self.current_block}")
+                # print(f"Current Block: {self.current_block}")
                 # self.check_current_block()
                 self.check_block_underground()
                 # self.calculate_desired_speed()
