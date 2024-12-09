@@ -1679,7 +1679,7 @@ class TrainControllerUI(QWidget):
         # Call the update UI function to update the UI with the current values every 100ms
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_UI)
-        self.timer.start(100)
+        self.timer.start(10)
         
         
         
@@ -1780,12 +1780,9 @@ class TrainControllerUI(QWidget):
             
     def handle_interior_lights(self):
         if self.speed_control.operation_mode == 1:
-            print("Function called")
             if self.lights.manual_interior_lights:
-                print("Turning off interior lights")
                 self.lights.manual_turn_off_interior_lights()
             else:
-                print("Turning on interior lights")
                 self.lights.manual_turn_on_interior_lights()
             
     def handle_exterior_lights(self):

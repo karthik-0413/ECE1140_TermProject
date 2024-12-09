@@ -113,16 +113,16 @@ class TrainControllerShell:
         
         exterior_lights = [train_controller.lights.exterior_lights for train_controller in self.train_controller_list]
         manual_exterior_lights = [train_controller.lights.manual_exterior_lights for train_controller in self.train_controller_list]
-        for i in range(len(self.train_controller_list)):
-            if manual_exterior_lights[i] or exterior_lights[i]:
-                exterior_lights[i] = True
+        
+        exterior_lights = [e or m for e, m in zip(exterior_lights, manual_exterior_lights)]
+                
         self.communicator.exterior_lights_signal.emit(exterior_lights)
         
         interior_lights = [train_controller.lights.interior_lights for train_controller in self.train_controller_list]
         manual_interior_lights = [train_controller.lights.manual_interior_lights for train_controller in self.train_controller_list]
-        for i in range(len(self.train_controller_list)):
-            if manual_interior_lights[i] or interior_lights[i]:
-                interior_lights[i] = True
+        
+        interior_lights = [m or il for m, il in zip(manual_interior_lights, interior_lights)]
+                
         self.communicator.interior_lights_signal.emit(interior_lights)
         
         
