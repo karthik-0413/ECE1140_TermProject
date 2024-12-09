@@ -7,7 +7,7 @@ from Resources.CTCTrain import CTCTrain
 from Resources.CTCWaysideComm import CTCWaysideControllerComm
 from Resources.Clock import *
 from Resources.TrainTrainControllerComm import TrainTrainController
-from TrainController.ControllerToShellCommuicate import *
+from TrainController.ControllerToShellCommuicate import *   
 from TrainController.TrainController import *
 from TrainController.TrainControllerShell import TrainControllerShell
 from TrainModel.train_data import TrainData
@@ -15,9 +15,14 @@ from TrackModel.track_model_ui import Ui_TrackModel
 from Resources.TrackTrainComm import TrackTrainModelComm
 from TrackModel.track_model import track_model
 from Resources.WaysideTrackComm import WaysideControllerTrackComm
+
 from TrackController.wayside_shell import wayside_shell_class
 
 import sys
+from time import sleep
+
+# Upload track layout and PLC programs automatically
+debug = True
 
 # Function to be triggered by clock tick
 def handle_clock_tick(seconds, train_controller_shell: TrainControllerShell, train_model_data: MainWindow, track_model_backend: track_model, wayside_shell_object: wayside_shell_class, ctc_frontend: CTC_frontend):
@@ -43,6 +48,7 @@ if __name__ == '__main__':
     
     # CTC Setup
     ctc_window = QMainWindow()
+
 
     # Train Model Setup
     # (No need to create another QApplication)
@@ -74,6 +80,8 @@ if __name__ == '__main__':
     # CTC Office
     ctc_ui = CTC_frontend(comm1, comm4)
     ctc_ui.setupUi(ctc_window)
+    ctc_window.setObjectName("CTC Office")
+    ctc_window.setWindowTitle("CTC Office")
 
     # Wayside Controller
     wayside_shell_object = wayside_shell_class(comm4, comm2)
@@ -114,6 +122,28 @@ if __name__ == '__main__':
     
     clockUI = ClockDisplay(clock)
     clockUI.show()
+
+    
+    if debug:
+
+        track_model_backend.read_layout_file("TrackModel/green_layout.csv")
+
+        plc_programs = ["TrackController/green_plc_1.py", "TrackController/green_plc_2.py", "TrackController/green_plc_3.py"]
+
+        wayside_shell_object.execute_files(plc_programs)
+
+        ctc_ui.ctc.upload_layout_to_line("CTC_Office/Green_Line_Layout.xlsx")
+        
+                # Update Lines Selector
+        ctc_ui.LineSelectorComboBox.clear()
+        ctc_ui.LineSelectorComboBox.addItem("Green")
+
+        # Update Station Selector
+        ctc_ui.StationSelector.clear()
+        stations = ctc_ui.ctc.get_stations()
+        # print("Stations = ", stations)
+        ctc_ui.StationSelector.addItems(stations)
+
     
     # Timer to update every 
     # Use QTimer to trigger `handle_clock_tick` every second

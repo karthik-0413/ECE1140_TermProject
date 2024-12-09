@@ -7,7 +7,13 @@ from PyQt6.QtCore import (QObject, pyqtSignal)
 from TrackModel.track_model_ui import Ui_TrackModel
 from TrackModel.TrackTrainCommunicate import TrackTrainComms as TrainComms
 from TrackModel.WaysideTrackCommunicate import WaysideTrackComms as WaysideComms
+from TrackModel.track_model_ui import Ui_TrackModel
+from TrackModel.TrackTrainCommunicate import TrackTrainComms as TrainComms
+from TrackModel.WaysideTrackCommunicate import WaysideTrackComms as WaysideComms
 
+# from track_model_ui import Ui_TrackModel
+# from TrackTrainCommunicate import TrackTrainComms as TrainComms
+# from WaysideTrackCommunicate import WaysideTrackComms as WaysideComms
 # from track_model_ui import Ui_TrackModel
 # from TrackTrainCommunicate import TrackTrainComms as TrainComms
 # from WaysideTrackCommunicate import WaysideTrackComms as WaysideComms
@@ -71,9 +77,8 @@ class track_model:
         self.ui.breakStatus2.toggled.connect(self.handle_power_failure_checkbox)
         self.ui.breakStatus3.toggled.connect(self.handle_rail_failure_checkbox)
 
-        # remove comments for testing
-        # self.read_train()
-        # self.read_wayside()
+        self.read_train()
+        self.read_wayside()
         self.update_block_values()
 
     # important arrays
@@ -138,7 +143,7 @@ class track_model:
 
     def handle_position_signal(self, positions: list):
         self.position_list = positions
-        print(f"received position: {self.position_list}")
+        # print(f"received position: {self.position_list}")
         self.set_train_occupancies()
         self.update_polarity_values()
 
@@ -258,21 +263,20 @@ class track_model:
     #
     ############################################################################################################
 
-    # uncomment for testing
-    # def read_train(self):
-    #     self.train_communicator.number_passenger_leaving_signal.connect(self.handle_num_passenger_leaving_signal)
-    #     self.train_communicator.seat_vacancy_signal.connect(self.handle_seat_vacancy_signal)
-    #     self.train_communicator.position_signal.connect(self.handle_position_signal)
+    def read_train(self):
+        self.train_communicator.number_passenger_leaving_signal.connect(self.handle_num_passenger_leaving_signal)
+        self.train_communicator.seat_vacancy_signal.connect(self.handle_seat_vacancy_signal)
+        self.train_communicator.position_signal.connect(self.handle_position_signal)
 
-    # def read_wayside(self):
-    #     self.wayside_communicator.switch_cmd_signal.connect(self.handle_switch_cmd_signal)
-    #     self.wayside_communicator.signal_cmd_signal.connect(self.handle_signal_cmd_signal)
-    #     self.wayside_communicator.crossing_cmd_signal.connect(self.handle_crossing_cmd_signal)
-    #     self.wayside_communicator.commanded_speed_signal.connect(self.handle_commanded_speed_signal)
-    #     self.wayside_communicator.commanded_authority_signal.connect(self.handle_commanded_authority_signal)
+    def read_wayside(self):
+        self.wayside_communicator.switch_cmd_signal.connect(self.handle_switch_cmd_signal)
+        self.wayside_communicator.signal_cmd_signal.connect(self.handle_signal_cmd_signal)
+        self.wayside_communicator.crossing_cmd_signal.connect(self.handle_crossing_cmd_signal)
+        self.wayside_communicator.commanded_speed_signal.connect(self.handle_commanded_speed_signal)
+        self.wayside_communicator.commanded_authority_signal.connect(self.handle_commanded_authority_signal)
 
     def write(self):
-        print('Occupancies:', self.occupancies)
+        # print('Occupancies:', self.occupancies)
 
         self.train_communicator.number_passenger_boarding_signal.emit(self.num_passengers_embarking)
         self.train_communicator.polarity_signal.emit(self.polarity_values)
@@ -577,19 +581,22 @@ class track_model:
         
         # Check if current block array is empty
         if len(self.current_block):
+
+            # Clear the current cmd speed
+            self.cmd_speeds_train.clear()
             
             # Iterate through all the current block array
             for i in range(len(self.current_block)):
 
                 # Check if current cmd speed is NONE
                 if self.cmd_speeds_wayside[self.current_block[i]] != None:
-                    print(f"index i: {i}")
-                    print(f"Current Block: {self.current_block[i]}")
+                    # print(f"index i: {i}")
+                    # print(f"Current Block: {self.current_block[i]}")
                     
                     # Set train commanded speeds to the wayside commanded speeds
                     self.cmd_speeds_train.append(self.cmd_speeds_wayside[self.current_block[i]])
 
-                    print(f"Train Cmd Speed: {self.cmd_speeds_train[i]}")
+                    # print(f"Train Cmd Speed: {self.cmd_speeds_train[i]}")
 
 ############################################################################################################
 #
@@ -605,8 +612,8 @@ class track_model:
             # Iterate through current_block array
             for i in range(len(self.current_block)):
 
-                print(f"index i: {i}")
-                print(f"Current Block: {self.current_block[i]}")
+                # print(f"index i: {i}")
+                # print(f"Current Block: {self.current_block[i]}")
 
                 if len(self.cmd_authorities_train) != len(self.current_block):
 
@@ -630,7 +637,7 @@ class track_model:
 
                         # Set train commanded authority to new wayside commanded authority
                         self.cmd_authorities_train[i] = self.cmd_authorities_wayside[self.current_block[i]]
-                        print(f"Train Cmd Authority: {self.cmd_authorities_train[i]}")
+                        # print(f"Train Cmd Authority: {self.cmd_authorities_train[i]}")
                             
             #self.train_communicator.commanded_authority_signal.emit(self.cmd_authorities_train)
 
@@ -884,9 +891,7 @@ class track_ui(QtWidgets.QMainWindow, Ui_TrackModel):
         super().__init__()
         self.setupUi(self)
 
-
-#comment out for testing
-if __name__ == "__main__":
-    app = QtWidgets.QApplication([])
-    object = track_model(TrainComms, WaysideComms)
-    sys.exit(app.exec())
+# if __name__ == "__main__":
+#     app = QtWidgets.QApplication([])
+#     object = track_model(TrainComms, WaysideComms)
+#     sys.exit(app.exec())

@@ -1,7 +1,5 @@
 from PyQt6.QtGui import QFont
-from PyQt6.QtWidgets import (
-    QWidget, QVBoxLayout, QLabel, QHBoxLayout, QPushButton, QSizePolicy
-)
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QHBoxLayout, QPushButton, QSizePolicy
 from PyQt6.QtCore import Qt
 
 from TrainModel.base_page import BasePage
@@ -46,7 +44,7 @@ class MurphyPage(BasePage):
             button.setCheckable(True)
             button.setFont(QFont('Arial', 14, QFont.Weight.Bold))
             button.setFixedSize(160, 60)
-            button.setEnabled(True)  # Enable the button to allow interaction
+            button.setEnabled(True)
             button.setStyleSheet("""
                 QPushButton {
                     background-color: green;
@@ -85,7 +83,6 @@ class MurphyPage(BasePage):
 
     def failure_button_toggled(self, checked, failure_type):
         """Handle the toggling of failure buttons."""
-        # Update the failure status in train_data
         self.train_data.update_failure_button(self.current_train_index, failure_type, checked)
 
     def train_id_changed(self, new_train_id):
@@ -96,14 +93,21 @@ class MurphyPage(BasePage):
 
     def update_train_id_list(self, train_ids):
         """Update the train ID combo box."""
+        #changed12/7 begin - do not reset current_train_index, do not call update_display here
+        current_id = self.train_id_combo.currentText()
         self.train_id_combo.blockSignals(True)
         self.train_id_combo.clear()
-        self.train_id_combo.addItems(train_ids)
-        self.train_id_combo.setCurrentIndex(0)
+        if train_ids:
+            self.train_id_combo.addItems(train_ids)
+            if current_id in train_ids:
+                self.train_id_combo.setCurrentText(current_id)  # Keep previous selection if it still exists #changed12/7
+            else:
+                self.train_id_combo.setCurrentIndex(0)
+        else:
+            self.train_id_combo.addItem("N/A")
+            self.train_id_combo.setCurrentIndex(0)
         self.train_id_combo.blockSignals(False)
-        # Update current train index
-        self.current_train_index = 0
-        self.update_display()
+        #changed12/7 end
 
     def update_display(self):
         # Update the state of the failure buttons
