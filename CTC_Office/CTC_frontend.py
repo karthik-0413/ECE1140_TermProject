@@ -1091,7 +1091,7 @@ class CTC_frontend(object):
 
     def departure_ready(self, curr, depart):
         if curr.hour >= depart.hour and curr.minute >= depart.minute:
-            print("curr = ", curr, "depart = ", depart)
+        #     print("curr = ", curr, "depart = ", depart)
             return True
         else:
             print("FALSE")

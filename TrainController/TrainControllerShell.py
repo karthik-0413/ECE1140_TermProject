@@ -52,81 +52,82 @@ class TrainControllerShell:
     # including any updated values of variables like current_train_id.
     
     def connect_signals_and_update_UI(self):
-        if self.train_counter == len(self.train_controller_list):
-            # print(f"Inside If Statement in connect_signals_and_update_UI function - Train Counter: {self.train_counter}")   # This works
-            # for train_controller in self.train_controller_list:
-            for i in range(len(self.train_controller_list)):
+        pass
+        # if self.train_counter == len(self.train_controller_list):
+        #     # print(f"Inside If Statement in connect_signals_and_update_UI function - Train Counter: {self.train_counter}")   # This works
+        #     # for train_controller in self.train_controller_list:
+        #     for i in range(len(self.train_controller_list)):
     
-                # ALL OF THE VALUES ARE ONLY ONE (NOT A LIST)
-                self.train_controller_list[i].speed_control.current_velocity_signal.connect(
-                    lambda value: self.handle_current_speed(value, i)
-                )
-                self.train_controller_list[i].speed_control.commanded_speed_signal.connect(
-                    lambda value: self.handle_commanded_speed(value, i)
-                )
-                self.train_controller_list[i].position.commanded_authority_signal.connect(
-                    lambda value: self.handle_commanded_authority(value, i)
-                )
-                self.train_controller_list[i].temperature.current_temperature_signal.connect(
-                    lambda value: self.handle_current_temperature(value, i)
-                )
-                self.train_controller_list[i].failure_modes.engine_failure_signal.connect(
-                    lambda value: self.handle_engine_failure_status(value, i)
-                )
-                self.train_controller_list[i].failure_modes.brake_failure_signal.connect(
-                    lambda value: self.handle_brake_failure_status(value, i)
-                )
-                self.train_controller_list[i].failure_modes.signal_failure_signal.connect(
-                    lambda value: self.handle_signal_failure_status(value, i)
-                )
-                self.train_controller_list[i].power_class.power_command_signal.connect(
-                    lambda value: self.handle_power_command(value, i)
-                )
-                self.train_controller_list[i].lights.exterior_lights_signal.connect(
-                    lambda value: self.handle_exterior_lights(value, i)
-                )
-                self.train_controller_list[i].lights.interior_lights_signal.connect(
-                    lambda value: self.handle_interior_lights(value, i)
-                )
-                self.train_controller_list[i].doors.left_door_update.connect(
-                    lambda value: self.handle_left_door(value, i)
-                )
-                self.train_controller_list[i].doors.right_door_update.connect(
-                    lambda value: self.handle_right_door(value, i)
-                )
-                self.train_controller_list[i].brake_class.driver_brake_signal.connect(
-                    lambda value: self.handle_driver_brake_status(value, i)
-                )
-                self.train_controller_list[i].brake_class.service_brake_signal.connect(
-                    lambda value: self.handle_service_brake_status(value, i)
-                )
-                self.train_controller_list[i].brake_class.manual_service_brake_signal.connect(
-                    lambda value: self.handle_service_brake_status(value, i)
-                )
-                self.train_controller_list[i].brake_class.emergency_brake_signal.connect(
-                    lambda value: self.handle_emergency_brake_status(value, i)
-                )
-                self.train_controller_list[i].brake_class.passenger_brake_command_signal.connect(
-                    lambda value: self.handle_passenger_brake_status(value, i)
-                )
+        #         # # ALL OF THE VALUES ARE ONLY ONE (NOT A LIST)
+        #         # self.train_controller_list[i].speed_control.current_velocity_signal.connect(
+        #         #     lambda value: self.handle_current_speed(value, i)
+        #         # )
+        #         # self.train_controller_list[i].speed_control.commanded_speed_signal.connect(
+        #         #     lambda value: self.handle_commanded_speed(value, i)
+        #         # )
+        #         # self.train_controller_list[i].position.commanded_authority_signal.connect(
+        #         #     lambda value: self.handle_commanded_authority(value, i)
+        #         # )
+        #         # self.train_controller_list[i].temperature.current_temperature_signal.connect(
+        #         #     lambda value: self.handle_current_temperature(value, i)
+        #         # )
+        #         # self.train_controller_list[i].failure_modes.engine_failure_signal.connect(
+        #         #     lambda value: self.handle_engine_failure_status(value, i)
+        #         # )
+        #         # self.train_controller_list[i].failure_modes.brake_failure_signal.connect(
+        #         #     lambda value: self.handle_brake_failure_status(value, i)
+        #         # )
+        #         # self.train_controller_list[i].failure_modes.signal_failure_signal.connect(
+        #         #     lambda value: self.handle_signal_failure_status(value, i)
+        #         # )
+        #         # self.train_controller_list[i].power_class.power_command_signal.connect(
+        #         #     lambda value: self.handle_power_command(value, i)
+        #         # )
+        #         # self.train_controller_list[i].lights.exterior_lights_signal.connect(
+        #         #     lambda value: self.handle_exterior_lights(value, i)
+        #         # )
+        #         # self.train_controller_list[i].lights.interior_lights_signal.connect(
+        #         #     lambda value: self.handle_interior_lights(value, i)
+        #         # )
+        #         # self.train_controller_list[i].doors.left_door_update.connect(
+        #         #     lambda value: self.handle_left_door(value, i)
+        #         # )
+        #         # self.train_controller_list[i].doors.right_door_update.connect(
+        #         #     lambda value: self.handle_right_door(value, i)
+        #         # )
+        #         # self.train_controller_list[i].brake_class.driver_brake_signal.connect(
+        #         #     lambda value: self.handle_driver_brake_status(value, i)
+        #         # )
+        #         # self.train_controller_list[i].brake_class.service_brake_signal.connect(
+        #         #     lambda value: self.handle_service_brake_status(value, i)
+        #         # )
+        #         # self.train_controller_list[i].brake_class.manual_service_brake_signal.connect(
+        #         #     lambda value: self.handle_service_brake_status(value, i)
+        #         # )
+        #         # self.train_controller_list[i].brake_class.emergency_brake_signal.connect(
+        #         #     lambda value: self.handle_emergency_brake_status(value, i)
+        #         # )
+        #         # self.train_controller_list[i].brake_class.passenger_brake_command_signal.connect(
+        #         #     lambda value: self.handle_passenger_brake_status(value, i)
+        #         # )
                 
-                # self.train_controller_list[i].speed_control.current_velocity_signal.connect(self.handle_current_speed)
-                # self.train_controller_list[i].speed_control.commanded_speed_signal.connect(self.handle_commanded_speed)
-                # self.train_controller_list[i].position.commanded_authority_signal.connect(self.handle_commanded_authority)
-                # self.train_controller_list[i].temperature.current_temperature_signal.connect(self.handle_current_temperature)
-                # self.train_controller_list[i].failure_modes.engine_failure_signal.connect(self.handle_engine_failure_status)
-                # self.train_controller_list[i].failure_modes.brake_failure_signal.connect(self.handle_brake_failure_status)
-                # self.train_controller_list[i].failure_modes.signal_failure_signal.connect(self.handle_signal_failure_status)
-                # self.train_controller_list[i].power_class.power_command_signal.connect(self.handle_power_command)
-                # self.train_controller_list[i].lights.exterior_lights_signal.connect(self.handle_exterior_lights)
-                # self.train_controller_list[i].lights.interior_lights_signal.connect(self.handle_interior_lights)
-                # self.train_controller_list[i].doors.left_door_update.connect(self.handle_left_door)
-                # self.train_controller_list[i].doors.right_door_update.connect(self.handle_right_door)
-                # self.train_controller_list[i].brake_class.driver_brake_signal.connect(self.handle_driver_brake_status)
-                # self.train_controller_list[i].brake_class.service_brake_signal.connect(self.handle_service_brake_status)
-                # self.train_controller_list[i].brake_class.manual_service_brake_signal.connect(self.handle_service_brake_status)
-                # self.train_controller_list[i].brake_class.emergency_brake_signal.connect(self.handle_emergency_brake_status)
-                # self.train_controller_list[i].brake_class.passenger_brake_command_signal.connect(self.handle_passenger_brake_status)
+        #         self.train_controller_list[i].speed_control.current_velocity_signal.connect(self.handle_current_speed)
+        #         self.train_controller_list[i].speed_control.commanded_speed_signal.connect(self.handle_commanded_speed)
+        #         self.train_controller_list[i].position.commanded_authority_signal.connect(self.handle_commanded_authority)
+        #         self.train_controller_list[i].temperature.current_temperature_signal.connect(self.handle_current_temperature)
+        #         self.train_controller_list[i].failure_modes.engine_failure_signal.connect(self.handle_engine_failure_status)
+        #         self.train_controller_list[i].failure_modes.brake_failure_signal.connect(self.handle_brake_failure_status)
+        #         self.train_controller_list[i].failure_modes.signal_failure_signal.connect(self.handle_signal_failure_status)
+        #         self.train_controller_list[i].power_class.power_command_signal.connect(self.handle_power_command)
+        #         self.train_controller_list[i].lights.exterior_lights_signal.connect(self.handle_exterior_lights)
+        #         self.train_controller_list[i].lights.interior_lights_signal.connect(self.handle_interior_lights)
+        #         self.train_controller_list[i].doors.left_door_update.connect(self.handle_left_door)
+        #         self.train_controller_list[i].doors.right_door_update.connect(self.handle_right_door)
+        #         self.train_controller_list[i].brake_class.driver_brake_signal.connect(self.handle_driver_brake_status)
+        #         self.train_controller_list[i].brake_class.service_brake_signal.connect(self.handle_service_brake_status)
+        #         self.train_controller_list[i].brake_class.manual_service_brake_signal.connect(self.handle_service_brake_status)
+        #         self.train_controller_list[i].brake_class.emergency_brake_signal.connect(self.handle_emergency_brake_status)
+        #         self.train_controller_list[i].brake_class.passenger_brake_command_signal.connect(self.handle_passenger_brake_status)
     
             # self.train_controller_list[self.current_train_id - 1].train_id_signal.connect(self.handle_train_id)
     
@@ -198,6 +199,7 @@ class TrainControllerShell:
                     
                         self.counter += 1
                         self.train_counter += 1
+                        # print(f"Train Counter: {self.train_counter}")
                         
                         
                         ##########################################################################################################
@@ -239,9 +241,9 @@ class TrainControllerShell:
                 # self.current_train_id = train_id
                 
                 # Set self.trainControllerUI to the current train controller UI in the list
-                if self.train_controller_list and train_id == 1:
-                    self.trainControllerUI = self.train_controller_list[self.current_train_id - 1]
-                    self.connect_signals_and_update_UI()
+                # if self.train_controller_list and train_id == 1:
+                #     self.trainControllerUI = self.train_controller_list[self.current_train_id - 1]
+                #     self.connect_signals_and_update_UI()
                     
                 # self.update_UI()    
                 # self.connect_signals_and_update_UI()
@@ -334,6 +336,16 @@ class TrainControllerShell:
         self.communicator.announcement_signal.emit(announcements)
         
     def read_from_train_model(self):
+        # self.train_counter = len(self.train_controller_list)
+        # for i in range(len(self.train_controller_list)):
+            
+        #     self.communicator.commanded_speed_signal.connect(
+        #         lambda value: self.update_commanded_speed(value, i)
+        #     )
+        #     self.communicator.commanded_authority_signal.connect(
+        #         lambda value: self.update_commanded_authority(value, i)
+        #     )
+        
         self.communicator.commanded_speed_signal.connect(self.update_commanded_speed)
         self.communicator.commanded_authority_signal.connect(self.update_commanded_authority)
         self.communicator.current_velocity_signal.connect(self.update_current_velocity)
@@ -360,13 +372,14 @@ class TrainControllerShell:
     def update_commanded_speed(self, commanded_speed: list):
         # For all Trains - WORKS
         # print(f"Commanded Speed in Train Controller Shell = {commanded_speed}")
+        
         if len(self.train_controller_list):
             if len(commanded_speed):
                 for i in range(len(commanded_speed)):
                     if i < len(self.train_controller_list):
                         # print(f"Index: {i}")
                         if commanded_speed[i] == 0:
-                            self.train_controller_list[i].speed_control.handle_commanded_speed(30)
+                            self.train_controller_list[i].speed_control.handle_commanded_speed(0)
                         else:
                             self.train_controller_list[i].speed_control.handle_commanded_speed(commanded_speed[i])
                     
@@ -387,18 +400,19 @@ class TrainControllerShell:
         #             # # print(f"Commanded Speed: {commanded_speed[i]}")
 
     def update_commanded_authority(self, commanded_authority: list):
-        print(f"Commanded Authority in Train Controller Shell = {commanded_authority}")
+        # print(f"Commanded Authority in Train Controller Shell = {commanded_authority}") # Getting correct authority values
         # I THINK THIS IS CORRECT                 
         if len(self.train_controller_list):
             if len(commanded_authority):
                 for i in range(len(commanded_authority)):
                     if i < len(self.train_controller_list):
                         # print(f"Index: {i}")
+                        # print(f"Commanded Authority {i + 1}: {commanded_authority[i]}")
                         self.train_controller_list[i].position.handle_commanded_authority(commanded_authority[i])
                     
-                    # for i in range(len(self.train_controller_list)):
-                    #     pass
-                    #     # print(f"Commanded Speed {i + 1}: {self.train_controller_list[i].speed_control.commanded_speed}")
+                    for i in range(len(self.train_controller_list)):
+                        pass
+                        # print(f"Commanded Speed {i + 1}: {self.train_controller_list[i].speed_control.commanded_speed}")
         
         
         # self.previous_commanded_authority = self.total_commanded_authority.copy()
@@ -419,7 +433,7 @@ class TrainControllerShell:
                                 
         #         # First time the commanded authority is received
         #         else:
-        #             if len(self.train_controller_list):
+        #             if len(self.train_controller_list):   
         #                 for i in range(len(self.total_commanded_authority)):
         #                     if i < len(self.train_controller_list):
         #                         # print(f"Commanded Authority {i + 1}: {self.total_commanded_authority[i]}")
@@ -460,7 +474,7 @@ class TrainControllerShell:
                 if i < len(self.train_controller_list):
                     self.train_controller_list[i].speed_control.handle_current_velocity(current_velocity[i])
                     # print(f"Current Velocity {i + 1}: {current_velocity[i]}")
-                # print(f"Current Velocity { i + 1}: {current_velocity}")
+                # print(f"Current Velocity {i + 1}: {current_velocity}")
 
     def update_engine_failure(self, engine_failure: list):
         if len(self.train_controller_list):
@@ -501,6 +515,7 @@ class TrainControllerShell:
         # print(f"Actual Temperature: {actual_temperature}")
 
     def update_polarity(self, polarity: list):
+        # print(f"Polarity in Train Controller Shell = {polarity}")
         if len(self.train_controller_list):
             for i in range(len(polarity)):
                 if i < len(self.train_controller_list):
@@ -511,150 +526,158 @@ class TrainControllerShell:
     # IMPLEMENT CONNECT UI CHANGES TRAIN CONTROLLER FUNCTIONS HERE #
     ################################################################
         
-    def handle_commanded_speed(self, commanded_speed: float, i: int):
-        if self.train_controller_list:
-            # for i in range(len(self.train_controller_list)):
-            if self.train_counter == len(self.train_controller_list):
-                self.train_controller_list[i].update_commanded_speed(commanded_speed)
-                # self.update_UI()
-                self.train_controller_list[i].speed_control.commanded_speed = commanded_speed
+    # def handle_commanded_speed(self, commanded_speed: float, i: int):
+    #     # print(f"Commanded Speed in Train Controller Shell in handler= {commanded_speed}")
+    #     if self.train_controller_list:
+    #         # for i in range(len(self.train_controller_list)):
+    #         if self.train_counter == len(self.train_controller_list):
+    #             self.train_controller_list[i].update_commanded_speed(commanded_speed)
+    #             # self.update_UI()
+    #             # self.train_controller_list[i].speed_control.commanded_speed = commanded_speed
 
-    def handle_commanded_authority(self, commanded_authority: float, i: int):
-        if self.train_controller_list:
-            # for i in range(len(self.train_controller_list)):
-            if self.train_counter == len(self.train_controller_list):
-                self.train_controller_list[i].update_commanded_authority(commanded_authority)
-                # self.update_UI()
-                self.train_controller_list[i].position.commanded_authority = commanded_authority
+    # def handle_commanded_authority(self, commanded_authority: int, i: int):
+    #     # if self.train_controller_list:
+    #         # for i in range(len(self.train_controller_list)):
+    #         # if self.train_counter == len(self.train_controller_list):
+            
+            
+    #             # GETTING INCORRECT AUTHOIRTY VALUES
+    #             print(f"Commanded Authority {i + 1} in Train Controller Shell in handler = {commanded_authority}")
+                
+                
+                
+    #             self.train_controller_list[i].update_commanded_authority(commanded_authority)
+    #             # self.update_UI()
+    #             # self.train_controller_list[i].position.commanded_authority = commanded_authority
 
-    def handle_current_temperature(self, current_temperature: float, i: int):
-        if self.train_controller_list:
-            # for i in range(len(self.train_controller_list)):
-            if self.train_counter == len(self.train_controller_list):
-                self.train_controller_list[i].update_current_temperature(current_temperature)
-                # self.update_UI()
-                self.train_controller_list[i].temperature.current_temperature = current_temperature
+    # def handle_current_temperature(self, current_temperature: float, i: int):
+    #     if self.train_controller_list:
+    #         # for i in range(len(self.train_controller_list)):
+    #         if self.train_counter == len(self.train_controller_list):
+    #             self.train_controller_list[i].update_current_temperature(current_temperature)
+    #             # self.update_UI()
+    #             self.train_controller_list[i].temperature.current_temperature = current_temperature
 
-    def handle_engine_failure_status(self, engine_failure: bool, i: int):
-        if self.train_controller_list:
-            # for i in range(len(self.train_controller_list)):
-            if self.train_counter == len(self.train_controller_list):
-                self.train_controller_list[i].update_engine_failure_status(engine_failure)
-                # self.update_UI()
-                self.train_controller_list[i].failure_modes.engine_fail = engine_failure
+    # def handle_engine_failure_status(self, engine_failure: bool, i: int):
+    #     if self.train_controller_list:
+    #         # for i in range(len(self.train_controller_list)):
+    #         if self.train_counter == len(self.train_controller_list):
+    #             self.train_controller_list[i].update_engine_failure_status(engine_failure)
+    #             # self.update_UI()
+    #             # self.train_controller_list[i].failure_modes.engine_fail = engine_failure
 
-    def handle_brake_failure_status(self, brake_failure: bool, i: int):
-        if self.train_controller_list:
-            # for i in range(len(self.train_controller_list)):
-            if self.train_counter == len(self.train_controller_list):
-                self.train_controller_list[i].update_brake_failure_status(brake_failure)
-                # self.update_UI()
-                self.train_controller_list[i].failure_modes.brake_fail = brake_failure
+    # def handle_brake_failure_status(self, brake_failure: bool, i: int):
+    #     if self.train_controller_list:
+    #         # for i in range(len(self.train_controller_list)):
+    #         if self.train_counter == len(self.train_controller_list):
+    #             self.train_controller_list[i].update_brake_failure_status(brake_failure)
+    #             # self.update_UI()
+    #             # self.train_controller_list[i].failure_modes.brake_fail = brake_failure
 
-    def handle_signal_failure_status(self, signal_failure: bool, i: int):
-        if self.train_controller_list:
-            # for i in range(len(self.train_controller_list)):
-            if self.train_counter == len(self.train_controller_list):
-                self.train_controller_list[i].update_signal_failure_status(signal_failure)
-                # self.update_UI()
-                self.train_controller_list[i].failure_modes.signal_fail = signal_failure
+    # def handle_signal_failure_status(self, signal_failure: bool, i: int):
+    #     if self.train_controller_list:
+    #         # for i in range(len(self.train_controller_list)):
+    #         if self.train_counter == len(self.train_controller_list):
+    #             self.train_controller_list[i].update_signal_failure_status(signal_failure)
+    #             # self.update_UI()
+    #             # self.train_controller_list[i].failure_modes.signal_fail = signal_failure
 
-    def handle_power_command(self, power_command: float, i: int):
-        if self.train_controller_list:
-            # for i in range(len(self.train_controller_list)):
-            if self.train_counter == len(self.train_controller_list):
-                self.train_controller_list[i].update_power_command(power_command)
-                # self.update_UI()
-                self.train_controller_list[i].power_class.power_command = power_command
-                # print(f"Power Command {i + 1}: {power_command}")
+    # def handle_power_command(self, power_command: float, i: int):
+    #     if self.train_controller_list:
+    #         # for i in range(len(self.train_controller_list)):
+    #         if self.train_counter == len(self.train_controller_list):
+    #             self.train_controller_list[i].update_power_command(power_command)
+    #             # self.update_UI()
+    #             # self.train_controller_list[i].power_class.power_command = power_command
+    #             # print(f"Power Command {i + 1}: {power_command}")
 
-    def handle_exterior_lights(self, exterior_lights: bool, i: int):
-        if self.train_controller_list:
-            # for i in range(len(self.train_controller_list)):
-            if self.train_counter == len(self.train_controller_list):
-                self.train_controller_list[i].update_exterior_lights(exterior_lights)
-                # self.update_UI()
-                self.train_controller_list[i].lights.exterior_lights = exterior_lights
+    # def handle_exterior_lights(self, exterior_lights: bool, i: int):
+    #     if self.train_controller_list:
+    #         # for i in range(len(self.train_controller_list)):
+    #         if self.train_counter == len(self.train_controller_list):
+    #             self.train_controller_list[i].update_exterior_lights(exterior_lights)
+    #             # self.update_UI()
+    #             # self.train_controller_list[i].lights.exterior_lights = exterior_lights
 
-    def handle_interior_lights(self, interior_lights: bool, i: int):
-        if self.train_controller_list:
-            # for i in range(len(self.train_controller_list)):
-            if self.train_counter == len(self.train_controller_list):
-                self.train_controller_list[i].update_interior_lights(interior_lights)
-                # self.update_UI()
-                self.train_controller_list[i].lights.interior_lights = interior_lights
+    # def handle_interior_lights(self, interior_lights: bool, i: int):
+    #     if self.train_controller_list:
+    #         # for i in range(len(self.train_controller_list)):
+    #         if self.train_counter == len(self.train_controller_list):
+    #             self.train_controller_list[i].update_interior_lights(interior_lights)
+    #             # self.update_UI()
+    #             # self.train_controller_list[i].lights.interior_lights = interior_lights
 
-    def handle_left_door(self, left_door: bool, i: int):
-        if self.train_controller_list:
-            # for i in range(len(self.train_controller_list)):
-            if self.train_counter == len(self.train_controller_list):
-                self.train_controller_list[i].update_left_door(left_door)
-                # self.update_UI()
-                self.train_controller_list[i].doors.left_door = left_door
+    # def handle_left_door(self, left_door: bool, i: int):
+    #     if self.train_controller_list:
+    #         # for i in range(len(self.train_controller_list)):
+    #         if self.train_counter == len(self.train_controller_list):
+    #             self.train_controller_list[i].update_left_door(left_door)
+    #             # self.update_UI()
+    #             # self.train_controller_list[i].doors.left_door = left_door
 
-    def handle_right_door(self, right_door: bool, i: int):
-        if self.train_controller_list:
-            # for i in range(len(self.train_controller_list)):
-            if self.train_counter == len(self.train_controller_list):
-                self.train_controller_list[i].update_right_door(right_door)
-                # self.update_UI()
-                self.train_controller_list[i].doors.right_door = right_door
+    # def handle_right_door(self, right_door: bool, i: int):
+    #     if self.train_controller_list:
+    #         # for i in range(len(self.train_controller_list)):
+    #         if self.train_counter == len(self.train_controller_list):
+    #             self.train_controller_list[i].update_right_door(right_door)
+    #             # self.update_UI()
+    #             # self.train_controller_list[i].doors.right_door = right_door
 
-    def handle_driver_brake_status(self, driver_brake_status: bool, i: int):
-        if self.train_controller_list:
-            # for i in range(len(self.train_controller_list)):
-            if self.train_counter == len(self.train_controller_list):
-                self.train_controller_list[i].update_driver_brake_status(driver_brake_status)
-                # self.update_UI()
-                self.train_controller_list[i].brake_class.driver_brake_status = driver_brake_status
+    # def handle_driver_brake_status(self, driver_brake_status: bool, i: int):
+    #     if self.train_controller_list:
+    #         # for i in range(len(self.train_controller_list)):
+    #         if self.train_counter == len(self.train_controller_list):
+    #             self.train_controller_list[i].update_driver_brake_status(driver_brake_status)
+    #             # self.update_UI()
+    #             # self.train_controller_list[i].brake_class.driver_brake_status = driver_brake_status
 
-    def handle_service_brake_status(self, service_brake_status: bool, i: int):
-        if self.train_controller_list:
-            # print(f"Service Brake Status: {service_brake_status}")
-            # for i in range(len(self.train_controller_list)):
-            if self.train_counter == len(self.train_controller_list):
-                self.train_controller_list[i].update_service_brake_status(service_brake_status)
-                # self.update_UI()
-                self.train_controller_list[i].brake_class.driver_service_brake_command = service_brake_status
+    # def handle_service_brake_status(self, service_brake_status: bool, i: int):
+    #     if self.train_controller_list:
+    #         # print(f"Service Brake Status: {service_brake_status}")
+    #         # for i in range(len(self.train_controller_list)):
+    #         if self.train_counter == len(self.train_controller_list):
+    #             self.train_controller_list[i].update_service_brake_status(service_brake_status)
+    #             # self.update_UI()
+    #             # self.train_controller_list[i].brake_class.driver_service_brake_command = service_brake_status
 
-    def handle_manual_service_brake_status(self, manual_service_brake_status: bool, i: int):
-        if self.train_controller_list:
-            # for i in range(len(self.train_controller_list)):
-            if self.train_counter == len(self.train_controller_list):
-                self.train_controller_list[i].update_manual_service_brake_status(manual_service_brake_status)
-                # self.update_UI()
-                self.train_controller_list[i].brake_class.manual_driver_service_brake_command = manual_service_brake_status
+    # def handle_manual_service_brake_status(self, manual_service_brake_status: bool, i: int):
+    #     if self.train_controller_list:
+    #         # for i in range(len(self.train_controller_list)):
+    #         if self.train_counter == len(self.train_controller_list):
+    #             self.train_controller_list[i].update_manual_service_brake_status(manual_service_brake_status)
+    #             # self.update_UI()
+    #             # self.train_controller_list[i].brake_class.manual_driver_service_brake_command = manual_service_brake_status
 
-    def handle_emergency_brake_status(self, emergency_brake_status: bool, i: int):
-        if self.train_controller_list:
-            # for i in range(len(self.train_controller_list)):
-            if self.train_counter == len(self.train_controller_list):
-                self.train_controller_list[i].update_emergency_brake_status(emergency_brake_status)
-                # self.update_UI()
-                self.train_controller_list[i].brake_class.driver_emergency_brake_command = emergency_brake_status
+    # def handle_emergency_brake_status(self, emergency_brake_status: bool, i: int):
+    #     if self.train_controller_list:
+    #         # for i in range(len(self.train_controller_list)):
+    #         if self.train_counter == len(self.train_controller_list):
+    #             self.train_controller_list[i].update_emergency_brake_status(emergency_brake_status)
+    #             # self.update_UI()
+    #             # self.train_controller_list[i].brake_class.driver_emergency_brake_command = emergency_brake_status
 
-    def handle_passenger_brake_status(self, passenger_brake_status: bool, i: int):
-        if self.train_controller_list:
-            # for i in range(len(self.train_controller_list)):
-            if self.train_counter == len(self.train_controller_list):
-                self.train_controller_list[i].update_passenger_brake_status(passenger_brake_status)
-                # self.update_UI()
-                self.train_controller_list[i].brake_class.passenger_brake = passenger_brake_status
+    # def handle_passenger_brake_status(self, passenger_brake_status: bool, i: int):
+    #     if self.train_controller_list:
+    #         # for i in range(len(self.train_controller_list)):
+    #         if self.train_counter == len(self.train_controller_list):
+    #             self.train_controller_list[i].update_passenger_brake_status(passenger_brake_status)
+    #             # self.update_UI()
+    #             # self.train_controller_list[i].brake_class.passenger_brake = passenger_brake_status
 
-    def handle_current_speed(self, current_speed: float, i: int):
-        if self.train_controller_list:
-            # for i in range(len(self.train_controller_list)):
-            if self.train_counter == len(self.train_controller_list):
-                self.train_controller_list[i].update_current_speed(current_speed)
-                # self.update_UI()
-                self.train_controller_list[i].speed_control.current_velocity = current_speed
+    # def handle_current_speed(self, current_speed: float, i: int):
+    #     if self.train_controller_list:
+    #         # for i in range(len(self.train_controller_list)):
+    #         if self.train_counter == len(self.train_controller_list):
+    #             self.train_controller_list[i].update_current_speed(current_speed)
+    #             # self.update_UI()
+    #             # self.train_controller_list[i].speed_control.current_velocity = current_speed
 
-    def handle_desired_temperature(self, desired_temperature: float, i: int):
-        pass
-        # if self.train_controller_list:
-        #     # for i in range(len(self.train_controller_list)):
-        #     if self.train_counter == len(self.train_controller_list):
-        #         self.train_controller_list[i].temperature.desired_temperature = desired_temperature
+    # def handle_desired_temperature(self, desired_temperature: float, i: int):
+    #     pass
+    #     # if self.train_controller_list:
+    #     #     # for i in range(len(self.train_controller_list)):
+    #     #     if self.train_counter == len(self.train_controller_list):
+    #     #         self.train_controller_list[i].temperature.desired_temperature = desired_temperature
             
     # def handle_commanded_speed(self, commanded_speed: float):
     #     if self.train_controller_list:

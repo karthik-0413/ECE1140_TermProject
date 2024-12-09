@@ -843,14 +843,20 @@ class Position(QObject):
         # print(f"Commanded Authority: {authority}")
         # # When the commanded authority goes from 1 -> 0, this print statement is not displayed, but it is displayed for 166 blocks
       
-        if authority is not None:
-            self.counter += 1
-            if self.counter == 2:
-                self.commanded_authority_signal.emit(authority)
-            self.commanded_authority = authority
+        # AFTER STOPPING THE TRAIN AT THE STATION, THE SPEED GOES UP BY 0.23 BY NOTHING MORE
+        # if authority is not None:
+        #     self.counter += 1
+        #     if self.counter == 2:
+        #         # self.commanded_authority = authority
+        #         self.commanded_authority_signal.emit(authority)
+        #     # else:
+        self.commanded_authority = authority
+                # self.commanded_authority_signal.emit(authority)
+            
+        # print(f"Commanded Authority: {self.commanded_authority}")
             # print(f"Commanded Authority: {self.commanded_authority}")
-        else:
-            self.commanded_authority = 0
+        # else:
+        #     self.commanded_authority = 0
             
         # if self.counter == 1:
         #     self.commanded_authority_signal.emit(authority)
@@ -1718,6 +1724,31 @@ class TrainControllerUI(QWidget):
         # Set Main Layout
         self.setLayout(main_layout)
         
+        # Call the update UI function to update the UI with the current values every 100ms
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.update_UI)
+        self.timer.start(100)
+        
+        
+        
+    def update_UI(self):
+        self.update_current_speed(self.speed_control.current_velocity)
+        self.update_commanded_speed(self.speed_control.commanded_speed)
+        self.update_commanded_authority(self.position.commanded_authority)
+        self.update_left_door(self.doors.left_door)
+        self.update_right_door(self.doors.right_door)
+        self.update_exterior_lights(self.lights.manual_exterior_lights)
+        self.update_interior_lights(self.lights.manual_interior_lights)
+        self.update_power_command(self.power_class.power_command)
+        self.update_engine_failure_status(self.failure_modes.engine_fail)
+        self.update_brake_failure_status(self.failure_modes.brake_fail)
+        self.update_signal_failure_status(self.failure_modes.signal_fail)
+        self.update_current_temp_display(self.temperature.current_temperature)
+        self.update_passenger_brake_status(self.brake_class.driver_emergency_brake_command)
+        self.update_service_brake_status(self.brake_class.driver_service_brake_command, self.brake_class.manual_driver_service_brake_command)
+        self.update_emergency_brake_status(self.brake_class.driver_emergency_brake_command)
+        
+        
     def update_current_temp_display(self, current_temp):
         self.temperature.current_temperature = current_temp
         self.current_temp_edit.setText(f"{current_temp:.2f} °F")
@@ -1910,8 +1941,20 @@ class TrainControllerUI(QWidget):
             self.brake_status.setText("OFF")
             self.brake_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
             
-    def update_service_brake_status(self, brake_status: bool):
-        if brake_status or self.brake_class.manual_driver_service_brake_command:
+    # def update_service_brake_status(self, brake_status: bool):
+    #     if brake_status or self.brake_class.manual_driver_service_brake_command:
+    #         # print(f"Service Brake Status: {brake_status}")
+    #         # self.brake_status.setText("ON")
+    #         # self.brake_status.setStyleSheet("background-color: #f5c842; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
+    #         # Divet in service break in UI
+    #         self.divet_in_service_brake_button()
+    #     else:
+    #         # self.brake_status.setText("OFF")
+    #         # self.brake_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
+    #         self.reset_service_brake_button_style()
+    
+    def update_service_brake_status(self, brake_status: bool, manual_brake_status: bool):
+        if brake_status or manual_brake_status:
             # print(f"Service Brake Status: {brake_status}")
             # self.brake_status.setText("ON")
             # self.brake_status.setStyleSheet("background-color: #f5c842; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")

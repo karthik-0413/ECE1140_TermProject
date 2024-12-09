@@ -53,7 +53,7 @@ class CTC_logic():
         
         # Add destinations to the train object 
         self.line.create_train(destination, arrival_time, destination_station)
-        print("Adding train")
+        # print("Adding train")
         self.num_trains = len(self.line.train_list)
         # print("Num trains = ", self.num_trains)
 
