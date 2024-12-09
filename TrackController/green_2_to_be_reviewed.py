@@ -58,8 +58,8 @@ class green_line_plc_2_class:
         X = Section(3)
         Y = Section(3)
         Z = Section(1)
-
-        self.sec_array = [H, I, J, K, L, M, T, U, V, W, X, Y, Z]
+        #                 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
+        self.sec_array = [H, I, J, K, L, M, T, U, V, W,  X,  Y,  Z]
 
     # Methods
     def green_plc_2_is_created(self):
@@ -138,8 +138,8 @@ class green_line_plc_2_class:
 
                         # Not edge blocks
                         elif j > 1: # Blocks 38 --> 57
-                            self.sec_array[1].block_stop_go[j - 2] == 0
-                            self.sec_array[1].block_stop_go[j - 1] == 0
+                            self.sec_array[1].block_stop_go[j - 2] = 0
+                            self.sec_array[1].block_stop_go[j - 1] = 0
 
                     # Section J
                     elif i == 2:
@@ -175,153 +175,153 @@ class green_line_plc_2_class:
                             if self.write_switch_cmd_array[1]:
                                 self.yard_stop_go = 0 # Yard block
                             else:
-                                self.sec_array[2].block_stop_go[4] == 0 # Block 62
-                                self.sec_array[2].block_stop_go[3] == 0 # Block 61
+                                self.sec_array[2].block_stop_go[4] = 0 # Block 62
+                                self.sec_array[2].block_stop_go[3] = 0 # Block 61
 
                         elif j == 1: # Block 64
 
                             # Check switch 2 position
-                            if self.write_switch_cmd_array[1]:
-                                self.sec_array[2].block_stop_go[4] == 0 # Block 62
+                            if not self.write_switch_cmd_array[1]:
+                                self.sec_array[2].block_stop_go[4] = 0 # Block 62
                             else:
                                 self.yard_stop_go = 0
 
-                            self.sec_array[3].block_stop_go[0] == 0 # Block 63
+                            self.sec_array[3].block_stop_go[0] = 0 # Block 63
 
                         # Not edge blocks
                         elif j > 1: # Blocks 65 --> 68
-                            self.sec_array[3].block_stop_go[j - 2] == 0
-                            self.sec_array[3].block_stop_go[j - 1] == 0
+                            self.sec_array[3].block_stop_go[j - 2] = 0
+                            self.sec_array[3].block_stop_go[j - 1] = 0
 
                     # Section L
                     elif i == 4:
 
                         # Check edge blocks
                         if j == 0: # Block 69
-                            self.sec_array[3].block_stop_go[5] == 0 # Block 68
-                            self.sec_array[3].block_stop_go[4] == 0 # Block 67
+                            self.sec_array[3].block_stop_go[5] = 0 # Block 68
+                            self.sec_array[3].block_stop_go[4] = 0 # Block 67
 
                         elif j == 1: # Block 70
-                            self.sec_array[3].block_stop_go[5] == 0 # Block 68
-                            self.sec_array[4].block_stop_go[0] == 0 # Block 69
+                            self.sec_array[3].block_stop_go[5] = 0 # Block 68
+                            self.sec_array[4].block_stop_go[0] = 0 # Block 69
 
                         # Not edge blocks
                         elif j > 1: # Blocks 71 --> 73
-                            self.sec_array[4].block_stop_go[j - 2] == 0
-                            self.sec_array[4].block_stop_go[j - 1] == 0
+                            self.sec_array[4].block_stop_go[j - 2] = 0
+                            self.sec_array[4].block_stop_go[j - 1] = 0
 
                     # Section M
                     elif i == 5:
 
                         # Check edge blocks
                         if j == 0: # Block 74
-                            self.sec_array[4].block_stop_go[4] == 0 # Block 73
-                            self.sec_array[4].block_stop_go[3] == 0 # Block 72
+                            self.sec_array[4].block_stop_go[4] = 0 # Block 73
+                            self.sec_array[4].block_stop_go[3] = 0 # Block 72
 
                         elif j == 1: # Block 75
-                            self.sec_array[4].block_stop_go[4] == 0 # Block 73
+                            self.sec_array[4].block_stop_go[4] = 0 # Block 73
 
                     # Section T
                     elif i == 6:
 
                         # Check edge blocks
                         if j == 1: # Block 106
-                            self.sec_array[6].block_stop_go[0] == 0 # Block 105
+                            self.sec_array[6].block_stop_go[0] = 0 # Block 105
 
                         # Not edge blocks
                         elif j > 1: # Blocks 107 --> 109
-                            self.sec_array[6].block_stop_go[j - 1] == 0
-                            self.sec_array[6].block_stop_go[j - 2] == 0
+                            self.sec_array[6].block_stop_go[j - 1] = 0
+                            self.sec_array[6].block_stop_go[j - 2] = 0
 
                     # Section U
                     elif i == 7:
 
                         # Check edge blocks
                         if j == 0: # Block 110
-                            self.sec_array[6].block_stop_go[4] == 0 # Block 109
-                            self.sec_array[6].block_stop_go[3] == 0 # Block 108
+                            self.sec_array[6].block_stop_go[4] = 0 # Block 109
+                            self.sec_array[6].block_stop_go[3] = 0 # Block 108
 
                         elif j == 1: # Block 111
-                            self.sec_array[6].block_stop_go[4] == 0 # Block 109
-                            self.sec_array[7].block_stop_go[0] == 0 # Block 110
+                            self.sec_array[6].block_stop_go[4] = 0 # Block 109
+                            self.sec_array[7].block_stop_go[0] = 0 # Block 110
 
                         # Not edge blocks
                         elif j > 1: # Blocks 112 --> 116
-                            self.sec_array[7].block_stop_go[j - 2] == 0
-                            self.sec_array[7].block_stop_go[j - 1] == 0
+                            self.sec_array[7].block_stop_go[j - 2] = 0
+                            self.sec_array[7].block_stop_go[j - 1] = 0
 
                     # Section V
                     elif i == 8:
 
                         # Check edge blocks
                         if j == 0: # Block 117
-                            self.sec_array[7].block_stop_go[6] == 0 # Block 116
-                            self.sec_array[7].block_stop_go[5] == 0 # Block 115
+                            self.sec_array[7].block_stop_go[6] = 0 # Block 116
+                            self.sec_array[7].block_stop_go[5] = 0 # Block 115
 
                         elif j == 1: # Block 118
-                            self.sec_array[7].block_stop_go[6] == 0 # Block 116
-                            self.sec_array[8].block_stop_go[0] == 0 # Block 117
+                            self.sec_array[7].block_stop_go[6] = 0 # Block 116
+                            self.sec_array[8].block_stop_go[0] = 0 # Block 117
 
                         # Not edge blocks
                         elif j > 1: # Blocks 119 --> 121
-                            self.sec_array[8].block_stop_go[j - 2] == 0
-                            self.sec_array[8].block_stop_go[j - 1] == 0
+                            self.sec_array[8].block_stop_go[j - 2] = 0
+                            self.sec_array[8].block_stop_go[j - 1] = 0
 
                     # Section W
                     elif i == 9:
 
                         # Check edge blocks
                         if j == 0: # Block 122
-                            self.sec_array[8].block_stop_go[4] == 0 # Block 121
-                            self.sec_array[8].block_stop_go[3] == 0 # Block 120
+                            self.sec_array[8].block_stop_go[4] = 0 # Block 121
+                            self.sec_array[8].block_stop_go[3] = 0 # Block 120
 
                         elif j == 1: # Block 123
-                            self.sec_array[8].block_stop_go[4] == 0 # Block 121
-                            self.sec_array[9].block_stop_go[0] == 0 # Block 122
+                            self.sec_array[8].block_stop_go[4] = 0 # Block 121
+                            self.sec_array[9].block_stop_go[0] = 0 # Block 122
 
                         # Not edge blocks
                         elif j > 1: # Blocks 124 --> 143
-                            self.sec_array[9].block_stop_go[j - 2] == 0
-                            self.sec_array[9].block_stop_go[j - 1] == 0
+                            self.sec_array[9].block_stop_go[j - 2] = 0
+                            self.sec_array[9].block_stop_go[j - 1] = 0
 
                     # Section X
                     elif i == 10:
 
                         # Check each block
                         if j == 0: # Block 144
-                            self.sec_array[9].block_stop_go[21] == 0 # Block 143
-                            self.sec_array[9].block_stop_go[20] == 0 # Block 142
+                            self.sec_array[9].block_stop_go[21] = 0 # Block 143
+                            self.sec_array[9].block_stop_go[20] = 0 # Block 142
 
                         elif j == 1: # Block 145
-                            self.sec_array[9].block_stop_go[21] == 0 # Block 143
-                            self.sec_array[10].block_stop_go[0] == 0 # Block 144
+                            self.sec_array[9].block_stop_go[21] = 0 # Block 143
+                            self.sec_array[10].block_stop_go[0] = 0 # Block 144
 
                         elif j == 2: # Block 146
-                            self.sec_array[10].block_stop_go[0] == 0 # Block 144
-                            self.sec_array[10].block_stop_go[1] == 0 # Block 145
+                            self.sec_array[10].block_stop_go[0] = 0 # Block 144
+                            self.sec_array[10].block_stop_go[1] = 0 # Block 145
 
                     # Section Y
                     elif i == 11:
 
                         # Check each block
                         if j == 0: # Block 147
-                            self.sec_array[10].block_stop_go[2] == 0 # Block 146
-                            self.sec_array[10].block_stop_go[1] == 0 # Block 145
+                            self.sec_array[10].block_stop_go[2] = 0 # Block 146
+                            self.sec_array[10].block_stop_go[1] = 0 # Block 145
 
                         elif j == 1: # Block 148
-                            self.sec_array[10].block_stop_go[2] == 0 # Block 146
-                            self.sec_array[11].block_stop_go[0] == 0 # Block 147
+                            self.sec_array[10].block_stop_go[2] = 0 # Block 146
+                            self.sec_array[11].block_stop_go[0] = 0 # Block 147
 
                         elif j == 2: # Block 149
-                            self.sec_array[11].block_stop_go[0] == 0 # Block 147
-                            self.sec_array[11].block_stop_go[1] == 0 # Block 148
+                            self.sec_array[11].block_stop_go[0] = 0 # Block 147
+                            self.sec_array[11].block_stop_go[1] = 0 # Block 148
 
                     # Section Z
                     elif i == 12:
 
                         # Only one block, Block 150
-                        self.sec_array[11].block_stop_go[2] == 0 # Block 149
-                        self.sec_array[11].block_stop_go[1] == 0 # Block 148
+                        self.sec_array[11].block_stop_go[2] = 0 # Block 149
+                        self.sec_array[11].block_stop_go[1] = 0 # Block 148
 
         # Check switch positions
         if self.write_switch_cmd_array[1]: # Yard -> K
@@ -414,21 +414,6 @@ class green_line_plc_2_class:
             self.write_crossing_cmd_array[0] = 0
 
 
-
-
-                
-
-####################################################################################################
-#
-#                                   Initial Sections with Default Path
-#
-####################################################################################################
-
-
-
-# Wayside
-#wayside = Wayside([H, I, J, K, L, M, T, U, V, W, X, Y, Z])
-
     ####################################################################################################
     #
     #                                              Read & Write
@@ -454,10 +439,9 @@ class green_line_plc_2_class:
     #     read_maintenance_switch_array = maintenance_switch_array
     #     maintenance_switch_check = 1
 
-    def read_sugg_speed_handler(self, sugg_speed_array):
+    def read_sugg_speed_handler(self, sugg_speed_array: list):
 
-        ## print("in plc 2 read sugg speed handler")
-        self.read_sugg_speed_array = sugg_speed_array
+        self.read_sugg_speed_array = sugg_speed_array.copy()
         self.sugg_speed_check = 1
 
         # Check if all handlers have been called
@@ -480,10 +464,10 @@ class green_line_plc_2_class:
             self.sugg_authority_check = 0
             self.block_occupancy_check = 0
 
-    def read_sugg_authority_handler(self, sugg_authority_array):
+    def read_sugg_authority_handler(self, sugg_authority_array: list):
 
         ## print("in plc 2 read sugg authority handler")
-        self.read_sugg_authority_array = sugg_authority_array
+        self.read_sugg_authority_array = sugg_authority_array.copy()
         self.sugg_authority_check = 1
 
         # Check if all handlers have been called
@@ -516,8 +500,8 @@ class green_line_plc_2_class:
     block_occupancy_check = 0
 
     # Functions
-    def read_block_occupancy_handler(self, block_occupancy_array):
-        self.read_block_occupancies_array = block_occupancy_array
+    def read_block_occupancy_handler(self, block_occupancy_array: list):
+        self.read_block_occupancies_array = block_occupancy_array.copy()
         self.block_occupancy_check = 1
 
         # Check if all handlers have been called

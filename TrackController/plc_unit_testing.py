@@ -58,6 +58,13 @@ def call_plc_1_handlers(plc_program_1: green_line_plc_1_class, sugg_speed_test_a
     plc_program_1.read_sugg_authority_handler(sugg_authority_test_array)
     plc_program_1.read_block_occupancy_handler(occupancy_test_array)
 
+def call_plc_2_handlers(plc_program_2: green_line_plc_2_class, sugg_speed_test_array: list, sugg_authority_test_array: list, occupancy_test_array: list):
+
+    # Call plc handlers
+    plc_program_2.read_sugg_speed_handler(sugg_speed_test_array)
+    plc_program_2.read_sugg_authority_handler(sugg_authority_test_array)
+    plc_program_2.read_block_occupancy_handler(occupancy_test_array)
+
 
 ####################################################################################################
 #
@@ -364,7 +371,7 @@ class test_receive_sugg_speed_and_authority(unittest.TestCase):
             self.assertEqual(self.plc_program_1.read_sugg_speed_array[i], 50)
             self.assertEqual(self.plc_program_1.read_sugg_authority_array[i], 100)
 
-# Set DEF direction
+# Set DEF direction test cases
 class test_set_def_direction_Z_to_C(unittest.TestCase):
 
     # Set up test variables
@@ -453,7 +460,7 @@ class test_set_def_direction_A_to_G(unittest.TestCase):
         self.assertFalse(self.plc_program_1.DEF_direction)
         self.assertTrue(self.plc_program_1.DEF_direction_update)
         
-# Set Switch and Signal Commands
+# Set Switch and Signal Commands test cases
 class test_default_switch_commands(unittest.TestCase):
 
     # Set up test variables
@@ -731,7 +738,7 @@ class test_switch_commands_trains_waiting_at_Z_and_A(unittest.TestCase):
         self.assertEqual(self.plc_program_1.write_switch_cmd_array, [0, 1])
         self.assertEqual(self.plc_program_1.write_signal_cmd_array, [0, 1, 0, 1])
 
-# Set crossing commands
+# Set crossing commands test cases
 class test_crossing_commands_train_in_E(unittest.TestCase):
     
     # Set up test variables
@@ -780,7 +787,7 @@ class test_crossing_commands_train_everywhere_but_E(unittest.TestCase):
         call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
         self.assertFalse(self.plc_program_1.write_cross_cmd_array[0])
 
-# Set block-stop-go commands, Commanded Speed, and Commanded Authority
+# Set block-stop-go commands, Commanded Speed, and Commanded Authority test cases
 class test_block_stop_go_commands_train_Z_to_C(unittest.TestCase):
 
     # Set up test variables
@@ -2064,6 +2071,520 @@ class test_block_stop_go_commands_train_waiting_at_Z(unittest.TestCase):
 #
 ####################################################################################################
 
+# Receive occupancies test cases
+class test_section_H_occupancy(unittest.TestCase):
+
+    # Set up test variables
+    def setUp(self):
+        
+        # Test Arrays
+        self.occupancy_test_array = [0] * 91
+        self.sugg_speed_test_array = [None] * 87
+        self.sugg_authority_test_array = [None] * 87
+
+        # PLC Object
+        self.plc_program_2 = green_line_plc_2_class()
+
+        # Set occupancy
+        seudo_module_unit_testing.seudo_track_model_occupancy_plc_2([33, 34, 35], self.occupancy_test_array)
+
+    # Pass occupancies to PLC Program
+    def test_passing_values_to_plc(self):
+
+        # Call plc handlers
+        call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+
+        # Check section H occupancies
+        self.assertTrue(self.plc_program_2.sec_array[0].block_occupancy[0])
+        self.assertTrue(self.plc_program_2.sec_array[0].block_occupancy[1])
+        self.assertTrue(self.plc_program_2.sec_array[0].block_occupancy[2])
+
+class test_section_I_occupancy(unittest.TestCase):
+
+    # Set up test variables
+    def setUp(self):
+        
+        # Test Arrays
+        self.occupancy_test_array = [0] * 91
+        self.sugg_speed_test_array = [None] * 87
+        self.sugg_authority_test_array = [None] * 87
+
+        # PLC Object
+        self.plc_program_2 = green_line_plc_2_class()
+
+    # Pass occupancies to PLC Program
+    def test_passing_values_to_plc(self):
+
+        # Set occupancy
+        seudo_module_unit_testing.seudo_track_model_occupancy_plc_2(list(range(36, 58)), self.occupancy_test_array)
+        call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+
+        # Check section I occupancies
+        for block in self.plc_program_2.sec_array[1].block_occupancy:
+            self.assertTrue(block)
+
+class test_section_Yard_occupancy(unittest.TestCase):
+
+    # Set up test variables
+    def setUp(self):
+        
+        # Test Arrays
+        self.occupancy_test_array = [0] * 91
+        self.sugg_speed_test_array = [None] * 87
+        self.sugg_authority_test_array = [None] * 87
+
+        # PLC Object
+        self.plc_program_2 = green_line_plc_2_class()
+
+    # Pass occupancies to PLC Program
+    def test_passing_values_to_plc(self):
+
+        # Set occupancy
+        seudo_module_unit_testing.seudo_track_model_occupancy_plc_2([0], self.occupancy_test_array)
+        call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+
+        # Check section I occupancies
+        self.assertTrue(self.plc_program_2.yard_occupancy)
+
+class test_section_J_occupancy(unittest.TestCase):
+
+    # Set up test variables
+    def setUp(self):
+        
+        # Test Arrays
+        self.occupancy_test_array = [0] * 91
+        self.sugg_speed_test_array = [None] * 87
+        self.sugg_authority_test_array = [None] * 87
+
+        # PLC Object
+        self.plc_program_2 = green_line_plc_2_class()
+
+    # Pass occupancies to PLC Program
+    def test_passing_values_to_plc(self):
+
+        # Set occupancy
+        seudo_module_unit_testing.seudo_track_model_occupancy_plc_2(list(range(58, 63)), self.occupancy_test_array)
+        call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+
+        # Check section J occupancies
+        for block in self.plc_program_2.sec_array[2].block_occupancy:
+            self.assertTrue(block)
+
+class test_section_K_occupancy(unittest.TestCase):
+
+    # Set up test variables
+    def setUp(self):
+        
+        # Test Arrays
+        self.occupancy_test_array = [0] * 91
+        self.sugg_speed_test_array = [None] * 87
+        self.sugg_authority_test_array = [None] * 87
+
+        # PLC Object
+        self.plc_program_2 = green_line_plc_2_class()
+
+    # Pass occupancies to PLC Program
+    def test_passing_values_to_plc(self):
+
+        # Set occupancy
+        seudo_module_unit_testing.seudo_track_model_occupancy_plc_2(list(range(63, 69)), self.occupancy_test_array)
+        call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+
+        # Check section K occupancies
+        for block in self.plc_program_2.sec_array[3].block_occupancy:
+            self.assertTrue(block)
+
+class test_section_L_occupancy(unittest.TestCase):
+
+    # Set up test variables
+    def setUp(self):
+        
+        # Test Arrays
+        self.occupancy_test_array = [0] * 91
+        self.sugg_speed_test_array = [None] * 87
+        self.sugg_authority_test_array = [None] * 87
+
+        # PLC Object
+        self.plc_program_2 = green_line_plc_2_class()
+
+    # Pass occupancies to PLC Program
+    def test_passing_values_to_plc(self):
+
+        # Set occupancy
+        seudo_module_unit_testing.seudo_track_model_occupancy_plc_2(list(range(69, 74)), self.occupancy_test_array)
+        call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+
+        # Check section L occupancies
+        for block in self.plc_program_2.sec_array[4].block_occupancy:
+            self.assertTrue(block)
+
+class test_section_M_occupancy(unittest.TestCase):
+
+    # Set up test variables
+    def setUp(self):
+        
+        # Test Arrays
+        self.occupancy_test_array = [0] * 91
+        self.sugg_speed_test_array = [None] * 87
+        self.sugg_authority_test_array = [None] * 87
+
+        # PLC Object
+        self.plc_program_2 = green_line_plc_2_class()
+
+    # Pass occupancies to PLC Program
+    def test_passing_values_to_plc(self):
+
+        # Set occupancy
+        seudo_module_unit_testing.seudo_track_model_occupancy_plc_2(list(range(74, 77)), self.occupancy_test_array)
+        call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+
+        # Check section M occupancies
+        for block in self.plc_program_2.sec_array[5].block_occupancy:
+            self.assertTrue(block)
+
+class test_section_T_occupancy(unittest.TestCase):
+
+    # Set up test variables
+    def setUp(self):
+        
+        # Test Arrays
+        self.occupancy_test_array = [0] * 91
+        self.sugg_speed_test_array = [None] * 87
+        self.sugg_authority_test_array = [None] * 87
+
+        # PLC Object
+        self.plc_program_2 = green_line_plc_2_class()
+
+    # Pass occupancies to PLC Program
+    def test_passing_values_to_plc(self):
+
+        # Set occupancy
+        seudo_module_unit_testing.seudo_track_model_occupancy_plc_2(list(range(105, 110)), self.occupancy_test_array)
+        call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+
+        # Check section T occupancies
+        for block in self.plc_program_2.sec_array[6].block_occupancy:
+            self.assertTrue(block)
+
+class test_section_U_occupancy(unittest.TestCase):
+
+    # Set up test variables
+    def setUp(self):
+        
+        # Test Arrays
+        self.occupancy_test_array = [0] * 91
+        self.sugg_speed_test_array = [None] * 87
+        self.sugg_authority_test_array = [None] * 87
+
+        # PLC Object
+        self.plc_program_2 = green_line_plc_2_class()
+
+    # Pass occupancies to PLC Program
+    def test_passing_values_to_plc(self):
+
+        # Set occupancy
+        seudo_module_unit_testing.seudo_track_model_occupancy_plc_2(list(range(110, 117)), self.occupancy_test_array)
+        call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+
+        # Check section U occupancies
+        for block in self.plc_program_2.sec_array[7].block_occupancy:
+            self.assertTrue(block)
+
+class test_section_V_occupancy(unittest.TestCase):
+
+    # Set up test variables
+    def setUp(self):
+        
+        # Test Arrays
+        self.occupancy_test_array = [0] * 91
+        self.sugg_speed_test_array = [None] * 87
+        self.sugg_authority_test_array = [None] * 87
+
+        # PLC Object
+        self.plc_program_2 = green_line_plc_2_class()
+
+    # Pass occupancies to PLC Program
+    def test_passing_values_to_plc(self):
+
+        # Set occupancy
+        seudo_module_unit_testing.seudo_track_model_occupancy_plc_2(list(range(117, 122)), self.occupancy_test_array)
+        call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+
+        # Check section V occupancies
+        for block in self.plc_program_2.sec_array[8].block_occupancy:
+            self.assertTrue(block)
+
+class test_section_W_occupancy(unittest.TestCase):
+
+    # Set up test variables
+    def setUp(self):
+        
+        # Test Arrays
+        self.occupancy_test_array = [0] * 91
+        self.sugg_speed_test_array = [None] * 87
+        self.sugg_authority_test_array = [None] * 87
+
+        # PLC Object
+        self.plc_program_2 = green_line_plc_2_class()
+
+    # Pass occupancies to PLC Program
+    def test_passing_values_to_plc(self):
+
+        # Set occupancy
+        seudo_module_unit_testing.seudo_track_model_occupancy_plc_2(list(range(122, 144)), self.occupancy_test_array)
+        call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+
+        # Check section W occupancies
+        for block in self.plc_program_2.sec_array[9].block_occupancy:
+            self.assertTrue(block)
+
+class test_section_X_occupancy(unittest.TestCase):
+
+    # Set up test variables
+    def setUp(self):
+        
+        # Test Arrays
+        self.occupancy_test_array = [0] * 91
+        self.sugg_speed_test_array = [None] * 87
+        self.sugg_authority_test_array = [None] * 87
+
+        # PLC Object
+        self.plc_program_2 = green_line_plc_2_class()
+
+    # Pass occupancies to PLC Program
+    def test_passing_values_to_plc(self):
+
+        # Set occupancy
+        seudo_module_unit_testing.seudo_track_model_occupancy_plc_2(list(range(144, 147)), self.occupancy_test_array)
+        call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+
+        # Check section X occupancies
+        for block in self.plc_program_2.sec_array[10].block_occupancy:
+            self.assertTrue(block)
+
+class test_section_Y_occupancy(unittest.TestCase):
+
+    # Set up test variables
+    def setUp(self):
+        
+        # Test Arrays
+        self.occupancy_test_array = [0] * 91
+        self.sugg_speed_test_array = [None] * 87
+        self.sugg_authority_test_array = [None] * 87
+
+        # PLC Object
+        self.plc_program_2 = green_line_plc_2_class()
+
+    # Pass occupancies to PLC Program
+    def test_passing_values_to_plc(self):
+
+        # Set occupancy
+        seudo_module_unit_testing.seudo_track_model_occupancy_plc_2(list(range(147, 150)), self.occupancy_test_array)
+        call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+
+        # Check section Y occupancies
+        for block in self.plc_program_2.sec_array[11].block_occupancy:
+            self.assertTrue(block)
+
+class test_section_Z_occupancy(unittest.TestCase):
+
+    # Set up test variables
+    def setUp(self):
+        
+        # Test Arrays
+        self.occupancy_test_array = [0] * 91
+        self.sugg_speed_test_array = [None] * 87
+        self.sugg_authority_test_array = [None] * 87
+
+        # PLC Object
+        self.plc_program_2 = green_line_plc_2_class()
+
+    # Pass occupancies to PLC Program
+    def test_passing_values_to_plc(self):
+
+        # Set occupancy
+        seudo_module_unit_testing.seudo_track_model_occupancy_plc_2([150], self.occupancy_test_array)
+        call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+
+        # Check section Z occupancies
+        for block in self.plc_program_2.sec_array[12].block_occupancy:
+            self.assertTrue(block)
+
+# Receive sugg speed and sugg authority test case
+class test_receive_sugg_speed_and_authority(unittest.TestCase):
+
+    # Set up test variables
+    def setUp(self):
+        
+        # Test Arrays
+        self.occupancy_test_array = [0] * 91
+        self.sugg_speed_test_array = [50] * 87
+        self.sugg_authority_test_array = [100] * 87
+
+        # PLC Object
+        self.plc_program_2 = green_line_plc_2_class()
+
+    # Pass sugg speeds to PLC Program
+    def test_passing_values_to_plc(self):
+
+        # Call plc handlers
+        call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+
+        # Check sugg speed and authority
+        for i in range(len(self.sugg_speed_test_array)):
+            self.assertEqual(self.plc_program_2.read_sugg_speed_array[i], 50)
+            self.assertEqual(self.plc_program_2.read_sugg_authority_array[i], 100)
+
+# Set crossing commands test cases
+class test_crossing_commands_train_in_T(unittest.TestCase):
+    
+    # Set up test variables
+    def setUp(self):
+        
+        # Test Arrays
+        self.occupancy_test_array = [0] * 91
+        self.sugg_speed_test_array = [None] * 87
+        self.sugg_authority_test_array = [None] * 87
+
+        # PLC Object
+        self.plc_program_2 = green_line_plc_2_class()
+
+    # Pass occupancies to PLC Program
+    def test_passing_values_to_plc(self):
+
+        # No train
+        call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        self.assertFalse(self.plc_program_2.write_crossing_cmd_array[0])
+
+        # Train in section T
+        for block in [105, 106, 107, 108, 109]:
+            seudo_module_unit_testing.seudo_track_model_occupancy_plc_2([block], self.occupancy_test_array)
+            call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+            self.assertTrue(self.plc_program_2.write_crossing_cmd_array[0])
+
+class test_crossing_commands_train_everywhere_but_T(unittest.TestCase):
+
+    # Set up test variables
+    def setUp(self):
+        
+        # Test Arrays
+        self.occupancy_test_array = [0] * 91
+        self.sugg_speed_test_array = [None] * 87
+        self.sugg_authority_test_array = [None] * 87
+
+        # PLC Object
+        self.plc_program_2 = green_line_plc_2_class()
+
+    # Pass occupancies to PLC Program
+    def test_passing_values_to_plc(self):
+
+        # Train everywhere but T
+        seudo_module_unit_testing.seudo_track_model_occupancy_plc_2(list(range(105, 110)), self.occupancy_test_array)
+        self.occupancy_test_array = [x ^ 1 for x in self.occupancy_test_array]
+        call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        self.assertFalse(self.plc_program_2.write_crossing_cmd_array[0])
+
+# Set commanded speed and authority test cases
+class test_commanded_speed_authority_H_to_Yard(unittest.TestCase):
+
+    # Set up test variables
+    def setUp(self):
+        
+        # Test Arrays
+        self.occupancy_test_array = [0] * 91
+        self.sugg_speed_test_array = [50] * 87
+        self.sugg_authority_test_array = [100] * 87
+
+        # PLC Object
+        self.plc_program_2 = green_line_plc_2_class()
+
+    # Pass occupancies to PLC Program
+    def test_passing_values_to_plc(self):
+
+        # Train travels from H to Yard
+        for block in list(range(33, 58)):
+            seudo_module_unit_testing.seudo_track_model_occupancy_plc_2([block], self.occupancy_test_array)
+            call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+            if block == 33:
+                pass
+            elif block == 34:
+                self.assertEqual(self.plc_program_2.write_cmd_speed_array[block-33], 0)
+            else:
+                self.assertEqual(self.plc_program_2.write_cmd_speed_array[block-34], 0)
+                self.assertEqual(self.plc_program_2.write_cmd_speed_array[block-33], 0)
+        for auth in self.plc_program_2.write_cmd_authority_array:
+            self.assertEqual(auth, 100)
+
+class test_commanded_speed_authority_Yard_to_M(unittest.TestCase):
+
+    # Set up test variables
+    def setUp(self):
+        
+        # Test Arrays
+        self.occupancy_test_array = [0] * 91
+        self.sugg_speed_test_array = [50] * 87
+        self.sugg_authority_test_array = [100] * 87
+
+        # PLC Object
+        self.plc_program_2 = green_line_plc_2_class()
+
+    # Pass occupancies to PLC Program
+    def test_passing_values_to_plc(self):
+
+        # Train travels from Yard to M
+        for block in list(range(63, 77)):
+            seudo_module_unit_testing.seudo_track_model_occupancy_plc_2([block], self.occupancy_test_array)
+            call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+            if block == 63:
+                self.assertEqual(self.plc_program_2.write_cmd_speed_array[block-63], 0)
+            elif block == 64:
+                self.assertEqual(self.plc_program_2.write_cmd_speed_array[block-33], 0)
+                self.assertEqual(self.plc_program_2.write_cmd_speed_array[block-64], 0)
+            elif block == 75:
+                self.assertEqual(self.plc_program_2.write_cmd_speed_array[block-34], 0)
+            elif block == 76:
+                pass
+            else:
+                self.assertEqual(self.plc_program_2.write_cmd_speed_array[block-33], 0)
+                self.assertEqual(self.plc_program_2.write_cmd_speed_array[block-34], 0)
+        for auth in self.plc_program_2.write_cmd_authority_array:
+            self.assertEqual(auth, 100)
+
+class test_commanded_speed_authority_T_to_Z(unittest.TestCase):
+
+    # Set up test variables
+    def setUp(self):
+        
+        # Test Arrays
+        self.occupancy_test_array = [0] * 91
+        self.sugg_speed_test_array = [50] * 87
+        self.sugg_authority_test_array = [100] * 87
+
+        # PLC Object
+        self.plc_program_2 = green_line_plc_2_class()
+
+    # Pass occupancies to PLC Program
+    def test_passing_values_to_plc(self):
+
+        # Train travels from Yard to M
+        for block in list(range(105, 151)):
+            seudo_module_unit_testing.seudo_track_model_occupancy_plc_2([block], self.occupancy_test_array)
+            call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+            if block == 105:
+                pass
+            elif block == 106:
+                self.assertEqual(self.plc_program_2.write_cmd_speed_array[block-64], 0)
+            else:
+                self.assertEqual(self.plc_program_2.write_cmd_speed_array[block-64], 0)
+                self.assertEqual(self.plc_program_2.write_cmd_speed_array[block-65], 0)
+        for auth in self.plc_program_2.write_cmd_authority_array:
+            self.assertEqual(auth, 100)
+            
+####################################################################################################
+#
+#                                      PLC Program 3 Test Cases
+#
+####################################################################################################
 
 
 

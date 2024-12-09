@@ -29,27 +29,6 @@
 #          CTC Office
 ################################
 
-# Sugg Speed
-def seudo_ctc_sugg_speed_plc_1(indexies: list, sugg_speeds: list, speed_test_array: list):
-
-    # Reset test array
-    for i in range(len(speed_test_array)):
-        speed_test_array[i] = None
-
-    # Insert sugg speeds into test array
-    for i in range(len(indexies)):
-        speed_test_array[indexies[i]-1] = sugg_speeds[i]
-
-# Sugg authority
-def seudo_ctc_sugg_authority_plc_1(indexies: list, sugg_authoritys: list, authority_test_array: list):
-
-    # Reset test array
-    for i in range(len(authority_test_array)):
-        authority_test_array[i] = None
-
-    # Insert sugg speeds into test array
-    for i in range(len(indexies)):
-        authority_test_array[indexies[i]-1] = sugg_authoritys[i]
 
 ################################
 #        Track Model
@@ -62,6 +41,31 @@ def seudo_track_model_occupancy_plc_1(indexies: list, occupancy_test_array: list
     for i in range(len(occupancy_test_array)):
         occupancy_test_array[i] = False
 
-    # Insert sugg speeds into test array
+    # Insert occupancies into test array
+    for i in range(len(indexies)):
+        occupancy_test_array[indexies[i]-1] = True
+
+def seudo_track_model_occupancy_plc_2(indexies: list, occupancy_test_array: list):
+
+    # Reset test array
+    for i in range(len(occupancy_test_array)):
+        occupancy_test_array[i] = False
+
+    # Insert occupancies into test array
+    for i in range(len(indexies)):
+        if indexies[i] == 0:
+            occupancy_test_array[indexies[i]] = True
+        if 33 <= indexies[i] <= 76:
+            occupancy_test_array[indexies[i]-32] = True
+        if 105 <= indexies[i] <= 150:
+            occupancy_test_array[indexies[i]-60] = True
+
+def seudo_track_model_occupancy_plc_3(indexies: list, occupancy_test_array: list):
+
+    # Reset test array
+    for i in range(len(occupancy_test_array)):
+        occupancy_test_array[i] = False
+
+    # Insert occupancies into test array
     for i in range(len(indexies)):
         occupancy_test_array[indexies[i]-1] = True
