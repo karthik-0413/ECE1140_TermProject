@@ -112,10 +112,19 @@ class TrainControllerShell:
         self.communicator.desired_temperature_signal.emit(desired_temperatures)
         
         exterior_lights = [train_controller.lights.exterior_lights for train_controller in self.train_controller_list]
+        manual_exterior_lights = [train_controller.lights.manual_exterior_lights for train_controller in self.train_controller_list]
+        for i in range(len(self.train_controller_list)):
+            if manual_exterior_lights[i] or exterior_lights[i]:
+                exterior_lights[i] = True
         self.communicator.exterior_lights_signal.emit(exterior_lights)
         
         interior_lights = [train_controller.lights.interior_lights for train_controller in self.train_controller_list]
+        manual_interior_lights = [train_controller.lights.manual_interior_lights for train_controller in self.train_controller_list]
+        for i in range(len(self.train_controller_list)):
+            if manual_interior_lights[i] or interior_lights[i]:
+                interior_lights[i] = True
         self.communicator.interior_lights_signal.emit(interior_lights)
+        
         
         left_doors = [train_controller.doors.left_door for train_controller in self.train_controller_list]
         self.communicator.left_door_signal.emit(left_doors)
@@ -138,7 +147,7 @@ class TrainControllerShell:
         self.communicator.polarity_signal.connect(self.update_polarity)
         
     def update_commanded_speed(self, commanded_speed: list):
-        print(f"Commanded Speed in Train Controller Shell: {commanded_speed}")
+        # print(f"Commanded Speed in Train Controller Shell: {commanded_speed}")
         if len(self.train_controller_list):
             if len(commanded_speed):
                 for i in range(len(commanded_speed)):

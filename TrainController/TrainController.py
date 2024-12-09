@@ -1780,10 +1780,12 @@ class TrainControllerUI(QWidget):
             
     def handle_interior_lights(self):
         if self.speed_control.operation_mode == 1:
+            print("Function called")
             if self.lights.manual_interior_lights:
+                print("Turning off interior lights")
                 self.lights.manual_turn_off_interior_lights()
             else:
-                # # print("Turning on interior lights")
+                print("Turning on interior lights")
                 self.lights.manual_turn_on_interior_lights()
             
     def handle_exterior_lights(self):
