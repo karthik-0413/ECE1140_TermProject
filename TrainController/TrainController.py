@@ -187,6 +187,8 @@ class PowerCommand(QObject):
         self.raspberry_pi_port = 22
         self.raspberry_pi_username = 'maj214'
         self.raspberry_pi_password = 'password'
+        self.previous_power_command = 0.0
+        self.total_power_command = 0.0
         
     def update_kp(self, kp):
         self.tuning.kp = kp
@@ -211,7 +213,6 @@ class PowerCommand(QObject):
                 if self.brake_status.reaching_station:
                     self.power_command = 0
                     self.power_command_signal.emit(self.power_command)
-                    print("Reaching Station")
                     self.brake_status.apply_service_brake()
                     if current_velocity == 0.0:
                         self.brake_status.no_apply_service_brake()
@@ -223,7 +224,6 @@ class PowerCommand(QObject):
                     self.power_command_signal.emit(self.power_command)
                     self.brake_status.apply_service_brake()
                     if current_velocity < desired_velocity or current_velocity == 0.0:
-                        print("Entered Lower")
                         self.brake_status.no_apply_service_brake()
                         self.brake_status.entered_lower = False
                         self.brake_status.no_again = False
@@ -337,38 +337,37 @@ class PowerCommand(QObject):
                         # self.brake_status.no_apply_emergency_brake()
                         
         if self.module == 0:
-            result = send_data_to_pi([desired_velocity, current_velocity, self.ek_current, self.max_power, self.uk_current, self.uk_previous, self.ek_previous, self.tuning.kp, self.tuning.ki, self.brake_status.station_auto_mode, self.brake_status.reaching_station, self.brake_status.entered_lower, self.brake_status.no_again, self.brake_status.driver_emergency_brake_command, self.brake_status.driver_service_brake_command, self.brake_status.manual_driver_service_brake_command])
-            # print(f"Result:{result}")
-            if result:
-                # Split the result string into a list of values
-                # result_list = list(map(float, result.split(',')))
-                
-                
-                # Split the result string by commas
-                result_list = result.split(',')
-                # for i in range(len(result_list)):
-                #     print(f"Data Type: {type(result_list[i])}") # Everything is a string
+            self.previous_power_command = self.total_power_command
+            self.total_power_command = self.power_command
+            
+            if round(self.total_power_command, 2) != round(self.previous_power_command, 2):   
+                result = send_data_to_pi([desired_velocity, current_velocity, self.ek_current, self.max_power, self.uk_current, self.uk_previous, self.ek_previous, self.tuning.kp, self.tuning.ki, self.brake_status.station_auto_mode, self.brake_status.reaching_station, self.brake_status.entered_lower, self.brake_status.no_again, self.brake_status.driver_emergency_brake_command, self.brake_status.driver_service_brake_command, self.brake_status.manual_driver_service_brake_command])
+                # print(f"Result:{result}")
+                if result:
+                    # Split the result string by commas
+                    result_list = result.split(',')
                     
-                for i in range(len(result_list)):
-                    # print(f"Number of Elements: {len(result_list)}")
-                    result_list[i] = self.convert_element(result_list[i], i)
-                    # print(f"Data Type: {type(result_list[i])}") # Everything is a string
-                
-                # Apply the conversion to each element
-                # parsed_result = [self.convert_element(el) for el in result_list]
-                
-                self.power_command, self.ek_previous, self.uk_previous, self.uk_current, self.ek_current, self.brake_status.station_auto_mode, self.brake_status.reaching_station, self.brake_status.entered_lower, self.brake_status.no_again, self.brake_status.driver_emergency_brake_command, self.brake_status.driver_service_brake_command, self.brake_status.manual_driver_service_brake_command = result_list
-                self.power_command_signal.emit(self.power_command)
-                
-                if self.brake_status.driver_service_brake_command == True:
-                    self.brake_status.apply_service_brake()
-                elif self.brake_status.driver_service_brake_command == False:
-                    self.brake_status.no_apply_service_brake()
-                if self.brake_status.driver_emergency_brake_command == True:
-                    self.brake_status.apply_emergency_brake()
-                elif self.brake_status.driver_emergency_brake_command == False:
-                    self.brake_status.no_apply_emergency_brake()
+                    # for i in range(len(result_list)):
+                    #     print(f"Data Type: {type(result_list[i])}") # Everything is a string
+                        
+                    for i in range(len(result_list)):
+                        # print(f"Number of Elements: {len(result_list)}")
+                        result_list[i] = self.convert_element(result_list[i], i)
+                        # print(f"Data Type: {type(result_list[i])}") # Everything is a string
                     
+                    
+                    self.power_command, self.ek_previous, self.uk_previous, self.uk_current, self.ek_current, self.brake_status.station_auto_mode, self.brake_status.reaching_station, self.brake_status.entered_lower, self.brake_status.no_again, self.brake_status.driver_emergency_brake_command, self.brake_status.driver_service_brake_command, self.brake_status.manual_driver_service_brake_command = result_list
+                    self.power_command_signal.emit(self.power_command)
+                    
+                    if self.brake_status.driver_service_brake_command == True:
+                        self.brake_status.apply_service_brake()
+                    elif self.brake_status.driver_service_brake_command == False:
+                        self.brake_status.no_apply_service_brake()
+                    if self.brake_status.driver_emergency_brake_command == True:
+                        self.brake_status.apply_emergency_brake()
+                    elif self.brake_status.driver_emergency_brake_command == False:
+                        self.brake_status.no_apply_emergency_brake()
+                        
 
 
     def convert_element(self, element, index):
