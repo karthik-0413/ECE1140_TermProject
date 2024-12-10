@@ -236,6 +236,7 @@ class track_model:
     def handle_commanded_speed_signal(self, cmd_speeds: list):
         self.past_cmd_speeds_wayside = self.cmd_speeds_wayside
         self.cmd_speeds_wayside = cmd_speeds
+        print(f"cmd speed in track model: {self.cmd_speeds_wayside}")
 
         # if len(self.cmd_speeds_wayside):
         #      print(f"Received Cmd Speed: {self.cmd_speeds_wayside[0]}")
