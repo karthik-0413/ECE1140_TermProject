@@ -37,13 +37,13 @@ import unittest
 from TrackController import seudo_module_unit_testing
 
 # PLC Program 1
-from TrackController.green_1_to_be_reviewed import green_line_plc_1_class
+from TrackController.green_plc_1 import green_line_plc_1_class
 
 # PLC Program 2
-from TrackController.green_2_to_be_reviewed import green_line_plc_2_class
+from TrackController.green_plc_2 import green_line_plc_2_class
 
 # PLC Program 3
-from TrackController.green_3_to_be_reviewed import green_line_plc_3_class
+from TrackController.green_plc_3 import green_line_plc_3_class
 
 ####################################################################################################
 #

@@ -58,14 +58,17 @@ class green_line_plc_2_class:
         X = Section(3)
         Y = Section(3)
         Z = Section(1)
+        #                 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
+        self.sec_array = [H, I, J, K, L, M, T, U, V, W,  X,  Y,  Z]
 
-        self.sec_array = [H, I, J, K, L, M, T, U, V, W, X, Y, Z]
-
-    # Methods
-    def is_created(self):
+    def green_plc_2_is_created(self):
         return True
     
+    # Update block occupancies
     def update_block_occupancies(self):
+
+        # OR Track Model occupancies with CTC maintenance blocks
+        self.read_block_occupancies_array = [a or b for a, b in zip(self.read_block_occupancies_array, self.read_maintenance_block_array)]
 
         # Update Yard Occupancy
         self.yard_occupancy = self.read_block_occupancies_array[0]
@@ -138,8 +141,8 @@ class green_line_plc_2_class:
 
                         # Not edge blocks
                         elif j > 1: # Blocks 38 --> 57
-                            self.sec_array[1].block_stop_go[j - 2] == 0
-                            self.sec_array[1].block_stop_go[j - 1] == 0
+                            self.sec_array[1].block_stop_go[j - 2] = 0
+                            self.sec_array[1].block_stop_go[j - 1] = 0
 
                     # Section J
                     elif i == 2:
@@ -175,153 +178,153 @@ class green_line_plc_2_class:
                             if self.write_switch_cmd_array[1]:
                                 self.yard_stop_go = 0 # Yard block
                             else:
-                                self.sec_array[2].block_stop_go[4] == 0 # Block 62
-                                self.sec_array[2].block_stop_go[3] == 0 # Block 61
+                                self.sec_array[2].block_stop_go[4] = 0 # Block 62
+                                self.sec_array[2].block_stop_go[3] = 0 # Block 61
 
                         elif j == 1: # Block 64
 
                             # Check switch 2 position
-                            if self.write_switch_cmd_array[1]:
-                                self.sec_array[2].block_stop_go[4] == 0 # Block 62
+                            if not self.write_switch_cmd_array[1]:
+                                self.sec_array[2].block_stop_go[4] = 0 # Block 62
                             else:
                                 self.yard_stop_go = 0
 
-                            self.sec_array[3].block_stop_go[0] == 0 # Block 63
+                            self.sec_array[3].block_stop_go[0] = 0 # Block 63
 
                         # Not edge blocks
                         elif j > 1: # Blocks 65 --> 68
-                            self.sec_array[3].block_stop_go[j - 2] == 0
-                            self.sec_array[3].block_stop_go[j - 1] == 0
+                            self.sec_array[3].block_stop_go[j - 2] = 0
+                            self.sec_array[3].block_stop_go[j - 1] = 0
 
                     # Section L
                     elif i == 4:
 
                         # Check edge blocks
                         if j == 0: # Block 69
-                            self.sec_array[3].block_stop_go[5] == 0 # Block 68
-                            self.sec_array[3].block_stop_go[4] == 0 # Block 67
+                            self.sec_array[3].block_stop_go[5] = 0 # Block 68
+                            self.sec_array[3].block_stop_go[4] = 0 # Block 67
 
                         elif j == 1: # Block 70
-                            self.sec_array[3].block_stop_go[5] == 0 # Block 68
-                            self.sec_array[4].block_stop_go[0] == 0 # Block 69
+                            self.sec_array[3].block_stop_go[5] = 0 # Block 68
+                            self.sec_array[4].block_stop_go[0] = 0 # Block 69
 
                         # Not edge blocks
                         elif j > 1: # Blocks 71 --> 73
-                            self.sec_array[4].block_stop_go[j - 2] == 0
-                            self.sec_array[4].block_stop_go[j - 1] == 0
+                            self.sec_array[4].block_stop_go[j - 2] = 0
+                            self.sec_array[4].block_stop_go[j - 1] = 0
 
                     # Section M
                     elif i == 5:
 
                         # Check edge blocks
                         if j == 0: # Block 74
-                            self.sec_array[4].block_stop_go[4] == 0 # Block 73
-                            self.sec_array[4].block_stop_go[3] == 0 # Block 72
+                            self.sec_array[4].block_stop_go[4] = 0 # Block 73
+                            self.sec_array[4].block_stop_go[3] = 0 # Block 72
 
                         elif j == 1: # Block 75
-                            self.sec_array[4].block_stop_go[4] == 0 # Block 73
+                            self.sec_array[4].block_stop_go[4] = 0 # Block 73
 
                     # Section T
                     elif i == 6:
 
                         # Check edge blocks
                         if j == 1: # Block 106
-                            self.sec_array[6].block_stop_go[0] == 0 # Block 105
+                            self.sec_array[6].block_stop_go[0] = 0 # Block 105
 
                         # Not edge blocks
                         elif j > 1: # Blocks 107 --> 109
-                            self.sec_array[6].block_stop_go[j - 1] == 0
-                            self.sec_array[6].block_stop_go[j - 2] == 0
+                            self.sec_array[6].block_stop_go[j - 1] = 0
+                            self.sec_array[6].block_stop_go[j - 2] = 0
 
                     # Section U
                     elif i == 7:
 
                         # Check edge blocks
                         if j == 0: # Block 110
-                            self.sec_array[6].block_stop_go[4] == 0 # Block 109
-                            self.sec_array[6].block_stop_go[3] == 0 # Block 108
+                            self.sec_array[6].block_stop_go[4] = 0 # Block 109
+                            self.sec_array[6].block_stop_go[3] = 0 # Block 108
 
                         elif j == 1: # Block 111
-                            self.sec_array[6].block_stop_go[4] == 0 # Block 109
-                            self.sec_array[7].block_stop_go[0] == 0 # Block 110
+                            self.sec_array[6].block_stop_go[4] = 0 # Block 109
+                            self.sec_array[7].block_stop_go[0] = 0 # Block 110
 
                         # Not edge blocks
                         elif j > 1: # Blocks 112 --> 116
-                            self.sec_array[7].block_stop_go[j - 2] == 0
-                            self.sec_array[7].block_stop_go[j - 1] == 0
+                            self.sec_array[7].block_stop_go[j - 2] = 0
+                            self.sec_array[7].block_stop_go[j - 1] = 0
 
                     # Section V
                     elif i == 8:
 
                         # Check edge blocks
                         if j == 0: # Block 117
-                            self.sec_array[7].block_stop_go[6] == 0 # Block 116
-                            self.sec_array[7].block_stop_go[5] == 0 # Block 115
+                            self.sec_array[7].block_stop_go[6] = 0 # Block 116
+                            self.sec_array[7].block_stop_go[5] = 0 # Block 115
 
                         elif j == 1: # Block 118
-                            self.sec_array[7].block_stop_go[6] == 0 # Block 116
-                            self.sec_array[8].block_stop_go[0] == 0 # Block 117
+                            self.sec_array[7].block_stop_go[6] = 0 # Block 116
+                            self.sec_array[8].block_stop_go[0] = 0 # Block 117
 
                         # Not edge blocks
                         elif j > 1: # Blocks 119 --> 121
-                            self.sec_array[8].block_stop_go[j - 2] == 0
-                            self.sec_array[8].block_stop_go[j - 1] == 0
+                            self.sec_array[8].block_stop_go[j - 2] = 0
+                            self.sec_array[8].block_stop_go[j - 1] = 0
 
                     # Section W
                     elif i == 9:
 
                         # Check edge blocks
                         if j == 0: # Block 122
-                            self.sec_array[8].block_stop_go[4] == 0 # Block 121
-                            self.sec_array[8].block_stop_go[3] == 0 # Block 120
+                            self.sec_array[8].block_stop_go[4] = 0 # Block 121
+                            self.sec_array[8].block_stop_go[3] = 0 # Block 120
 
                         elif j == 1: # Block 123
-                            self.sec_array[8].block_stop_go[4] == 0 # Block 121
-                            self.sec_array[9].block_stop_go[0] == 0 # Block 122
+                            self.sec_array[8].block_stop_go[4] = 0 # Block 121
+                            self.sec_array[9].block_stop_go[0] = 0 # Block 122
 
                         # Not edge blocks
                         elif j > 1: # Blocks 124 --> 143
-                            self.sec_array[9].block_stop_go[j - 2] == 0
-                            self.sec_array[9].block_stop_go[j - 1] == 0
+                            self.sec_array[9].block_stop_go[j - 2] = 0
+                            self.sec_array[9].block_stop_go[j - 1] = 0
 
                     # Section X
                     elif i == 10:
 
                         # Check each block
                         if j == 0: # Block 144
-                            self.sec_array[9].block_stop_go[21] == 0 # Block 143
-                            self.sec_array[9].block_stop_go[20] == 0 # Block 142
+                            self.sec_array[9].block_stop_go[21] = 0 # Block 143
+                            self.sec_array[9].block_stop_go[20] = 0 # Block 142
 
                         elif j == 1: # Block 145
-                            self.sec_array[9].block_stop_go[21] == 0 # Block 143
-                            self.sec_array[10].block_stop_go[0] == 0 # Block 144
+                            self.sec_array[9].block_stop_go[21] = 0 # Block 143
+                            self.sec_array[10].block_stop_go[0] = 0 # Block 144
 
                         elif j == 2: # Block 146
-                            self.sec_array[10].block_stop_go[0] == 0 # Block 144
-                            self.sec_array[10].block_stop_go[1] == 0 # Block 145
+                            self.sec_array[10].block_stop_go[0] = 0 # Block 144
+                            self.sec_array[10].block_stop_go[1] = 0 # Block 145
 
                     # Section Y
                     elif i == 11:
 
                         # Check each block
                         if j == 0: # Block 147
-                            self.sec_array[10].block_stop_go[2] == 0 # Block 146
-                            self.sec_array[10].block_stop_go[1] == 0 # Block 145
+                            self.sec_array[10].block_stop_go[2] = 0 # Block 146
+                            self.sec_array[10].block_stop_go[1] = 0 # Block 145
 
                         elif j == 1: # Block 148
-                            self.sec_array[10].block_stop_go[2] == 0 # Block 146
-                            self.sec_array[11].block_stop_go[0] == 0 # Block 147
+                            self.sec_array[10].block_stop_go[2] = 0 # Block 146
+                            self.sec_array[11].block_stop_go[0] = 0 # Block 147
 
                         elif j == 2: # Block 149
-                            self.sec_array[11].block_stop_go[0] == 0 # Block 147
-                            self.sec_array[11].block_stop_go[1] == 0 # Block 148
+                            self.sec_array[11].block_stop_go[0] = 0 # Block 147
+                            self.sec_array[11].block_stop_go[1] = 0 # Block 148
 
                     # Section Z
                     elif i == 12:
 
                         # Only one block, Block 150
-                        self.sec_array[11].block_stop_go[2] == 0 # Block 149
-                        self.sec_array[11].block_stop_go[1] == 0 # Block 148
+                        self.sec_array[11].block_stop_go[2] = 0 # Block 149
+                        self.sec_array[11].block_stop_go[1] = 0 # Block 148
 
         # Check switch positions
         if self.write_switch_cmd_array[1]: # Yard -> K
@@ -330,6 +333,7 @@ class green_line_plc_2_class:
         else:                         # J -> K
             self.yard_stop_go = 0
 
+    # Update command speed of each block
     def update_cmd_speed(self):
         
         # Index to traverse output suggested speed array
@@ -361,6 +365,7 @@ class green_line_plc_2_class:
                     # Increment index
                     BlockArrayIndex += 1
 
+    # Update command authority of each block
     def update_cmd_authority(self):
         
         # Index to traverse output suggested authority array
@@ -384,14 +389,24 @@ class green_line_plc_2_class:
                     # Increment index
                     BlockArrayIndex += 1
 
+    # Update switch commands
     def update_switch_cmd(self):
 
-        # Switch 1
+        # Switch I
         self.write_switch_cmd_array[0] = 0 # I -> Yard
 
-        # Switch 2
+        # Switch K
         self.write_switch_cmd_array[1] = 1 # Yard -> K
 
+        # Switch I maintenance
+        if self.read_block_occupancies_array[0] and self.read_block_occupancies_array[25] and self.read_block_occupancies_array[26]:
+            self.write_switch_cmd_array[0] = self.read_maintenance_switch_array[0]
+
+        # Switch K maintenance
+        if self.read_block_occupancies_array[0] and self.read_block_occupancies_array[30] and self.read_block_occupancies_array[31]:
+            self.write_switch_cmd_array[1] = self.read_maintenance_switch_array[1]
+
+    # Update signal commands
     def update_signal_cmd(self):
         
         # Check switch 1 position
@@ -405,6 +420,7 @@ class green_line_plc_2_class:
         # Signal for Section K
         self.write_signal_cmd_array[2] = 1 # Default signal
 
+    # Update crossing command
     def update_crossing_cmd(self):
 
         # Check section T overall occupancy
@@ -413,21 +429,6 @@ class green_line_plc_2_class:
         else:
             self.write_crossing_cmd_array[0] = 0
 
-
-
-
-                
-
-####################################################################################################
-#
-#                                   Initial Sections with Default Path
-#
-####################################################################################################
-
-
-
-# Wayside
-#wayside = Wayside([H, I, J, K, L, M, T, U, V, W, X, Y, Z])
 
     ####################################################################################################
     #
@@ -440,28 +441,22 @@ class green_line_plc_2_class:
     ################################
 
     # Variables
-    #read_maintenance_switch_array = [None] * 2
+    read_maintenance_block_array = [0] * 91
+    read_maintenance_switch_array = [None] * 2
     read_sugg_speed_array = [None] * 87
     read_sugg_authority_array = [None] * 87
-    #maintenance_switch_check = 0
+    maintenance_block_check = 0
+    maintenance_switch_check = 0
     sugg_speed_check = 0
     sugg_authority_check = 0
 
     # Functions
-    # def read_maintenance_switches_handler(maintenance_switch_array):
-    #     global read_maintenance_switch_array
-    #     global maintenance_switch_check
-    #     read_maintenance_switch_array = maintenance_switch_array
-    #     maintenance_switch_check = 1
-
-    def read_sugg_speed_handler(self, sugg_speed_array):
-
-        ## print("in plc 2 read sugg speed handler")
-        self.read_sugg_speed_array = sugg_speed_array
-        self.sugg_speed_check = 1
+    def read_maintenance_block_handler(self, maintenance_block_array: list):
+        self.read_maintenance_block_array = maintenance_block_array.copy()
+        self.maintenance_block_check = 1
 
         # Check if all handlers have been called
-        if self.sugg_speed_check and self.sugg_authority_check and self.block_occupancy_check:
+        if self.sugg_speed_check and self.sugg_authority_check and self.block_occupancy_check and self.maintenance_switch_check and self.maintenance_block_check:
 
             # Update block occupancies
             self.update_block_occupancies()
@@ -475,19 +470,19 @@ class green_line_plc_2_class:
             self.update_cmd_authority()
 
             # Reset checks
-            #maintenance_switch_check = 0
+            self.maintenance_block_check = 0
+            self.maintenance_switch_check = 0
             self.sugg_speed_check = 0
             self.sugg_authority_check = 0
             self.block_occupancy_check = 0
 
-    def read_sugg_authority_handler(self, sugg_authority_array):
-
-        ## print("in plc 2 read sugg authority handler")
-        self.read_sugg_authority_array = sugg_authority_array
-        self.sugg_authority_check = 1
+    def read_maintenance_switches_handler(self, maintenance_switch_array: list):
+        self.read_maintenance_switch_array = maintenance_switch_array.copy()
+        self.read_maintenance_switch_array[1] = not self.read_maintenance_switch_array[1]
+        self.maintenance_switch_check = 1
 
         # Check if all handlers have been called
-        if self.sugg_speed_check and self.sugg_authority_check and self.block_occupancy_check:
+        if self.sugg_speed_check and self.sugg_authority_check and self.block_occupancy_check and self.maintenance_switch_check and self.maintenance_block_check:
 
             # Update block occupancies
             self.update_block_occupancies()
@@ -501,7 +496,58 @@ class green_line_plc_2_class:
             self.update_cmd_authority()
 
             # Reset checks
-            #maintenance_switch_check = 0
+            self.maintenance_block_check = 0
+            self.maintenance_switch_check = 0
+            self.sugg_speed_check = 0
+            self.sugg_authority_check = 0
+            self.block_occupancy_check = 0
+
+    def read_sugg_speed_handler(self, sugg_speed_array: list):
+        self.read_sugg_speed_array = sugg_speed_array.copy()
+        self.sugg_speed_check = 1
+
+        # Check if all handlers have been called
+        if self.sugg_speed_check and self.sugg_authority_check and self.block_occupancy_check and self.maintenance_switch_check and self.maintenance_block_check:
+
+            # Update block occupancies
+            self.update_block_occupancies()
+
+            # Perform computations based on block occupancies
+            self.update_switch_cmd()
+            self.update_signal_cmd()
+            self.update_crossing_cmd()
+            self.update_block_stop_go()
+            self.update_cmd_speed()
+            self.update_cmd_authority()
+
+            # Reset checks
+            self.maintenance_block_check = 0
+            self.maintenance_switch_check = 0
+            self.sugg_speed_check = 0
+            self.sugg_authority_check = 0
+            self.block_occupancy_check = 0
+
+    def read_sugg_authority_handler(self, sugg_authority_array: list):
+        self.read_sugg_authority_array = sugg_authority_array.copy()
+        self.sugg_authority_check = 1
+
+        # Check if all handlers have been called
+        if self.sugg_speed_check and self.sugg_authority_check and self.block_occupancy_check and self.maintenance_switch_check and self.maintenance_block_check:
+
+            # Update block occupancies
+            self.update_block_occupancies()
+
+            # Perform computations based on block occupancies
+            self.update_switch_cmd()
+            self.update_signal_cmd()
+            self.update_crossing_cmd()
+            self.update_block_stop_go()
+            self.update_cmd_speed()
+            self.update_cmd_authority()
+
+            # Reset checks
+            self.maintenance_block_check = 0
+            self.maintenance_switch_check = 0
             self.sugg_speed_check = 0
             self.sugg_authority_check = 0
             self.block_occupancy_check = 0
@@ -516,12 +562,12 @@ class green_line_plc_2_class:
     block_occupancy_check = 0
 
     # Functions
-    def read_block_occupancy_handler(self, block_occupancy_array):
-        self.read_block_occupancies_array = block_occupancy_array
+    def read_block_occupancy_handler(self, block_occupancy_array: list):
+        self.read_block_occupancies_array = block_occupancy_array.copy()
         self.block_occupancy_check = 1
 
         # Check if all handlers have been called
-        if self.sugg_speed_check and self.sugg_authority_check and self.block_occupancy_check:
+        if self.sugg_speed_check and self.sugg_authority_check and self.block_occupancy_check and self.maintenance_switch_check and self.maintenance_block_check:
 
             # Update block occupancies
             self.update_block_occupancies()
@@ -535,7 +581,8 @@ class green_line_plc_2_class:
             self.update_cmd_authority()
 
             # Reset checks
-            #maintenance_switch_check = 0
+            self.maintenance_block_check = 0
+            self.maintenance_switch_check = 0
             self.sugg_speed_check = 0
             self.sugg_authority_check = 0
             self.block_occupancy_check = 0
@@ -557,21 +604,6 @@ class green_line_plc_2_class:
     write_switch_cmd_array = [0, 1]
     write_signal_cmd_array = [0, 1, 0]
     write_crossing_cmd_array = [0]
-
-####################################################################################################
-#
-#                                         Write Function
-#
-####################################################################################################
-
-# Write to Wayside Shell
-# def write_to_wayside_shell():
-#     green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_cmd_speed.emit(write_cmd_speed_array)
-#     green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_cmd_authority.emit(write_cmd_authority_array)
-#     green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_switch_cmd.emit(write_switch_cmd_array)
-#     green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_signal_cmd.emit(write_signal_cmd_array)
-#     green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_crossing_cmd.emit(write_crossing_cmd_array[0])
-
 
 # Section Class
 class Section:
@@ -606,38 +638,6 @@ class Section:
             
         return False
 
-####################################################################################################
-#
-#                                         Main Execution
-#
-####################################################################################################
 
-# Establish connection to Wayside shell
-#green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_maintenance_switch_cmd.connect(read_maintenance_switches_handler)
-# green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_sugg_speed.connect(read_sugg_speed_handler)
-# green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_sugg_authority.connect(read_sugg_authority_handler)
-# green_line_plc_2_shell_communicate.green_plc_2.green_line_plc_2_block_occupancy.connect(read_block_occupancy_handler)
 
-# while True:
 
-#     if sugg_speed_check and sugg_authority_check and block_occupancy_check:
-
-#         # Update block occupancies
-#         wayside.update_block_occupancies()
-
-#         # Perform computations based on block occupancies
-#         wayside.update_switch_cmd()
-#         wayside.update_signal_cmd()
-#         wayside.update_crossing_cmd()
-#         wayside.update_block_stop_go()
-#         wayside.update_cmd_speed()
-#         wayside.update_cmd_authority()
-        
-#         # Write commands to Wayside shell
-#         write_to_wayside_shell()
-
-#         # Reset checks
-# #        maintenance_switch_check = 0
-#         sugg_speed_check = 0
-#         sugg_authority_check = 0
-#         block_occupancy_check = 0

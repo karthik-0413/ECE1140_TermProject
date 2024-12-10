@@ -66,11 +66,14 @@ class green_line_plc_3_class:
     #           Methods
     ##################################
     
-    def is_created(self):
+    def green_plc_3_is_created(self):
         return True
 
     # Update block occupancies
     def update_block_occupancies(self):
+
+        # OR Track Model occupancies with CTC maintenance blocks
+        self.read_block_occupancies_array = [a or b for a, b in zip(self.read_block_occupancies_array, self.read_maintenance_block_array)]
 
         # Index to traverse input block occupancy array
         BlockArrayIndex = 0
@@ -155,8 +158,8 @@ class green_line_plc_3_class:
                                 self.sec_array[1].block_stop_go[0] = 0 # Block 77
                                 self.sec_array[0].block_stop_go[2] = 0 # Block 76
                             else:                # Moving right, away from loop
-                                self.sec_array[1].block_stop_go[0] = 0 # Block 79
-                                self.sec_array[0].block_stop_go[2] = 0 # Block 80
+                                self.sec_array[1].block_stop_go[2] = 0 # Block 79
+                                self.sec_array[1].block_stop_go[3] = 0 # Block 80
 
                         elif j == 2: # Block 79
 
@@ -357,7 +360,7 @@ class green_line_plc_3_class:
                     self.N_direction_update = 0
             
             # Towards loop
-            elif self.sec_array[1].block_occupancy[7]:
+            elif self.sec_array[1].block_occupancy[0]:
 
                 # Check if direction is already set
                 if self.N_direction_update:
@@ -426,13 +429,13 @@ class green_line_plc_3_class:
 
             # Train heading towards yard
             elif self.sec_array[0].overall_occupancy:
-                self.write_switch_cmd_array[1] = 1 # N1 <- M
-                self.write_switch_cmd_array[0] = 0 # O <- N2
+                self.write_switch_cmd_array[0] = 1 # N1 <- M
+                self.write_switch_cmd_array[1] = 0 # O <- N2
 
             # Default positions
             else:
-                self.write_switch_cmd_array[1] = 0 # N1 <- M
-                self.write_switch_cmd_array[0] = 1 # O <- N2
+                self.write_switch_cmd_array[0] = 1 # N1 <- M
+                self.write_switch_cmd_array[1] = 0 # O <- N2
 
         # DEF direction is set
         else:
@@ -441,13 +444,21 @@ class green_line_plc_3_class:
 
             # Train heading towards loop
             if self.N_direction:
-                self.write_switch_cmd_array[0] = 0 # D -> C
-                self.write_switch_cmd_array[1] = 1 # F <- Z
+                self.write_switch_cmd_array[0] = 1 # N1 <- M
+                self.write_switch_cmd_array[1] = 0 # O <- N2
             
-            # Train heading towards yard
+            # Train heading away from loop
             else:
-                self.write_switch_cmd_array[0] = 1 # D <- A
-                self.write_switch_cmd_array[1] = 0 # F -> G
+                self.write_switch_cmd_array[0] = 0 # N1 -> R
+                self.write_switch_cmd_array[1] = 1 # Q -> N2
+
+        # Switch N1 maintenance
+        if self.read_block_occupancies_array[2] and self.read_block_occupancies_array[3] and self.read_block_occupancies_array[27]:
+            self.write_switch_cmd_array[0] = self.read_maintenance_switch_array[0]
+
+        # Switch N2 maintenance
+        if self.read_block_occupancies_array[11] and self.read_block_occupancies_array[12] and self.read_block_occupancies_array[26]:
+            self.write_switch_cmd_array[1] = self.read_maintenance_switch_array[1]
 
     # Update signal commands
     def update_signal_cmd(self):
@@ -469,18 +480,6 @@ class green_line_plc_3_class:
             self.write_signal_cmd_array[3] = 0 # Section O
 
 
-
-####################################################################################################
-#
-#                               Initial Sections with Default Path
-#
-####################################################################################################
-
-
-
-# Wayside
-# wayside = Wayside([M, N1, N2, O, P, Q, R, S, T])
-
     ####################################################################################################
     #
     #                                              Read & Write
@@ -492,29 +491,28 @@ class green_line_plc_3_class:
     ################################
 
     # Variables
+    read_maintenance_block_array = [None] * 36
     read_maintenance_switch_array = [None] * 2
     read_sugg_speed_array = [None] * 31
     read_sugg_authority_array = [None] * 31
-    #maintenance_switch_check =0
+    maintenance_block_check = 0
+    maintenance_switch_check = 0
     sugg_speed_check = 0
     sugg_authority_check = 0
 
     # Functions
-    # def read_maintenance_switches_handler(self, maintenance_switch_array):
-    #     self.read_maintenance_switch_array = maintenance_switch_array
-    #     self.maintenance_switch_check = 1
-
-    def read_sugg_speed_handler(self, sugg_speed_array):
-        self.read_sugg_speed_array = sugg_speed_array
-        self.sugg_speed_check = 1
+    def read_maintenance_block_handler(self, maintenance_block_array: list):
+        self.read_maintenance_block_array = maintenance_block_array.copy()
+        self.maintenance_block_check = 1
 
         # Check if all handlers have been called
-        if self.sugg_speed_check and self.sugg_authority_check and self.block_occupancy_check:
+        if self.sugg_speed_check and self.sugg_authority_check and self.block_occupancy_check and self.maintenance_switch_check and self.maintenance_block_check:
 
          # Update block occupancies
          self.update_block_occupancies()
 
          # Perform computations based on block occupancies
+         self.update_N_direction()
          self.update_switch_cmd()
          self.update_signal_cmd()
          self.update_block_stop_go()
@@ -522,7 +520,59 @@ class green_line_plc_3_class:
          self.update_cmd_authority()
 
          # Reset checks
-         #self.maintenance_switch_check = 0
+         self.maintenance_block_check = 0
+         self.maintenance_switch_check = 0
+         self.sugg_speed_check = 0
+         self.sugg_authority_check = 0
+         self.block_occupancy_check = 0
+
+    def read_maintenance_switches_handler(self, maintenance_switch_array: list):
+        self.read_maintenance_switch_array = maintenance_switch_array.copy()
+        self.read_maintenance_switch_array[0] = not self.read_maintenance_switch_array[0]
+        self.maintenance_switch_check = 1
+
+         # Check if all handlers have been called
+        if self.sugg_speed_check and self.sugg_authority_check and self.block_occupancy_check and self.maintenance_switch_check and self.maintenance_block_check:
+
+         # Update block occupancies
+         self.update_block_occupancies()
+
+         # Perform computations based on block occupancies
+         self.update_N_direction()
+         self.update_switch_cmd()
+         self.update_signal_cmd()
+         self.update_block_stop_go()
+         self.update_cmd_speed()
+         self.update_cmd_authority()
+
+         # Reset checks
+         self.maintenance_block_check = 0
+         self.maintenance_switch_check = 0
+         self.sugg_speed_check = 0
+         self.sugg_authority_check = 0
+         self.block_occupancy_check = 0
+
+    def read_sugg_speed_handler(self, sugg_speed_array):
+        self.read_sugg_speed_array = sugg_speed_array
+        self.sugg_speed_check = 1
+
+        # Check if all handlers have been called
+        if self.sugg_speed_check and self.sugg_authority_check and self.block_occupancy_check and self.maintenance_switch_check and self.maintenance_block_check:
+
+         # Update block occupancies
+         self.update_block_occupancies()
+
+         # Perform computations based on block occupancies
+         self.update_N_direction()
+         self.update_switch_cmd()
+         self.update_signal_cmd()
+         self.update_block_stop_go()
+         self.update_cmd_speed()
+         self.update_cmd_authority()
+
+         # Reset checks
+         self.maintenance_block_check = 0
+         self.maintenance_switch_check = 0
          self.sugg_speed_check = 0
          self.sugg_authority_check = 0
          self.block_occupancy_check = 0
@@ -532,12 +582,13 @@ class green_line_plc_3_class:
         self.sugg_authority_check = 1
 
         # Check if all handlers have been called
-        if self.sugg_speed_check and self.sugg_authority_check and self.block_occupancy_check:
+        if self.sugg_speed_check and self.sugg_authority_check and self.block_occupancy_check and self.maintenance_switch_check and self.maintenance_block_check:
 
          # Update block occupancies
          self.update_block_occupancies()
 
          # Perform computations based on block occupancies
+         self.update_N_direction()
          self.update_switch_cmd()
          self.update_signal_cmd()
          self.update_block_stop_go()
@@ -545,7 +596,8 @@ class green_line_plc_3_class:
          self.update_cmd_authority()
 
          # Reset checks
-         #self.maintenance_switch_check = 0
+         self.maintenance_block_check = 0
+         self.maintenance_switch_check = 0
          self.sugg_speed_check = 0
          self.sugg_authority_check = 0
          self.block_occupancy_check = 0
@@ -565,12 +617,13 @@ class green_line_plc_3_class:
         self.block_occupancy_check = 1
 
         # Check if all handlers have been called
-        if self.sugg_speed_check and self.sugg_authority_check and self.block_occupancy_check:
+        if self.sugg_speed_check and self.sugg_authority_check and self.block_occupancy_check and self.maintenance_switch_check and self.maintenance_block_check:
 
          # Update block occupancies
          self.update_block_occupancies()
 
          # Perform computations based on block occupancies
+         self.update_N_direction()
          self.update_switch_cmd()
          self.update_signal_cmd()
          self.update_block_stop_go()
@@ -578,7 +631,8 @@ class green_line_plc_3_class:
          self.update_cmd_authority()
 
          # Reset checks
-         #self.maintenance_switch_check = 0
+         self.maintenance_block_check = 0
+         self.maintenance_switch_check = 0
          self.sugg_speed_check = 0
          self.sugg_authority_check = 0
          self.block_occupancy_check = 0
@@ -599,13 +653,6 @@ class green_line_plc_3_class:
     write_cmd_authority_array = [None] * 31
     write_switch_cmd_array = [1, 0]
     write_signal_cmd_array = [0, 1, 1, 0]
-
-# # Write to Wayside Shell
-# def write_to_wayside_shell():
-#     green_line_plc_3_shell_communicate.green_plc_3.green_line_plc_3_cmd_speed.emit(write_cmd_speed_array)
-#     green_line_plc_3_shell_communicate.green_plc_3.green_line_plc_3_cmd_authority.emit(write_cmd_authority_array)
-#     green_line_plc_3_shell_communicate.green_plc_3.green_line_plc_3_switch_cmd.emit(write_switch_cmd_array)
-#     green_line_plc_3_shell_communicate.green_plc_3.green_line_plc_3_signal_cmd.emit(write_signal_cmd_array)
 
 # Section Class
 class Section:
@@ -633,6 +680,9 @@ class Section:
 
     # Updates ovall occupancy of section
     def update_section_occupancy(self):
+
+        # Reset overall occupancy
+        self.overall_occupancy = 0
         
         # Check if any blocks are occupied
         for i in range(len(self.block_occupancy)):
@@ -640,39 +690,5 @@ class Section:
                 self.overall_occupancy = 1
                 break
 
-####################################################################################################
-#
-#                                         Main Execution
-#
-####################################################################################################
-
-# # Establish connection to Wayside shell
-# green_line_plc_3_shell_communicate.green_plc_3.green_line_plc_3_maintenance_switch_cmd.connect(read_maintenance_switches_handler)
-# green_line_plc_3_shell_communicate.green_plc_3.green_line_plc_3_sugg_speed.connect(read_sugg_speed_handler)
-# green_line_plc_3_shell_communicate.green_plc_3.green_line_plc_3_sugg_authority.connect(read_sugg_authority_handler)
-# green_line_plc_3_shell_communicate.green_plc_3.green_line_plc_3_block_occupancy.connect(read_block_occupancy_handler)
-
-# while True:
-
-#     if maintenance_switch_check and sugg_speed_check and sugg_authority_check and block_occupancy_check:
-
-#         # Update block occupancies
-#         wayside.update_block_occupancies()
-
-#         # Perform computations based on block occupancies
-#         wayside.update_switch_cmd()
-#         wayside.update_signal_cmd()
-#         wayside.update_block_stop_go()
-#         wayside.update_cmd_speed()
-#         wayside.update_cmd_authority()
-        
-#         # Write commands to Wayside shell
-#         write_to_wayside_shell()
-
-#         # Reset checks
-#         maintenance_switch_check = 0
-#         sugg_speed_check = 0
-#         sugg_authority_check = 0
-#         block_occupancy_check = 0
 
 
