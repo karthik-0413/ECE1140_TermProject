@@ -87,7 +87,7 @@ class TrainControllerShell:
         tuning = Tuning()
         brake_status = BrakeStatus(self.communicator)
         power_class = PowerCommand(brake_status, tuning, module)
-        speed_control = SpeedControl(power_class, brake_status, self.communicator)
+        speed_control = SpeedControl(power_class, brake_status, self.communicator, doors)
         failure_modes = FailureModes(speed_control, power_class)
         lights = Lights(speed_control)
         temperature = Temperature()
