@@ -815,6 +815,8 @@ class wayside_shell_class:
         self.line_color = line_color
 
         # Initialize run PLC checks
+        self.maintenance_block_check = 0
+        self.maintenance_switch_check = 0
         self.block_occupancy_check = 0
         self.sugg_speed_check = 0
         self.sugg_authority_check = 0
