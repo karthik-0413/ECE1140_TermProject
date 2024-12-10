@@ -61,11 +61,14 @@ class green_line_plc_2_class:
         #                 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
         self.sec_array = [H, I, J, K, L, M, T, U, V, W,  X,  Y,  Z]
 
-    # Methods
     def green_plc_2_is_created(self):
         return True
     
+    # Update block occupancies
     def update_block_occupancies(self):
+
+        # OR Track Model occupancies with CTC maintenance blocks
+        self.read_block_occupancies_array = [a or b for a, b in zip(self.read_block_occupancies_array, self.read_maintenance_block_array)]
 
         # Update Yard Occupancy
         self.yard_occupancy = self.read_block_occupancies_array[0]
@@ -330,6 +333,7 @@ class green_line_plc_2_class:
         else:                         # J -> K
             self.yard_stop_go = 0
 
+    # Update command speed of each block
     def update_cmd_speed(self):
         
         # Index to traverse output suggested speed array
@@ -361,6 +365,7 @@ class green_line_plc_2_class:
                     # Increment index
                     BlockArrayIndex += 1
 
+    # Update command authority of each block
     def update_cmd_authority(self):
         
         # Index to traverse output suggested authority array
@@ -384,14 +389,24 @@ class green_line_plc_2_class:
                     # Increment index
                     BlockArrayIndex += 1
 
+    # Update switch commands
     def update_switch_cmd(self):
 
-        # Switch 1
+        # Switch I
         self.write_switch_cmd_array[0] = 0 # I -> Yard
 
-        # Switch 2
+        # Switch K
         self.write_switch_cmd_array[1] = 1 # Yard -> K
 
+        # Switch I maintenance
+        if self.read_block_occupancies_array[0] and self.read_block_occupancies_array[25] and self.read_block_occupancies_array[26]:
+            self.write_switch_cmd_array[0] = self.read_maintenance_switch_array[0]
+
+        # Switch K maintenance
+        if self.read_block_occupancies_array[0] and self.read_block_occupancies_array[30] and self.read_block_occupancies_array[31]:
+            self.write_switch_cmd_array[1] = self.read_maintenance_switch_array[1]
+
+    # Update signal commands
     def update_signal_cmd(self):
         
         # Check switch 1 position
@@ -405,6 +420,7 @@ class green_line_plc_2_class:
         # Signal for Section K
         self.write_signal_cmd_array[2] = 1 # Default signal
 
+    # Update crossing command
     def update_crossing_cmd(self):
 
         # Check section T overall occupancy
@@ -425,27 +441,23 @@ class green_line_plc_2_class:
     ################################
 
     # Variables
-    #read_maintenance_switch_array = [None] * 2
+    read_maintenance_block_array = [0] * 91
+    read_maintenance_switch_array = [None] * 2
     read_sugg_speed_array = [None] * 87
     read_sugg_authority_array = [None] * 87
-    #maintenance_switch_check = 0
+    maintenance_block_check = 0
+    maintenance_switch_check = 0
     sugg_speed_check = 0
     sugg_authority_check = 0
 
     # Functions
-    # def read_maintenance_switches_handler(maintenance_switch_array):
-    #     global read_maintenance_switch_array
-    #     global maintenance_switch_check
-    #     read_maintenance_switch_array = maintenance_switch_array
-    #     maintenance_switch_check = 1
-
-    def read_sugg_speed_handler(self, sugg_speed_array: list):
-
-        self.read_sugg_speed_array = sugg_speed_array.copy()
-        self.sugg_speed_check = 1
+    def read_maintenance_switches_handler(self, maintenance_switch_array: list):
+        self.read_maintenance_switch_array = maintenance_switch_array.copy()
+        self.read_maintenance_switch_array[1] = not self.read_maintenance_switch_array[1]
+        self.maintenance_switch_check = 1
 
         # Check if all handlers have been called
-        if self.sugg_speed_check and self.sugg_authority_check and self.block_occupancy_check:
+        if self.sugg_speed_check and self.sugg_authority_check and self.block_occupancy_check and self.maintenance_switch_check and self.maintenance_block_check:
 
             # Update block occupancies
             self.update_block_occupancies()
@@ -459,19 +471,43 @@ class green_line_plc_2_class:
             self.update_cmd_authority()
 
             # Reset checks
-            #maintenance_switch_check = 0
+            self.maintenance_block_check = 0
+            self.maintenance_switch_check = 0
+            self.sugg_speed_check = 0
+            self.sugg_authority_check = 0
+            self.block_occupancy_check = 0
+
+    def read_sugg_speed_handler(self, sugg_speed_array: list):
+        self.read_sugg_speed_array = sugg_speed_array.copy()
+        self.sugg_speed_check = 1
+
+        # Check if all handlers have been called
+        if self.sugg_speed_check and self.sugg_authority_check and self.block_occupancy_check and self.maintenance_switch_check and self.maintenance_block_check:
+
+            # Update block occupancies
+            self.update_block_occupancies()
+
+            # Perform computations based on block occupancies
+            self.update_switch_cmd()
+            self.update_signal_cmd()
+            self.update_crossing_cmd()
+            self.update_block_stop_go()
+            self.update_cmd_speed()
+            self.update_cmd_authority()
+
+            # Reset checks
+            self.maintenance_block_check = 0
+            self.maintenance_switch_check = 0
             self.sugg_speed_check = 0
             self.sugg_authority_check = 0
             self.block_occupancy_check = 0
 
     def read_sugg_authority_handler(self, sugg_authority_array: list):
-
-        ## print("in plc 2 read sugg authority handler")
         self.read_sugg_authority_array = sugg_authority_array.copy()
         self.sugg_authority_check = 1
 
         # Check if all handlers have been called
-        if self.sugg_speed_check and self.sugg_authority_check and self.block_occupancy_check:
+        if self.sugg_speed_check and self.sugg_authority_check and self.block_occupancy_check and self.maintenance_switch_check and self.maintenance_block_check:
 
             # Update block occupancies
             self.update_block_occupancies()
@@ -485,7 +521,8 @@ class green_line_plc_2_class:
             self.update_cmd_authority()
 
             # Reset checks
-            #maintenance_switch_check = 0
+            self.maintenance_block_check = 0
+            self.maintenance_switch_check = 0
             self.sugg_speed_check = 0
             self.sugg_authority_check = 0
             self.block_occupancy_check = 0
@@ -505,7 +542,7 @@ class green_line_plc_2_class:
         self.block_occupancy_check = 1
 
         # Check if all handlers have been called
-        if self.sugg_speed_check and self.sugg_authority_check and self.block_occupancy_check:
+        if self.sugg_speed_check and self.sugg_authority_check and self.block_occupancy_check and self.maintenance_switch_check and self.maintenance_block_check:
 
             # Update block occupancies
             self.update_block_occupancies()
@@ -519,7 +556,8 @@ class green_line_plc_2_class:
             self.update_cmd_authority()
 
             # Reset checks
-            #maintenance_switch_check = 0
+            self.maintenance_block_check = 0
+            self.maintenance_switch_check = 0
             self.sugg_speed_check = 0
             self.sugg_authority_check = 0
             self.block_occupancy_check = 0
