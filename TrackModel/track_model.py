@@ -344,8 +344,6 @@ class track_model:
                 if (block_start <= position_value < block_end):
                     self.all_blocks[self.defaultGreenPath[i]].occupied = True
                     self.current_block.append(self.all_blocks[self.defaultGreenPath[i]].number)
-                else:
-                    self.all_blocks[self.defaultGreenPath[i]].occupied = False
                 block_start = block_end
 
         for block in self.all_blocks:
@@ -707,6 +705,7 @@ class track_model:
 #
 ############################################################################################################
     def update_ui_list(self):
+        self.ui.all_blocks = self.all_blocks
         self.ui.functional_list = self.functional_blocks
         self.ui.occupancy_list = self.occupancies
         self.ui.switch_list = self.ui_switch_array
@@ -791,100 +790,7 @@ class track_model:
         self.initialize_people()
         self.initialize_failures()
         self.create_length_array()
-        
-        
-    # def updateBlockTable(self) -> None:
-    #     blocks = self.all_blocks
-    #     self.ui.blockTable.setRowCount(len(blocks))
-
-    #     # glorious king zach changing the headers of the rows
-    #     labels = []
-    #     for i in range(len(blocks)):
-    #         if i == 0:
-    #             labels.append("Yard")
-
-    #         else:
-    #             labels.append(f"{i}")
-
-    #     self.ui.blockTable.setVerticalHeaderLabels(labels)
-    #     #
-
-    #     headers = ["Functional", "Occupied", "Switch State"]
-    #     self.ui.blockTable.setColumnCount(len(headers))
-    #     self.ui.blockTable.setHorizontalHeaderLabels(headers)
-
-    #     for row, block in enumerate(blocks):
-    #         functional_item = QtWidgets.QTableWidgetItem(str(block.functional))
-    #         occupancy_item = QtWidgets.QTableWidgetItem(str(block.occupied))
-    #         switch_item = QtWidgets.QTableWidgetItem("")
-    #         passeneger_item = QtWidgets.QTableWidgetItem("")
-
-    #         for switch in self.ui_switch_array:
-    #             if block.number == switch['joint']:
-    #                 switch_item.setText(self.checkSwitch())
-
-
-    #         self.ui.blockTable.setItem(row, 0, functional_item)
-    #         self.ui.blockTable.setItem(row, 1, occupancy_item)
-    #         self.ui.blockTable.setItem(row, 2, switch_item)
-
-    #         if block.occupied:
-    #             for col in range(len(headers)-1):
-    #                 self.ui.blockTable.item(row, col).setBackground(QtGui.QColor('lightblue'))
-    #         if not block.functional:
-    #             for col in range(len(headers)-1):
-    #                 self.ui.blockTable.item(row, col).setBackground(QtGui.QColor('lightcoral'))
-
-    #     self.ui.blockTable.cellClicked.connect(self.handleCellClick)
-
-    # def handleCellClick(self, row: int, column: int) -> None:
-    #     if column == 2: 
-    #         selectedBlock = self.all_blocks[row]
-    #         for switch in self.ui_switch_array:
-    #             if selectedBlock.number == switch['joint']:
-    #                 self.ui.switches.setCurrentText(f"Switch at Block {switch['joint']}")
-    #                 self.ui.switchToggle.setChecked(not self.ui.switchToggle.isChecked())
-    #                 switch_state = self.checkSwitch()
-    #                 self.ui.blockTable.item(row, column).setText(switch_state)
-    #                 break
-
-    # def # printBlockInfo(self) -> None:
-    #     selectedItems = self.ui.blockTable.selectedItems()
-    #     if not selectedItems:
-    #         return
-    #     selectedRow = selectedItems[0].row()
-    #     allBlocks = [block for blocks in self.blocks.values() for block in blocks]
-    #     selectedBlock = allBlocks[selectedRow]
-
-    #     self.ui.blockInfo.setRowCount(11)
-    #     self.ui.blockInfo.setColumnCount(1)
-    #     self.ui.blockInfo.setVerticalHeaderLabels([
-    #         "Line", "Section", "Number", "Length", "Grade", "Speed Limit", 
-    #         "Infrastructure", "Elevation", "Cumulative Elevation", "Side", "Polarity"
-    #     ])
-    #     self.ui.blockInfo.setItem(0, 0, QtWidgets.QTableWidgetItem(selectedBlock.line))
-    #     self.ui.blockInfo.setItem(1, 0, QtWidgets.QTableWidgetItem(selectedBlock.section))
-    #     self.ui.blockInfo.setItem(2, 0, QtWidgets.QTableWidgetItem(str(selectedBlock.number)))
-    #     self.ui.blockInfo.setItem(3, 0, QtWidgets.QTableWidgetItem(str(selectedBlock.length)))
-    #     self.ui.blockInfo.setItem(4, 0, QtWidgets.QTableWidgetItem(str(selectedBlock.grade)))
-    #     self.ui.blockInfo.setItem(5, 0, QtWidgets.QTableWidgetItem(str(selectedBlock.speedLimit)))
-    #     self.ui.blockInfo.setItem(6, 0, QtWidgets.QTableWidgetItem(selectedBlock.infrastructure))
-    #     self.ui.blockInfo.setItem(7, 0, QtWidgets.QTableWidgetItem(str(selectedBlock.elevation)))
-    #     self.ui.blockInfo.setItem(8, 0, QtWidgets.QTableWidgetItem(str(selectedBlock.cumulativeElevation)))
-    #     self.ui.blockInfo.setItem(9, 0, QtWidgets.QTableWidgetItem(str(selectedBlock.side)))
-    #     self.ui.blockInfo.setItem(10, 0, QtWidgets.QTableWidgetItem(str(selectedBlock.polarity)))
-
-    # def updateOccupancy(self) -> None:
-    #     position = self.ui.positionValue.value()
-    #     self.occupancies = TrackModel.set_train_occupancies(self)
-    #     self.updateBlockTable()
-
-    # def recurring(self) -> None:
-    #     self.updateOccupancy()
-    #     self.checkSwitch()
-    #     self.checkCrossing()
-    #     self.checkTemp()        
-
+            
 
 class track_ui(QtWidgets.QMainWindow, Ui_TrackModel):
     def __init__(self):

@@ -32,15 +32,16 @@ class Ui_TrackModel(QObject):
                 self.temperature = 0
 
                 self.greenCoordinates = []
+                self.all_blocks = []
 
         def update_block_table(self):
-                # self.update_functional_list()
-                # self.update_occupancy_list()
+                self.update_functional_list()
+                self.update_occupancy_list()
+                self.update_station_list()
                 # self.update_switch_list()
                 # self.update_crossing_list()
                 # self.update_lights_list()
                 # self.update_num_people_at_station_list()
-                pass
 
         def update_block_info_table(self):
                 selectedItems = self.blockTable.selectedItems()
@@ -78,28 +79,22 @@ class Ui_TrackModel(QObject):
         def update_temp(self):
                 self.temperature = self.tempStepper.value()   
 
-        # def update_functional_list(self):
-        #         """updates the ui with the functional status of each block"""
-        #         for i in range(0, len(self.functional_list)):
-        #                 if self.functional_list[i] == 1:
-        #                         self.blockTable.setItem(i, 0, QtWidgets.QTableWidgetItem("Functional"))
-
-        #                 elif self.functional_list[i] == 2:
-        #                         self.blockTable.setItem(i, 0, QtWidgets.QTableWidgetItem("Circuit Failure"))
-
-        #                 elif self.functional_list[i] == 3:
-        #                         self.blockTable.setItem(i, 0, QtWidgets.QTableWidgetItem("Power Failure"))
+        def update_functional_list(self):
+                """updates the ui with the functional status of each block"""
+                for block in self.all_blocks:
+                        if (not block.functional):
+                                self.blockTable.item(block.table_row, block.table_column).setBackground(QtGui.QColor("red"))
+                        else:
+                                self.blockTable.item(block.table_row, block.table_column).setBackground(QtGui.QColor("green"))
                         
-        #                 elif self.functional_list[i] == 4:
-        #                         self.blockTable.setItem(i, 0, QtWidgets.QTableWidgetItem("Rail Failure"))
-                
-                        
-        # def update_occupancy_list(self):
-        #         for i in range(0, len(self.occupancy_list)):
-        #                 if self.occupancy_list[i] == 1:
-        #                         self.blockTable.setItem(i, 1, QtWidgets.QTableWidgetItem("Occupied"))
-        #                 else:
-        #                         self.blockTable.setItem(i, 1, QtWidgets.QTableWidgetItem("Vacant"))
+        def update_occupancy_list(self):
+                """updates the ui with the occupational status of each block"""
+                for block in self.all_blocks:
+                        if (block.occupied):
+                                self.blockTable.item(block.table_row, block.table_column).setBackground(QtGui.QColor("blue"))
+                        else:
+                                self.blockTable.item(block.table_row, block.table_column).setBackground(QtGui.QColor("green"))
+        
 
         # def update_switch_list(self):
         #         for switch_state in self.switch_list:        
@@ -108,6 +103,11 @@ class Ui_TrackModel(QObject):
         # def update_crossing_list(self):
         #         for crossing_state in self.crossing_list:
         #                 self.blockTable.setItem(crossing_state[1], 3, QtWidgets.QTableWidgetItem(crossing_state[0])) # open or closed
+
+        def update_station_list(self):
+                for block in self.all_blocks:
+                        if ("STATION" in block.infrastructure) and (not block.occupied):
+                                self.blockTable.item(block.table_row, block.table_column).setBackground(QtGui.QColor("violet")) 
 
         # def update_lights_list(self):
         #         for light_state in self.lights_list:
@@ -132,19 +132,19 @@ class Ui_TrackModel(QObject):
         #         self.blockTable.setVerticalHeaderLabels(labels)
 
         def initialize_map(self):
-                self.blockTable.setColumnCount(35)
+                self.blockTable.setColumnCount(38)
                 self.blockTable.setRowCount(40)
                 self.blockTable.horizontalHeader().setDefaultSectionSize(25)
-                self.blockTable.verticalHeader().setDefaultSectionSize(30)
-                for i in range(35):
+                self.blockTable.verticalHeader().setDefaultSectionSize(25)
+                self.blockTable.setStyleSheet("font: 10pt \"Times New Roman\";\ncolor: rgb(255, 255, 255);\ntext-align: center;")
+                for i in range(38):
                         for j in range(40):
                                 self.blockTable.setItem(j, i, QtWidgets.QTableWidgetItem())
                                 self.blockTable.item(j, i).setBackground(QtGui.QColor("white"))
                 for coord in self.greenCoordinates:
                         num, col, row = coord
                         self.blockTable.setItem(row, col, QtWidgets.QTableWidgetItem(str(num)))
-                        self.blockTable.item(row, col).setBackground(QtGui.QColor("green"))
-
+                        self.blockTable.item(row, col).setBackground(QtGui.QColor("green"))      
 
         def setupUi(self, TrackModel):
                 TrackModel.setObjectName("TrackModel")
