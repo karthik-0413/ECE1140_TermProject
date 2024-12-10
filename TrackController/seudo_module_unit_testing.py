@@ -68,4 +68,4 @@ def seudo_track_model_occupancy_plc_3(indexies: list, occupancy_test_array: list
 
     # Insert occupancies into test array
     for i in range(len(indexies)):
-        occupancy_test_array[indexies[i]-1] = True
+        occupancy_test_array[indexies[i]-74] = True

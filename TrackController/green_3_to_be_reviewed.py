@@ -357,7 +357,7 @@ class green_line_plc_3_class:
                     self.N_direction_update = 0
             
             # Towards loop
-            elif self.sec_array[1].block_occupancy[7]:
+            elif self.sec_array[1].block_occupancy[0]:
 
                 # Check if direction is already set
                 if self.N_direction_update:
@@ -426,13 +426,13 @@ class green_line_plc_3_class:
 
             # Train heading towards yard
             elif self.sec_array[0].overall_occupancy:
-                self.write_switch_cmd_array[1] = 1 # N1 <- M
-                self.write_switch_cmd_array[0] = 0 # O <- N2
+                self.write_switch_cmd_array[0] = 1 # N1 <- M
+                self.write_switch_cmd_array[1] = 0 # O <- N2
 
             # Default positions
             else:
-                self.write_switch_cmd_array[1] = 0 # N1 <- M
-                self.write_switch_cmd_array[0] = 1 # O <- N2
+                self.write_switch_cmd_array[0] = 1 # N1 <- M
+                self.write_switch_cmd_array[1] = 0 # O <- N2
 
         # DEF direction is set
         else:
@@ -441,13 +441,13 @@ class green_line_plc_3_class:
 
             # Train heading towards loop
             if self.N_direction:
-                self.write_switch_cmd_array[0] = 0 # D -> C
-                self.write_switch_cmd_array[1] = 1 # F <- Z
+                self.write_switch_cmd_array[0] = 1 # N1 <- M
+                self.write_switch_cmd_array[1] = 0 # O <- N2
             
-            # Train heading towards yard
+            # Train heading away from loop
             else:
-                self.write_switch_cmd_array[0] = 1 # D <- A
-                self.write_switch_cmd_array[1] = 0 # F -> G
+                self.write_switch_cmd_array[0] = 0 # N1 -> R
+                self.write_switch_cmd_array[1] = 1 # Q -> N2
 
     # Update signal commands
     def update_signal_cmd(self):
@@ -469,18 +469,6 @@ class green_line_plc_3_class:
             self.write_signal_cmd_array[3] = 0 # Section O
 
 
-
-####################################################################################################
-#
-#                               Initial Sections with Default Path
-#
-####################################################################################################
-
-
-
-# Wayside
-# wayside = Wayside([M, N1, N2, O, P, Q, R, S, T])
-
     ####################################################################################################
     #
     #                                              Read & Write
@@ -495,14 +483,14 @@ class green_line_plc_3_class:
     read_maintenance_switch_array = [None] * 2
     read_sugg_speed_array = [None] * 31
     read_sugg_authority_array = [None] * 31
-    #maintenance_switch_check =0
+    maintenance_switch_check = 0
     sugg_speed_check = 0
     sugg_authority_check = 0
 
     # Functions
-    # def read_maintenance_switches_handler(self, maintenance_switch_array):
-    #     self.read_maintenance_switch_array = maintenance_switch_array
-    #     self.maintenance_switch_check = 1
+    def read_maintenance_switches_handler(self, maintenance_switch_array: list):
+         self.read_maintenance_switch_array = maintenance_switch_array.copy()
+         self.maintenance_switch_check = 1
 
     def read_sugg_speed_handler(self, sugg_speed_array):
         self.read_sugg_speed_array = sugg_speed_array
@@ -515,6 +503,7 @@ class green_line_plc_3_class:
          self.update_block_occupancies()
 
          # Perform computations based on block occupancies
+         self.update_N_direction()
          self.update_switch_cmd()
          self.update_signal_cmd()
          self.update_block_stop_go()
@@ -538,6 +527,7 @@ class green_line_plc_3_class:
          self.update_block_occupancies()
 
          # Perform computations based on block occupancies
+         self.update_N_direction()
          self.update_switch_cmd()
          self.update_signal_cmd()
          self.update_block_stop_go()
@@ -571,6 +561,7 @@ class green_line_plc_3_class:
          self.update_block_occupancies()
 
          # Perform computations based on block occupancies
+         self.update_N_direction()
          self.update_switch_cmd()
          self.update_signal_cmd()
          self.update_block_stop_go()
