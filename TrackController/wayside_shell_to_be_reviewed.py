@@ -73,8 +73,8 @@ class wayside_shell_class:
 
     read_sugg_authority = [None] * 152
 
-#    read_maintenance_blocks = [0] * 151
-#    read_maintenance_switch_cmd = [None] * 6
+    read_maintenance_blocks = [0] * 152
+    read_maintenance_switch_cmd = [0] * 6
 
     # Input from Track Model
     read_block_occupancy = [0] * 152
@@ -88,16 +88,6 @@ class wayside_shell_class:
 
     #                    D  F   I   K  N1  N2   
     write_switch_cmd = [ 1, 1,  0,  0,  0,  0]
-
-    #                    C   D   F   G   J   K  N1  N2   O   R  Yard 
-    #write_signal_cmd = [ 0,  1,  0,  1,  1,  0,  0,  1,  0,  1,  0 ]
-
-    #                     E  T
-    #write_crossing_cmd = [0, 0]
-
-    # Test Values
-
-    #write_switch_cmd = [ 0,  1,  0,  0,  0,  0]
 
     #                    C   D   F   G   J   K  N1  N2   O   R  Yard 
     write_signal_cmd = [ 0,  1,  0,  1,  1,  0,  0,  1,  0,  1,  0 ]
@@ -114,20 +104,21 @@ class wayside_shell_class:
     # Inputs from CTC Office
     def read_sugg_speed_handler(self, sugg_speed_array: list):
         
-
         self.read_sugg_speed = sugg_speed_array.copy()
 
         # Update Wayside user interface table
-        if len(self.read_sugg_speed):
+        if self.read_sugg_speed:
             
             self.sugg_speed_check = 1
 
-            if self.sugg_speed_check == 1 and self.sugg_authority_check == 1 and self.block_occupancy_check == 1:
+            if self.sugg_speed_check and self.sugg_authority_check and self.block_occupancy_check and self.maintenance_block_check and self.maintenance_switch_check:
 
                 # Update UI suggested speed and authority table
                 self.ui.shell_sugg_speed_auth_handler(self.read_sugg_speed, self.read_sugg_authority)
-                self.ui.shell_occupancy_handler(self.read_block_occupancy)
+                self.ui.shell_occupancy_handler(self.read_block_occupancy, self.read_maintenance_blocks)
 
+                self.maintenance_block_check = 0
+                self.maintenance_switch_check = 0
                 self.sugg_speed_check = 0
                 self.sugg_authority_check = 0
                 self.block_occupancy_check = 0
@@ -135,34 +126,33 @@ class wayside_shell_class:
                 # Call PLC Program handler functions
                 if self.plc_program_1 != None and self.plc_program_2 != None and self.plc_program_3 != None:
                     
-                    # print('Calling PLC Program read functions')
                     # Read incoming data
                     self.call_green_line_plc_1_read_handlers()
                     self.call_green_line_plc_2_read_handlers()
                     self.call_green_line_plc_3_read_handlers()
 
-                    # print("Calling PLC Program operation functions")
                     # Process incoming data
                     self.call_green_line_plc_1_operation_handlers()
                     self.call_green_line_plc_2_operation_handlers()
                     self.call_green_line_plc_3_operation_handlers()
 
     def read_sugg_authority_handler(self, sugg_authority_array: list):
-        # print(f'read_sugg_authority_handler, {sugg_authority_array[0] if len(sugg_authority_array) else 'empty'}')
 
         self.read_sugg_authority = sugg_authority_array.copy()
 
         # Update Wayside user interface table
-        if len(self.read_sugg_authority):
+        if self.read_sugg_authority:
             
             self.sugg_authority_check = 1
             
-            if self.sugg_speed_check == 1 and self.sugg_authority_check == 1 and self.block_occupancy_check == 1:
+            if self.sugg_speed_check and self.sugg_authority_check and self.block_occupancy_check and self.maintenance_block_check and self.maintenance_switch_check:
 
                 # Update UI suggested speed and authority table
                 self.ui.shell_sugg_speed_auth_handler(self.read_sugg_speed, self.read_sugg_authority)
-                self.ui.shell_occupancy_handler(self.read_block_occupancy)
+                self.ui.shell_occupancy_handler(self.read_block_occupancy, self.read_maintenance_blocks)
 
+                self.maintenance_block_check = 0
+                self.maintenance_switch_check = 0
                 self.sugg_speed_check = 0
                 self.sugg_authority_check = 0
                 self.block_occupancy_check = 0
@@ -170,23 +160,83 @@ class wayside_shell_class:
                 # Call PLC Program handler functions
                 if self.plc_program_1 != None and self.plc_program_2 != None and self.plc_program_3 != None:
                     
-                    # print('Calling PLC Program read functions')
                     # Read incoming data
                     self.call_green_line_plc_1_read_handlers()
                     self.call_green_line_plc_2_read_handlers()
                     self.call_green_line_plc_3_read_handlers()
 
-                    # print("Calling PLC Program operation functions")
                     # Process incoming data
                     self.call_green_line_plc_1_operation_handlers()
                     self.call_green_line_plc_2_operation_handlers()
                     self.call_green_line_plc_3_operation_handlers()
 
-#    def read_maintenance_blocks_handler(self, maintenance_blocks_array):
-#        self.read_maintenance_blocks = maintenance_blocks_array
+    def read_maintenance_blocks_handler(self, maintenance_blocks_array: list):
 
-#    def read_maintenance_switch_cmd_handler(self, maintenance_switch_cmd_array):
-#        self.read_maintenance_switch_cmd = maintenance_switch_cmd_array
+        self.read_maintenance_blocks = maintenance_blocks_array.copy()
+
+        # Update Wayside user interface table
+        if self.read_maintenance_blocks:
+            
+            self.maintenance_block_check = 1
+            
+            if self.sugg_speed_check and self.sugg_authority_check and self.block_occupancy_check and self.maintenance_block_check and self.maintenance_switch_check:
+
+                # Update UI suggested speed and authority table
+                self.ui.shell_sugg_speed_auth_handler(self.read_sugg_speed, self.read_sugg_authority)
+                self.ui.shell_occupancy_handler(self.read_block_occupancy, self.read_maintenance_blocks)
+
+                self.maintenance_block_check = 0
+                self.maintenance_switch_check = 0
+                self.sugg_speed_check = 0
+                self.sugg_authority_check = 0
+                self.block_occupancy_check = 0
+
+                # Call PLC Program handler functions
+                if self.plc_program_1 != None and self.plc_program_2 != None and self.plc_program_3 != None:
+                    
+                    # Read incoming data
+                    self.call_green_line_plc_1_read_handlers()
+                    self.call_green_line_plc_2_read_handlers()
+                    self.call_green_line_plc_3_read_handlers()
+
+                    # Process incoming data
+                    self.call_green_line_plc_1_operation_handlers()
+                    self.call_green_line_plc_2_operation_handlers()
+                    self.call_green_line_plc_3_operation_handlers()
+
+    def read_maintenance_switch_cmd_handler(self, maintenance_switch_cmd_array: list):
+
+        self.read_maintenance_switch_cmd = maintenance_switch_cmd_array.copy()
+
+        # Update Wayside user interface table
+        if self.read_maintenance_switch_cmd:
+            
+            self.maintenance_block_check = 1
+            
+            if self.sugg_speed_check and self.sugg_authority_check and self.block_occupancy_check and self.maintenance_block_check and self.maintenance_switch_check:
+
+                # Update UI suggested speed and authority table
+                self.ui.shell_sugg_speed_auth_handler(self.read_sugg_speed, self.read_sugg_authority)
+                self.ui.shell_occupancy_handler(self.read_block_occupancy, self.read_maintenance_blocks)
+
+                self.maintenance_block_check = 0
+                self.maintenance_switch_check = 0
+                self.sugg_speed_check = 0
+                self.sugg_authority_check = 0
+                self.block_occupancy_check = 0
+
+                # Call PLC Program handler functions
+                if self.plc_program_1 != None and self.plc_program_2 != None and self.plc_program_3 != None:
+                    
+                    # Read incoming data
+                    self.call_green_line_plc_1_read_handlers()
+                    self.call_green_line_plc_2_read_handlers()
+                    self.call_green_line_plc_3_read_handlers()
+
+                    # Process incoming data
+                    self.call_green_line_plc_1_operation_handlers()
+                    self.call_green_line_plc_2_operation_handlers()
+                    self.call_green_line_plc_3_operation_handlers()
 
     # Inputs from Track Model
     def read_block_occupancy_handler(self, block_occupancy_array: list):
@@ -199,12 +249,14 @@ class wayside_shell_class:
             
             self.block_occupancy_check = 1
             
-            if self.sugg_speed_check == 1 and self.sugg_authority_check == 1 and self.block_occupancy_check == 1:
+            if self.sugg_speed_check and self.sugg_authority_check and self.block_occupancy_check and self.maintenance_block_check and self.maintenance_switch_check:
 
                 # Update UI suggested speed and authority table
                 self.ui.shell_sugg_speed_auth_handler(self.read_sugg_speed, self.read_sugg_authority)
-                self.ui.shell_occupancy_handler(self.read_block_occupancy)
+                self.ui.shell_occupancy_handler(self.read_block_occupancy, self.read_maintenance_blocks)
 
+                self.maintenance_block_check = 0
+                self.maintenance_switch_check = 0
                 self.sugg_speed_check = 0
                 self.sugg_authority_check = 0
                 self.block_occupancy_check = 0
@@ -253,8 +305,8 @@ class wayside_shell_class:
     def green_line_plc_1_sugg_authority_handler(self):
         plc_1_sugg_authority = []
 
-        # Check if the sugg_speed_array is empty
-        if len(self.read_sugg_speed):
+        # Check if the sugg_authority_array is empty
+        if len(self.read_sugg_authority):
             for i in range(1, 33):
                 plc_1_sugg_authority.append(self.read_sugg_speed[i])
             plc_1_sugg_authority.append(self.read_sugg_speed[150])
@@ -264,12 +316,38 @@ class wayside_shell_class:
             if self.plc_program_1 != None:
                 self.plc_program_1.read_sugg_authority_handler(plc_1_sugg_authority)
 
+    def green_line_plc_1_maintenance_block_handler(self):
+        plc_1_maintenance_blocks = []
+
+        # Check if the maintenance_block array is empty
+        if self.read_maintenance_blocks:
+            for i in range(1, 36):
+                plc_1_maintenance_blocks.append(self.read_maintenance_blocks[i])
+            plc_1_maintenance_blocks.append(self.read_maintenance_blocks[150])
+            plc_1_maintenance_blocks.append(self.read_maintenance_blocks[151])
+
+            # Pass maintenance blocks to PLC Program 1
+            if self.plc_program_1 != None:
+                self.plc_program_1.read_maintenance_block_handler(plc_1_maintenance_blocks)
+
+    def green_line_plc_1_maintenance_switch_handler(self):
+        plc_1_maintenance_switch_cmd = []
+
+        # Check if the maintenance_switch array is empty
+        if self.read_maintenance_switch_cmd:
+            plc_1_maintenance_switch_cmd.append(self.read_maintenance_switch_cmd[0])
+            plc_1_maintenance_switch_cmd.append(self.read_maintenance_switch_cmd[1])
+
+            # Pass maintenance switch commands to PLC Program 1
+            if self.plc_program_1 != None:
+                self.plc_program_1.read_maintenance_switches_handler(plc_1_maintenance_switch_cmd)
+
     # Inputs from Track Model
     def green_line_plc_1_block_occupancy_handler(self):
         plc_1_block_occupancy = []
 
         # Check if the sugg_speed_array is empty
-        if len(self.read_sugg_speed):
+        if self.read_block_occupancy and self.read_maintenance_blocks:
             for i in range(1, 36):
                 plc_1_block_occupancy.append(self.read_block_occupancy[i])
             plc_1_block_occupancy.append(self.read_block_occupancy[150])
@@ -306,6 +384,8 @@ class wayside_shell_class:
         self.write_crossing_cmd[0] = crossing_cmd_bool
 
     def call_green_line_plc_1_read_handlers(self):
+        self.green_line_plc_1_maintenance_block_handler()
+        self.green_line_plc_1_maintenance_switch_handler()
         self.green_line_plc_1_sugg_speed_handler()
         self.green_line_plc_1_sugg_authority_handler()
         self.green_line_plc_1_block_occupancy_handler()
@@ -321,12 +401,12 @@ class wayside_shell_class:
     #     Green Line PLC Program 2
     ####################################
 
-    # Inputs from Track Model
+    # Inputs from CTC Office
     def green_line_plc_2_sugg_speed_handler(self):
         plc_2_sugg_speed = []
 
         # Check if the sugg_speed_array is empty
-        if len(self.read_sugg_speed):
+        if self.read_sugg_speed:
             plc_2_sugg_speed.append(self.read_sugg_speed[0])
 
             for i in range(33, 74):
@@ -343,7 +423,7 @@ class wayside_shell_class:
         plc_2_sugg_authority = []
 
         # Check if the sugg_authority_array is empty
-        if len(self.read_sugg_authority):
+        if self.read_sugg_authority:
 
             plc_2_sugg_authority.append(self.read_sugg_authority[0])
 
@@ -356,6 +436,36 @@ class wayside_shell_class:
             # Pass suggested authorities to PLC Program 2
             if self.plc_program_2 != None:
                 self.plc_program_2.read_sugg_authority_handler(plc_2_sugg_authority)
+
+    def green_line_plc_2_maintenance_block_handler(self):
+        plc_2_maintenance_blocks = []
+
+        # Check if the maintenance_block array is empty
+        if len(self.read_block_occupancy):
+
+            plc_2_maintenance_blocks.append(self.read_maintenance_blocks[0])
+
+            for i in range(33, 77):
+                plc_2_maintenance_blocks.append(self.read_maintenance_blocks[i])
+
+            for i in range(105, 151):
+                plc_2_maintenance_blocks.append(self.read_maintenance_blocks[i])
+
+            # Pass maintenance blocks to PLC Program 2
+            if self.plc_program_2 != None:
+                self.plc_program_2.read_maintenance_block_handler(plc_2_maintenance_blocks)
+
+    def green_line_plc_2_maintenance_switch_handler(self):
+        plc_2_maintenance_switch_cmd = []
+
+        # Check if the maintenance_switch array is empty
+        if self.read_maintenance_switch_cmd:
+            plc_2_maintenance_switch_cmd.append(self.read_maintenance_switch_cmd[2])
+            plc_2_maintenance_switch_cmd.append(self.read_maintenance_switch_cmd[3])
+
+            # Pass maintenance switch commands to PLC Program 2
+            if self.plc_program_2 != None:
+                self.plc_program_2.read_maintenance_switches_handler(plc_2_maintenance_switch_cmd)
 
     # Inputs from Track Model
     def green_line_plc_2_block_occupancy_handler(self):
@@ -409,6 +519,8 @@ class wayside_shell_class:
         self.write_crossing_cmd[0] = crossing_cmd_bool
 
     def call_green_line_plc_2_read_handlers(self):
+        self.green_line_plc_2_maintenance_block_handler()
+        self.green_line_plc_2_maintenance_switch_handler()
         self.green_line_plc_2_sugg_speed_handler()
         self.green_line_plc_2_sugg_authority_handler()
         self.green_line_plc_2_block_occupancy_handler()
@@ -449,6 +561,31 @@ class wayside_shell_class:
             if self.plc_program_3 != None:
                 self.plc_program_3.read_sugg_authority_handler(plc_3_sugg_authority)
 
+    def green_line_plc_3_maintenance_block_handler(self):
+        plc_3_maintenance_blocks = []
+
+        # Check if the maintenance_block array is empty
+        if self.read_maintenance_blocks:
+            for i in range(74, 110):
+                plc_3_maintenance_blocks.append(self.read_maintenance_blocks[i])
+
+            # Pass maintenance blocks to PLC Program 3
+            if self.plc_program_3 != None:
+                self.plc_program_3.read_maintenance_block_handler(plc_3_maintenance_blocks)
+
+    def green_line_plc_3_maintenance_switch_handler(self):
+        plc_3_maintenance_switch_cmd = []
+
+        # Check if the maintenance_switch array is empty
+        if self.read_maintenance_switch_cmd:
+            plc_3_maintenance_switch_cmd.append(self.read_maintenance_switch_cmd[4])
+            plc_3_maintenance_switch_cmd.append(self.read_maintenance_switch_cmd[5])
+
+            # Pass maintenance switch commands to PLC Program 3
+            if self.plc_program_3 != None:
+                self.plc_program_3.read_maintenance_switches_handler(plc_3_maintenance_switch_cmd)
+
+
     # Inputs from Track Model
     def green_line_plc_3_block_occupancy_handler(self):
         plc_3_block_occupancy = []
@@ -485,6 +622,8 @@ class wayside_shell_class:
     # No crossing commands for PLC Program 3
 
     def call_green_line_plc_3_read_handlers(self):
+        self.green_line_plc_3_maintenance_block_handler()
+        self.green_line_plc_3_maintenance_switch_handler()
         self.green_line_plc_3_sugg_speed_handler()
         self.green_line_plc_3_sugg_authority_handler()
         self.green_line_plc_3_block_occupancy_handler()

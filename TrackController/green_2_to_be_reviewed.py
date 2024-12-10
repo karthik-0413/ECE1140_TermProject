@@ -451,6 +451,31 @@ class green_line_plc_2_class:
     sugg_authority_check = 0
 
     # Functions
+    def read_maintenance_block_handler(self, maintenance_block_array: list):
+        self.read_maintenance_block_array = maintenance_block_array.copy()
+        self.maintenance_block_check = 1
+
+        # Check if all handlers have been called
+        if self.sugg_speed_check and self.sugg_authority_check and self.block_occupancy_check and self.maintenance_switch_check and self.maintenance_block_check:
+
+            # Update block occupancies
+            self.update_block_occupancies()
+
+            # Perform computations based on block occupancies
+            self.update_switch_cmd()
+            self.update_signal_cmd()
+            self.update_crossing_cmd()
+            self.update_block_stop_go()
+            self.update_cmd_speed()
+            self.update_cmd_authority()
+
+            # Reset checks
+            self.maintenance_block_check = 0
+            self.maintenance_switch_check = 0
+            self.sugg_speed_check = 0
+            self.sugg_authority_check = 0
+            self.block_occupancy_check = 0
+
     def read_maintenance_switches_handler(self, maintenance_switch_array: list):
         self.read_maintenance_switch_array = maintenance_switch_array.copy()
         self.read_maintenance_switch_array[1] = not self.read_maintenance_switch_array[1]

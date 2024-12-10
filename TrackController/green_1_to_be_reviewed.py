@@ -10,7 +10,7 @@
 # Created:          10/19/2024
 # Created by:       Zachary McPherson
 #
-# Last Update:      12/08/2024
+# Last Update:      12/10/2024
 # Last Updated by:  Zachary McPherson
 #
 # Python Version:   3.12.6
@@ -501,7 +501,7 @@ class green_line_plc_1_class:
             self.write_switch_cmd_array[0] = self.read_maintenance_switch_array[0]
         
         # Switch F maintenance
-        if self.read_block_occupancies_array[36] and self.read_block_occupancies_array[27] and self.read_block_occupancies_array[28]:
+        if self.read_block_occupancies_array[35] and self.read_block_occupancies_array[27] and self.read_block_occupancies_array[28]:
             self.write_switch_cmd_array[1] = self.read_maintenance_switch_array[1]
 
     # Update signal commands

@@ -51,26 +51,32 @@ from TrackController.green_3_to_be_reviewed import green_line_plc_3_class
 #
 ####################################################################################################
 
-def call_plc_1_handlers(plc_program_1: green_line_plc_1_class, sugg_speed_test_array: list, sugg_authority_test_array: list, occupancy_test_array: list):
+def call_plc_1_handlers(plc_program_1: green_line_plc_1_class, sugg_speed_test_array: list, sugg_authority_test_array: list, occupancy_test_array: list, maintenance_block_test_array: list, maintenance_switch_test_array: list):
 
     # Call plc handlers
     plc_program_1.read_sugg_speed_handler(sugg_speed_test_array)
     plc_program_1.read_sugg_authority_handler(sugg_authority_test_array)
     plc_program_1.read_block_occupancy_handler(occupancy_test_array)
+    plc_program_1.read_maintenance_block_handler(maintenance_block_test_array)
+    plc_program_1.read_maintenance_switches_handler(maintenance_switch_test_array)
 
-def call_plc_2_handlers(plc_program_2: green_line_plc_2_class, sugg_speed_test_array: list, sugg_authority_test_array: list, occupancy_test_array: list):
+def call_plc_2_handlers(plc_program_2: green_line_plc_2_class, sugg_speed_test_array: list, sugg_authority_test_array: list, occupancy_test_array: list, maintenance_block_test_array: list, maintenance_switch_test_array: list):
 
     # Call plc handlers
     plc_program_2.read_sugg_speed_handler(sugg_speed_test_array)
     plc_program_2.read_sugg_authority_handler(sugg_authority_test_array)
     plc_program_2.read_block_occupancy_handler(occupancy_test_array)
+    plc_program_2.read_maintenance_block_handler(maintenance_block_test_array)
+    plc_program_2.read_maintenance_switches_handler(maintenance_switch_test_array)
 
-def call_plc_3_handlers(plc_program_3: green_line_plc_3_class, sugg_speed_test_array: list, sugg_authority_test_array: list, occupancy_test_array: list):
+def call_plc_3_handlers(plc_program_3: green_line_plc_3_class, sugg_speed_test_array: list, sugg_authority_test_array: list, occupancy_test_array: list, maintenance_block_test_array: list, maintenance_switch_test_array: list):
 
     # Call plc handlers
     plc_program_3.read_sugg_speed_handler(sugg_speed_test_array)
     plc_program_3.read_sugg_authority_handler(sugg_authority_test_array)
     plc_program_3.read_block_occupancy_handler(occupancy_test_array)
+    plc_program_3.read_maintenance_block_handler(maintenance_block_test_array)
+    plc_program_3.read_maintenance_switches_handler(maintenance_switch_test_array)
 
 ####################################################################################################
 #
@@ -88,6 +94,8 @@ class test_section_A_occupancy(unittest.TestCase):
         self.occupancy_test_array = [0] * 37
         self.sugg_speed_test_array = [None] * 34
         self.sugg_authority_test_array = [None] * 34
+        self.maintenance_switches_test_array = [1, 0]
+        self.maintenance_blocks_test_array = [0] * 37
 
         # PLC Object
         self.plc_program_1 = green_line_plc_1_class()
@@ -99,9 +107,7 @@ class test_section_A_occupancy(unittest.TestCase):
     def test_passing_values_to_plc(self):
 
         # Call plc handlers
-        self.plc_program_1.read_sugg_speed_handler(self.sugg_speed_test_array)
-        self.plc_program_1.read_sugg_authority_handler(self.sugg_authority_test_array)
-        self.plc_program_1.read_block_occupancy_handler(self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
 
         # Check section A occupancies
         self.assertTrue(self.plc_program_1.sec_array[0].block_occupancy[0])
@@ -117,6 +123,8 @@ class test_section_B_occupancy(unittest.TestCase):
         self.occupancy_test_array = [0] * 37
         self.sugg_speed_test_array = [None] * 34
         self.sugg_authority_test_array = [None] * 34
+        self.maintenance_switches_test_array = [1, 0]
+        self.maintenance_blocks_test_array = [0] * 37
 
         # PLC Object
         self.plc_program_1 = green_line_plc_1_class()
@@ -128,9 +136,7 @@ class test_section_B_occupancy(unittest.TestCase):
     def test_passing_values_to_plc(self):
 
         # Call plc handlers
-        self.plc_program_1.read_sugg_speed_handler(self.sugg_speed_test_array)
-        self.plc_program_1.read_sugg_authority_handler(self.sugg_authority_test_array)
-        self.plc_program_1.read_block_occupancy_handler(self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
 
         # Check section B occupancies
         self.assertTrue(self.plc_program_1.sec_array[1].block_occupancy[0])
@@ -146,6 +152,8 @@ class test_section_C_occupancy(unittest.TestCase):
         self.occupancy_test_array = [0] * 37
         self.sugg_speed_test_array = [None] * 34
         self.sugg_authority_test_array = [None] * 34
+        self.maintenance_switches_test_array = [1, 0]
+        self.maintenance_blocks_test_array = [0] * 37
 
         # PLC Object
         self.plc_program_1 = green_line_plc_1_class()
@@ -157,9 +165,7 @@ class test_section_C_occupancy(unittest.TestCase):
     def test_passing_values_to_plc(self):
 
         # Call plc handlers
-        self.plc_program_1.read_sugg_speed_handler(self.sugg_speed_test_array)
-        self.plc_program_1.read_sugg_authority_handler(self.sugg_authority_test_array)
-        self.plc_program_1.read_block_occupancy_handler(self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
 
         # Check section occupancies
         self.assertTrue(self.plc_program_1.sec_array[2].block_occupancy[0])
@@ -179,6 +185,8 @@ class test_section_D_occupancy(unittest.TestCase):
         self.occupancy_test_array = [0] * 37
         self.sugg_speed_test_array = [None] * 34
         self.sugg_authority_test_array = [None] * 34
+        self.maintenance_switches_test_array = [1, 0]
+        self.maintenance_blocks_test_array = [0] * 37
 
         # PLC Object
         self.plc_program_1 = green_line_plc_1_class()
@@ -190,9 +198,7 @@ class test_section_D_occupancy(unittest.TestCase):
     def test_passing_values_to_plc(self):
 
         # Call plc handlers
-        self.plc_program_1.read_sugg_speed_handler(self.sugg_speed_test_array)
-        self.plc_program_1.read_sugg_authority_handler(self.sugg_authority_test_array)
-        self.plc_program_1.read_block_occupancy_handler(self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
 
         # Check section occupancies
         self.assertTrue(self.plc_program_1.sec_array[3].block_occupancy[0])
@@ -209,6 +215,8 @@ class test_section_E_occupancy(unittest.TestCase):
         self.occupancy_test_array = [0] * 37
         self.sugg_speed_test_array = [None] * 34
         self.sugg_authority_test_array = [None] * 34
+        self.maintenance_switches_test_array = [1, 0]
+        self.maintenance_blocks_test_array = [0] * 37
 
         # PLC Object
         self.plc_program_1 = green_line_plc_1_class()
@@ -220,9 +228,7 @@ class test_section_E_occupancy(unittest.TestCase):
     def test_passing_values_to_plc(self):
 
         # Call plc handlers
-        self.plc_program_1.read_sugg_speed_handler(self.sugg_speed_test_array)
-        self.plc_program_1.read_sugg_authority_handler(self.sugg_authority_test_array)
-        self.plc_program_1.read_block_occupancy_handler(self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
 
         # Check section occupancies
         self.assertTrue(self.plc_program_1.sec_array[4].block_occupancy[0])
@@ -239,6 +245,8 @@ class test_section_F_occupancy(unittest.TestCase):
         self.occupancy_test_array = [0] * 37
         self.sugg_speed_test_array = [None] * 34
         self.sugg_authority_test_array = [None] * 34
+        self.maintenance_switches_test_array = [1, 0]
+        self.maintenance_blocks_test_array = [0] * 37
 
         # PLC Object
         self.plc_program_1 = green_line_plc_1_class()
@@ -250,9 +258,7 @@ class test_section_F_occupancy(unittest.TestCase):
     def test_passing_values_to_plc(self):
 
         # Call plc handlers
-        self.plc_program_1.read_sugg_speed_handler(self.sugg_speed_test_array)
-        self.plc_program_1.read_sugg_authority_handler(self.sugg_authority_test_array)
-        self.plc_program_1.read_block_occupancy_handler(self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
 
         # Check section occupancies
         self.assertTrue(self.plc_program_1.sec_array[5].block_occupancy[0])
@@ -273,6 +279,8 @@ class test_section_G_occupancy(unittest.TestCase):
         self.occupancy_test_array = [0] * 37
         self.sugg_speed_test_array = [None] * 34
         self.sugg_authority_test_array = [None] * 34
+        self.maintenance_switches_test_array = [1, 0]
+        self.maintenance_blocks_test_array = [0] * 37
 
         # PLC Object
         self.plc_program_1 = green_line_plc_1_class()
@@ -284,9 +292,7 @@ class test_section_G_occupancy(unittest.TestCase):
     def test_passing_values_to_plc(self):
 
         # Call plc handlers
-        self.plc_program_1.read_sugg_speed_handler(self.sugg_speed_test_array)
-        self.plc_program_1.read_sugg_authority_handler(self.sugg_authority_test_array)
-        self.plc_program_1.read_block_occupancy_handler(self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
 
         # Check section occupancies
         self.assertTrue(self.plc_program_1.sec_array[6].block_occupancy[0])
@@ -303,6 +309,8 @@ class test_section_H_occupancy_plc_1(unittest.TestCase):
         self.occupancy_test_array = [0] * 37
         self.sugg_speed_test_array = [None] * 34
         self.sugg_authority_test_array = [None] * 34
+        self.maintenance_switches_test_array = [1, 0]
+        self.maintenance_blocks_test_array = [0] * 37
 
         # PLC Object
         self.plc_program_1 = green_line_plc_1_class()
@@ -314,9 +322,7 @@ class test_section_H_occupancy_plc_1(unittest.TestCase):
     def test_passing_values_to_plc(self):
 
         # Call plc handlers
-        self.plc_program_1.read_sugg_speed_handler(self.sugg_speed_test_array)
-        self.plc_program_1.read_sugg_authority_handler(self.sugg_authority_test_array)
-        self.plc_program_1.read_block_occupancy_handler(self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
 
         # Check section occupancies
         self.assertTrue(self.plc_program_1.sec_array[7].block_occupancy[0])
@@ -332,6 +338,8 @@ class test_section_Z_occupancy_plc_1(unittest.TestCase):
         self.occupancy_test_array = [0] * 37
         self.sugg_speed_test_array = [None] * 34
         self.sugg_authority_test_array = [None] * 34
+        self.maintenance_switches_test_array = [1, 0]
+        self.maintenance_blocks_test_array = [0] * 37
 
         # PLC Object
         self.plc_program_1 = green_line_plc_1_class()
@@ -343,9 +351,7 @@ class test_section_Z_occupancy_plc_1(unittest.TestCase):
     def test_passing_values_to_plc(self):
 
         # Call plc handlers
-        self.plc_program_1.read_sugg_speed_handler(self.sugg_speed_test_array)
-        self.plc_program_1.read_sugg_authority_handler(self.sugg_authority_test_array)
-        self.plc_program_1.read_block_occupancy_handler(self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
 
         # Check section occupancies
         self.assertTrue(self.plc_program_1.sec_array[8].block_occupancy[0])
@@ -360,6 +366,8 @@ class test_receive_sugg_speed_and_authority_plc_1(unittest.TestCase):
         self.occupancy_test_array = [0] * 37
         self.sugg_speed_test_array = [50] * 34
         self.sugg_authority_test_array = [100] * 34
+        self.maintenance_switches_test_array = [1, 0]
+        self.maintenance_blocks_test_array = [0] * 37
 
         # PLC Object
         self.plc_program_1 = green_line_plc_1_class()
@@ -368,9 +376,7 @@ class test_receive_sugg_speed_and_authority_plc_1(unittest.TestCase):
     def test_passing_values_to_plc(self):
 
         # Call plc handlers
-        self.plc_program_1.read_sugg_speed_handler(self.sugg_speed_test_array)
-        self.plc_program_1.read_sugg_authority_handler(self.sugg_authority_test_array)
-        self.plc_program_1.read_block_occupancy_handler(self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
 
         # Check sugg speed and authority
         for i in range(len(self.sugg_speed_test_array)):
@@ -387,6 +393,8 @@ class test_set_def_direction_Z_to_C(unittest.TestCase):
         self.occupancy_test_array = [0] * 37
         self.sugg_speed_test_array = [None] * 34
         self.sugg_authority_test_array = [None] * 34
+        self.maintenance_switches_test_array = [1, 0]
+        self.maintenance_blocks_test_array = [0] * 37
 
         # PLC Object
         self.plc_program_1 = green_line_plc_1_class()
@@ -395,14 +403,14 @@ class test_set_def_direction_Z_to_C(unittest.TestCase):
     def test_passing_values_to_plc(self):
 
         # No trains
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertFalse(self.plc_program_1.DEF_occupancy)
         self.assertFalse(self.plc_program_1.DEF_direction)
         self.assertTrue(self.plc_program_1.DEF_direction_update)
 
         # Train enters wayside at section Z
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([36], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertFalse(self.plc_program_1.DEF_occupancy)
         self.assertFalse(self.plc_program_1.DEF_direction)
         self.assertTrue(self.plc_program_1.DEF_direction_update)
@@ -410,14 +418,14 @@ class test_set_def_direction_Z_to_C(unittest.TestCase):
         # Train travels from block 28 to 13
         for block in [28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13]:
             seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([block], self.occupancy_test_array)
-            call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+            call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
             self.assertTrue(self.plc_program_1.DEF_occupancy)
             self.assertTrue(self.plc_program_1.DEF_direction)
             self.assertFalse(self.plc_program_1.DEF_direction_update)
 
         # Train enters block 12
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([12], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertFalse(self.plc_program_1.DEF_occupancy)
         self.assertTrue(self.plc_program_1.DEF_direction)
         self.assertTrue(self.plc_program_1.DEF_direction_update)
@@ -431,6 +439,8 @@ class test_set_def_direction_A_to_G(unittest.TestCase):
         self.occupancy_test_array = [0] * 37
         self.sugg_speed_test_array = [None] * 34
         self.sugg_authority_test_array = [None] * 34
+        self.maintenance_switches_test_array = [1, 0]
+        self.maintenance_blocks_test_array = [0] * 37
 
         # PLC Object
         self.plc_program_1 = green_line_plc_1_class()
@@ -439,14 +449,14 @@ class test_set_def_direction_A_to_G(unittest.TestCase):
     def test_passing_values_to_plc(self):
 
         # No trains
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertFalse(self.plc_program_1.DEF_occupancy)
         self.assertFalse(self.plc_program_1.DEF_direction)
         self.assertTrue(self.plc_program_1.DEF_direction_update)
 
         # Train enters wayside at section A
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([1], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertFalse(self.plc_program_1.DEF_occupancy)
         self.assertFalse(self.plc_program_1.DEF_direction)
         self.assertTrue(self.plc_program_1.DEF_direction_update)
@@ -454,14 +464,14 @@ class test_set_def_direction_A_to_G(unittest.TestCase):
         # Train travels from block 13 to 28
         for block in [13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28]:
             seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([block], self.occupancy_test_array)
-            call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+            call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
             self.assertTrue(self.plc_program_1.DEF_occupancy)
             self.assertFalse(self.plc_program_1.DEF_direction)
             self.assertFalse(self.plc_program_1.DEF_direction_update)
 
         # Train enters block 29
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([12], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertFalse(self.plc_program_1.DEF_occupancy)
         self.assertFalse(self.plc_program_1.DEF_direction)
         self.assertTrue(self.plc_program_1.DEF_direction_update)
@@ -476,6 +486,8 @@ class test_default_switch_commands_plc_1(unittest.TestCase):
         self.occupancy_test_array = [0] * 37
         self.sugg_speed_test_array = [None] * 34
         self.sugg_authority_test_array = [None] * 34
+        self.maintenance_switches_test_array = [1, 0]
+        self.maintenance_blocks_test_array = [0] * 37
 
         # PLC Object
         self.plc_program_1 = green_line_plc_1_class()
@@ -484,7 +496,7 @@ class test_default_switch_commands_plc_1(unittest.TestCase):
     def test_passing_values_to_plc(self):
 
         # No trains
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertEqual(self.plc_program_1.write_switch_cmd_array, [0, 1])
         self.assertEqual(self.plc_program_1.write_signal_cmd_array, [0, 1, 0, 1])
 
@@ -497,6 +509,8 @@ class test_train_at_section_Z_switch_commands(unittest.TestCase):
         self.occupancy_test_array = [0] * 37
         self.sugg_speed_test_array = [None] * 34
         self.sugg_authority_test_array = [None] * 34
+        self.maintenance_switches_test_array = [1, 0]
+        self.maintenance_blocks_test_array = [0] * 37
 
         # PLC Object
         self.plc_program_1 = green_line_plc_1_class()
@@ -506,7 +520,7 @@ class test_train_at_section_Z_switch_commands(unittest.TestCase):
 
         # Train enters wayside at section Z
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([36], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertEqual(self.plc_program_1.write_switch_cmd_array, [0, 1])
         self.assertEqual(self.plc_program_1.write_signal_cmd_array, [0, 1, 0, 1])
 
@@ -519,6 +533,8 @@ class test_switch_commands_Z_to_C(unittest.TestCase):
         self.occupancy_test_array = [0] * 37
         self.sugg_speed_test_array = [None] * 34
         self.sugg_authority_test_array = [None] * 34
+        self.maintenance_switches_test_array = [1, 0]
+        self.maintenance_blocks_test_array = [0] * 37
 
         # PLC Object
         self.plc_program_1 = green_line_plc_1_class()
@@ -528,20 +544,20 @@ class test_switch_commands_Z_to_C(unittest.TestCase):
 
         # Train enters wayside at section Z
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([36], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertEqual(self.plc_program_1.write_switch_cmd_array, [0, 1])
         self.assertEqual(self.plc_program_1.write_signal_cmd_array, [0, 1, 0, 1])
 
         # Train travels from block 28 to 13
         for block in [28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13]:
             seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([block], self.occupancy_test_array)
-            call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+            call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
             self.assertEqual(self.plc_program_1.write_switch_cmd_array, [0, 1])
             self.assertEqual(self.plc_program_1.write_signal_cmd_array, [0, 1, 0, 1])
 
         # Train enters block 12
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([12], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertEqual(self.plc_program_1.write_switch_cmd_array, [0, 1])
         self.assertEqual(self.plc_program_1.write_signal_cmd_array, [0, 1, 0, 1])
 
@@ -554,6 +570,8 @@ class test_train_at_section_A_switch_commands(unittest.TestCase):
         self.occupancy_test_array = [0] * 37
         self.sugg_speed_test_array = [None] * 34
         self.sugg_authority_test_array = [None] * 34
+        self.maintenance_switches_test_array = [1, 0]
+        self.maintenance_blocks_test_array = [0] * 37
 
         # PLC Object
         self.plc_program_1 = green_line_plc_1_class()
@@ -563,7 +581,7 @@ class test_train_at_section_A_switch_commands(unittest.TestCase):
 
         # Train enters wayside at section A
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([1], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertEqual(self.plc_program_1.write_switch_cmd_array, [1, 0])
         self.assertEqual(self.plc_program_1.write_signal_cmd_array, [1, 0, 1, 0])
 
@@ -576,6 +594,8 @@ class test_switch_commands_A_to_G(unittest.TestCase):
         self.occupancy_test_array = [0] * 37
         self.sugg_speed_test_array = [None] * 34
         self.sugg_authority_test_array = [None] * 34
+        self.maintenance_switches_test_array = [1, 0]
+        self.maintenance_blocks_test_array = [0] * 37
 
         # PLC Object
         self.plc_program_1 = green_line_plc_1_class()
@@ -585,19 +605,19 @@ class test_switch_commands_A_to_G(unittest.TestCase):
 
         # Train enters wayside at section Z
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([1], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertEqual(self.plc_program_1.write_switch_cmd_array, [1, 0])
         self.assertEqual(self.plc_program_1.write_signal_cmd_array, [1, 0, 1, 0])
         # Train travels from block 28 to 13
         for block in [13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28]:
             seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([block], self.occupancy_test_array)
-            call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+            call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
             self.assertEqual(self.plc_program_1.write_switch_cmd_array, [1, 0])
             self.assertEqual(self.plc_program_1.write_signal_cmd_array, [1, 0, 1, 0])
 
         # Train enters block 12
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([12], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertEqual(self.plc_program_1.write_switch_cmd_array, [0, 1])
         self.assertEqual(self.plc_program_1.write_signal_cmd_array, [0, 1, 0, 1])
 
@@ -610,6 +630,8 @@ class test_switch_commands_Z_to_G(unittest.TestCase):
         self.occupancy_test_array = [0] * 37
         self.sugg_speed_test_array = [None] * 34
         self.sugg_authority_test_array = [None] * 34
+        self.maintenance_switches_test_array = [1, 0]
+        self.maintenance_blocks_test_array = [0] * 37
 
         # PLC Object
         self.plc_program_1 = green_line_plc_1_class()
@@ -619,34 +641,34 @@ class test_switch_commands_Z_to_G(unittest.TestCase):
 
         # Train enters wayside at section Z
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([36], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertEqual(self.plc_program_1.write_switch_cmd_array, [0, 1])
         self.assertEqual(self.plc_program_1.write_signal_cmd_array, [0, 1, 0, 1])
 
         # Train travels from block 28 to 13
         for block in [28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13]:
             seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([block], self.occupancy_test_array)
-            call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+            call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
             self.assertEqual(self.plc_program_1.write_switch_cmd_array, [0, 1])
             self.assertEqual(self.plc_program_1.write_signal_cmd_array, [0, 1, 0, 1])
 
         # Train travels from block 12 to 4
         for block in [12, 11, 10, 9, 8, 7, 37, 6, 5, 4]:
             seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([block], self.occupancy_test_array)
-            call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+            call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
             self.assertEqual(self.plc_program_1.write_switch_cmd_array, [0, 1])
             self.assertEqual(self.plc_program_1.write_signal_cmd_array, [0, 1, 0, 1])
         
         # Train travels from block 3 to 28
         for block in [3, 2, 1, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28]:
             seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([block], self.occupancy_test_array)
-            call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+            call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
             self.assertEqual(self.plc_program_1.write_switch_cmd_array, [1, 0])
             self.assertEqual(self.plc_program_1.write_signal_cmd_array, [1, 0, 1, 0])
 
         # Train enters block 29
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([29], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertEqual(self.plc_program_1.write_switch_cmd_array, [0, 1])
         self.assertEqual(self.plc_program_1.write_signal_cmd_array, [0, 1, 0, 1])
 
@@ -659,6 +681,8 @@ class test_switch_commands_train_waiting_at_Z(unittest.TestCase):
         self.occupancy_test_array = [0] * 37
         self.sugg_speed_test_array = [None] * 34
         self.sugg_authority_test_array = [None] * 34
+        self.maintenance_switches_test_array = [1, 0]
+        self.maintenance_blocks_test_array = [0] * 37
 
         # PLC Object
         self.plc_program_1 = green_line_plc_1_class()
@@ -669,20 +693,20 @@ class test_switch_commands_train_waiting_at_Z(unittest.TestCase):
         # Train travels from block 3 to 20
         for block in [3, 2, 1, 13, 14, 15, 16, 17, 18, 19, 20]:
             seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([block], self.occupancy_test_array)
-            call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+            call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
             self.assertEqual(self.plc_program_1.write_switch_cmd_array, [1, 0])
             self.assertEqual(self.plc_program_1.write_signal_cmd_array, [1, 0, 1, 0])
 
         # Another train enters section Z
         for block in [21, 22, 23, 24, 25, 26, 27, 28]:
             seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([block, 36], self.occupancy_test_array)
-            call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+            call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
             self.assertEqual(self.plc_program_1.write_switch_cmd_array, [1, 0])
             self.assertEqual(self.plc_program_1.write_signal_cmd_array, [1, 0, 1, 0])
         
         # first train enters section G
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([29, 36], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertEqual(self.plc_program_1.write_switch_cmd_array, [0, 1])
         self.assertEqual(self.plc_program_1.write_signal_cmd_array, [0, 1, 0, 1])
 
@@ -695,6 +719,8 @@ class test_switch_commands_train_waiting_at_A(unittest.TestCase):
         self.occupancy_test_array = [0] * 37
         self.sugg_speed_test_array = [None] * 34
         self.sugg_authority_test_array = [None] * 34
+        self.maintenance_switches_test_array = [1, 0]
+        self.maintenance_blocks_test_array = [0] * 37
 
         # PLC Object
         self.plc_program_1 = green_line_plc_1_class()
@@ -705,20 +731,20 @@ class test_switch_commands_train_waiting_at_A(unittest.TestCase):
         # Train travels from block 150 to 21
         for block in [36, 28, 27, 26, 25, 24, 23, 22, 21]:
             seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([block], self.occupancy_test_array)
-            call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+            call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
             self.assertEqual(self.plc_program_1.write_switch_cmd_array, [0, 1])
             self.assertEqual(self.plc_program_1.write_signal_cmd_array, [0, 1, 0, 1])
 
         # Another train enters section A
         for block in [20, 19, 18, 17, 16, 15, 14, 13]:
             seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([block, 1], self.occupancy_test_array)
-            call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+            call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
             self.assertEqual(self.plc_program_1.write_switch_cmd_array, [0, 1])
             self.assertEqual(self.plc_program_1.write_signal_cmd_array, [0, 1, 0, 1])
         
         # first train enters section C
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([12, 1], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertEqual(self.plc_program_1.write_switch_cmd_array, [1, 0])
         self.assertEqual(self.plc_program_1.write_signal_cmd_array, [1, 0, 1, 0])
 
@@ -731,6 +757,8 @@ class test_switch_commands_trains_waiting_at_Z_and_A(unittest.TestCase):
         self.occupancy_test_array = [0] * 37
         self.sugg_speed_test_array = [None] * 34
         self.sugg_authority_test_array = [None] * 34
+        self.maintenance_switches_test_array = [1, 0]
+        self.maintenance_blocks_test_array = [0] * 37
 
         # PLC Object
         self.plc_program_1 = green_line_plc_1_class()
@@ -740,7 +768,7 @@ class test_switch_commands_trains_waiting_at_Z_and_A(unittest.TestCase):
 
         # Trains waiting at 150 and 1
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([36, 1], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertEqual(self.plc_program_1.write_switch_cmd_array, [0, 1])
         self.assertEqual(self.plc_program_1.write_signal_cmd_array, [0, 1, 0, 1])
 
@@ -754,6 +782,8 @@ class test_crossing_commands_train_in_E(unittest.TestCase):
         self.occupancy_test_array = [0] * 37
         self.sugg_speed_test_array = [None] * 34
         self.sugg_authority_test_array = [None] * 34
+        self.maintenance_switches_test_array = [1, 0]
+        self.maintenance_blocks_test_array = [0] * 37
 
         # PLC Object
         self.plc_program_1 = green_line_plc_1_class()
@@ -762,13 +792,13 @@ class test_crossing_commands_train_in_E(unittest.TestCase):
     def test_passing_values_to_plc(self):
 
         # No train
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertFalse(self.plc_program_1.write_cross_cmd_array[0])
 
         # Train in section E
         for block in [17, 18, 19, 20]:
             seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([block], self.occupancy_test_array)
-            call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+            call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
             self.assertTrue(self.plc_program_1.write_cross_cmd_array[0])
 
 class test_crossing_commands_train_everywhere_but_E(unittest.TestCase):
@@ -780,6 +810,8 @@ class test_crossing_commands_train_everywhere_but_E(unittest.TestCase):
         self.occupancy_test_array = [0] * 37
         self.sugg_speed_test_array = [None] * 34
         self.sugg_authority_test_array = [None] * 34
+        self.maintenance_switches_test_array = [1, 0]
+        self.maintenance_blocks_test_array = [0] * 37
 
         # PLC Object
         self.plc_program_1 = green_line_plc_1_class()
@@ -790,7 +822,7 @@ class test_crossing_commands_train_everywhere_but_E(unittest.TestCase):
         # Train everywhere but E
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([17, 18, 19, 20], self.occupancy_test_array)
         self.occupancy_test_array = [x ^ 1 for x in self.occupancy_test_array]
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertFalse(self.plc_program_1.write_cross_cmd_array[0])
 
 # Set block-stop-go commands, Commanded Speed, and Commanded Authority test cases
@@ -803,6 +835,8 @@ class test_block_stop_go_commands_train_Z_to_C(unittest.TestCase):
         self.occupancy_test_array = [0] * 37
         self.sugg_speed_test_array = [50] * 34
         self.sugg_authority_test_array = [100] * 34
+        self.maintenance_switches_test_array = [1, 0]
+        self.maintenance_blocks_test_array = [0] * 37
 
         # PLC Object
         self.plc_program_1 = green_line_plc_1_class()
@@ -811,7 +845,7 @@ class test_block_stop_go_commands_train_Z_to_C(unittest.TestCase):
     def test_passing_values_to_plc(self):
 
         # No trains
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         for sec in range(len(self.plc_program_1.sec_array)):
             for block in range(len(self.plc_program_1.sec_array[sec].block_stop_go)):
                 if sec == 0 and (block == 0 or block == 1):
@@ -828,7 +862,7 @@ class test_block_stop_go_commands_train_Z_to_C(unittest.TestCase):
 
         # Train enters wayside at section Z
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([36], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         for sec in range(len(self.plc_program_1.sec_array)):
             for block in range(len(self.plc_program_1.sec_array[sec].block_stop_go)):
                 if sec == 0 and (block == 0 or block == 1):
@@ -845,7 +879,7 @@ class test_block_stop_go_commands_train_Z_to_C(unittest.TestCase):
 
         # Train enters block 28
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([28], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         for sec in range(len(self.plc_program_1.sec_array)):
             for block in range(len(self.plc_program_1.sec_array[sec].block_stop_go)):
                 if sec == 0 and (block == 0 or block == 1):
@@ -864,7 +898,7 @@ class test_block_stop_go_commands_train_Z_to_C(unittest.TestCase):
 
         # Train enters block 27
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([27], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         for sec in range(len(self.plc_program_1.sec_array)):
             for block in range(len(self.plc_program_1.sec_array[sec].block_stop_go)):
                 if sec == 0 and (block == 0 or block == 1):
@@ -885,7 +919,7 @@ class test_block_stop_go_commands_train_Z_to_C(unittest.TestCase):
 
         # Train enters block 26
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([26], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         for sec in range(len(self.plc_program_1.sec_array)):
             for block in range(len(self.plc_program_1.sec_array[sec].block_stop_go)):
                 if sec == 0 and (block == 0 or block == 1):
@@ -906,7 +940,7 @@ class test_block_stop_go_commands_train_Z_to_C(unittest.TestCase):
 
         # Train enters block 25
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([25], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         for sec in range(len(self.plc_program_1.sec_array)):
             for block in range(len(self.plc_program_1.sec_array[sec].block_stop_go)):
                 if sec == 0 and (block == 0 or block == 1):
@@ -927,7 +961,7 @@ class test_block_stop_go_commands_train_Z_to_C(unittest.TestCase):
 
         # Train enters block 24
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([24], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         for sec in range(len(self.plc_program_1.sec_array)):
             for block in range(len(self.plc_program_1.sec_array[sec].block_stop_go)):
                 if sec == 0 and (block == 0 or block == 1):
@@ -948,7 +982,7 @@ class test_block_stop_go_commands_train_Z_to_C(unittest.TestCase):
 
         # Train enters block 23
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([23], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         for sec in range(len(self.plc_program_1.sec_array)):
             for block in range(len(self.plc_program_1.sec_array[sec].block_stop_go)):
                 if sec == 0 and (block == 0 or block == 1):
@@ -969,7 +1003,7 @@ class test_block_stop_go_commands_train_Z_to_C(unittest.TestCase):
 
         # Train enters block 22
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([22], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         for sec in range(len(self.plc_program_1.sec_array)):
             for block in range(len(self.plc_program_1.sec_array[sec].block_stop_go)):
                 if sec == 0 and (block == 0 or block == 1):
@@ -990,7 +1024,7 @@ class test_block_stop_go_commands_train_Z_to_C(unittest.TestCase):
 
         # Train enters block 21
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([21], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         for sec in range(len(self.plc_program_1.sec_array)):
             for block in range(len(self.plc_program_1.sec_array[sec].block_stop_go)):
                 if sec == 0 and (block == 0 or block == 1):
@@ -1011,7 +1045,7 @@ class test_block_stop_go_commands_train_Z_to_C(unittest.TestCase):
 
         # Train enters block 20
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([20], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         for sec in range(len(self.plc_program_1.sec_array)):
             for block in range(len(self.plc_program_1.sec_array[sec].block_stop_go)):
                 if sec == 0 and (block == 0 or block == 1):
@@ -1032,7 +1066,7 @@ class test_block_stop_go_commands_train_Z_to_C(unittest.TestCase):
 
         # Train enters block 19
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([19], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         for sec in range(len(self.plc_program_1.sec_array)):
             for block in range(len(self.plc_program_1.sec_array[sec].block_stop_go)):
                 if sec == 0 and (block == 0 or block == 1):
@@ -1053,7 +1087,7 @@ class test_block_stop_go_commands_train_Z_to_C(unittest.TestCase):
 
         # Train enters block 18
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([18], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         for sec in range(len(self.plc_program_1.sec_array)):
             for block in range(len(self.plc_program_1.sec_array[sec].block_stop_go)):
                 if sec == 0 and (block == 0 or block == 1):
@@ -1074,7 +1108,7 @@ class test_block_stop_go_commands_train_Z_to_C(unittest.TestCase):
 
         # Train enters block 17
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([17], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         for sec in range(len(self.plc_program_1.sec_array)):
             for block in range(len(self.plc_program_1.sec_array[sec].block_stop_go)):
                 if sec == 0 and (block == 0 or block == 1):
@@ -1095,7 +1129,7 @@ class test_block_stop_go_commands_train_Z_to_C(unittest.TestCase):
 
         # Train enters block 16
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([16], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         for sec in range(len(self.plc_program_1.sec_array)):
             for block in range(len(self.plc_program_1.sec_array[sec].block_stop_go)):
                 if sec == 0 and (block == 0 or block == 1):
@@ -1116,7 +1150,7 @@ class test_block_stop_go_commands_train_Z_to_C(unittest.TestCase):
 
         # Train enters block 15
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([15], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         for sec in range(len(self.plc_program_1.sec_array)):
             for block in range(len(self.plc_program_1.sec_array[sec].block_stop_go)):
                 if sec == 0 and (block == 0 or block == 1):
@@ -1137,7 +1171,7 @@ class test_block_stop_go_commands_train_Z_to_C(unittest.TestCase):
 
         # Train enters block 14
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([14], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         for sec in range(len(self.plc_program_1.sec_array)):
             for block in range(len(self.plc_program_1.sec_array[sec].block_stop_go)):
                 if sec == 0 and (block == 0 or block == 1):
@@ -1158,7 +1192,7 @@ class test_block_stop_go_commands_train_Z_to_C(unittest.TestCase):
 
         # Train enters block 13
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([13], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         for sec in range(len(self.plc_program_1.sec_array)):
             for block in range(len(self.plc_program_1.sec_array[sec].block_stop_go)):
                 if sec == 0 and (block == 0 or block == 1):
@@ -1179,7 +1213,7 @@ class test_block_stop_go_commands_train_Z_to_C(unittest.TestCase):
 
         # Train enters block 12
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([12], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         for sec in range(len(self.plc_program_1.sec_array)):
             for block in range(len(self.plc_program_1.sec_array[sec].block_stop_go)):
                 if sec == 0 and (block == 0 or block == 1):
@@ -1200,7 +1234,7 @@ class test_block_stop_go_commands_train_Z_to_C(unittest.TestCase):
 
         # Train enters block 11
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([11], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         for sec in range(len(self.plc_program_1.sec_array)):
             for block in range(len(self.plc_program_1.sec_array[sec].block_stop_go)):
                 if sec == 0 and (block == 0 or block == 1):
@@ -1228,6 +1262,8 @@ class test_block_stop_go_commands_train_C_to_D(unittest.TestCase):
         self.occupancy_test_array = [0] * 37
         self.sugg_speed_test_array = [50] * 34
         self.sugg_authority_test_array = [100] * 34
+        self.maintenance_switches_test_array = [1, 0]
+        self.maintenance_blocks_test_array = [0] * 37
 
         # PLC Object
         self.plc_program_1 = green_line_plc_1_class()
@@ -1238,7 +1274,7 @@ class test_block_stop_go_commands_train_C_to_D(unittest.TestCase):
         # Train travels from block 12 to block 13
         for train_block in [12, 11, 10, 9, 8, 7, 37, 6, 5, 4, 3, 2, 1, 13]:
             seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([train_block], self.occupancy_test_array)
-            call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+            call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
             
             if train_block == 12:
                 self.assertFalse(self.plc_program_1.sec_array[0].block_stop_go[0])
@@ -1410,6 +1446,8 @@ class test_block_stop_go_commands_train_A_to_H(unittest.TestCase):
         self.occupancy_test_array = [0] * 37
         self.sugg_speed_test_array = [50] * 34
         self.sugg_authority_test_array = [100] * 34
+        self.maintenance_switches_test_array = [1, 0]
+        self.maintenance_blocks_test_array = [0] * 37
 
         # PLC Object
         self.plc_program_1 = green_line_plc_1_class()
@@ -1418,7 +1456,7 @@ class test_block_stop_go_commands_train_A_to_H(unittest.TestCase):
     def test_passing_values_to_plc(self):
 
         # No trains
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         for sec in range(len(self.plc_program_1.sec_array)):
             for block in range(len(self.plc_program_1.sec_array[sec].block_stop_go)):
                 if sec == 0 and (block == 0 or block == 1):
@@ -1428,7 +1466,7 @@ class test_block_stop_go_commands_train_A_to_H(unittest.TestCase):
 
         # Train enters wayside at section A
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([1], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         for sec in range(len(self.plc_program_1.sec_array)):
             for block in range(len(self.plc_program_1.sec_array[sec].block_stop_go)):
                 if sec == 8 and block == 0:
@@ -1447,7 +1485,7 @@ class test_block_stop_go_commands_train_A_to_H(unittest.TestCase):
 
         # Train enters block 13
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([13], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         for sec in range(len(self.plc_program_1.sec_array)):
             for block in range(len(self.plc_program_1.sec_array[sec].block_stop_go)):
                 if sec == 8 and block == 0:
@@ -1468,7 +1506,7 @@ class test_block_stop_go_commands_train_A_to_H(unittest.TestCase):
 
         # Train enters block 14
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([14], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         for sec in range(len(self.plc_program_1.sec_array)):
             for block in range(len(self.plc_program_1.sec_array[sec].block_stop_go)):
                 if sec == 8 and block == 0:
@@ -1489,7 +1527,7 @@ class test_block_stop_go_commands_train_A_to_H(unittest.TestCase):
 
         # Train enters block 15
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([15], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         for sec in range(len(self.plc_program_1.sec_array)):
             for block in range(len(self.plc_program_1.sec_array[sec].block_stop_go)):
                 if sec == 8 and block == 0:
@@ -1510,7 +1548,7 @@ class test_block_stop_go_commands_train_A_to_H(unittest.TestCase):
 
         # Train enters block 16
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([16], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         for sec in range(len(self.plc_program_1.sec_array)):
             for block in range(len(self.plc_program_1.sec_array[sec].block_stop_go)):
                 if sec == 8 and block == 0:
@@ -1531,7 +1569,7 @@ class test_block_stop_go_commands_train_A_to_H(unittest.TestCase):
 
         # Train enters block 17
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([17], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         for sec in range(len(self.plc_program_1.sec_array)):
             for block in range(len(self.plc_program_1.sec_array[sec].block_stop_go)):
                 if sec == 8 and block == 0:
@@ -1552,7 +1590,7 @@ class test_block_stop_go_commands_train_A_to_H(unittest.TestCase):
 
         # Train enters block 18
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([18], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         for sec in range(len(self.plc_program_1.sec_array)):
             for block in range(len(self.plc_program_1.sec_array[sec].block_stop_go)):
                 if sec == 8 and block == 0:
@@ -1573,7 +1611,7 @@ class test_block_stop_go_commands_train_A_to_H(unittest.TestCase):
 
         # Train enters block 19
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([19], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         for sec in range(len(self.plc_program_1.sec_array)):
             for block in range(len(self.plc_program_1.sec_array[sec].block_stop_go)):
                 if sec == 8 and block == 0:
@@ -1594,7 +1632,7 @@ class test_block_stop_go_commands_train_A_to_H(unittest.TestCase):
 
         # Train enters block 20
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([20], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         for sec in range(len(self.plc_program_1.sec_array)):
             for block in range(len(self.plc_program_1.sec_array[sec].block_stop_go)):
                 if sec == 8 and block == 0:
@@ -1615,7 +1653,7 @@ class test_block_stop_go_commands_train_A_to_H(unittest.TestCase):
 
         # Train enters block 21
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([21], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         for sec in range(len(self.plc_program_1.sec_array)):
             for block in range(len(self.plc_program_1.sec_array[sec].block_stop_go)):
                 if sec == 8 and block == 0:
@@ -1636,7 +1674,7 @@ class test_block_stop_go_commands_train_A_to_H(unittest.TestCase):
 
         # Train enters block 22
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([22], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         for sec in range(len(self.plc_program_1.sec_array)):
             for block in range(len(self.plc_program_1.sec_array[sec].block_stop_go)):
                 if sec == 8 and block == 0:
@@ -1657,7 +1695,7 @@ class test_block_stop_go_commands_train_A_to_H(unittest.TestCase):
 
         # Train enters block 23
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([23], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         for sec in range(len(self.plc_program_1.sec_array)):
             for block in range(len(self.plc_program_1.sec_array[sec].block_stop_go)):
                 if sec == 8 and block == 0:
@@ -1678,7 +1716,7 @@ class test_block_stop_go_commands_train_A_to_H(unittest.TestCase):
 
         # Train enters block 24
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([24], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         for sec in range(len(self.plc_program_1.sec_array)):
             for block in range(len(self.plc_program_1.sec_array[sec].block_stop_go)):
                 if sec == 8 and block == 0:
@@ -1699,7 +1737,7 @@ class test_block_stop_go_commands_train_A_to_H(unittest.TestCase):
 
         # Train enters block 25
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([25], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         for sec in range(len(self.plc_program_1.sec_array)):
             for block in range(len(self.plc_program_1.sec_array[sec].block_stop_go)):
                 if sec == 8 and block == 0:
@@ -1720,7 +1758,7 @@ class test_block_stop_go_commands_train_A_to_H(unittest.TestCase):
 
         # Train enters block 26
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([26], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         for sec in range(len(self.plc_program_1.sec_array)):
             for block in range(len(self.plc_program_1.sec_array[sec].block_stop_go)):
                 if sec == 8 and block == 0:
@@ -1741,7 +1779,7 @@ class test_block_stop_go_commands_train_A_to_H(unittest.TestCase):
 
         # Train enters block 27
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([27], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         for sec in range(len(self.plc_program_1.sec_array)):
             for block in range(len(self.plc_program_1.sec_array[sec].block_stop_go)):
                 if sec == 8 and block == 0:
@@ -1762,7 +1800,7 @@ class test_block_stop_go_commands_train_A_to_H(unittest.TestCase):
 
         # Train enters block 28
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([28], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         for sec in range(len(self.plc_program_1.sec_array)):
             for block in range(len(self.plc_program_1.sec_array[sec].block_stop_go)):
                 if sec == 8 and block == 0:
@@ -1783,7 +1821,7 @@ class test_block_stop_go_commands_train_A_to_H(unittest.TestCase):
 
         # Train enters block 29
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([29], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         for sec in range(len(self.plc_program_1.sec_array)):
             for block in range(len(self.plc_program_1.sec_array[sec].block_stop_go)):
                 if sec == 0 and (block == 0 or block == 1):
@@ -1800,7 +1838,7 @@ class test_block_stop_go_commands_train_A_to_H(unittest.TestCase):
 
         # Train enters block 30
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([30], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         for sec in range(len(self.plc_program_1.sec_array)):
             for block in range(len(self.plc_program_1.sec_array[sec].block_stop_go)):
                 if sec == 0 and (block == 0 or block == 1):
@@ -1819,7 +1857,7 @@ class test_block_stop_go_commands_train_A_to_H(unittest.TestCase):
 
         # Train enters block 31
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([31], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         for sec in range(len(self.plc_program_1.sec_array)):
             for block in range(len(self.plc_program_1.sec_array[sec].block_stop_go)):
                 if sec == 0 and (block == 0 or block == 1):
@@ -1840,7 +1878,7 @@ class test_block_stop_go_commands_train_A_to_H(unittest.TestCase):
 
         # Train enters block 32
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([32], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         for sec in range(len(self.plc_program_1.sec_array)):
             for block in range(len(self.plc_program_1.sec_array[sec].block_stop_go)):
                 if sec == 0 and (block == 0 or block == 1):
@@ -1861,7 +1899,7 @@ class test_block_stop_go_commands_train_A_to_H(unittest.TestCase):
 
         # Train enters block 33
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([33], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         for sec in range(len(self.plc_program_1.sec_array)):
             for block in range(len(self.plc_program_1.sec_array[sec].block_stop_go)):
                 if sec == 0 and (block == 0 or block == 1):
@@ -1882,7 +1920,7 @@ class test_block_stop_go_commands_train_A_to_H(unittest.TestCase):
 
         # Train enters block 34
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([34], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         for sec in range(len(self.plc_program_1.sec_array)):
             for block in range(len(self.plc_program_1.sec_array[sec].block_stop_go)):
                 if sec == 0 and (block == 0 or block == 1):
@@ -1908,6 +1946,8 @@ class test_block_stop_go_commands_multiple_trains_Z_to_C(unittest.TestCase):
         self.occupancy_test_array = [0] * 37
         self.sugg_speed_test_array = [50] * 34
         self.sugg_authority_test_array = [100] * 34
+        self.maintenance_switches_test_array = [1, 0]
+        self.maintenance_blocks_test_array = [0] * 37
 
         # PLC Object
         self.plc_program_1 = green_line_plc_1_class()
@@ -1917,19 +1957,19 @@ class test_block_stop_go_commands_multiple_trains_Z_to_C(unittest.TestCase):
 
         # Train enters block 150
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([36], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
 
         # Train enters block 28
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([28], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
 
         # Train enters block 20 and another train enters block 150
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([20, 36], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
 
         # First train enters block 12 and second train enters block 22
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([12, 22], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertFalse(self.plc_program_1.sec_array[3].block_stop_go[0])
         self.assertFalse(self.plc_program_1.sec_array[3].block_stop_go[1])
         self.assertFalse(self.plc_program_1.sec_array[5].block_stop_go[2])
@@ -1950,6 +1990,8 @@ class test_block_stop_go_commands_multiple_trains_A_to_G(unittest.TestCase):
         self.occupancy_test_array = [0] * 37
         self.sugg_speed_test_array = [50] * 34
         self.sugg_authority_test_array = [100] * 34
+        self.maintenance_switches_test_array = [1, 0]
+        self.maintenance_blocks_test_array = [0] * 37
 
         # PLC Object
         self.plc_program_1 = green_line_plc_1_class()
@@ -1959,19 +2001,19 @@ class test_block_stop_go_commands_multiple_trains_A_to_G(unittest.TestCase):
 
         # Train enters block 1
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([1], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
 
         # Train enters block 13
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([13], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
 
         # Train enters block 16 and another train enters block 1
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([16, 1], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
 
         # First train enters block 29 and second train enters block 20
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([29, 20], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertFalse(self.plc_program_1.sec_array[8].block_stop_go[0])
         self.assertFalse(self.plc_program_1.sec_array[5].block_stop_go[7])
         self.assertFalse(self.plc_program_1.sec_array[5].block_stop_go[6])
@@ -1986,7 +2028,7 @@ class test_block_stop_go_commands_multiple_trains_A_to_G(unittest.TestCase):
 
         # First train enters block 30 and second train enters block 23
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([30, 23], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertFalse(self.plc_program_1.sec_array[8].block_stop_go[0])
         self.assertFalse(self.plc_program_1.sec_array[6].block_stop_go[0])
         self.assertFalse(self.plc_program_1.sec_array[5].block_stop_go[7])
@@ -2008,6 +2050,8 @@ class test_block_stop_go_commands_train_waiting_at_A(unittest.TestCase):
         self.occupancy_test_array = [0] * 37
         self.sugg_speed_test_array = [50] * 34
         self.sugg_authority_test_array = [100] * 34
+        self.maintenance_switches_test_array = [1, 0]
+        self.maintenance_blocks_test_array = [0] * 37
 
         # PLC Object
         self.plc_program_1 = green_line_plc_1_class()
@@ -2016,22 +2060,22 @@ class test_block_stop_go_commands_train_waiting_at_A(unittest.TestCase):
     def test_passing_values_to_plc(self):
 
         # No trains
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
 
         # Train enters block 150
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([36], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
 
         
 
         # Train enters block 20 and another train enters block 1
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([20, 1], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
 
         
         # First train enters block 12
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([12, 1], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertEqual(self.plc_program_1.write_cmd_speed_array[12], 50)
         self.assertEqual(self.plc_program_1.write_cmd_speed_array[13], 50)
         self.assertEqual(self.plc_program_1.write_cmd_speed_array[0], 50)
@@ -2045,6 +2089,8 @@ class test_block_stop_go_commands_train_waiting_at_Z(unittest.TestCase):
         self.occupancy_test_array = [0] * 37
         self.sugg_speed_test_array = [50] * 34
         self.sugg_authority_test_array = [100] * 34
+        self.maintenance_switches_test_array = [1, 0]
+        self.maintenance_blocks_test_array = [0] * 37
 
         # PLC Object
         self.plc_program_1 = green_line_plc_1_class()
@@ -2053,23 +2099,56 @@ class test_block_stop_go_commands_train_waiting_at_Z(unittest.TestCase):
     def test_passing_values_to_plc(self):
 
         # No trains
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
 
         # Train enters block 1
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([1], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
 
         # Train enters block 20 and another train enters block 150
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([20, 36], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         
         # First train enters block 29
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([29, 36], self.occupancy_test_array)
-        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertEqual(self.plc_program_1.write_cmd_speed_array[27], 50)
         self.assertEqual(self.plc_program_1.write_cmd_speed_array[26], 50)
         self.assertEqual(self.plc_program_1.write_cmd_speed_array[32], 50)
 
+# Maintenance Switches and blocks test cases
+class test_maintenance_switches_plc_1(unittest.TestCase):
+
+    # Set up test variables
+    def setUp(self):
+        
+        # Test Arrays
+        self.occupancy_test_array = [0] * 37
+        self.sugg_speed_test_array = [None] * 34
+        self.sugg_authority_test_array = [None] * 34
+        self.maintenance_switches_test_array = [0, 0]
+        self.maintenance_blocks_test_array = [0] * 37
+
+        # PLC Object
+        self.plc_program_1 = green_line_plc_1_class()
+
+    # Pass values to plc programs
+    def test_passing_values_to_plc(self):
+
+        # Set maintenance blocks
+        seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([13, 12, 1], self.maintenance_blocks_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
+        self.assertEqual(self.plc_program_1.write_switch_cmd_array, [1, 0])
+
+        # Set maintenance blocks
+        seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([36, 29, 28], self.maintenance_blocks_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
+        self.assertEqual(self.plc_program_1.write_switch_cmd_array, [1, 0])
+
+        # Set maintenance blocks
+        seudo_module_unit_testing.seudo_track_model_occupancy_plc_1([36, 29, 28, 13, 12, 1], self.maintenance_blocks_test_array)
+        call_plc_1_handlers(self.plc_program_1, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
+        self.assertEqual(self.plc_program_1.write_switch_cmd_array, [1, 0])
 
 ####################################################################################################
 #
@@ -2087,6 +2166,8 @@ class test_section_H_occupancy_plc_2(unittest.TestCase):
         self.occupancy_test_array = [0] * 91
         self.sugg_speed_test_array = [None] * 87
         self.sugg_authority_test_array = [None] * 87
+        self.maintenance_switches_test_array = [1, 0]
+        self.maintenance_blocks_test_array = [0] * 91
 
         # PLC Object
         self.plc_program_2 = green_line_plc_2_class()
@@ -2098,7 +2179,7 @@ class test_section_H_occupancy_plc_2(unittest.TestCase):
     def test_passing_values_to_plc(self):
 
         # Call plc handlers
-        call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
 
         # Check section H occupancies
         self.assertTrue(self.plc_program_2.sec_array[0].block_occupancy[0])
@@ -2114,6 +2195,8 @@ class test_section_I_occupancy(unittest.TestCase):
         self.occupancy_test_array = [0] * 91
         self.sugg_speed_test_array = [None] * 87
         self.sugg_authority_test_array = [None] * 87
+        self.maintenance_switches_test_array = [1, 0]
+        self.maintenance_blocks_test_array = [0] * 91
 
         # PLC Object
         self.plc_program_2 = green_line_plc_2_class()
@@ -2123,7 +2206,7 @@ class test_section_I_occupancy(unittest.TestCase):
 
         # Set occupancy
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_2(list(range(36, 58)), self.occupancy_test_array)
-        call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
 
         # Check section I occupancies
         for block in self.plc_program_2.sec_array[1].block_occupancy:
@@ -2138,6 +2221,8 @@ class test_section_Yard_occupancy(unittest.TestCase):
         self.occupancy_test_array = [0] * 91
         self.sugg_speed_test_array = [None] * 87
         self.sugg_authority_test_array = [None] * 87
+        self.maintenance_switches_test_array = [1, 0]
+        self.maintenance_blocks_test_array = [0] * 91
 
         # PLC Object
         self.plc_program_2 = green_line_plc_2_class()
@@ -2147,7 +2232,7 @@ class test_section_Yard_occupancy(unittest.TestCase):
 
         # Set occupancy
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_2([0], self.occupancy_test_array)
-        call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
 
         # Check section I occupancies
         self.assertTrue(self.plc_program_2.yard_occupancy)
@@ -2161,6 +2246,8 @@ class test_section_J_occupancy(unittest.TestCase):
         self.occupancy_test_array = [0] * 91
         self.sugg_speed_test_array = [None] * 87
         self.sugg_authority_test_array = [None] * 87
+        self.maintenance_switches_test_array = [1, 0]
+        self.maintenance_blocks_test_array = [0] * 91
 
         # PLC Object
         self.plc_program_2 = green_line_plc_2_class()
@@ -2170,7 +2257,7 @@ class test_section_J_occupancy(unittest.TestCase):
 
         # Set occupancy
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_2(list(range(58, 63)), self.occupancy_test_array)
-        call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
 
         # Check section J occupancies
         for block in self.plc_program_2.sec_array[2].block_occupancy:
@@ -2185,6 +2272,8 @@ class test_section_K_occupancy(unittest.TestCase):
         self.occupancy_test_array = [0] * 91
         self.sugg_speed_test_array = [None] * 87
         self.sugg_authority_test_array = [None] * 87
+        self.maintenance_switches_test_array = [1, 0]
+        self.maintenance_blocks_test_array = [0] * 91
 
         # PLC Object
         self.plc_program_2 = green_line_plc_2_class()
@@ -2194,7 +2283,7 @@ class test_section_K_occupancy(unittest.TestCase):
 
         # Set occupancy
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_2(list(range(63, 69)), self.occupancy_test_array)
-        call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
 
         # Check section K occupancies
         for block in self.plc_program_2.sec_array[3].block_occupancy:
@@ -2209,6 +2298,8 @@ class test_section_L_occupancy(unittest.TestCase):
         self.occupancy_test_array = [0] * 91
         self.sugg_speed_test_array = [None] * 87
         self.sugg_authority_test_array = [None] * 87
+        self.maintenance_switches_test_array = [1, 0]
+        self.maintenance_blocks_test_array = [0] * 91
 
         # PLC Object
         self.plc_program_2 = green_line_plc_2_class()
@@ -2218,7 +2309,7 @@ class test_section_L_occupancy(unittest.TestCase):
 
         # Set occupancy
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_2(list(range(69, 74)), self.occupancy_test_array)
-        call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
 
         # Check section L occupancies
         for block in self.plc_program_2.sec_array[4].block_occupancy:
@@ -2233,6 +2324,8 @@ class test_section_M_occupancy_plc_2(unittest.TestCase):
         self.occupancy_test_array = [0] * 91
         self.sugg_speed_test_array = [None] * 87
         self.sugg_authority_test_array = [None] * 87
+        self.maintenance_switches_test_array = [1, 0]
+        self.maintenance_blocks_test_array = [0] * 91
 
         # PLC Object
         self.plc_program_2 = green_line_plc_2_class()
@@ -2242,7 +2335,7 @@ class test_section_M_occupancy_plc_2(unittest.TestCase):
 
         # Set occupancy
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_2(list(range(74, 77)), self.occupancy_test_array)
-        call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
 
         # Check section M occupancies
         for block in self.plc_program_2.sec_array[5].block_occupancy:
@@ -2257,6 +2350,8 @@ class test_section_T_occupancy_plc_2(unittest.TestCase):
         self.occupancy_test_array = [0] * 91
         self.sugg_speed_test_array = [None] * 87
         self.sugg_authority_test_array = [None] * 87
+        self.maintenance_switches_test_array = [1, 0]
+        self.maintenance_blocks_test_array = [0] * 91
 
         # PLC Object
         self.plc_program_2 = green_line_plc_2_class()
@@ -2266,7 +2361,7 @@ class test_section_T_occupancy_plc_2(unittest.TestCase):
 
         # Set occupancy
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_2(list(range(105, 110)), self.occupancy_test_array)
-        call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
 
         # Check section T occupancies
         for block in self.plc_program_2.sec_array[6].block_occupancy:
@@ -2281,6 +2376,8 @@ class test_section_U_occupancy(unittest.TestCase):
         self.occupancy_test_array = [0] * 91
         self.sugg_speed_test_array = [None] * 87
         self.sugg_authority_test_array = [None] * 87
+        self.maintenance_switches_test_array = [1, 0]
+        self.maintenance_blocks_test_array = [0] * 91
 
         # PLC Object
         self.plc_program_2 = green_line_plc_2_class()
@@ -2290,7 +2387,7 @@ class test_section_U_occupancy(unittest.TestCase):
 
         # Set occupancy
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_2(list(range(110, 117)), self.occupancy_test_array)
-        call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
 
         # Check section U occupancies
         for block in self.plc_program_2.sec_array[7].block_occupancy:
@@ -2305,6 +2402,8 @@ class test_section_V_occupancy(unittest.TestCase):
         self.occupancy_test_array = [0] * 91
         self.sugg_speed_test_array = [None] * 87
         self.sugg_authority_test_array = [None] * 87
+        self.maintenance_switches_test_array = [1, 0]
+        self.maintenance_blocks_test_array = [0] * 91
 
         # PLC Object
         self.plc_program_2 = green_line_plc_2_class()
@@ -2314,7 +2413,7 @@ class test_section_V_occupancy(unittest.TestCase):
 
         # Set occupancy
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_2(list(range(117, 122)), self.occupancy_test_array)
-        call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
 
         # Check section V occupancies
         for block in self.plc_program_2.sec_array[8].block_occupancy:
@@ -2329,6 +2428,8 @@ class test_section_W_occupancy(unittest.TestCase):
         self.occupancy_test_array = [0] * 91
         self.sugg_speed_test_array = [None] * 87
         self.sugg_authority_test_array = [None] * 87
+        self.maintenance_switches_test_array = [1, 0]
+        self.maintenance_blocks_test_array = [0] * 91
 
         # PLC Object
         self.plc_program_2 = green_line_plc_2_class()
@@ -2338,7 +2439,7 @@ class test_section_W_occupancy(unittest.TestCase):
 
         # Set occupancy
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_2(list(range(122, 144)), self.occupancy_test_array)
-        call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
 
         # Check section W occupancies
         for block in self.plc_program_2.sec_array[9].block_occupancy:
@@ -2353,6 +2454,8 @@ class test_section_X_occupancy(unittest.TestCase):
         self.occupancy_test_array = [0] * 91
         self.sugg_speed_test_array = [None] * 87
         self.sugg_authority_test_array = [None] * 87
+        self.maintenance_switches_test_array = [1, 0]
+        self.maintenance_blocks_test_array = [0] * 91
 
         # PLC Object
         self.plc_program_2 = green_line_plc_2_class()
@@ -2362,7 +2465,7 @@ class test_section_X_occupancy(unittest.TestCase):
 
         # Set occupancy
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_2(list(range(144, 147)), self.occupancy_test_array)
-        call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
 
         # Check section X occupancies
         for block in self.plc_program_2.sec_array[10].block_occupancy:
@@ -2377,6 +2480,8 @@ class test_section_Y_occupancy(unittest.TestCase):
         self.occupancy_test_array = [0] * 91
         self.sugg_speed_test_array = [None] * 87
         self.sugg_authority_test_array = [None] * 87
+        self.maintenance_switches_test_array = [1, 0]
+        self.maintenance_blocks_test_array = [0] * 91
 
         # PLC Object
         self.plc_program_2 = green_line_plc_2_class()
@@ -2386,7 +2491,7 @@ class test_section_Y_occupancy(unittest.TestCase):
 
         # Set occupancy
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_2(list(range(147, 150)), self.occupancy_test_array)
-        call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
 
         # Check section Y occupancies
         for block in self.plc_program_2.sec_array[11].block_occupancy:
@@ -2401,6 +2506,8 @@ class test_section_Z_occupancy_plc_2(unittest.TestCase):
         self.occupancy_test_array = [0] * 91
         self.sugg_speed_test_array = [None] * 87
         self.sugg_authority_test_array = [None] * 87
+        self.maintenance_switches_test_array = [1, 0]
+        self.maintenance_blocks_test_array = [0] * 91
 
         # PLC Object
         self.plc_program_2 = green_line_plc_2_class()
@@ -2410,7 +2517,7 @@ class test_section_Z_occupancy_plc_2(unittest.TestCase):
 
         # Set occupancy
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_2([150], self.occupancy_test_array)
-        call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
 
         # Check section Z occupancies
         for block in self.plc_program_2.sec_array[12].block_occupancy:
@@ -2426,6 +2533,8 @@ class test_receive_sugg_speed_and_authority_plc_2(unittest.TestCase):
         self.occupancy_test_array = [0] * 91
         self.sugg_speed_test_array = [50] * 87
         self.sugg_authority_test_array = [100] * 87
+        self.maintenance_switches_test_array = [1, 0]
+        self.maintenance_blocks_test_array = [0] * 91
 
         # PLC Object
         self.plc_program_2 = green_line_plc_2_class()
@@ -2434,7 +2543,7 @@ class test_receive_sugg_speed_and_authority_plc_2(unittest.TestCase):
     def test_passing_values_to_plc(self):
 
         # Call plc handlers
-        call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
 
         # Check sugg speed and authority
         for i in range(len(self.sugg_speed_test_array)):
@@ -2451,6 +2560,8 @@ class test_crossing_commands_train_in_T(unittest.TestCase):
         self.occupancy_test_array = [0] * 91
         self.sugg_speed_test_array = [None] * 87
         self.sugg_authority_test_array = [None] * 87
+        self.maintenance_switches_test_array = [1, 0]
+        self.maintenance_blocks_test_array = [0] * 91
 
         # PLC Object
         self.plc_program_2 = green_line_plc_2_class()
@@ -2459,13 +2570,13 @@ class test_crossing_commands_train_in_T(unittest.TestCase):
     def test_passing_values_to_plc(self):
 
         # No train
-        call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertFalse(self.plc_program_2.write_crossing_cmd_array[0])
 
         # Train in section T
         for block in [105, 106, 107, 108, 109]:
             seudo_module_unit_testing.seudo_track_model_occupancy_plc_2([block], self.occupancy_test_array)
-            call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+            call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
             self.assertTrue(self.plc_program_2.write_crossing_cmd_array[0])
 
 class test_crossing_commands_train_everywhere_but_T(unittest.TestCase):
@@ -2477,6 +2588,8 @@ class test_crossing_commands_train_everywhere_but_T(unittest.TestCase):
         self.occupancy_test_array = [0] * 91
         self.sugg_speed_test_array = [None] * 87
         self.sugg_authority_test_array = [None] * 87
+        self.maintenance_switches_test_array = [1, 0]
+        self.maintenance_blocks_test_array = [0] * 91
 
         # PLC Object
         self.plc_program_2 = green_line_plc_2_class()
@@ -2487,7 +2600,7 @@ class test_crossing_commands_train_everywhere_but_T(unittest.TestCase):
         # Train everywhere but T
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_2(list(range(105, 110)), self.occupancy_test_array)
         self.occupancy_test_array = [x ^ 1 for x in self.occupancy_test_array]
-        call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertFalse(self.plc_program_2.write_crossing_cmd_array[0])
 
 # Set commanded speed and authority test cases
@@ -2500,6 +2613,8 @@ class test_commanded_speed_authority_H_to_Yard(unittest.TestCase):
         self.occupancy_test_array = [0] * 91
         self.sugg_speed_test_array = [50] * 87
         self.sugg_authority_test_array = [100] * 87
+        self.maintenance_switches_test_array = [1, 0]
+        self.maintenance_blocks_test_array = [0] * 91
 
         # PLC Object
         self.plc_program_2 = green_line_plc_2_class()
@@ -2510,7 +2625,7 @@ class test_commanded_speed_authority_H_to_Yard(unittest.TestCase):
         # Train travels from H to Yard
         for block in list(range(33, 58)):
             seudo_module_unit_testing.seudo_track_model_occupancy_plc_2([block], self.occupancy_test_array)
-            call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+            call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
             if block == 33:
                 pass
             elif block == 34:
@@ -2530,6 +2645,8 @@ class test_commanded_speed_authority_Yard_to_M(unittest.TestCase):
         self.occupancy_test_array = [0] * 91
         self.sugg_speed_test_array = [50] * 87
         self.sugg_authority_test_array = [100] * 87
+        self.maintenance_switches_test_array = [1, 0]
+        self.maintenance_blocks_test_array = [0] * 91
 
         # PLC Object
         self.plc_program_2 = green_line_plc_2_class()
@@ -2540,7 +2657,7 @@ class test_commanded_speed_authority_Yard_to_M(unittest.TestCase):
         # Train travels from Yard to M
         for block in list(range(63, 77)):
             seudo_module_unit_testing.seudo_track_model_occupancy_plc_2([block], self.occupancy_test_array)
-            call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+            call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
             if block == 63:
                 self.assertEqual(self.plc_program_2.write_cmd_speed_array[block-63], 0)
             elif block == 64:
@@ -2565,6 +2682,8 @@ class test_commanded_speed_authority_T_to_Z(unittest.TestCase):
         self.occupancy_test_array = [0] * 91
         self.sugg_speed_test_array = [50] * 87
         self.sugg_authority_test_array = [100] * 87
+        self.maintenance_switches_test_array = [1, 0]
+        self.maintenance_blocks_test_array = [0] * 91
 
         # PLC Object
         self.plc_program_2 = green_line_plc_2_class()
@@ -2575,7 +2694,7 @@ class test_commanded_speed_authority_T_to_Z(unittest.TestCase):
         # Train travels from Yard to M
         for block in list(range(105, 151)):
             seudo_module_unit_testing.seudo_track_model_occupancy_plc_2([block], self.occupancy_test_array)
-            call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+            call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
             if block == 105:
                 pass
             elif block == 106:
@@ -2585,7 +2704,41 @@ class test_commanded_speed_authority_T_to_Z(unittest.TestCase):
                 self.assertEqual(self.plc_program_2.write_cmd_speed_array[block-65], 0)
         for auth in self.plc_program_2.write_cmd_authority_array:
             self.assertEqual(auth, 100)
-            
+
+# Maintenance Switches and blocks test cases
+class test_maintenance_switches_plc_2(unittest.TestCase):
+
+    # Set up test variables
+    def setUp(self):
+        
+        # Test Arrays
+        self.occupancy_test_array = [0] * 91
+        self.sugg_speed_test_array = [50] * 87
+        self.sugg_authority_test_array = [100] * 87
+        self.maintenance_switches_test_array = [1, 1]
+        self.maintenance_blocks_test_array = [0] * 91
+
+        # PLC Object
+        self.plc_program_2 = green_line_plc_2_class()
+
+    # Pass values to plc programs
+    def test_passing_values_to_plc(self):
+
+        # Set maintenance blocks
+        seudo_module_unit_testing.seudo_track_model_occupancy_plc_2([57, 58, 0], self.maintenance_blocks_test_array)
+        call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
+        self.assertEqual(self.plc_program_2.write_switch_cmd_array, [1, 1])
+
+        # Set maintenance blocks
+        seudo_module_unit_testing.seudo_track_model_occupancy_plc_2([62, 63, 0], self.maintenance_blocks_test_array)
+        call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
+        self.assertEqual(self.plc_program_2.write_switch_cmd_array, [0, 0])
+
+        # Set maintenance blocks
+        seudo_module_unit_testing.seudo_track_model_occupancy_plc_2([57, 58, 0, 62, 63], self.maintenance_blocks_test_array)
+        call_plc_2_handlers(self.plc_program_2, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
+        self.assertEqual(self.plc_program_2.write_switch_cmd_array, [1, 0])
+
 ####################################################################################################
 #
 #                                      PLC Program 3 Test Cases
@@ -2602,6 +2755,8 @@ class test_section_M_occupancy_plc_3(unittest.TestCase):
         self.occupancy_test_array = [0] * 36
         self.sugg_speed_test_array = [None] * 31
         self.sugg_authority_test_array = [None] * 31
+        self.maintenance_switches_test_array = [0, 1]
+        self.maintenance_blocks_test_array = [0] * 36
 
         # PLC Object
         self.plc_program_3 = green_line_plc_3_class()
@@ -2613,7 +2768,7 @@ class test_section_M_occupancy_plc_3(unittest.TestCase):
     def test_passing_values_to_plc(self):
 
         # Call plc handlers
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
 
         # Check section M occupancies
         for block in self.plc_program_3.sec_array[0].block_occupancy:
@@ -2628,6 +2783,8 @@ class test_section_N1_occupancy(unittest.TestCase):
         self.occupancy_test_array = [0] * 36
         self.sugg_speed_test_array = [None] * 31
         self.sugg_authority_test_array = [None] * 31
+        self.maintenance_switches_test_array = [0, 1]
+        self.maintenance_blocks_test_array = [0] * 36
 
         # PLC Object
         self.plc_program_3 = green_line_plc_3_class()
@@ -2639,7 +2796,7 @@ class test_section_N1_occupancy(unittest.TestCase):
     def test_passing_values_to_plc(self):
 
         # Call plc handlers
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
 
         # Check section N1 occupancies
         for block in self.plc_program_3.sec_array[1].block_occupancy:
@@ -2654,6 +2811,8 @@ class test_section_N2_occupancy(unittest.TestCase):
         self.occupancy_test_array = [0] * 36
         self.sugg_speed_test_array = [None] * 31
         self.sugg_authority_test_array = [None] * 31
+        self.maintenance_switches_test_array = [0, 1]
+        self.maintenance_blocks_test_array = [0] * 36
 
         # PLC Object
         self.plc_program_3 = green_line_plc_3_class()
@@ -2665,7 +2824,7 @@ class test_section_N2_occupancy(unittest.TestCase):
     def test_passing_values_to_plc(self):
 
         # Call plc handlers
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
 
         # Check section N2 occupancies
         for block in self.plc_program_3.sec_array[2].block_occupancy:
@@ -2680,6 +2839,8 @@ class test_section_O_occupancy(unittest.TestCase):
         self.occupancy_test_array = [0] * 36
         self.sugg_speed_test_array = [None] * 31
         self.sugg_authority_test_array = [None] * 31
+        self.maintenance_switches_test_array = [0, 1]
+        self.maintenance_blocks_test_array = [0] * 36
 
         # PLC Object
         self.plc_program_3 = green_line_plc_3_class()
@@ -2691,7 +2852,7 @@ class test_section_O_occupancy(unittest.TestCase):
     def test_passing_values_to_plc(self):
 
         # Call plc handlers
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
 
         # Check section O occupancies
         for block in self.plc_program_3.sec_array[3].block_occupancy:
@@ -2706,6 +2867,8 @@ class test_section_P_occupancy(unittest.TestCase):
         self.occupancy_test_array = [0] * 36
         self.sugg_speed_test_array = [None] * 31
         self.sugg_authority_test_array = [None] * 31
+        self.maintenance_switches_test_array = [0, 1]
+        self.maintenance_blocks_test_array = [0] * 36
 
         # PLC Object
         self.plc_program_3 = green_line_plc_3_class()
@@ -2717,7 +2880,7 @@ class test_section_P_occupancy(unittest.TestCase):
     def test_passing_values_to_plc(self):
 
         # Call plc handlers
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
 
         # Check section P occupancies
         for block in self.plc_program_3.sec_array[4].block_occupancy:
@@ -2732,6 +2895,8 @@ class test_section_Q_occupancy(unittest.TestCase):
         self.occupancy_test_array = [0] * 36
         self.sugg_speed_test_array = [None] * 31
         self.sugg_authority_test_array = [None] * 31
+        self.maintenance_switches_test_array = [0, 1]
+        self.maintenance_blocks_test_array = [0] * 36
 
         # PLC Object
         self.plc_program_3 = green_line_plc_3_class()
@@ -2743,7 +2908,7 @@ class test_section_Q_occupancy(unittest.TestCase):
     def test_passing_values_to_plc(self):
 
         # Call plc handlers
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
 
         # Check section Q occupancies
         for block in self.plc_program_3.sec_array[5].block_occupancy:
@@ -2758,6 +2923,8 @@ class test_section_R_occupancy(unittest.TestCase):
         self.occupancy_test_array = [0] * 36
         self.sugg_speed_test_array = [None] * 31
         self.sugg_authority_test_array = [None] * 31
+        self.maintenance_switches_test_array = [0, 1]
+        self.maintenance_blocks_test_array = [0] * 36
 
         # PLC Object
         self.plc_program_3 = green_line_plc_3_class()
@@ -2769,7 +2936,7 @@ class test_section_R_occupancy(unittest.TestCase):
     def test_passing_values_to_plc(self):
 
         # Call plc handlers
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
 
         # Check section R occupancies
         for block in self.plc_program_3.sec_array[6].block_occupancy:
@@ -2784,6 +2951,8 @@ class test_section_S_occupancy(unittest.TestCase):
         self.occupancy_test_array = [0] * 36
         self.sugg_speed_test_array = [None] * 31
         self.sugg_authority_test_array = [None] * 31
+        self.maintenance_switches_test_array = [0, 1]
+        self.maintenance_blocks_test_array = [0] * 36
 
         # PLC Object
         self.plc_program_3 = green_line_plc_3_class()
@@ -2795,7 +2964,7 @@ class test_section_S_occupancy(unittest.TestCase):
     def test_passing_values_to_plc(self):
 
         # Call plc handlers
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
 
         # Check section S occupancies
         for block in self.plc_program_3.sec_array[7].block_occupancy:
@@ -2810,6 +2979,8 @@ class test_section_T_occupancy_plc_3(unittest.TestCase):
         self.occupancy_test_array = [0] * 36
         self.sugg_speed_test_array = [None] * 31
         self.sugg_authority_test_array = [None] * 31
+        self.maintenance_switches_test_array = [0, 1]
+        self.maintenance_blocks_test_array = [0] * 36
 
         # PLC Object
         self.plc_program_3 = green_line_plc_3_class()
@@ -2821,7 +2992,7 @@ class test_section_T_occupancy_plc_3(unittest.TestCase):
     def test_passing_values_to_plc(self):
 
         # Call plc handlers
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
 
         # Check section M occupancies
         for block in self.plc_program_3.sec_array[8].block_occupancy:
@@ -2837,6 +3008,8 @@ class test_receive_sugg_speed_and_authority_plc_3(unittest.TestCase):
         self.occupancy_test_array = [0] * 36
         self.sugg_speed_test_array = [50] * 31
         self.sugg_authority_test_array = [100] * 31
+        self.maintenance_switches_test_array = [0, 1]
+        self.maintenance_blocks_test_array = [0] * 36
 
         # PLC Object
         self.plc_program_3 = green_line_plc_3_class()
@@ -2845,7 +3018,7 @@ class test_receive_sugg_speed_and_authority_plc_3(unittest.TestCase):
     def test_passing_values_to_plc(self):
 
         # Call plc handlers
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
 
         # Check sugg speed and authority
         for i in range(len(self.sugg_speed_test_array)):
@@ -2862,6 +3035,8 @@ class test_N_direction_M_to_O(unittest.TestCase):
         self.occupancy_test_array = [0] * 36
         self.sugg_speed_test_array = [None] * 31
         self.sugg_authority_test_array = [None] * 31
+        self.maintenance_switches_test_array = [0, 1]
+        self.maintenance_blocks_test_array = [0] * 36
 
         # PLC Object
         self.plc_program_3 = green_line_plc_3_class()
@@ -2871,7 +3046,7 @@ class test_N_direction_M_to_O(unittest.TestCase):
 
         # Train enters block 76
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([76], self.occupancy_test_array)
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertFalse(self.plc_program_3.N_direction)
         self.assertTrue(self.plc_program_3.N_direction_update)
         self.assertFalse(self.plc_program_3.N_occupancy)
@@ -2879,14 +3054,14 @@ class test_N_direction_M_to_O(unittest.TestCase):
         # Train travels from 77 to 85
         for block in list(range(77, 86)):
             seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([block], self.occupancy_test_array)
-            call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+            call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
             self.assertTrue(self.plc_program_3.N_direction)
             self.assertFalse(self.plc_program_3.N_direction_update)
             self.assertTrue(self.plc_program_3.N_occupancy)
         
         # Train enters block 86
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([86], self.occupancy_test_array)
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertTrue(self.plc_program_3.N_direction)
         self.assertTrue(self.plc_program_3.N_direction_update)
         self.assertFalse(self.plc_program_3.N_occupancy)
@@ -2900,6 +3075,8 @@ class test_N_direction_Q_to_R(unittest.TestCase):
         self.occupancy_test_array = [0] * 36
         self.sugg_speed_test_array = [None] * 31
         self.sugg_authority_test_array = [None] * 31
+        self.maintenance_switches_test_array = [0, 1]
+        self.maintenance_blocks_test_array = [0] * 36
 
         # PLC Object
         self.plc_program_3 = green_line_plc_3_class()
@@ -2909,7 +3086,7 @@ class test_N_direction_Q_to_R(unittest.TestCase):
 
         # Train enters block 100
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([100], self.occupancy_test_array)
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertFalse(self.plc_program_3.N_direction)
         self.assertTrue(self.plc_program_3.N_direction_update)
         self.assertFalse(self.plc_program_3.N_occupancy)
@@ -2917,14 +3094,14 @@ class test_N_direction_Q_to_R(unittest.TestCase):
         # Train travels from 85 to 77
         for block in [85, 84, 83, 82, 81, 80, 79, 78, 77]:
             seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([block], self.occupancy_test_array)
-            call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+            call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
             self.assertFalse(self.plc_program_3.N_direction)
             self.assertFalse(self.plc_program_3.N_direction_update)
             self.assertTrue(self.plc_program_3.N_occupancy)
         
         # Train enters block 101
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([101], self.occupancy_test_array)
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertFalse(self.plc_program_3.N_direction)
         self.assertTrue(self.plc_program_3.N_direction_update)
         self.assertFalse(self.plc_program_3.N_occupancy)
@@ -2939,6 +3116,8 @@ class test_default_switch_commands_plc_3(unittest.TestCase):
         self.occupancy_test_array = [0] * 36
         self.sugg_speed_test_array = [None] * 31
         self.sugg_authority_test_array = [None] * 31
+        self.maintenance_switches_test_array = [0, 1]
+        self.maintenance_blocks_test_array = [0] * 36
 
         # PLC Object
         self.plc_program_3 = green_line_plc_3_class()
@@ -2947,7 +3126,7 @@ class test_default_switch_commands_plc_3(unittest.TestCase):
     def test_passing_values_to_plc(self):
 
         # Call plc handlers
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
 
         # Check switch commands
         self.assertEqual(self.plc_program_3.write_switch_cmd_array, [1, 0])
@@ -2962,6 +3141,8 @@ class test_switch_commands_train_at_M(unittest.TestCase):
         self.occupancy_test_array = [0] * 36
         self.sugg_speed_test_array = [None] * 31
         self.sugg_authority_test_array = [None] * 31
+        self.maintenance_switches_test_array = [0, 1]
+        self.maintenance_blocks_test_array = [0] * 36
 
         # PLC Object
         self.plc_program_3 = green_line_plc_3_class()
@@ -2971,7 +3152,7 @@ class test_switch_commands_train_at_M(unittest.TestCase):
 
         # Train at block 76
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([76], self.occupancy_test_array)
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
 
         # Check switch commands
         self.assertEqual(self.plc_program_3.write_switch_cmd_array, [1, 0])
@@ -2986,6 +3167,8 @@ class test_switch_commands_train_M_to_O(unittest.TestCase):
         self.occupancy_test_array = [0] * 36
         self.sugg_speed_test_array = [None] * 31
         self.sugg_authority_test_array = [None] * 31
+        self.maintenance_switches_test_array = [0, 1]
+        self.maintenance_blocks_test_array = [0] * 36
 
         # PLC Object
         self.plc_program_3 = green_line_plc_3_class()
@@ -2995,20 +3178,20 @@ class test_switch_commands_train_M_to_O(unittest.TestCase):
 
         # Train at block 76
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([76], self.occupancy_test_array)
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertEqual(self.plc_program_3.write_switch_cmd_array, [1, 0])
         self.assertEqual(self.plc_program_3.write_signal_cmd_array, [0, 1, 1, 0])
 
         # Train at block 76
         for block in list(range(77, 86)):
             seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([block], self.occupancy_test_array)
-            call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+            call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
             self.assertEqual(self.plc_program_3.write_switch_cmd_array, [1, 0])
             self.assertEqual(self.plc_program_3.write_signal_cmd_array, [0, 1, 1, 0])
             
         # Train at block 86
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([86], self.occupancy_test_array)
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertEqual(self.plc_program_3.write_switch_cmd_array, [1, 0])
         self.assertEqual(self.plc_program_3.write_signal_cmd_array, [0, 1, 1, 0])
 
@@ -3021,6 +3204,8 @@ class test_switch_commands_train_at_Q(unittest.TestCase):
         self.occupancy_test_array = [0] * 36
         self.sugg_speed_test_array = [None] * 31
         self.sugg_authority_test_array = [None] * 31
+        self.maintenance_switches_test_array = [0, 1]
+        self.maintenance_blocks_test_array = [0] * 36
 
         # PLC Object
         self.plc_program_3 = green_line_plc_3_class()
@@ -3030,7 +3215,7 @@ class test_switch_commands_train_at_Q(unittest.TestCase):
 
         # Train at block 76
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([100], self.occupancy_test_array)
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
 
         # Check switch commands
         self.assertEqual(self.plc_program_3.write_switch_cmd_array, [0, 1])
@@ -3045,6 +3230,8 @@ class test_switch_commands_train_Q_to_R(unittest.TestCase):
         self.occupancy_test_array = [0] * 36
         self.sugg_speed_test_array = [None] * 31
         self.sugg_authority_test_array = [None] * 31
+        self.maintenance_switches_test_array = [0, 1]
+        self.maintenance_blocks_test_array = [0] * 36
 
         # PLC Object
         self.plc_program_3 = green_line_plc_3_class()
@@ -3055,20 +3242,20 @@ class test_switch_commands_train_Q_to_R(unittest.TestCase):
         # Train enters section Q
         for block in [98, 99, 100]:
             seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([block], self.occupancy_test_array)
-            call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+            call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
             self.assertEqual(self.plc_program_3.write_switch_cmd_array, [0, 1])
             self.assertEqual(self.plc_program_3.write_signal_cmd_array, [1, 0, 0, 1])
 
         # Train travels from 85 to 77
         for block in [85, 84, 83, 82, 81, 80, 79, 78, 77]:
             seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([block], self.occupancy_test_array)
-            call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+            call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
             self.assertEqual(self.plc_program_3.write_switch_cmd_array, [0, 1])
             self.assertEqual(self.plc_program_3.write_signal_cmd_array, [1, 0, 0, 1])
             
         # Train at block 101
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([101], self.occupancy_test_array)
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertEqual(self.plc_program_3.write_switch_cmd_array, [1, 0])
         self.assertEqual(self.plc_program_3.write_signal_cmd_array, [0, 1, 1, 0])
 
@@ -3081,6 +3268,8 @@ class test_switch_commands_train_M_to_R(unittest.TestCase):
         self.occupancy_test_array = [0] * 36
         self.sugg_speed_test_array = [None] * 31
         self.sugg_authority_test_array = [None] * 31
+        self.maintenance_switches_test_array = [0, 1]
+        self.maintenance_blocks_test_array = [0] * 36
 
         # PLC Object
         self.plc_program_3 = green_line_plc_3_class()
@@ -3091,34 +3280,34 @@ class test_switch_commands_train_M_to_R(unittest.TestCase):
         # Train enters section M
         for block in [74, 75, 76]:
             seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([block], self.occupancy_test_array)
-            call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+            call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
             self.assertEqual(self.plc_program_3.write_switch_cmd_array, [1, 0])
             self.assertEqual(self.plc_program_3.write_signal_cmd_array, [0, 1, 1, 0])
 
         # Train travels from 77 to 85
         for block in [77, 78, 79, 80, 81, 82, 83, 84, 85]:
             seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([block], self.occupancy_test_array)
-            call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+            call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
             self.assertEqual(self.plc_program_3.write_switch_cmd_array, [1, 0])
             self.assertEqual(self.plc_program_3.write_signal_cmd_array, [0, 1, 1, 0])
 
         # Train travels from 86 to 97
         for block in list(range(86, 98)):
             seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([block], self.occupancy_test_array)
-            call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+            call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
             self.assertEqual(self.plc_program_3.write_switch_cmd_array, [1, 0])
             self.assertEqual(self.plc_program_3.write_signal_cmd_array, [0, 1, 1, 0])
 
         # Train travels from 98 to 77
         for block in [98, 99, 100, 85, 84, 83, 82, 81, 80, 79, 78, 77]:
             seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([block], self.occupancy_test_array)
-            call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+            call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
             self.assertEqual(self.plc_program_3.write_switch_cmd_array, [0, 1])
             self.assertEqual(self.plc_program_3.write_signal_cmd_array, [1, 0, 0, 1])
 
         # Train at block 101
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([101], self.occupancy_test_array)
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertEqual(self.plc_program_3.write_switch_cmd_array, [1, 0])
         self.assertEqual(self.plc_program_3.write_signal_cmd_array, [0, 1, 1, 0])
 
@@ -3131,6 +3320,8 @@ class test_switch_commands_train_waiting_at_M(unittest.TestCase):
         self.occupancy_test_array = [0] * 36
         self.sugg_speed_test_array = [None] * 31
         self.sugg_authority_test_array = [None] * 31
+        self.maintenance_switches_test_array = [0, 1]
+        self.maintenance_blocks_test_array = [0] * 36
 
         # PLC Object
         self.plc_program_3 = green_line_plc_3_class()
@@ -3140,31 +3331,31 @@ class test_switch_commands_train_waiting_at_M(unittest.TestCase):
 
         # Train enters section Q
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([100], self.occupancy_test_array)
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertEqual(self.plc_program_3.write_switch_cmd_array, [0, 1])
         self.assertEqual(self.plc_program_3.write_signal_cmd_array, [1, 0, 0, 1])
 
         # Train enters block 85
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([85], self.occupancy_test_array)
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertEqual(self.plc_program_3.write_switch_cmd_array, [0, 1])
         self.assertEqual(self.plc_program_3.write_signal_cmd_array, [1, 0, 0, 1])
 
         # Train enters block 81 and another train enters block 76
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([81, 76], self.occupancy_test_array)
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertEqual(self.plc_program_3.write_switch_cmd_array, [0, 1])
         self.assertEqual(self.plc_program_3.write_signal_cmd_array, [1, 0, 0, 1])
 
         # First train enters block 77
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([77, 76], self.occupancy_test_array)
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertEqual(self.plc_program_3.write_switch_cmd_array, [0, 1])
         self.assertEqual(self.plc_program_3.write_signal_cmd_array, [1, 0, 0, 1])
 
         # First train enters block 101
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([101, 76], self.occupancy_test_array)
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertEqual(self.plc_program_3.write_switch_cmd_array, [1, 0])
         self.assertEqual(self.plc_program_3.write_signal_cmd_array, [0, 1, 1, 0])
 
@@ -3177,6 +3368,8 @@ class test_switch_commands_train_waiting_at_Q(unittest.TestCase):
         self.occupancy_test_array = [0] * 36
         self.sugg_speed_test_array = [None] * 31
         self.sugg_authority_test_array = [None] * 31
+        self.maintenance_switches_test_array = [0, 1]
+        self.maintenance_blocks_test_array = [0] * 36
 
         # PLC Object
         self.plc_program_3 = green_line_plc_3_class()
@@ -3186,31 +3379,31 @@ class test_switch_commands_train_waiting_at_Q(unittest.TestCase):
 
         # Train enters section M
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([76], self.occupancy_test_array)
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertEqual(self.plc_program_3.write_switch_cmd_array, [1, 0])
         self.assertEqual(self.plc_program_3.write_signal_cmd_array, [0, 1, 1, 0])
 
         # Train enters block 77
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([77], self.occupancy_test_array)
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertEqual(self.plc_program_3.write_switch_cmd_array, [1, 0])
         self.assertEqual(self.plc_program_3.write_signal_cmd_array, [0, 1, 1, 0])
 
         # Train enters block 81 and another train enters block 100
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([81, 100], self.occupancy_test_array)
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertEqual(self.plc_program_3.write_switch_cmd_array, [1, 0])
         self.assertEqual(self.plc_program_3.write_signal_cmd_array, [0, 1, 1, 0])
 
         # First train enters block 85
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([85, 100], self.occupancy_test_array)
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertEqual(self.plc_program_3.write_switch_cmd_array, [1, 0])
         self.assertEqual(self.plc_program_3.write_signal_cmd_array, [0, 1, 1, 0])
 
         # First train enters block 86
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([86, 100], self.occupancy_test_array)
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertEqual(self.plc_program_3.write_switch_cmd_array, [0, 1])
         self.assertEqual(self.plc_program_3.write_signal_cmd_array, [1, 0, 0, 1])
 
@@ -3223,6 +3416,8 @@ class test_switch_commands_train_waiting_at_Q_and_M(unittest.TestCase):
         self.occupancy_test_array = [0] * 36
         self.sugg_speed_test_array = [None] * 31
         self.sugg_authority_test_array = [None] * 31
+        self.maintenance_switches_test_array = [0, 1]
+        self.maintenance_blocks_test_array = [0] * 36
 
         # PLC Object
         self.plc_program_3 = green_line_plc_3_class()
@@ -3231,13 +3426,13 @@ class test_switch_commands_train_waiting_at_Q_and_M(unittest.TestCase):
     def test_passing_values_to_plc(self):
 
         # No trains
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertEqual(self.plc_program_3.write_switch_cmd_array, [1, 0])
         self.assertEqual(self.plc_program_3.write_signal_cmd_array, [0, 1, 1, 0])
 
         # Trains enter blocks 76 and 100
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([76, 100], self.occupancy_test_array)
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertEqual(self.plc_program_3.write_switch_cmd_array, [0, 1])
         self.assertEqual(self.plc_program_3.write_signal_cmd_array, [1, 0, 0, 1])
 
@@ -3251,6 +3446,8 @@ class test_commanded_speed_and_authority_M_to_O(unittest.TestCase):
         self.occupancy_test_array = [0] * 36
         self.sugg_speed_test_array = [50] * 31
         self.sugg_authority_test_array = [100] * 31
+        self.maintenance_switches_test_array = [0, 1]
+        self.maintenance_blocks_test_array = [0] * 36
 
         # PLC Object
         self.plc_program_3 = green_line_plc_3_class()
@@ -3259,7 +3456,7 @@ class test_commanded_speed_and_authority_M_to_O(unittest.TestCase):
     def test_passing_values_to_plc(self):
 
         # No trains
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         for i in range(31):
             if i == 26 or i == 25:
                 self.assertEqual(self.plc_program_3.write_cmd_speed_array[i], 0)
@@ -3271,7 +3468,7 @@ class test_commanded_speed_and_authority_M_to_O(unittest.TestCase):
         # Train enters section M
         for block in [74, 75, 76]:
             seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([block], self.occupancy_test_array)
-            call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+            call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
             if block == 74:
                 self.assertEqual(self.plc_program_3.write_cmd_speed_array[26], 0)
                 self.assertEqual(self.plc_program_3.write_cmd_speed_array[25], 0)
@@ -3290,7 +3487,7 @@ class test_commanded_speed_and_authority_M_to_O(unittest.TestCase):
         # Train travels from 77 to 85
         for block in list(range(77, 86)):
             seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([block], self.occupancy_test_array)
-            call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+            call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
             self.assertEqual(self.plc_program_3.write_cmd_speed_array[26], 0)
             self.assertEqual(self.plc_program_3.write_cmd_speed_array[25], 0)
             self.assertEqual(self.plc_program_3.write_cmd_speed_array[block-74-1], 0)
@@ -3300,7 +3497,7 @@ class test_commanded_speed_and_authority_M_to_O(unittest.TestCase):
         
         # Train enters block 86
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([86], self.occupancy_test_array)
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[26], 0)
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[25], 0)
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[86-74-1], 0)
@@ -3317,6 +3514,8 @@ class test_commanded_speed_and_authority_O_to_Q(unittest.TestCase):
         self.occupancy_test_array = [0] * 36
         self.sugg_speed_test_array = [50] * 31
         self.sugg_authority_test_array = [100] * 31
+        self.maintenance_switches_test_array = [0, 1]
+        self.maintenance_blocks_test_array = [0] * 36
 
         # PLC Object
         self.plc_program_3 = green_line_plc_3_class()
@@ -3325,7 +3524,7 @@ class test_commanded_speed_and_authority_O_to_Q(unittest.TestCase):
     def test_passing_values_to_plc(self):
 
         # No trains
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         for i in range(31):
             if i == 26 or i == 25:
                 self.assertEqual(self.plc_program_3.write_cmd_speed_array[i], 0)
@@ -3337,7 +3536,7 @@ class test_commanded_speed_and_authority_O_to_Q(unittest.TestCase):
         # Train travels from 86 to 97
         for block in [86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97]:
             seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([block], self.occupancy_test_array)
-            call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+            call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
             self.assertEqual(self.plc_program_3.write_cmd_speed_array[26], 0)
             self.assertEqual(self.plc_program_3.write_cmd_speed_array[25], 0)
             self.assertEqual(self.plc_program_3.write_cmd_speed_array[block-74-1], 0)
@@ -3348,7 +3547,7 @@ class test_commanded_speed_and_authority_O_to_Q(unittest.TestCase):
         # Train enters section Q
         for block in [98, 99, 100]:
             seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([block], self.occupancy_test_array)
-            call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+            call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
             self.assertEqual(self.plc_program_3.write_cmd_speed_array[2], 0)
             self.assertEqual(self.plc_program_3.write_cmd_speed_array[1], 0)
             self.assertEqual(self.plc_program_3.write_cmd_speed_array[block-74-1], 0)
@@ -3365,6 +3564,8 @@ class test_commanded_speed_and_authority_Q_to_R(unittest.TestCase):
         self.occupancy_test_array = [0] * 36
         self.sugg_speed_test_array = [50] * 31
         self.sugg_authority_test_array = [100] * 31
+        self.maintenance_switches_test_array = [0, 1]
+        self.maintenance_blocks_test_array = [0] * 36
 
         # PLC Object
         self.plc_program_3 = green_line_plc_3_class()
@@ -3373,7 +3574,7 @@ class test_commanded_speed_and_authority_Q_to_R(unittest.TestCase):
     def test_passing_values_to_plc(self):
 
         # No trains
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         for i in range(31):
             if i == 26 or i == 25:
                 self.assertEqual(self.plc_program_3.write_cmd_speed_array[i], 0)
@@ -3385,7 +3586,7 @@ class test_commanded_speed_and_authority_Q_to_R(unittest.TestCase):
         # Train enters section Q
         for block in [98, 99, 100]:
             seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([block], self.occupancy_test_array)
-            call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+            call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
             self.assertEqual(self.plc_program_3.write_cmd_speed_array[2], 0)
             self.assertEqual(self.plc_program_3.write_cmd_speed_array[1], 0)
             self.assertEqual(self.plc_program_3.write_cmd_speed_array[block-74-1], 0)
@@ -3396,7 +3597,7 @@ class test_commanded_speed_and_authority_Q_to_R(unittest.TestCase):
         # Train travels from 85 to 77
         for block in [85, 84, 83, 82, 81, 80, 79, 78, 77]:
             seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([block], self.occupancy_test_array)
-            call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+            call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
             self.assertEqual(self.plc_program_3.write_cmd_speed_array[2], 0)
             self.assertEqual(self.plc_program_3.write_cmd_speed_array[1], 0)
             if block == 85:
@@ -3413,7 +3614,7 @@ class test_commanded_speed_and_authority_Q_to_R(unittest.TestCase):
 
         # Train enters block 101
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([101], self.occupancy_test_array)
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[26], 0)
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[25], 0)
 
@@ -3426,6 +3627,8 @@ class test_commanded_speed_and_authority_R_to_T(unittest.TestCase):
         self.occupancy_test_array = [0] * 36
         self.sugg_speed_test_array = [50] * 31
         self.sugg_authority_test_array = [100] * 31
+        self.maintenance_switches_test_array = [0, 1]
+        self.maintenance_blocks_test_array = [0] * 36
 
         # PLC Object
         self.plc_program_3 = green_line_plc_3_class()
@@ -3434,7 +3637,7 @@ class test_commanded_speed_and_authority_R_to_T(unittest.TestCase):
     def test_passing_values_to_plc(self):
 
         # No trains
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         for i in range(31):
             if i == 26 or i == 25:
                 self.assertEqual(self.plc_program_3.write_cmd_speed_array[i], 0)
@@ -3446,7 +3649,7 @@ class test_commanded_speed_and_authority_R_to_T(unittest.TestCase):
         # Train enters section R
         for block in [101]:
             seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([block], self.occupancy_test_array)
-            call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+            call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
             self.assertEqual(self.plc_program_3.write_cmd_speed_array[26], 0)
             self.assertEqual(self.plc_program_3.write_cmd_speed_array[25], 0)
             for auth in self.plc_program_3.write_cmd_authority_array:
@@ -3455,7 +3658,7 @@ class test_commanded_speed_and_authority_R_to_T(unittest.TestCase):
         # Train travels from 102 to 105
         for block in [102, 103, 104, 105]:
             seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([block], self.occupancy_test_array)
-            call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+            call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
             self.assertEqual(self.plc_program_3.write_cmd_speed_array[26], 0)
             self.assertEqual(self.plc_program_3.write_cmd_speed_array[25], 0)
             if block == 102:
@@ -3468,7 +3671,7 @@ class test_commanded_speed_and_authority_R_to_T(unittest.TestCase):
 
         # Train enters block 106
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([106], self.occupancy_test_array)
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[26], 0)
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[25], 0)
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[30], 0)
@@ -3484,6 +3687,8 @@ class test_commanded_speed_and_authority_multiply_trains_M_to_O(unittest.TestCas
         self.occupancy_test_array = [0] * 36
         self.sugg_speed_test_array = [50] * 31
         self.sugg_authority_test_array = [100] * 31
+        self.maintenance_switches_test_array = [0, 1]
+        self.maintenance_blocks_test_array = [0] * 36
 
         # PLC Object
         self.plc_program_3 = green_line_plc_3_class()
@@ -3492,7 +3697,7 @@ class test_commanded_speed_and_authority_multiply_trains_M_to_O(unittest.TestCas
     def test_passing_values_to_plc(self):
 
         # No trains
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         for i in range(31):
             if i == 26 or i == 25:
                 self.assertEqual(self.plc_program_3.write_cmd_speed_array[i], 0)
@@ -3503,7 +3708,7 @@ class test_commanded_speed_and_authority_multiply_trains_M_to_O(unittest.TestCas
 
         # Train enters section M
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([76], self.occupancy_test_array)
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[26], 0)
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[25], 0)
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[1], 0)
@@ -3513,7 +3718,7 @@ class test_commanded_speed_and_authority_multiply_trains_M_to_O(unittest.TestCas
 
         # Train enters block 77
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([77], self.occupancy_test_array)
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[26], 0)
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[25], 0)
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[2], 0)
@@ -3523,7 +3728,7 @@ class test_commanded_speed_and_authority_multiply_trains_M_to_O(unittest.TestCas
 
         # Train enters block 82 and another train enters block 77
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([82, 77], self.occupancy_test_array)
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[26], 0)
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[25], 0)
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[82-74-1], 0)
@@ -3535,7 +3740,7 @@ class test_commanded_speed_and_authority_multiply_trains_M_to_O(unittest.TestCas
 
         # Train enters block 86 and another train enters block 80
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([86, 80], self.occupancy_test_array)
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[26], 0)
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[25], 0)
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[86-74-1], 0)
@@ -3554,6 +3759,8 @@ class test_commanded_speed_and_authority_multiply_trains_Q_to_R(unittest.TestCas
         self.occupancy_test_array = [0] * 36
         self.sugg_speed_test_array = [50] * 31
         self.sugg_authority_test_array = [100] * 31
+        self.maintenance_switches_test_array = [0, 1]
+        self.maintenance_blocks_test_array = [0] * 36
 
         # PLC Object
         self.plc_program_3 = green_line_plc_3_class()
@@ -3562,7 +3769,7 @@ class test_commanded_speed_and_authority_multiply_trains_Q_to_R(unittest.TestCas
     def test_passing_values_to_plc(self):
 
         # No trains
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         for i in range(31):
             if i == 26 or i == 25:
                 self.assertEqual(self.plc_program_3.write_cmd_speed_array[i], 0)
@@ -3573,7 +3780,7 @@ class test_commanded_speed_and_authority_multiply_trains_Q_to_R(unittest.TestCas
 
         # Train enters section Q
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([100], self.occupancy_test_array)
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[2], 0)
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[1], 0)
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[100-74-1], 0)
@@ -3583,7 +3790,7 @@ class test_commanded_speed_and_authority_multiply_trains_Q_to_R(unittest.TestCas
 
         # Train enters block 85
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([85], self.occupancy_test_array)
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[2], 0)
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[1], 0)
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[26], 0)
@@ -3593,7 +3800,7 @@ class test_commanded_speed_and_authority_multiply_trains_Q_to_R(unittest.TestCas
 
         # Train enters block 79 and another train enters block 83
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([79, 83], self.occupancy_test_array)
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[2], 0)
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[1], 0)
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[79-74+1], 0)
@@ -3605,7 +3812,7 @@ class test_commanded_speed_and_authority_multiply_trains_Q_to_R(unittest.TestCas
 
         # Train enters block 101 and another train enters block 81
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([101, 81], self.occupancy_test_array)
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[2], 0)
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[1], 0)
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[77-74], 0)
@@ -3624,6 +3831,8 @@ class test_commanded_speed_and_authority_train_waiting_at_Q(unittest.TestCase):
         self.occupancy_test_array = [0] * 36
         self.sugg_speed_test_array = [50] * 31
         self.sugg_authority_test_array = [100] * 31
+        self.maintenance_switches_test_array = [0, 1]
+        self.maintenance_blocks_test_array = [0] * 36
 
         # PLC Object
         self.plc_program_3 = green_line_plc_3_class()
@@ -3632,7 +3841,7 @@ class test_commanded_speed_and_authority_train_waiting_at_Q(unittest.TestCase):
     def test_passing_values_to_plc(self):
 
         # No trains
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         for i in range(31):
             if i == 26 or i == 25:
                 self.assertEqual(self.plc_program_3.write_cmd_speed_array[i], 0)
@@ -3643,7 +3852,7 @@ class test_commanded_speed_and_authority_train_waiting_at_Q(unittest.TestCase):
 
         # Train enters section M
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([76], self.occupancy_test_array)
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[26], 0)
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[25], 0)
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[1], 0)
@@ -3653,7 +3862,7 @@ class test_commanded_speed_and_authority_train_waiting_at_Q(unittest.TestCase):
 
         # Train enters block 77 and another train enters block 100
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([77, 100], self.occupancy_test_array)
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[26], 0)
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[25], 0)
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[2], 0)
@@ -3664,7 +3873,7 @@ class test_commanded_speed_and_authority_train_waiting_at_Q(unittest.TestCase):
 
         # Train enters block 83
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([83, 100], self.occupancy_test_array)
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[26], 0)
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[25], 0)
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[83-74-1], 0)
@@ -3675,7 +3884,7 @@ class test_commanded_speed_and_authority_train_waiting_at_Q(unittest.TestCase):
 
         # Train enters block 86
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([86, 100], self.occupancy_test_array)
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[2], 0)
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[1], 0)
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[86-74-1], 50)
@@ -3694,6 +3903,8 @@ class test_commanded_speed_and_authority_train_waiting_at_M(unittest.TestCase):
         self.occupancy_test_array = [0] * 36
         self.sugg_speed_test_array = [50] * 31
         self.sugg_authority_test_array = [100] * 31
+        self.maintenance_switches_test_array = [0, 1]
+        self.maintenance_blocks_test_array = [0] * 36
 
         # PLC Object
         self.plc_program_3 = green_line_plc_3_class()
@@ -3702,7 +3913,7 @@ class test_commanded_speed_and_authority_train_waiting_at_M(unittest.TestCase):
     def test_passing_values_to_plc(self):
 
         # No trains
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         for i in range(31):
             if i == 26 or i == 25:
                 self.assertEqual(self.plc_program_3.write_cmd_speed_array[i], 0)
@@ -3713,7 +3924,7 @@ class test_commanded_speed_and_authority_train_waiting_at_M(unittest.TestCase):
 
         # Train enters section Q
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([100], self.occupancy_test_array)
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[2], 0)
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[1], 0)
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[25], 0)
@@ -3723,7 +3934,7 @@ class test_commanded_speed_and_authority_train_waiting_at_M(unittest.TestCase):
 
         # Train enters block 85 and another train enters block 76
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([85, 76], self.occupancy_test_array)
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[2], 0)
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[1], 0)
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[26], 0)
@@ -3734,7 +3945,7 @@ class test_commanded_speed_and_authority_train_waiting_at_M(unittest.TestCase):
 
         # Train enters block 77
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([77, 76], self.occupancy_test_array)
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[2], 0)
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[1], 0)
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[77-74+1], 0)
@@ -3745,7 +3956,7 @@ class test_commanded_speed_and_authority_train_waiting_at_M(unittest.TestCase):
 
         # Train enters block 101
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([101, 76], self.occupancy_test_array)
-        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[26], 0)
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[25], 0)
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[77-74], 50)
@@ -3754,6 +3965,40 @@ class test_commanded_speed_and_authority_train_waiting_at_M(unittest.TestCase):
         self.assertEqual(self.plc_program_3.write_cmd_speed_array[0], 0)
         for auth in self.plc_program_3.write_cmd_authority_array:
                 self.assertEqual(auth, 100)
+
+# Maintenance Switches and blocks test cases
+class test_maintenance_switches_plc_3(unittest.TestCase):
+
+    # Set up test variables
+    def setUp(self):
+        
+        # Test Arrays
+        self.occupancy_test_array = [0] * 36
+        self.sugg_speed_test_array = [50] * 31
+        self.sugg_authority_test_array = [100] * 31
+        self.maintenance_switches_test_array = [1, 1]
+        self.maintenance_blocks_test_array = [0] * 36
+
+        # PLC Object
+        self.plc_program_3 = green_line_plc_3_class()
+
+    # Pass values to plc programs
+    def test_passing_values_to_plc(self):
+
+        # Set maintenance blocks
+        seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([76, 77, 101], self.maintenance_blocks_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
+        self.assertEqual(self.plc_program_3.write_switch_cmd_array, [0, 0])
+
+        # Set maintenance blocks
+        seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([85, 86, 100], self.maintenance_blocks_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
+        self.assertEqual(self.plc_program_3.write_switch_cmd_array, [1, 1])
+
+        # Set maintenance blocks
+        seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([76, 77, 101, 85, 86, 100], self.maintenance_blocks_test_array)
+        call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
+        self.assertEqual(self.plc_program_3.write_switch_cmd_array, [0, 1])
 
 ####################################################################################################
 #

@@ -2446,13 +2446,14 @@ class wayside_ui_green_line(object):
                 self.ui_signals = signal_cmds.copy()
 
         # Occupancy Handler
-        def shell_occupancy_handler(self, occupancy: list):
+        def shell_occupancy_handler(self, occupancy: list, maintenance: list):
 
                 # Set past occupancy
                 self.ui_past_occupancy = self.ui_occupancy.copy()
 
                 # Set new occupancy
                 self.ui_occupancy = occupancy.copy()
+                self.ui_occupancy = [a or b for a, b in zip(self.ui_occupancy, maintenance)]
 
                 # Set new wayside occupancy
                 self.determine_wayside_occupancy()
