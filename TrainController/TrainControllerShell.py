@@ -69,6 +69,9 @@ class TrainControllerShell:
         if train_controller_ui in self.train_controller_list and train_engineer_ui in self.train_engineer_list:
             self.train_controller_list.remove(train_controller_ui)
             self.train_engineer_list.remove(train_engineer_ui)
+            
+            train_controller_ui.deleteLater()
+            train_engineer_ui.deleteLater()
 
     def create_and_add_train_controller_and_engineer_ui(self, module: bool):
         new_train_controller_ui, new_train_engineer_ui = self.create_new_train_controller_and_engineer_ui(module)
@@ -155,7 +158,7 @@ class TrainControllerShell:
                 for i in range(len(commanded_speed)):
                     if i < len(self.train_controller_list):
                         if commanded_speed[i] == 0:
-                            self.train_controller_list[i].speed_control.handle_commanded_speed(0)
+                            self.train_controller_list[i].speed_control.handle_commanded_speed(30)
                         else:
                             self.train_controller_list[i].speed_control.handle_commanded_speed(commanded_speed[i])
                     # print(f"Commanded Speed {i + 1}: {commanded_speed}")
