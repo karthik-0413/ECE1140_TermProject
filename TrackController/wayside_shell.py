@@ -111,7 +111,7 @@ class wayside_shell_class:
             
             self.sugg_speed_check = 1
 
-            if self.sugg_speed_check and self.sugg_authority_check and self.block_occupancy_check and self.maintenance_block_check and self.maintenance_switch_check:
+            if self.sugg_speed_check and self.sugg_authority_check and self.block_occupancy_check: #and self.maintenance_block_check and self.maintenance_switch_check:
 
                 # Update UI suggested speed and authority table
                 self.ui.shell_sugg_speed_auth_handler(self.read_sugg_speed, self.read_sugg_authority)
@@ -145,7 +145,7 @@ class wayside_shell_class:
             
             self.sugg_authority_check = 1
             
-            if self.sugg_speed_check and self.sugg_authority_check and self.block_occupancy_check and self.maintenance_block_check and self.maintenance_switch_check:
+            if self.sugg_speed_check and self.sugg_authority_check and self.block_occupancy_check: #and self.maintenance_block_check and self.maintenance_switch_check:
 
                 # Update UI suggested speed and authority table
                 self.ui.shell_sugg_speed_auth_handler(self.read_sugg_speed, self.read_sugg_authority)
@@ -245,11 +245,11 @@ class wayside_shell_class:
         self.write_block_occupancy = block_occupancy_array.copy()
 
         # Update Wayside user interface table
-        if len(self.read_block_occupancy):
+        if self.read_block_occupancy:
             
             self.block_occupancy_check = 1
             
-            if self.sugg_speed_check and self.sugg_authority_check and self.block_occupancy_check and self.maintenance_block_check and self.maintenance_switch_check:
+            if self.sugg_speed_check and self.sugg_authority_check and self.block_occupancy_check: #and self.maintenance_block_check and self.maintenance_switch_check:
 
                 # Update UI suggested speed and authority table
                 self.ui.shell_sugg_speed_auth_handler(self.read_sugg_speed, self.read_sugg_authority)
