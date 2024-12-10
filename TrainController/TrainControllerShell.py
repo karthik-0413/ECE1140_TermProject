@@ -47,13 +47,16 @@ class TrainControllerShell:
                         self.train_counter += 1
                         
                         # Want Software for all trains except for the second train dispatched
-                        # if self.counter != 2:
-                        #     self.create_and_add_train_controller_and_engineer_ui(True)
-                        self.create_and_add_train_controller_and_engineer_ui(True)
+                        if self.counter != 2:
+                            # print("Software Train Controller is Initialized")
+                            self.create_and_add_train_controller_and_engineer_ui(True)
+                        # self.create_and_add_train_controller_and_engineer_ui(True)
                             
                         # Only want Hardware for second Train that was dispatched
-                        # elif self.counter == 2:
-                        #     self.create_and_add_train_controller_and_engineer_ui(False)
+                        elif self.counter == 2:
+                            # print("Hardware Train Controller is Initialized")
+                            self.create_and_add_train_controller_and_engineer_ui(False)
+                            
                 elif train_id < len(self.train_controller_list):
                     self.train_counter -= 1
                     self.remove_train_controller_and_engineer_ui(self.train_controller_list[0], self.train_engineer_list[0])
@@ -66,7 +69,6 @@ class TrainControllerShell:
         if train_controller_ui in self.train_controller_list and train_engineer_ui in self.train_engineer_list:
             self.train_controller_list.remove(train_controller_ui)
             self.train_engineer_list.remove(train_engineer_ui)
-            self.train_id_list.pop(0)
 
     def create_and_add_train_controller_and_engineer_ui(self, module: bool):
         new_train_controller_ui, new_train_engineer_ui = self.create_new_train_controller_and_engineer_ui(module)
@@ -155,6 +157,7 @@ class TrainControllerShell:
                     # print(f"Commanded Speed {i + 1}: {commanded_speed}")
             
     def update_commanded_authority(self, commanded_authority: list):
+        # print(f"Commanded Authority in Train Controller Shell: {commanded_authority}")
         if len(self.train_controller_list):
             if len(commanded_authority):
                 for i in range(len(commanded_authority)):
