@@ -36,7 +36,7 @@ class Line():
                     next_block_string=row['Next Block']
                 )
                 self.layout.append(block)
-                print(f"Block number: {block.block_number}  Block length: {block.block_length}  Section: {block.section}  Infrastructure: {block.infrastructure}")
+                # print(f"Block number: {block.block_number}  Block length: {block.block_length}  Section: {block.section}  Infrastructure: {block.infrastructure}")
 
     def read_excel_schedule():
         pass
