@@ -69,6 +69,9 @@ class TrainControllerShell:
         if train_controller_ui in self.train_controller_list and train_engineer_ui in self.train_engineer_list:
             self.train_controller_list.remove(train_controller_ui)
             self.train_engineer_list.remove(train_engineer_ui)
+            
+            train_controller_ui.deleteLater()
+            train_engineer_ui.deleteLater()
 
     def create_and_add_train_controller_and_engineer_ui(self, module: bool):
         new_train_controller_ui, new_train_engineer_ui = self.create_new_train_controller_and_engineer_ui(module)
