@@ -158,7 +158,7 @@ class TrainControllerShell:
                 for i in range(len(commanded_speed)):
                     if i < len(self.train_controller_list):
                         if commanded_speed[i] == 0:
-                            self.train_controller_list[i].speed_control.handle_commanded_speed(0)
+                            self.train_controller_list[i].speed_control.handle_commanded_speed(30)
                         else:
                             self.train_controller_list[i].speed_control.handle_commanded_speed(commanded_speed[i])
                     # print(f"Commanded Speed {i + 1}: {commanded_speed}")

@@ -970,16 +970,11 @@ class Position(QObject):
                 print("No doors opened")
                 # # print("No doors opened")
                 
-            # Stop any existing timer if there's one
-            if hasattr(self, 'timer') and self.timer.isActive():
-                print("Stopping timer")
-                self.timer.stop()
-            
-            # Close doors after 60 seconds
-            print("Starting new timer")
+            # Close doors after 60 seconds and print seconds passed
+            self.seconds_passed = 0
             self.timer = QTimer(self)
-            self.timer.timeout.connect(self.close_doors)
-            self.timer.start(60000)
+            self.timer.timeout.connect(self.update_timer)
+            self.timer.start(1000)
             
         elif self.line == 'Red':
             if "Left" in self.red_station_door[self.current_block] and  "Right" not in self.red_station_door[self.current_block]:
@@ -997,10 +992,23 @@ class Position(QObject):
                 self.door.close_right_door()
                 # # print("No doors opened")
                 
-            # Close doors after 60 seconds
+            # # Stop any existing timer if there's one
+            # if hasattr(self, 'timer') and self.timer.isActive():
+            #     print("Stopping timer")
+            #     self.timer.stop()
+                
+            # Close doors after 60 seconds and print seconds passed
+            self.seconds_passed = 0
             self.timer = QTimer(self)
-            self.timer.timeout.connect(self.close_doors)
-            self.timer.start(60000)
+            self.timer.timeout.connect(self.update_timer)
+            self.timer.start(1000)
+
+    def update_timer(self):
+        self.seconds_passed += 1
+        print(f"{self.seconds_passed} seconds have passed")
+        if self.seconds_passed >= 60:
+            self.close_doors()
+            self.timer.stop()
 
     def close_doors(self):
         self.door.close_left_door()
@@ -1875,8 +1883,8 @@ class TrainControllerUI(QWidget):
             self.brake_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
 
     def update_service_brake_status(self, brake_status: bool, manual_brake_status: bool):
-        print(f"Brake Status: {brake_status}")
-        print(f"Manual Brake Status: {manual_brake_status}")
+        # print(f"Brake Status: {brake_status}")
+        # print(f"Manual Brake Status: {manual_brake_status}")
         if brake_status or manual_brake_status:
             self.divet_in_service_brake_button()
         else:
