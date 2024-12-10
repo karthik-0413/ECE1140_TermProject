@@ -114,7 +114,8 @@ class TrainData(QObject):
 
     def initialize_train(self):
         """Initialize data for a new train."""
-        self.cabin_temperature.append(78)  # Fahrenheit
+        # Append default values for a new train
+        self.cabin_temperature.append(65)  # Fahrenheit
         self.maximum_capacity.append(222)
         self.passenger_count.append(100)
         self.crew_count.append(2)
@@ -134,7 +135,7 @@ class TrainData(QObject):
 
         # Train Control Input Variables
         self.commanded_power.append(0)  # kW
-        self.commanded_speed_tc.append(0)  # km/h from Track Model
+        self.commanded_speed_tc.append(None)  # km/h from Track Model
         self.commanded_speed.append(0)     # Convert km/h to m/s
         self.commanded_speed_UI.append(0)  # Convert km/h to mph
         self.authority.append(20)           # authority in blocks
@@ -146,7 +147,7 @@ class TrainData(QObject):
         self.beacon.append("")
 
         # Cabin Control Variables
-        self.desired_temperature.append(76)
+        self.desired_temperature.append(65)
         self.train_left_door.append(False)
         self.train_right_door.append(False)
         self.advertisement.append("Picture1")
@@ -350,7 +351,7 @@ class TrainData(QObject):
         if len(temp_list) < max(1, self.train_count):
             temp_list = temp_list + [0] * (max(1, self.train_count) - len(temp_list))
         self.desired_temperature = temp_list
-        self.cabin_temperature = temp_list  # Assuming desired temp sets cabin temp
+        # self.cabin_temperature = temp_list  # Assuming desired temp sets cabin temp
         self.data_changed.emit()
 
     def set_exterior_light(self, state_list):
@@ -398,19 +399,15 @@ class TrainData(QObject):
     def set_track_commanded_speed(self, speed_list):
         """Handle commanded speed signals from Track Model."""
         # Ensure the list is long enough
-        if len(speed_list):
-            if speed_list[0] == 0:
-                self.commanded_speed_tc[0] = 0
-                # print(f"Commanded Speed in Train Model is 0 - : {self.commanded_speed_tc}")
-            elif len(speed_list) < max(1, self.train_count):
-                speed_list = speed_list + [0] * (max(1, self.train_count) - len(speed_list))
-            self.commanded_speed_tc = speed_list
-            # print(f"Commanded Speed in Train Model: {self.commanded_speed_tc}")
-            # Convert km/h to m/s for calculations
-            self.commanded_speed = [speed / 3.6 for speed in speed_list]  #UUU
-            # Convert m/s to mph for UI
-            self.commanded_speed_UI = [speed * 2.23694 for speed in self.commanded_speed]
-            self.data_changed.emit()
+        if len(speed_list) < max(1, self.train_count):
+            speed_list = speed_list + [0] * (max(1, self.train_count) - len(speed_list))
+        self.commanded_speed_tc = speed_list
+        # print(f"Commanded Speed in Train Model: {self.commanded_speed_tc}")
+        # Convert km/h to m/s for calculations
+        self.commanded_speed = [speed / 3.6 for speed in speed_list]  #UUU
+        # Convert m/s to mph for UI
+        self.commanded_speed_UI = [speed * 2.23694 for speed in self.commanded_speed]
+        self.data_changed.emit()
 
     def set_track_commanded_authority(self, authority_list):
         """Handle commanded authority signals from Track Model."""

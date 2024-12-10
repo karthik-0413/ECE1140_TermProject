@@ -36,8 +36,8 @@ class CTC_logic():
         # Write all buffered information to the communicate objects
         self.wayside_communicate.suggested_speed_signal.emit(self.suggested_speed_list)
         self.wayside_communicate.suggested_authority_signal.emit(self.suggested_authority_list)
-        print("CTC Speed list = ", [speed for speed in self.suggested_speed_list if speed is not None])
-        print("CTC Authority list = ", [auth for auth in self.suggested_authority_list if auth is not None])
+        # print("CTC Speed list = ", [speed for speed in self.suggested_speed_list if speed is not None])
+        # print("CTC Authority list = ", [auth for auth in self.suggested_authority_list if auth is not None])
 
     def upload_layout_to_line(self, path_to_layout:str):
         self.line.read_excel_layout(path_to_layout)
@@ -53,7 +53,7 @@ class CTC_logic():
         
         # Add destinations to the train object 
         self.line.create_train(destination, arrival_time, destination_station)
-        print("Adding train")
+        # print("Adding train")
         self.num_trains = len(self.line.train_list)
         # print("Num trains = ", self.num_trains)
 
