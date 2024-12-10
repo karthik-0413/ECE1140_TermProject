@@ -155,8 +155,8 @@ class green_line_plc_3_class:
                                 self.sec_array[1].block_stop_go[0] = 0 # Block 77
                                 self.sec_array[0].block_stop_go[2] = 0 # Block 76
                             else:                # Moving right, away from loop
-                                self.sec_array[1].block_stop_go[0] = 0 # Block 79
-                                self.sec_array[0].block_stop_go[2] = 0 # Block 80
+                                self.sec_array[1].block_stop_go[2] = 0 # Block 79
+                                self.sec_array[1].block_stop_go[3] = 0 # Block 80
 
                         elif j == 2: # Block 79
 
