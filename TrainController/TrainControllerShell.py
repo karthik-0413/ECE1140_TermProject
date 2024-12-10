@@ -105,9 +105,13 @@ class TrainControllerShell:
         self.communicator.power_command_signal.emit(power_commands)
         
         service_brake_commands = [train_controller.brake_class.driver_service_brake_command for train_controller in self.train_controller_list]
+        manual_service_brake_commands = [train_controller.brake_class.manual_driver_service_brake_command for train_controller in self.train_controller_list]  
+        service_brake_commands = [s or m for s, m in zip(service_brake_commands, manual_service_brake_commands)]
         self.communicator.service_brake_command_signal.emit(service_brake_commands)
         
         emergency_brake_commands = [train_controller.brake_class.driver_emergency_brake_command for train_controller in self.train_controller_list]
+        manual_emergency_brake_commands = [train_controller.brake_class.manual_driver_emergency_brake_command for train_controller in self.train_controller_list]
+        emergency_brake_commands = [e or m for e, m in zip(emergency_brake_commands, manual_emergency_brake_commands)]
         self.communicator.emergency_brake_command_signal.emit(emergency_brake_commands)
         
         desired_temperatures = [train_controller.temperature.desired_temperature for train_controller in self.train_controller_list]

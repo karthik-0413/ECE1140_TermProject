@@ -1875,44 +1875,18 @@ class TrainControllerUI(QWidget):
             self.brake_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
 
     def update_service_brake_status(self, brake_status: bool, manual_brake_status: bool):
+        print(f"Brake Status: {brake_status}")
+        print(f"Manual Brake Status: {manual_brake_status}")
         if brake_status or manual_brake_status:
             self.divet_in_service_brake_button()
         else:
             self.reset_service_brake_button_style()
             
     def update_emergency_brake_status(self, brake_status: bool):
-        if brake_status:
+        if brake_status or self.brake_class.manual_driver_emergency_brake_command:
             self.divet_in_emergency_brake_buttons()
         else:
             self.reset_emergency_brake_button_style()
-        
-        
-    ####################################################################
-    # FUNCTIONS TO HANDLE THE BACKEND LOGIC OF TRAIN CONTROLLER MODULE #
-    ####################################################################
-    
-    def write_to_train_model(self):
-        self.communicator.power_command_signal.emit(self.power_class.power_command)
-        self.communicator.service_brake_command_signal.emit(self.brake_class.driver_service_brake_command)
-        self.communicator.emergency_brake_command_signal.emit(self.brake_class.driver_emergency_brake_command) 
-        self.communicator.desired_temperature_signal.emit(self.temperature.desired_temperature)
-        self.communicator.exterior_lights_signal.emit(self.lights.interior_lights)
-        self.communicator.interior_lights_signal.emit(self.lights.exterior_lights)
-        self.communicator.left_door_signal.emit(self.doors.left_door)
-        self.communicator.right_door_signal.emit(self.doors.right_door)
-        self.communicator.announcement_signal.emit(self.position.announcement)
-    
-    def read_from_train_model(self):
-        self.communicator.current_velocity_signal.connect(self.speed_control.handle_current_velocity)
-        self.communicator.commanded_speed_signal.connect(self.speed_control.handle_commanded_speed)
-        self.communicator.commanded_authority_signal.connect(self.position.handle_commanded_authority)
-        self.communicator.engine_failure_signal.connect(self.failure_modes.handle_engine_failure)
-        self.communicator.brake_failure_signal.connect(self.failure_modes.handle_brake_failure)
-        self.communicator.signal_failure_signal.connect(self.failure_modes.handle_signal_failure)
-        self.communicator.passenger_brake_command_signal.connect(self.brake_class.handle_passenger_brake_command)
-        self.communicator.actual_temperature_signal.connect(self.temperature.update_current_temp_display)
-        self.communicator.polarity_signal.connect(self.position.handle_polarity_change)
-        
 
     ############################################
     # BRAKE DIVET FUNCTIONS FOR USER INTERFACE #
@@ -1932,13 +1906,10 @@ class TrainControllerUI(QWidget):
         
     def reset_emergency_brake_button_style(self):
         self.emergency_brake_button.setStyleSheet("border: 3px solid black; margin-left: 40px; background-color: red; color: white; font-size: 20px; font-weight: bold; padding: 50px; border-radius: 10px;")
-        # Turn the brake status to OFF
-        # self.brake_status.setText("OFF")
-        # self.brake_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
         self.reset_brake_status(self.brake_class.driver_service_brake_command, self.brake_class.driver_emergency_brake_command)
 
-    def reset_brake_status(self, service_brake: bool = False, emergency_brake: bool = False):
-        if service_brake or emergency_brake:
+    def reset_brake_status(self, service_brake: bool, emergency_brake: bool):
+        if service_brake or emergency_brake or self.brake_class.manual_driver_emergency_brake_command or self.brake_class.manual_driver_service_brake_command:
             self.brake_status.setText("ON")
             self.brake_status.setStyleSheet("background-color: #f5c842; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
         else:
