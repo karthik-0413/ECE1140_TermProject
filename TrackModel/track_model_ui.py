@@ -77,10 +77,22 @@ class Ui_TrackModel(QObject):
                         self.heaterStatus.setStyleSheet("font: 10pt \"Times New Roman\";\nbackground-color: rgb(68, 68, 68);\ncolor: rgb(0, 0, 0);")
 
         def update_temp(self):
-                self.temperature = self.tempStepper.value()   
+                self.temperature = self.tempStepper.value()    
+
+        def handle_failures(self):
+                for block in self.all_blocks:
+                        if block.number in self.toggle_circuit_failure:
+                                block.functional = False
+                        elif block.number in self.toggle_power_failure:
+                                block.functional = False
+                        elif block.number in self.toggle_rail_failure:
+                                block.functional = False
+                        else:
+                                block.functional = True
 
         def update_functional_list(self):
                 """updates the ui with the functional status of each block"""
+                self.handle_failures()
                 for block in self.all_blocks:
                         if (not block.functional):
                                 self.blockTable.item(block.table_row, block.table_column).setBackground(QtGui.QColor("red"))
@@ -90,7 +102,7 @@ class Ui_TrackModel(QObject):
         def update_occupancy_list(self):
                 """updates the ui with the occupational status of each block"""
                 for block in self.all_blocks:
-                        if (block.occupied):
+                        if (block.occupied and block.functional):
                                 self.blockTable.item(block.table_row, block.table_column).setBackground(QtGui.QColor("blue"))
                         else:
                                 self.blockTable.item(block.table_row, block.table_column).setBackground(QtGui.QColor("green"))

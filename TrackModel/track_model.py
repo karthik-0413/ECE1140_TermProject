@@ -70,12 +70,9 @@ class track_model:
         self.ui.show()
 
         self.ui.uploadButton.clicked.connect(self.upload_file)
-        self.ui.murphyBlockNumber1.valueChanged.connect(self.handle_circuit_failure_num_step)
-        self.ui.murphyBlockNumber2.valueChanged.connect(self.handle_power_failure_num_step)
-        self.ui.murphyBlockNumber3.valueChanged.connect(self.handle_rail_failure_num_step)
-        self.ui.breakStatus1.toggled.connect(self.handle_circuit_failure_checkbox)
-        self.ui.breakStatus2.toggled.connect(self.handle_power_failure_checkbox)
-        self.ui.breakStatus3.toggled.connect(self.handle_rail_failure_checkbox)
+        self.ui.breakStatus1.toggled.connect(self.handle_circuit_failure)
+        # self.ui.breakStatus2.toggled.connect(self.handle_power_failure_checkbox)
+        # self.ui.breakStatus3.toggled.connect(self.handle_rail_failure_checkbox)
 
         self.read_train()
         self.read_wayside()
@@ -651,53 +648,53 @@ class track_model:
         for block in self.all_blocks:
             self.functional_blocks.append(1)
     
-    def handle_circuit_failure_num_step(self, block_num: int):
-        if self.ui.toggle_circuit_failure[block_num]:
-            self.ui.breakStatus1.toggled.disconnect(self.handle_circuit_failure_checkbox)
-            self.ui.breakStatus1.setChecked(True)
-            self.ui.breakStatus1.toggled.connect(self.handle_circuit_failure_checkbox)
-        else:
-            self.ui.breakStatus1.toggled.disconnect(self.handle_circuit_failure_checkbox)
-            self.ui.breakStatus1.setChecked(False)
-            self.ui.breakStatus1.toggled.connect(self.handle_circuit_failure_checkbox)
+    # def handle_circuit_failure_num_step(self, block_num: int):
+    #     if self.ui.toggle_circuit_failure[block_num]:
+    #         self.ui.breakStatus1.toggled.disconnect(self.handle_circuit_failure_checkbox)
+    #         self.ui.breakStatus1.setChecked(True)
+    #         self.ui.breakStatus1.toggled.connect(self.handle_circuit_failure_checkbox)
+    #     else:
+    #         self.ui.breakStatus1.toggled.disconnect(self.handle_circuit_failure_checkbox)
+    #         self.ui.breakStatus1.setChecked(False)
+    #         self.ui.breakStatus1.toggled.connect(self.handle_circuit_failure_checkbox)
 
-    def handle_power_failure_num_step(self, block_num: int):
-        if self.ui.toggle_power_failure[block_num]:
-            self.ui.breakStatus2.toggled.disconnect(self.handle_power_failure_checkbox)
-            self.ui.breakStatus2.setChecked(True)
-            self.ui.breakStatus2.toggled.connect(self.handle_power_failure_checkbox)
-        else:
-            self.ui.breakStatus2.toggled.disconnect(self.handle_power_failure_checkbox)
-            self.ui.breakStatus2.setChecked(False)
-            self.ui.breakStatus2.toggled.connect(self.handle_power_failure_checkbox)
+    # def handle_power_failure_num_step(self, block_num: int):
+    #     if self.ui.toggle_power_failure[block_num]:
+    #         self.ui.breakStatus2.toggled.disconnect(self.handle_power_failure_checkbox)
+    #         self.ui.breakStatus2.setChecked(True)
+    #         self.ui.breakStatus2.toggled.connect(self.handle_power_failure_checkbox)
+    #     else:
+    #         self.ui.breakStatus2.toggled.disconnect(self.handle_power_failure_checkbox)
+    #         self.ui.breakStatus2.setChecked(False)
+    #         self.ui.breakStatus2.toggled.connect(self.handle_power_failure_checkbox)
 
-    def handle_rail_failure_num_step(self, block_num: int):
-        if self.ui.toggle_rail_failure[block_num]:
-            self.ui.breakStatus3.toggled.disconnect(self.handle_rail_failure_checkbox)
-            self.ui.breakStatus3.setChecked(True)
-            self.ui.breakStatus3.toggled.connect(self.handle_rail_failure_checkbox)
-        else:
-            self.ui.breakStatus3.toggled.disconnect(self.handle_rail_failure_checkbox)
-            self.ui.breakStatus3.setChecked(False)
-            self.ui.breakStatus3.toggled.connect(self.handle_rail_failure_checkbox)
+    # def handle_rail_failure_num_step(self, block_num: int):
+    #     if self.ui.toggle_rail_failure[block_num]:
+    #         self.ui.breakStatus3.toggled.disconnect(self.handle_rail_failure_checkbox)
+    #         self.ui.breakStatus3.setChecked(True)
+    #         self.ui.breakStatus3.toggled.connect(self.handle_rail_failure_checkbox)
+    #     else:
+    #         self.ui.breakStatus3.toggled.disconnect(self.handle_rail_failure_checkbox)
+    #         self.ui.breakStatus3.setChecked(False)
+    #         self.ui.breakStatus3.toggled.connect(self.handle_rail_failure_checkbox)
 
-    def handle_circuit_failure_checkbox(self, block_num: int):
-        if self.ui.toggle_circuit_failure[block_num]:
-            self.ui.toggle_circuit_failure[block_num] = False
+    def handle_circuit_failure(self):
+        if self.ui.breakStatus1.isChecked():
+            self.ui.toggle_circuit_failure.append(self.ui.murphyBlockNumber1.value())
         else:
-            self.ui.toggle_circuit_failure[block_num] = True
+            self.ui.toggle_circuit_failure.remove(self.ui.murphyBlockNumber1.value())
 
-    def handle_power_failure_checkbox(self, block_num: int):
-        if self.ui.toggle_power_failure[block_num]:
-            self.ui.toggle_power_failure[block_num] = False
-        else:
-            self.ui.toggle_power_failure[block_num] = True
+    # def handle_power_failure_checkbox(self, block_num: int):
+    #     if self.ui.toggle_power_failure[block_num]:
+    #         self.ui.toggle_power_failure[block_num] = False
+    #     else:
+    #         self.ui.toggle_power_failure[block_num] = True
 
-    def handle_rail_failure_checkbox(self, block_num: int):
-        if self.ui.toggle_rail_failure[block_num]:
-            self.ui.toggle_rail_failure[block_num] = False
-        else:
-            self.ui.toggle_rail_failure[block_num] = True
+    # def handle_rail_failure_checkbox(self, block_num: int):
+    #     if self.ui.toggle_rail_failure[block_num]:
+    #         self.ui.toggle_rail_failure[block_num] = False
+    #     else:
+    #         self.ui.toggle_rail_failure[block_num] = True
 
 ############################################################################################################
 #
@@ -706,7 +703,7 @@ class track_model:
 ############################################################################################################
     def update_ui_list(self):
         self.ui.all_blocks = self.all_blocks
-        self.ui.functional_list = self.functional_blocks
+        # self.ui.functional_list = self.functional_blocks
         self.ui.occupancy_list = self.occupancies
         self.ui.switch_list = self.ui_switch_array
         self.ui.lights_list = self.ui_light_array
@@ -714,16 +711,16 @@ class track_model:
         self.ui.num_people_at_station_list = self.ui_people_at_station
         self.ui.update_block_table()
 
-    def update_functional(self):
-        for i in range(len(self.all_blocks)):
-            if self.ui.toggle_circuit_failure[i]:
-                self.functional_blocks[i] = 2
-            elif self.ui.toggle_power_failure[i]:
-                self.functional_blocks[i] = 3
-            elif self.ui.toggle_rail_failure[i]:
-                self.functional_blocks[i] = 4
-            else:
-                self.functional_blocks[i] = 1
+    # def update_functional(self):
+    #     for i in range(len(self.all_blocks)):
+    #         if self.ui.toggle_circuit_failure[i]:
+    #             self.functional_blocks[i] = 2
+    #         elif self.ui.toggle_power_failure[i]:
+    #             self.functional_blocks[i] = 3
+    #         elif self.ui.toggle_rail_failure[i]:
+    #             self.functional_blocks[i] = 4
+    #         else:
+    #             self.functional_blocks[i] = 1
 
     def update_occupancies(self):
         self.set_train_occupancies()
