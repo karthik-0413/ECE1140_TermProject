@@ -546,7 +546,7 @@ class track_model:
                     self.ui_light_array.append(['red', self.light_block_array[i]]) # 1 is red, 0 is green
                 else:
                     self.ui_light_array.append(['green', self.light_block_array[i]])
-        #print(f"Light Array: {self.ui_light_array}")    
+        print(f"Light Array: {self.ui_light_array}")    
 
 
 ############################################################################################################
@@ -714,7 +714,7 @@ class track_model:
         self.update_switch_status()
 
     def initialize_lights(self):
-        self.light_cmds = [0, 1, 0, 1, 1, 0, 0, 1, 0, 1, 0]
+        self.light_cmds = [0, 0, 1, 0, 1, 1, 0, 0, 1, 0, 1]
         self.update_light_states()
         self.update_light_status()
 

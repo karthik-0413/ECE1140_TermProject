@@ -1582,10 +1582,10 @@ class wayside_ui_green_line(object):
                         self.DataTable.setItem(17, 6, item)
 
                         # Set signal colors
-                        self.set_table_signal_status(self.ui_signals[0], 5, 2)
-                        self.set_table_signal_status(self.ui_signals[1], 5, 6)
-                        self.set_table_signal_status(self.ui_signals[2], 20, 2)
-                        self.set_table_signal_status(self.ui_signals[3], 20, 6)
+                        self.set_table_signal_status(self.ui_signals[1], 5, 2)
+                        self.set_table_signal_status(self.ui_signals[2], 5, 6)
+                        self.set_table_signal_status(self.ui_signals[3], 20, 2)
+                        self.set_table_signal_status(self.ui_signals[4], 20, 6)
 
                 # Wayside 2 signal data
                 elif self.WaysideSelectComboBox.currentIndex() == 2:
@@ -1607,9 +1607,9 @@ class wayside_ui_green_line(object):
                         self.DataTable.setItem(17, 2, item)
 
                         # Set signal colors
-                        self.set_table_signal_status(self.ui_signals[4], 5, 2)
-                        self.set_table_signal_status(self.ui_signals[10], 5, 6)
-                        self.set_table_signal_status(self.ui_signals[5], 20, 2)
+                        self.set_table_signal_status(self.ui_signals[5], 5, 2)
+                        self.set_table_signal_status(self.ui_signals[0], 5, 6)
+                        self.set_table_signal_status(self.ui_signals[6], 20, 2)
 
                 # Wayside 3 signal data
                 elif self.WaysideSelectComboBox.currentIndex() == 3:
@@ -1636,10 +1636,10 @@ class wayside_ui_green_line(object):
                         self.DataTable.setItem(17, 6, item)
 
                         # Set signal colors
-                        self.set_table_signal_status(self.ui_signals[6], 5, 2)
-                        self.set_table_signal_status(self.ui_signals[9], 5, 6)
-                        self.set_table_signal_status(self.ui_signals[7], 20, 2)
-                        self.set_table_signal_status(self.ui_signals[8], 20, 6)
+                        self.set_table_signal_status(self.ui_signals[7], 5, 2)
+                        self.set_table_signal_status(self.ui_signals[10], 5, 6)
+                        self.set_table_signal_status(self.ui_signals[8], 20, 2)
+                        self.set_table_signal_status(self.ui_signals[9], 20, 6)
 
         # Update occupancy data in table
         def data_table_occupancy(self):
