@@ -10,6 +10,7 @@ from PyQt6.QtCore import Qt, QCoreApplication, pyqtSignal, QObject, QTimer
 from PyQt6.QtGui import QDoubleValidator
 from TrainController.TrainControllerHW import send_data_to_pi
 from TrainController.ControllerToShellCommuicate import ControllerToShellCommunicate as Communicate2
+from Resources.ClockComm import ClockComm
 # from TrainControllerHW import send_numbers_to_pi
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -766,7 +767,7 @@ class Lights(QObject):
 class Position(QObject):
     commanded_authority_signal = pyqtSignal(int)
     
-    def __init__(self, doors: Doors, failure_modes: FailureModes, speed_control: SpeedControl, power_class: PowerCommand, communicator: Communicate, lights: Lights, brake_status: BrakeStatus, line: str):
+    def __init__(self, doors: Doors, failure_modes: FailureModes, speed_control: SpeedControl, power_class: PowerCommand, communicator: Communicate, lights: Lights, brake_status: BrakeStatus, line: str, clockComm: ClockComm):
         super().__init__()
         self.prev_authority = 0 # int
         self.commanded_authority = 111 + 1 - 1   # int
@@ -776,6 +777,7 @@ class Position(QObject):
         self.polarity = True   # boolean
         # I need the block number of the station so that I can query into my infrastructure array and check what the station name is of that block
         self.communicator = communicator
+        self.clockComm = clockComm
         self.door = doors
         self.failure_modes = failure_modes
         self.speed_control = speed_control
@@ -811,6 +813,10 @@ class Position(QObject):
             74, 75, 76, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10
         ]
         
+        self.speed_factor = 1.0
+        
+        self.clockComm.speed_factor.connect(self.update_speed_factor)
+        
         if self.line == 'Green':
             self.current_block = self.green_default_path_blocks[0]  # int
         elif self.line == 'Red':
@@ -836,6 +842,10 @@ class Position(QObject):
                 self.red_underground.append(entry['Infrastructure'])
                 self.red_station_door.append(entry['Station Side'])
                 self.red_speed_limit.append(entry['Speed Limit (Km/Hr)'])
+                
+    def update_speed_factor(self, speed_factor: float):
+        self.speed_factor = speed_factor
+        
         
     # Connect function for the Communicate class (Function is called every time the authority is changed OR decreased by 1)
     def handle_commanded_authority(self, authority: int):
@@ -880,7 +890,7 @@ class Position(QObject):
                     # Start a timer to check every 100 ms
                     self.timer = QTimer()
                     self.timer.timeout.connect(self.check_current)
-                    self.timer.start(100)
+                    self.timer.start(int(100 / self.speed_factor))
                     
             
             if self.line == 'Green':
@@ -981,7 +991,7 @@ class Position(QObject):
             self.seconds_passed = 0
             self.timer = QTimer(self)
             self.timer.timeout.connect(self.update_timer)
-            self.timer.start(1000)
+            self.timer.start(int(1000 / self.speed_factor))
             
         elif self.line == 'Red':
             if "Left" in self.red_station_door[self.current_block] and  "Right" not in self.red_station_door[self.current_block]:
@@ -1008,14 +1018,27 @@ class Position(QObject):
             self.seconds_passed = 0
             self.timer = QTimer(self)
             self.timer.timeout.connect(self.update_timer)
-            self.timer.start(1000)
+            self.timer.start(int(1000 / self.speed_factor))
 
     def update_timer(self):
+        print(f"Speed Factor for Train Doors: {self.speed_factor}")
+        total_seconds = 60
+        # Adjust total_seconds based on speed_factor
+        base_total_seconds = 60  # Base time for doors to remain open at speed factor 1
+        total_seconds = base_total_seconds / self.speed_factor
+
         self.seconds_passed += 1
         print(f"{self.seconds_passed} seconds have passed")
-        if self.seconds_passed >= 60:
+        if self.seconds_passed >= total_seconds:
             self.close_doors()
             self.timer.stop()
+        
+        
+        # self.seconds_passed += 1
+        # print(f"{self.seconds_passed} seconds have passed")
+        # if self.seconds_passed >= total_seconds:
+        #     self.close_doors()
+        #     self.timer.stop()
 
     def close_doors(self):
         self.door.close_left_door()
@@ -1225,7 +1248,7 @@ class TrainControllerUI(QWidget):
     train_id_signal = pyqtSignal(int)
     train_id_list_signal = pyqtSignal(list)
     
-    def __init__(self, communicator: Communicate, communicator2: Communicate2, doors: Doors, tuning: Tuning, brake_class: BrakeStatus, power_class: PowerCommand, speed_control: SpeedControl, failure_modes: FailureModes, position: Position, lights: Lights, temperature: Temperature):
+    def __init__(self, communicator: Communicate, communicator2: Communicate2, doors: Doors, tuning: Tuning, brake_class: BrakeStatus, power_class: PowerCommand, speed_control: SpeedControl, failure_modes: FailureModes, position: Position, lights: Lights, temperature: Temperature, clockComm: ClockComm):
         super().__init__()
     
         # Train ID Variables
@@ -1246,6 +1269,7 @@ class TrainControllerUI(QWidget):
         # PyqtSignal Class to communicate with the Train Model
         self.communicator = communicator
         self.communicator2 = communicator2
+        self.clockComm = clockComm
         
         # self.power_class.power_command_signal.connect(self.change_power_UI)
         
@@ -1685,12 +1709,20 @@ class TrainControllerUI(QWidget):
         # Set Main Layout
         self.setLayout(main_layout)
         
+        self.speed_factor = 1.0
+        
         # Call the update UI function to update the UI with the current values every 100ms
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_UI)
-        self.timer.start(10)
+        self.timer.start(int(10 / self.speed_factor))
         
+        self.clockComm.speed_factor.connect(self.update_speed_factor)
         
+    def update_speed_factor(self, speed_factor):
+        self.speed_factor = speed_factor
+        # Update the existing timer's interval
+        self.timer.setInterval(int(100 / self.speed_factor))
+        print(f"Speed Factor for UI Update: {self.speed_factor}")
         
     def update_UI(self):
         self.update_current_speed(self.speed_control.current_velocity)

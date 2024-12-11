@@ -76,9 +76,12 @@ if __name__ == '__main__':
     # Train Controller -> Train Controller Shell Communication
     comm6 = ControllerToShellCommunicate()
     
+    # Clock Communication
+    clock_comm = ClockComm()
+    
     
     # CTC Office
-    ctc_ui = CTC_frontend(comm1, comm4)
+    ctc_ui = CTC_frontend(comm1, comm4, clock_comm)
     ctc_ui.setupUi(ctc_window)
     ctc_window.setObjectName("CTC Office")
     ctc_window.setWindowTitle("CTC Office")
@@ -91,23 +94,23 @@ if __name__ == '__main__':
     track_model_backend = track_model(comm3, comm2)
 
     # Train Model
-    tm_window = MainWindow(comm1, comm5, comm3)
+    tm_window = MainWindow(comm1, comm5, comm3, clock_comm)
     
     # Train Controller
-    tc_shell_window = TrainControllerShell(comm5, comm6)
+    tc_shell_window = TrainControllerShell(comm5, comm6, clock_comm)
 
     # Show all windows
     ctc_window.show()
     tm_window.show()
     
     # Clock Setup
-    clock = StopwatchEngine()
+    clock = StopwatchEngine(clock_comm)
     clock.initiate()
     
     
     timer = QTimer()
     timer.timeout.connect(lambda: handle_clock_tick(clock.elapsed_seconds, tc_shell_window, tm_window, track_model_backend, wayside_shell_object, ctc_ui))
-    timer.start(100)
+    timer.start(int(100 / clock.speed_factor))
     
     clockUI = ClockDisplay(clock)
     clockUI.show()
