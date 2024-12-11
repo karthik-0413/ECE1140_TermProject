@@ -39,16 +39,15 @@ class Ui_TrackModel(QObject):
                 self.update_occupancy_list()
                 self.update_station_list()
                 self.update_crossing_list()
-                # self.update_switch_list()
                 # self.update_lights_list()
                 # self.update_num_people_at_station_list()
         
-        def initialize_block_info_table(self):
-                self.blockInfo.setRowCount(12)
+        def initialize_block_info_table(self): 
+                self.blockInfo.setRowCount(14)
                 self.blockInfo.setColumnCount(1)
                 self.blockInfo.setVerticalHeaderLabels([
                 "Line", "Section", "Number", "Length", "Grade", "Speed Limit", 
-                "Infrastructure", "Elevation", "Cumulative Elevation", "Side", "Switch State", "Failure"
+                "Infrastructure", "Elevation", "Cumulative Elevation", "Side", "Switch State", "Light", "People at Station", "Failure"
                 ])
                 self.blockInfo.setItem(0, 0, QtWidgets.QTableWidgetItem(""))
                 self.blockInfo.setItem(1, 0, QtWidgets.QTableWidgetItem(""))
@@ -62,7 +61,8 @@ class Ui_TrackModel(QObject):
                 self.blockInfo.setItem(9, 0, QtWidgets.QTableWidgetItem(""))
                 self.blockInfo.setItem(10, 0, QtWidgets.QTableWidgetItem(""))
                 self.blockInfo.setItem(11, 0, QtWidgets.QTableWidgetItem(""))
-
+                self.blockInfo.setItem(12, 0, QtWidgets.QTableWidgetItem(""))
+                self.blockInfo.setItem(13, 0, QtWidgets.QTableWidgetItem(""))
 
         def update_block_info_table(self):
                 selected_items = self.blockTable.selectedItems()
@@ -86,6 +86,25 @@ class Ui_TrackModel(QObject):
                                                                 self.blockInfo.setItem(10, 0, QtWidgets.QTableWidgetItem(switch_state[0]))
                                         else:
                                                 self.blockInfo.setItem(10, 0, QtWidgets.QTableWidgetItem("N/A"))
+                                        if "STATION" in block.infrastructure:
+                                                for people in self.num_people_at_station_list:
+                                                        if people[1] == block.number:
+                                                                self.blockInfo.setItem(12, 0, QtWidgets.QTableWidgetItem(str(people[0])))
+                                        else:
+                                                self.blockInfo.setItem(12, 0, QtWidgets.QTableWidgetItem("N/A"))
+                                        
+                                        if "LIGHT" in block.infrastructure:
+                                                for light_state in self.lights_list:
+                                                        if light_state[1] == block.number:
+                                                                if light_state[0] == "red":
+                                                                        self.blockInfo.item(11, 0).setBackground(QtGui.QColor("red"))
+                                                                else:
+                                                                        self.blockInfo.item(11, 0).setBackground(QtGui.QColor("green"))
+                                        else: 
+                                                self.blockInfo.item(11, 0).setBackground(QtGui.QColor("lightgrey"))
+
+
+
                                         break
 
                 
@@ -126,7 +145,7 @@ class Ui_TrackModel(QObject):
                                 for crossing_state in self.crossing_list:
                                         if (crossing_state[1] == block.number) and (block.functional) and (not block.occupied) and crossing_state[0] == "Open":
                                                 block.occupied = True
-                                                self.blockTable.item(block.table_row, block.table_column).setBackground(QtGui.QColor("black"))
+                                                self.blockTable.item(block.table_row, block.table_column).setBackground(QtGui.QColor("black"))   
 
         def update_station_list(self):
                 for block in self.all_blocks:
@@ -134,14 +153,20 @@ class Ui_TrackModel(QObject):
                                 self.blockTable.item(block.table_row, block.table_column).setBackground(QtGui.QColor("violet")) 
 
         def update_lights_list(self):
-                for light_state in self.lights_list:
-                        self.blockTable.setItem(light_state[1], 4, QtWidgets.QTableWidgetItem(None))
-                        self.blockTable.item(light_state[1], 4).setBackground(QtGui.QColor(str(light_state[0]))) # red or green
-
-        # def update_num_people_at_station_list(self):
-        #         for people in self.num_people_at_station_list:
-        #                 self.blockTable.setItem(people[1], 5, QtWidgets.QTableWidgetItem(str(people[0])))
-
+                for block in self.all_blocks:
+                        if "LIGHT" in block.infrastructure:
+                                for light_state in self.lights_list:
+                                        if light_state[1] == block.number:
+                                                if light_state[0] == "Red":
+                                                        self.blockTable.item(block.table_row, block.table_column).setForeground(QtGui.QColor("red"))
+                                                        self.blockTable.item(block.table_row, block.table_column).setFont(QtGui.QFont("Times New Roman", 10, QtGui.QFont.Weight.Bold))
+                                                        self.blockTable.item(block.table_row, block.table_column).setTextAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+                                                        self.blockTable.item(block.table_row, block.table_column).setStyleSheet("border: 5px solid red;")
+                                                else:
+                                                        self.blockTable.item(block.table_row, block.table_column).setForeground(QtGui.QColor("green"))
+                                                        self.blockTable.item(block.table_row, block.table_column).setFont(QtGui.QFont("Times New Roman", 10, QtGui.QFont.Weight.Bold))
+                                                        self.blockTable.item(block.table_row, block.table_column).setTextAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+                                                        self.blockTable.item(block.table_row, block.table_column).setStyleSheet("border: 5px solid green;")
 
         def initialize_map(self):
                 self.blockTable.setColumnCount(38)
@@ -428,24 +453,7 @@ class Ui_TrackModel(QObject):
                 self.retranslateUi(TrackModel)
                 self.tabs.setCurrentIndex(0)
                 QtCore.QMetaObject.connectSlotsByName(TrackModel)
-
-                # self.blockTable.setRowCount(151)
-
-                # # glorious king zach changing the headers of the rows
-                # labels = []
-                # for i in range(len(151)):
-                #         if i == 0:
-                #                 labels.append("Yard")
-
-                #         else:
-                #                 labels.append(f"{i}")
-
-                # self.blockTable.setVerticalHeaderLabels(labels)
-
-                # headers = ["Functional", "Occupied", "Switch State", "Crossing State", "Light State", "People at Station"]
-                # self.blockTable.setColumnCount(len(headers))
-                # self.blockTable.setHorizontalHeaderLabels(headers)
-
+        
         def retranslateUi(self, TrackModel):
                 _translate = QtCore.QCoreApplication.translate
                 TrackModel.setWindowTitle(_translate("TrackModel", "Track Model"))
@@ -461,26 +469,6 @@ class Ui_TrackModel(QObject):
                 self.tempLabel.setText(_translate("TrackModel", "Rail Temperature"))
                 self.uploadButton.setText(_translate("TrackModel", "Upload New Layout"))
                 self.tab1Label.setText(_translate("TrackModel", "Track Layout"))
-                # item = self.blockTable.horizontalHeaderItem(0)
-                # item.setText(_translate("TrackModel", "0"))
-                # item = self.blockTable.horizontalHeaderItem(1)
-                # item.setText(_translate("TrackModel", "1"))
-                # item = self.blockTable.horizontalHeaderItem(2)
-                # item.setText(_translate("TrackModel", "2"))
-                # item = self.blockTable.horizontalHeaderItem(3)
-                # item.setText(_translate("TrackModel", "3"))
-                # item = self.blockTable.horizontalHeaderItem(4)
-                # item.setText(_translate("TrackModel", "4"))
-                # item = self.blockTable.horizontalHeaderItem(5)
-                # item.setText(_translate("TrackModel", "5"))
-                # item = self.blockTable.horizontalHeaderItem(6)
-                # item.setText(_translate("TrackModel", "6"))
-                # item = self.blockTable.horizontalHeaderItem(7)
-                # item.setText(_translate("TrackModel", "7"))
-                # item = self.blockTable.horizontalHeaderItem(8)
-                # item.setText(_translate("TrackModel", "8"))
-                # item = self.blockTable.horizontalHeaderItem(9)
-                # item.setText(_translate("TrackModel", "9"))
                 self.tabs.setTabText(self.tabs.indexOf(self.tab), _translate("TrackModel", "Track Layout"))
                 item = self.passInfoTable.verticalHeaderItem(0)
                 item.setText(_translate("TrackModel", "Block 1"))
@@ -530,21 +518,3 @@ class Ui_TrackModel(QObject):
                 self.groupBox.setTitle(_translate("TrackModel", "Crossing Commands"))
                 self.crossingStatus.setText(_translate("TrackModel", "Toggle"))
                 self.tabs.setTabText(self.tabs.indexOf(self.tab_2), _translate("TrackModel", "Testbench"))
-
-        def initializa_block_info_table(self):
-                self.blockInfo.setRowCount(10)
-                self.blockInfo.setColumnCount(1)
-                self.blockInfo.setVerticalHeaderLabels([
-                "Line", "Section", "Number", "Length", "Grade", "Speed Limit", 
-                "Infrastructure", "Elevation", "Cumulative Elevation", "Side"
-                ])
-                self.blockInfo.setItem(0, 0, QtWidgets.QTableWidgetItem(""))
-                self.blockInfo.setItem(1, 0, QtWidgets.QTableWidgetItem(""))
-                self.blockInfo.setItem(2, 0, QtWidgets.QTableWidgetItem(""))
-                self.blockInfo.setItem(3, 0, QtWidgets.QTableWidgetItem(""))
-                self.blockInfo.setItem(4, 0, QtWidgets.QTableWidgetItem(""))
-                self.blockInfo.setItem(5, 0, QtWidgets.QTableWidgetItem(""))
-                self.blockInfo.setItem(6, 0, QtWidgets.QTableWidgetItem(""))
-                self.blockInfo.setItem(7, 0, QtWidgets.QTableWidgetItem(""))
-                self.blockInfo.setItem(8, 0, QtWidgets.QTableWidgetItem(""))
-                self.blockInfo.setItem(9, 0, QtWidgets.QTableWidgetItem(""))

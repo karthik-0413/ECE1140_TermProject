@@ -381,7 +381,9 @@ class wayside_shell_class:
         self.write_signal_cmd[3] = signal_cmd_array[3]
 
     def green_line_plc_1_crossing_cmd_handler(self, crossing_cmd_bool):
+        print('plc 1 crossing cmd handler:', crossing_cmd_bool)
         self.write_crossing_cmd[0] = crossing_cmd_bool
+        print('plc 1 crossing cmd handler end: ', self.write_crossing_cmd[0])
 
     def call_green_line_plc_1_read_handlers(self):
         self.green_line_plc_1_maintenance_block_handler()
@@ -516,7 +518,7 @@ class wayside_shell_class:
         self.write_signal_cmd[5] = signal_cmd_array[2]  # K
 
     def green_line_plc_2_crossing_cmd_handler(self, crossing_cmd_bool):
-        self.write_crossing_cmd[0] = crossing_cmd_bool
+        self.write_crossing_cmd[1] = crossing_cmd_bool
 
     def call_green_line_plc_2_read_handlers(self):
         self.green_line_plc_2_maintenance_block_handler()
@@ -655,7 +657,7 @@ class wayside_shell_class:
 
     def write(self):
 
-        
+        print('Wayside Crossing: ', self.write_crossing_cmd)
         ####################################
         #     Green Line Emit Signals
         ####################################
