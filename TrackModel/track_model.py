@@ -341,7 +341,7 @@ class track_model:
         for block in self.all_blocks:
             self.occupancies.append(block.occupied)
 
-        print(f"Occupancy locations: {[block.number for block in self.all_blocks if block.occupied == True]}")
+        # print(f"Occupancy locations: {[block.number for block in self.all_blocks if block.occupied == True]}")
 
         
 
@@ -586,7 +586,7 @@ class track_model:
                     # Set train commanded speeds to the wayside commanded speeds
                     self.cmd_speeds_train.append(self.cmd_speeds_wayside[self.current_block[i]])
 
-                    # print(f"Train Cmd Speed: {self.cmd_speeds_train[i]}")
+                    # print(f"Train Cmd Speed in Track Model: {self.cmd_speeds_train[i]}")  # This works perfectly fine
 
 ############################################################################################################
 #

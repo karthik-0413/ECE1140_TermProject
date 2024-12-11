@@ -43,7 +43,7 @@ class Block():
     def set_infrastructure(self):
         # Check the infrastructure column to see if block has a station
         if re.search("STATION", self.infrastructure):
-            pattern = r"STATION;\s([A-Z]+)"
+            pattern = r"STATION;\s(.*?);"
             match = re.search(pattern, self.infrastructure, re.IGNORECASE)
             if match:
                 # print("Station found: ", match.group(1))
