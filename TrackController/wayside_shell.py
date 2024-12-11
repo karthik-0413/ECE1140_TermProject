@@ -89,8 +89,8 @@ class wayside_shell_class:
     #                    D  F   I   K  N1  N2   
     write_switch_cmd = [ 1, 1,  0,  0,  0,  0]
 
-    #                    C   D   F   G   J   K  N1  N2   O   R  Yard 
-    write_signal_cmd = [ 0,  1,  0,  1,  1,  0,  0,  1,  0,  1,  0 ]
+    #                    Yard   C   D   F   G   J   K  N1  N2   O   R 
+    write_signal_cmd = [    0,  0,  1,  0,  1,  1,  0,  0,  1,  0,  1 ]
 
     #                     E  T
     write_crossing_cmd = [0, 0]
@@ -375,10 +375,10 @@ class wayside_shell_class:
         self.write_switch_cmd[1] = switch_cmd_array[1] # F
 
     def green_line_plc_1_signal_cmd_handler(self, signal_cmd_array):
-        self.write_signal_cmd[0] = signal_cmd_array[0]
-        self.write_signal_cmd[1] = signal_cmd_array[1]
-        self.write_signal_cmd[2] = signal_cmd_array[2]
-        self.write_signal_cmd[3] = signal_cmd_array[3]
+        self.write_signal_cmd[1] = signal_cmd_array[0]
+        self.write_signal_cmd[2] = signal_cmd_array[1]
+        self.write_signal_cmd[3] = signal_cmd_array[2]
+        self.write_signal_cmd[4] = signal_cmd_array[3]
 
     def green_line_plc_1_crossing_cmd_handler(self, crossing_cmd_bool):
         self.write_crossing_cmd[0] = crossing_cmd_bool
@@ -511,9 +511,9 @@ class wayside_shell_class:
         self.write_switch_cmd[3] = not switch_cmd_array[1] # K
 
     def green_line_plc_2_signal_cmd_handler(self, signal_cmd_array):
-        self.write_signal_cmd[10] = signal_cmd_array[0] # Yard
-        self.write_signal_cmd[4] = signal_cmd_array[1]  # J
-        self.write_signal_cmd[5] = signal_cmd_array[2]  # K
+        self.write_signal_cmd[0] = signal_cmd_array[0] # Yard
+        self.write_signal_cmd[5] = signal_cmd_array[1]  # J
+        self.write_signal_cmd[6] = signal_cmd_array[2]  # K
 
     def green_line_plc_2_crossing_cmd_handler(self, crossing_cmd_bool):
         self.write_crossing_cmd[0] = crossing_cmd_bool
@@ -613,10 +613,10 @@ class wayside_shell_class:
         self.write_switch_cmd[5] = switch_cmd_array[1] # N2
 
     def green_line_plc_3_signal_cmd_handler(self, signal_cmd_array):
-        self.write_signal_cmd[6] = signal_cmd_array[0] # N1
-        self.write_signal_cmd[9] = signal_cmd_array[1] # R
-        self.write_signal_cmd[7] = signal_cmd_array[2] # N2
-        self.write_signal_cmd[8] = signal_cmd_array[3] # O
+        self.write_signal_cmd[7] = signal_cmd_array[0] # N1
+        self.write_signal_cmd[10] = signal_cmd_array[1] # R
+        self.write_signal_cmd[8] = signal_cmd_array[2] # N2
+        self.write_signal_cmd[9] = signal_cmd_array[3] # O
 
     # No crossing commands for PLC Program 3
 
