@@ -6,18 +6,20 @@ import random  # For simulating passenger departures
 from Resources.TrainTrainControllerComm import TrainTrainController
 from Resources.TrackTrainComm import TrackTrainModelComm
 from Resources.CTCTrain import CTCTrain
+from Resources.Clock import ClockComm
 
 class TrainData(QObject):
     """Class representing the data and state of all trains."""
     data_changed = pyqtSignal()
     announcement = pyqtSignal(list)  # List of announcements for all trains
 
-    def __init__(self, tc_communicate: TrainTrainController, tm_communicate: TrackTrainModelComm, ctc_communicate: CTCTrain):
+    def __init__(self, tc_communicate: TrainTrainController, tm_communicate: TrackTrainModelComm, ctc_communicate: CTCTrain, clockComm: ClockComm):
         super().__init__()
 
         self.tc_communicate = tc_communicate
         self.tm_communicate = tm_communicate
         self.ctc_communicate = ctc_communicate
+        self.clockComm = clockComm
 
         # List to store data for each train
         self.train_count = 0  # Initial train count
@@ -103,14 +105,30 @@ class TrainData(QObject):
         # Read from Train Controller and Track Model
         self.read_from_trainController_trackModel()
         self.read_from_ctc()
+        self.speed_factor = 1.0
+        
+        self.clockComm.speed_factor.connect(self.update_speed_factor)
 
         # Start periodic train updates
-        self.timer = QTimer()
-        self.timer.timeout.connect(self.update_train_state)
-        self.timer.start(100)  # Update every 0.1 second
+        self.update_train_state_2()
 
         # Start train updates
         self.start_train_updates()
+        
+    def update_speed_factor(self, speed_factor):
+        self.speed_factor = speed_factor
+        
+        # Start periodic train updates
+        self.update_train_state_2()
+
+        # Start train updates
+        self.start_train_updates()
+        
+    def update_train_state_2(self):
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.update_train_state)
+        self.timer.start(int(100 / self.speed_factor))  # Update every 0.1 second
+        print(f"Speed Factor for Train Update 2: {self.speed_factor}")
 
     def initialize_train(self):
         """Initialize data for a new train."""
@@ -348,8 +366,8 @@ class TrainData(QObject):
 
     def set_desired_temperature(self, temp_list):
         """Handle desired temperature signals from Train Controller."""
-        if len(temp_list) < max(1, self.train_count):
-            temp_list = temp_list + [0] * (max(1, self.train_count) - len(temp_list))
+        # if len(temp_list) < max(1, self.train_count):
+        #     temp_list = temp_list + [0] * (max(1, self.train_count) - len(temp_list))
         self.desired_temperature = temp_list
         # self.cabin_temperature = temp_list  # Assuming desired temp sets cabin temp
         self.data_changed.emit()
@@ -536,7 +554,9 @@ class TrainData(QObject):
         """Start a timer to periodically update train states."""
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_train_state)
-        self.timer.start(1000)  # Update every 1 second
+        self.timer.start(int(1000 / self.speed_factor))  # Update every 1 second
+        # print out setinterval for timer
+        print(f"Speed Factor for Train Update 1: {self.speed_factor}")
 
     def update_failure_button(self, train_index, label, state):
         """Update the failure status based on the label."""
