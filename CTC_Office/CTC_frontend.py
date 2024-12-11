@@ -6,6 +6,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 from CTC_Office.CTC_logic import CTC_logic
 from Resources.CTCWaysideComm import CTCWaysideControllerComm
 from Resources.CTCTrain import CTCTrain
+from Resources.ClockComm import ClockComm
 
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtWidgets import QApplication, QFileDialog
@@ -13,16 +14,20 @@ from PyQt6.QtWidgets import QApplication, QFileDialog
 import datetime as dt
 
 class CTC_frontend(object):
-    def __init__(self, ctc_train_communicate: CTCTrain, wayside_communicate: CTCWaysideControllerComm):
+    def __init__(self, ctc_train_communicate: CTCTrain, wayside_communicate: CTCWaysideControllerComm, clock_communicate: ClockComm):
         self.ctc = CTC_logic(ctc_train_communicate, wayside_communicate)
         self.wayside_communicate = wayside_communicate
         self.ctc_train_communicate = ctc_train_communicate
         self.wayside_communicate.block_occupancy_signal.connect(self.update_block_occupancies)
+        self.clock_communicate = clock_communicate
+        self.clock_communicate.elapsed_seconds.connect(self.time_step)
 
-        self.wall_clock_time = dt.datetime.now()
+        self.start_time = dt.datetime.now()
+        self.current_time = self.start_time.time()
         self.selected_block = 0
         self.selected_train = 1
 
+        self.stations = []
         
 
 
@@ -212,7 +217,7 @@ class CTC_frontend(object):
         self.train_label.setObjectName("train_label")
         self.Train_view_train_selector = QtWidgets.QSpinBox(parent=self.ScheduleFrame)
         self.Train_view_train_selector.setEnabled(True)
-        self.Train_view_train_selector.setRange(0, 0)
+        self.Train_view_train_selector.setRange(1, 1)
         self.Train_view_train_selector.setGeometry(QtCore.QRect(80, 50, 100, 40))
         self.Train_view_train_selector.setMinimumSize(QtCore.QSize(90, 0))
         self.Train_view_train_selector.setMaximumSize(QtCore.QSize(100, 40))
@@ -327,11 +332,12 @@ class CTC_frontend(object):
         self.UploadScheduleButton = QtWidgets.QPushButton(parent=self.verticalLayoutWidget_2)
         self.UploadScheduleButton.setMinimumSize(QtCore.QSize(150, 30))
         self.UploadScheduleButton.setMaximumSize(QtCore.QSize(200, 40))
-        self.UploadScheduleButton.setStyleSheet("background-color: rgb(255, 0, 255);\n"
+        self.UploadScheduleButton.setStyleSheet("background-color: lightgray;\n"
 "border: 1px solid;\n"
 "font: 18pt \"Arial\";\n"
 "\n"
 "color:black;")
+
         self.UploadScheduleButton.setObjectName("UploadScheduleButton")
         self.UploadScheduleButton.clicked.connect(self.upload_schedule)
         self.ThroughputLayout.addWidget(self.UploadScheduleButton)
@@ -866,7 +872,7 @@ class CTC_frontend(object):
         item.setText(_translate("mainwindow", "Arrival Time"))
         item = self.train_table.horizontalHeaderItem(4)
         item.setText(_translate("mainwindow", "Yard Departure Time"))
-        self.automatic_manual_toggle.setText(_translate("mainwindow", "Manual Mode"))
+        self.automatic_manual_toggle.setText(_translate("mainwindow", "Auto Mode"))
         self.ScheduleTitle.setText(_translate("mainwindow", "Schedule New Train"))
         self.DepartureSelector.setDisplayFormat(_translate("mainwindow", "hh:mm"))
         self.destinationLabel.setText(_translate("mainwindow", "Destination Station:"))
@@ -878,7 +884,7 @@ class CTC_frontend(object):
         self.add_destination_button.setText(_translate("mainwindow", "Add Destination"))
         self.destination_list_label.setText(_translate("mainwindow", "Destinations:"))
         self.HeaderLabel.setText(_translate("mainwindow", "CTC"))
-        self.TimeLabel.setText(_translate("mainwindow", self.wall_clock_time.strftime("%H:%M")))
+        self.TimeLabel.setText(_translate("mainwindow", self.current_time.strftime("%H:%M")))
         self.ThroughputDisplay.setText(_translate("mainwindow", "X Trains/hr/line"))
         self.UploadScheduleButton.setText(_translate("mainwindow", "Upload Schedule"))
         self.pagetab.setTabText(self.pagetab.indexOf(self.TrainTab), _translate("mainwindow", "Train View"))
@@ -887,7 +893,7 @@ class CTC_frontend(object):
         self.MaintenanceTitle.setText(_translate("mainwindow", "Place Block in Maintanence Mode"))
         self.departureLabel_2.setText(_translate("mainwindow", "No Block Selected"))
         self.MaintenanceButton.setText(_translate("mainwindow", "Maintenance Mode"))
-        self.TimeLabel_pg2.setText(_translate("mainwindow", self.wall_clock_time.strftime("%H:%M")))
+        self.TimeLabel_pg2.setText(_translate("mainwindow", self.current_time.strftime("%H:%M")))
         self.ThroughputDisplay_pg2.setText(_translate("mainwindow", "X Trains/hr/line"))
         self.HeaderLabel_pg2.setText(_translate("mainwindow", "CTC"))
         self.SearchLabel.setText(_translate("mainwindow", "Search Blocks"))
@@ -938,13 +944,12 @@ class CTC_frontend(object):
     def updateUI(self):
 
         _translate = QtCore.QCoreApplication.translate
+        
+        self.TimeLabel.setText(self.current_time.strftime("%H:%M"))
+        self.TimeLabel_pg2.setText(self.current_time.strftime("%H:%M"))
 
-        self.wall_clock_time = dt.datetime.now()
-        self.TimeLabel.setText(self.wall_clock_time.strftime("%H:%M"))
-        self.TimeLabel_pg2.setText(self.wall_clock_time.strftime("%H:%M"))
-
-        if (dt.time(hour=self.DepartureSelector.time().hour(), minute=self.DepartureSelector.time().minute()) < self.wall_clock_time.time()):
-                self.DepartureSelector.setTime(QtCore.QTime(self.wall_clock_time.hour, self.wall_clock_time.minute, self.wall_clock_time.second))
+        if (dt.time(hour=self.DepartureSelector.time().hour(), minute=self.DepartureSelector.time().minute()) < self.current_time):
+                self.DepartureSelector.setTime(QtCore.QTime(self.current_time.hour, self.current_time.minute, self.current_time.second))
         #self.ThroughputDisplay.setText(self.ctc.get_throughput())
         #self.ThroughputDisplay_pg2.setText(self.ctc.get_throughput())
         #self.ThroughputDisplay_pg3.setText(self.ctc.get_throughput())
@@ -989,7 +994,10 @@ class CTC_frontend(object):
             self.block_table_test_bench.setItem(index, 1, QtWidgets.QTableWidgetItem(str(block.section)))
             self.block_table_test_bench.setItem(index, 2, QtWidgets.QTableWidgetItem(str(block.occupied)))
             self.block_table_test_bench.setItem(index, 3, QtWidgets.QTableWidgetItem(str(block.maintenance)))
-            self.block_table_test_bench.setItem(index, 4, QtWidgets.QTableWidgetItem("???"))
+            if block.switch_positions:
+                self.block_table_test_bench.setItem(index, 4, QtWidgets.QTableWidgetItem(str(block.switch_positions[block.curr_switch_position])))
+            else:
+                self.block_table_test_bench.setItem(index, 4, QtWidgets.QTableWidgetItem(""))
 
             for col in range(4):
                 item1 = self.block_table.item(index, col)
@@ -1028,8 +1036,8 @@ class CTC_frontend(object):
             self.train_number_selector.setRange(1, self.ctc.num_trains)
             self.Train_view_train_selector.setRange(1, self.ctc.num_trains)
         else:
-            self.train_number_selector.setRange(0, 0)
-            self.Train_view_train_selector.setRange(0, 0)
+            self.train_number_selector.setRange(1, 1)
+            self.Train_view_train_selector.setRange(1, 1)
 
         if len(self.ctc.line.train_list):
             
@@ -1055,46 +1063,72 @@ class CTC_frontend(object):
         self.updateUI()
 
     def dispatch_train(self):
-            
-        station = self.StationSelector.currentText()
+
+        if self.ctc.automatic:
+            return
+
+        station_name = self.StationSelector.currentText()
         # print(f"Selected Station = {station}")
 
-        dest = self.ctc.find_destination(station)
+        #print(f"Selected Station = {station_name}")
 
-        if dest == -1:
-        #     print("Invalid Destination")
-            return
+        station_names = [station[0] for station in self.stations]
+
+        #print(f"Station Names = {station_names}")
+
+        if station_names.count(station_name) > 1:
+            #print("MULTIPLE STATIONS")
+            indicies = [index for index, _ in enumerate(self.stations) if _[0] == station_name]
+            #print(f"Indicies = {indicies}")
+            if self.stations[indicies[0]][1] != self.stations[indicies[1]][1]:
+                # multiple blocks with the same station
+                destination = self.stations[self.StationSelector.currentIndex()][1]
+                #print("MULTIPLE BLOCKS SAME DESTINATION")
+            else: 
+                # one block that is traversed twice
+                destination = self.stations[indicies[0]][1]
+                #print("ONE BLOCK TRAVERSED TWICE")
+
+                if self.StationSelector.currentIndex() > indicies[0]:
+                    # second instance of station
+                    #print("SECOND INSTANCE")
+                    destination *= -1
         else:
+            destination = self.ctc.find_destination(station_name)
             
-            departure_time = self.DepartureSelector.time()
-            arrival_time = self.ArrivalSelector.time()
-            depart_time = dt.time(hour=departure_time.hour(),minute=departure_time.minute(), second=0)
-            arrive_time = dt.time(hour=arrival_time.hour(),minute=arrival_time.minute(),second=0)
+
+
             
-            # Dispatch immediately if departure time is current time
-            if self.departure_ready(dt.datetime.now().time(), depart_time):
-                self.ctc.add_new_train_to_line(dest, arrive_time, station)
+        departure_time = self.DepartureSelector.time()
+        arrival_time = self.ArrivalSelector.time()
+        depart_time = dt.time(hour=departure_time.hour(),minute=departure_time.minute(), second=0)
+        arrive_time = dt.time(hour=arrival_time.hour(),minute=arrival_time.minute(),second=0)
+            
+        # Dispatch immediately if departure time is current time
+        if self.departure_ready(self.current_time, depart_time):
+            self.ctc.add_new_train_to_line(destination, arrive_time, station_name)
 
-            # Otherwise, add to pending dispatches
-            else:
-                self.ctc.add_new_pending_train(dest, arrive_time, station, depart_time)
+        # Otherwise, add to pending dispatches
+        else:
+            self.ctc.add_new_pending_train(destination, arrive_time, station_name, depart_time)
 
 
-            self.ctc_train_communicate.dispatch_train_signal.emit(self.ctc.num_trains)
+        self.ctc_train_communicate.dispatch_train_signal.emit(self.ctc.num_trains)
 
         self.updateUI()
 
     def check_departures(self):
         for train in self.ctc.line.pending_trains:
-            if self.departure_ready(dt.datetime.now().time(), train.departure_time):
+            if self.departure_ready(self.current_time, train.departure_time):
                 self.ctc.dispatch_pending_train(train.train_id)
+                print(f"Dispatching Scheduled Train {train.train_id}")
+                print(f"Num Trains = {self.ctc.num_trains}")
+                self.ctc_train_communicate.dispatch_train_signal.emit(self.ctc.num_trains)
 
     def departure_ready(self, curr, depart):
         if curr.hour >= depart.hour and curr.minute >= depart.minute:
-            print("curr = ", curr, "depart = ", depart)
             return True
         else:
-            print("FALSE")
             return False
         
     def remove_train(self, train_id):
@@ -1102,9 +1136,28 @@ class CTC_frontend(object):
         self.updateUI()
            
     def add_destination(self):
+
+        if self.ctc.automatic:
+            return
+
         station_name = self.StationSelector.currentText()
-        destination = self.ctc.find_destination(station_name)
-        train_id = self.train_number_selector.value()
+
+        if self.stations.count(station_name) > 1:
+            indicies = [index for index, value in enumerate(self.stations) if value == station_name]
+            if len(indicies) > 1:
+                # multiple blocks with the same station
+                destination = indicies[self.StationSelector.currentIndex()][1]
+            else: 
+                # one block that is traversed twice
+                destination = indicies[0][1]
+
+                if self.StationSelector.currentIndex() > indicies[0]:
+                    # second instance of station
+                    destination *= -1
+        else:
+            destination = self.ctc.find_destination(station_name)
+
+        train_id = self.Train_view_train_selector.value()
         arrival_time = self.ArrivalSelector.time()
         arrival_time_formatted = dt.time(hour=arrival_time.hour(),minute=arrival_time.minute(),second=arrival_time.second())
         
@@ -1125,8 +1178,9 @@ class CTC_frontend(object):
             self.MaintenanceButton.setText("Enter Maintenance Mode")
 
     def toggle_block_maintenance(self):
-        self.ctc.select_line_for_maintenance(self.selected_block)
-        self.updateUI()
+        if self.ctc.maintenance_mode:
+            self.ctc.select_line_for_maintenance(self.selected_block)
+            self.updateUI()
     
     def auto_manual_toggle(self):
         self.ctc.toggle_automatic_manual()
@@ -1134,12 +1188,48 @@ class CTC_frontend(object):
         if self.ctc.automatic:
             self.automatic_manual_toggle.setText(_translate("mainwindow", "Manual Mode"))
             #TODO - Disable UI Elements only available in Manual Mode
+            self.add_destination_button.setEnabled(False)
+            self.add_destination_button.setStyleSheet("background-color: lightgray;\n"
+"font: 18pt \"Arial\";\n"
+"border: 1px solid;\n"
+"color:black;")
+            self.DispatchButton.setEnabled(False)
+            self.DispatchButton.setStyleSheet("background-color: lightgray;\n"
+"font: 18pt \"Arial\";\n"
+"border: 1px solid;\n"
+"color:black;")
+            self.UploadScheduleButton.setEnabled(True)
+            self.UploadScheduleButton.setStyleSheet("background-color: rgb(230, 0, 230);\n"
+"border: 1px solid;\n"
+"font: 18pt \"Arial\";\n"
+"\n"
+"color:black;")
+           
+
         else:
             self.automatic_manual_toggle.setText(_translate("mainwindow", "Auto Mode"))
             #TODO - Enable UI Elements only available in Manual Mode
+            self.add_destination_button.setEnabled(True)
+            self.add_destination_button.setStyleSheet("background-color: rgb(133, 239, 128);\n"
+"font: 18pt \"Arial\";\n"
+"border: 1px solid;\n"
+"color:black;")
+            self.DispatchButton.setEnabled(True)
+            self.DispatchButton.setStyleSheet("background-color: rgb(70, 158, 49);\n"
+"font: 18pt \"Arial\";\n"
+"border: 1px solid;\n"
+"color:black;")
+            self.UploadScheduleButton.setEnabled(False)
+            self.UploadScheduleButton.setStyleSheet("background-color: lightgray;\n"
+"border: 1px solid;\n"
+"font: 18pt \"Arial\";\n"
+"\n"
+"color:black;")
+
     
     def upload_schedule(self):
-        pass
+        if self.ctc.automatic:
+            return
     
     def upload_layout(self):
         filename, _ = QFileDialog.getOpenFileName(None, "Select Layout File", os.getcwd(), "Excel File (*.xlsx *.xls)")
@@ -1153,13 +1243,15 @@ class CTC_frontend(object):
 
         # Update Station Selector
         self.StationSelector.clear()
-        stations = self.ctc.get_stations()
-        # print("Stations = ", stations)
-        self.StationSelector.addItems(stations)
+        self.stations = self.ctc.get_stations()
+        print("Stations = ", self.stations)
+        self.StationSelector.addItems([station[0] for station in self.stations])
 
         self.updateUI()
 
-    
+    def time_step(self, elapsed_seconds):
+        self.current_time = (self.start_time + dt.timedelta(seconds=elapsed_seconds)).time()
+
 
 if __name__ == "__main__":
     

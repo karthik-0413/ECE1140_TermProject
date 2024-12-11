@@ -15,18 +15,20 @@ from TrackModel.track_model_ui import Ui_TrackModel
 from Resources.TrackTrainComm import TrackTrainModelComm
 from TrackModel.track_model import track_model
 from Resources.WaysideTrackComm import WaysideControllerTrackComm
+from Resources.ClockComm import ClockComm
 
 from TrackController.wayside_shell import wayside_shell_class
 
 import sys
 from time import sleep
+import datetime as dt
 
 # Upload track layout and PLC programs automatically
 debug = True
 
 # Function to be triggered by clock tick
 def handle_clock_tick(seconds, train_controller_shell: TrainControllerShell, train_model_data: MainWindow, track_model_backend: track_model, wayside_shell_object: wayside_shell_class, ctc_frontend: CTC_frontend):
-    # # print(f"Clock tick {seconds} seconds")
+    # # print(f"Clock tick {seconds} seconds")    
     if seconds % 2 == 0:
         ctc_frontend.ctc.write_to_communicate_objects()
         ## print("Writing to communicate objects")
@@ -75,10 +77,13 @@ if __name__ == '__main__':
     
     # Train Controller -> Train Controller Shell Communication
     comm6 = ControllerToShellCommunicate()
+
+    # Clock Communication
+    clock_comm = ClockComm()
     
     
     # CTC Office
-    ctc_ui = CTC_frontend(comm1, comm4)
+    ctc_ui = CTC_frontend(comm1, comm4, clock_comm)
     ctc_ui.setupUi(ctc_window)
     ctc_window.setObjectName("CTC Office")
     ctc_window.setWindowTitle("CTC Office")
@@ -112,13 +117,13 @@ if __name__ == '__main__':
     tm_window.show()
     
     # Clock Setup
-    clock = StopwatchEngine()
+    clock = StopwatchEngine(clock_comm)
     clock.initiate()
     
     
     timer = QTimer()
     timer.timeout.connect(lambda: handle_clock_tick(clock.elapsed_seconds, tc_shell_window, tm_window, track_model_backend, wayside_shell_object, ctc_ui))
-    timer.start(100)
+    timer.start(int(100 / clock.speed_factor))
     
     clockUI = ClockDisplay(clock)
     clockUI.show()
@@ -140,9 +145,10 @@ if __name__ == '__main__':
 
         # Update Station Selector
         ctc_ui.StationSelector.clear()
-        stations = ctc_ui.ctc.get_stations()
-        # print("Stations = ", stations)
-        ctc_ui.StationSelector.addItems(stations)
+        ctc_ui.stations = ctc_ui.ctc.get_stations()
+        ctc_ui.StationSelector.addItems([station[0] for station in ctc_ui.stations])
+
+        ctc_ui.updateUI()
 
     
     # Timer to update every 

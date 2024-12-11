@@ -351,7 +351,7 @@ class TrainControllerShell:
         
     def update_commanded_speed(self, commanded_speed: list):
         # For all Trains - WORKS
-        print(f"Commanded Speed in Train Controller Shell = {commanded_speed}")
+        #print(f"Commanded Speed in Train Controller Shell = {commanded_speed}")
         if len(self.train_controller_list):
             if len(commanded_speed):
                 for i in range(len(commanded_speed)):

@@ -341,7 +341,7 @@ class track_model:
         for block in self.all_blocks:
             self.occupancies.append(block.occupied)
 
-        print(f"Occupancy locations: {[block.number for block in self.all_blocks if block.occupied == True]}")
+        #print(f"Occupancy locations: {[block.number for block in self.all_blocks if block.occupied == True]}")
 
         
 

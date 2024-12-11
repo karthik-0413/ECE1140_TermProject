@@ -107,7 +107,7 @@ class TrainData(QObject):
         # Start periodic train updates
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_train_state)
-        self.timer.start(100)  # Update every 0.1 second
+        self.timer.start(500)  # Update every 0.1 second
 
         # Start train updates
         self.start_train_updates()
@@ -539,7 +539,7 @@ class TrainData(QObject):
         """Start a timer to periodically update train states."""
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_train_state)
-        self.timer.start(1000)  # Update every 1 second
+        self.timer.start(500)  # Update every 1 second
 
     def update_failure_button(self, train_index, label, state):
         """Update the failure status based on the label."""

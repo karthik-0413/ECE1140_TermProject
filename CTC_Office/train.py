@@ -23,6 +23,8 @@ class Train():
         self.departed = False
 
         self.destinations = []
+        # self.second_time = Does this destination refer to the first or second time the station has been reached?
+        self.second_time = []
         self.destination_strings = []
 
         self.arrivals_calculated = False
