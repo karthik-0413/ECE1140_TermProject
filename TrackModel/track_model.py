@@ -667,8 +667,8 @@ class track_model:
                 block.functional = True
                 self.functional_blocks[block.number] = True
                 self.ui.blockTable.item(block.table_row, block.table_column).setBackground(QtGui.QColor('green'))
-        for block in self.all_blocks:
-            print(f"Block {block.number} state: {block.functional}")
+        # for block in self.all_blocks:
+        #     print(f"Block {block.number} state: {block.functional}")
 
 ############################################################################################################
 #

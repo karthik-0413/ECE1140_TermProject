@@ -35,11 +35,11 @@ class Ui_TrackModel(QObject):
                 self.all_blocks = []
 
         def update_block_table(self):
-                self.update_occupancy_list()
                 self.update_functional_list()
+                self.update_occupancy_list()
                 self.update_station_list()
+                self.update_crossing_list()
                 # self.update_switch_list()
-                # self.update_crossing_list()
                 # self.update_lights_list()
                 # self.update_num_people_at_station_list()
         
@@ -115,41 +115,33 @@ class Ui_TrackModel(QObject):
                 for block in self.all_blocks:
                         if (block.occupied and block.functional):
                                 self.blockTable.item(block.table_row, block.table_column).setBackground(QtGui.QColor("blue"))
-                        # elif (not block.functional):
-                        #         self.blockTable.item(block.table_row, block.table_column).setBackground(QtGui.QColor("red"))
+                        elif (not block.functional):
+                                self.blockTable.item(block.table_row, block.table_column).setBackground(QtGui.QColor("red"))
                         else:
                                 self.blockTable.item(block.table_row, block.table_column).setBackground(QtGui.QColor("green"))  
 
-        # def update_crossing_list(self):
-        #         for crossing_state in self.crossing_list:
-        #                 self.blockTable.setItem(crossing_state[1], 3, QtWidgets.QTableWidgetItem(crossing_state[0])) # open or closed
+        def update_crossing_list(self):
+                for block in self.all_blocks:
+                        if "RAILWAY CROSSING" in block.infrastructure:
+                                for crossing_state in self.crossing_list:
+                                        if (crossing_state[1] == block.number) and (block.functional) and (not block.occupied) and crossing_state[0] == "Open":
+                                                block.occupied = True
+                                                self.blockTable.item(block.table_row, block.table_column).setBackground(QtGui.QColor("black"))
 
         def update_station_list(self):
                 for block in self.all_blocks:
                         if ("STATION" in block.infrastructure) and (not block.occupied) and (block.functional):
                                 self.blockTable.item(block.table_row, block.table_column).setBackground(QtGui.QColor("violet")) 
 
-        # def update_lights_list(self):
-        #         for light_state in self.lights_list:
-        #                 self.blockTable.setItem(light_state[1], 4, QtWidgets.QTableWidgetItem(None))
-        #                 self.blockTable.item(light_state[1], 4).setBackground(QtGui.QColor(str(light_state[0]))) # red or green
+        def update_lights_list(self):
+                for light_state in self.lights_list:
+                        self.blockTable.setItem(light_state[1], 4, QtWidgets.QTableWidgetItem(None))
+                        self.blockTable.item(light_state[1], 4).setBackground(QtGui.QColor(str(light_state[0]))) # red or green
 
         # def update_num_people_at_station_list(self):
         #         for people in self.num_people_at_station_list:
         #                 self.blockTable.setItem(people[1], 5, QtWidgets.QTableWidgetItem(str(people[0])))
-                
-        # def initialize_block_table(self, num_blocks: int):
-        #         self.blockTable.setRowCount(num_blocks)
-        #         # glorious king zach changing the headers of the rows
-        #         labels = []
-        #         for i in range(num_blocks):
-        #                 if i == 0:
-        #                         labels.append("Yard")
 
-        #                 else:
-        #                         labels.append(f"{i}")
-
-        #         self.blockTable.setVerticalHeaderLabels(labels)
 
         def initialize_map(self):
                 self.blockTable.setColumnCount(38)
