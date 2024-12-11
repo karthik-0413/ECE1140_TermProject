@@ -35,8 +35,8 @@ class Ui_TrackModel(QObject):
                 self.all_blocks = []
 
         def update_block_table(self):
-                self.update_functional_list()
                 self.update_occupancy_list()
+                self.update_functional_list()
                 self.update_station_list()
                 # self.update_switch_list()
                 # self.update_crossing_list()
@@ -79,22 +79,10 @@ class Ui_TrackModel(QObject):
         def update_temp(self):
                 self.temperature = self.tempStepper.value()    
 
-        def handle_failures(self):
-                for block in self.all_blocks:
-                        if block.number in self.toggle_circuit_failure:
-                                block.functional = False
-                        elif block.number in self.toggle_power_failure:
-                                block.functional = False
-                        elif block.number in self.toggle_rail_failure:
-                                block.functional = False
-                        else:
-                                block.functional = True
-
         def update_functional_list(self):
                 """updates the ui with the functional status of each block"""
-                self.handle_failures()
                 for block in self.all_blocks:
-                        if (not block.functional):
+                        if (block.functional == False):
                                 self.blockTable.item(block.table_row, block.table_column).setBackground(QtGui.QColor("red"))
                         else:
                                 self.blockTable.item(block.table_row, block.table_column).setBackground(QtGui.QColor("green"))
@@ -104,6 +92,8 @@ class Ui_TrackModel(QObject):
                 for block in self.all_blocks:
                         if (block.occupied and block.functional):
                                 self.blockTable.item(block.table_row, block.table_column).setBackground(QtGui.QColor("blue"))
+                        # elif (not block.functional):
+                        #         self.blockTable.item(block.table_row, block.table_column).setBackground(QtGui.QColor("red"))
                         else:
                                 self.blockTable.item(block.table_row, block.table_column).setBackground(QtGui.QColor("green"))
         
@@ -118,7 +108,7 @@ class Ui_TrackModel(QObject):
 
         def update_station_list(self):
                 for block in self.all_blocks:
-                        if ("STATION" in block.infrastructure) and (not block.occupied):
+                        if ("STATION" in block.infrastructure) and (not block.occupied) and (block.functional):
                                 self.blockTable.item(block.table_row, block.table_column).setBackground(QtGui.QColor("violet")) 
 
         # def update_lights_list(self):

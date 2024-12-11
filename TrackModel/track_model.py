@@ -71,8 +71,8 @@ class track_model:
 
         self.ui.uploadButton.clicked.connect(self.upload_file)
         self.ui.breakStatus1.toggled.connect(self.handle_circuit_failure)
-        # self.ui.breakStatus2.toggled.connect(self.handle_power_failure_checkbox)
-        # self.ui.breakStatus3.toggled.connect(self.handle_rail_failure_checkbox)
+        # self.ui.breakStatus2.toggled.connect(self.handle_power_failure)
+        # self.ui.breakStatus3.toggled.connect(self.handle_rail_failure)
 
         self.read_train()
         self.read_wayside()
@@ -236,7 +236,7 @@ class track_model:
     def handle_commanded_speed_signal(self, cmd_speeds: list):
         self.past_cmd_speeds_wayside = self.cmd_speeds_wayside
         self.cmd_speeds_wayside = cmd_speeds
-        print(f"cmd speed in track model: {self.cmd_speeds_wayside}")
+        # print(f"cmd speed in track model: {self.cmd_speeds_wayside}")
 
         # if len(self.cmd_speeds_wayside):
         #      print(f"Received Cmd Speed: {self.cmd_speeds_wayside[0]}")
@@ -350,10 +350,9 @@ class track_model:
         # print(f"Occupancy locations: {[block.number for block in self.all_blocks if block.occupied == True]}")
 
         
-
     def set_failure_occupancies(self):
         for i in range(len(self.all_blocks)):
-            if self.ui.functional_list[i] != 1:
+            if self.ui.functional_list[i] != True:
                 self.occupancies[i] = True
 
 ############################################################################################################
@@ -613,16 +612,16 @@ class track_model:
 
                 if len(self.cmd_authorities_train) != len(self.current_block):
 
-                    print(f"len cmd_auth_train: {len(self.cmd_authorities_train)}")
-                    print(f"len current_block: {len(self.current_block)}")
-                    print(f"len cmd_auth_wayside: {len(self.cmd_authorities_wayside)}")
-                    print(f"cmd_auth_wayside: {self.cmd_authorities_wayside[self.current_block[len(self.cmd_authorities_train)]]}")
+                    # print(f"len cmd_auth_train: {len(self.cmd_authorities_train)}")
+                    # print(f"len current_block: {len(self.current_block)}")
+                    # print(f"len cmd_auth_wayside: {len(self.cmd_authorities_wayside)}")
+                    # print(f"cmd_auth_wayside: {self.cmd_authorities_wayside[self.current_block[len(self.cmd_authorities_train)]]}")
                     
 
                     self.cmd_authorities_train.append(self.cmd_authorities_wayside[self.current_block[len(self.cmd_authorities_train)]])
                     self.past_cmd_authorities_wayside.append(self.cmd_authorities_wayside[self.current_block[len(self.cmd_authorities_train)-1]])
                 
-                    print(f"Train Cmd Authority: {self.cmd_authorities_train[-1]}")
+                    # print(f"Train Cmd Authority: {self.cmd_authorities_train[-1]}")
 
                 else:
                     # Check if current cmd authority is not equal to the past cmd authority
@@ -647,55 +646,30 @@ class track_model:
     def initialize_functional(self):
         self.functional_blocks.clear()
         for block in self.all_blocks:
-            self.functional_blocks.append(1)
-    
-    # def handle_circuit_failure_num_step(self, block_num: int):
-    #     if self.ui.toggle_circuit_failure[block_num]:
-    #         self.ui.breakStatus1.toggled.disconnect(self.handle_circuit_failure_checkbox)
-    #         self.ui.breakStatus1.setChecked(True)
-    #         self.ui.breakStatus1.toggled.connect(self.handle_circuit_failure_checkbox)
-    #     else:
-    #         self.ui.breakStatus1.toggled.disconnect(self.handle_circuit_failure_checkbox)
-    #         self.ui.breakStatus1.setChecked(False)
-    #         self.ui.breakStatus1.toggled.connect(self.handle_circuit_failure_checkbox)
+            self.functional_blocks.append(block.functional)
+        # print(self.functional_blocks)
 
-    # def handle_power_failure_num_step(self, block_num: int):
-    #     if self.ui.toggle_power_failure[block_num]:
-    #         self.ui.breakStatus2.toggled.disconnect(self.handle_power_failure_checkbox)
-    #         self.ui.breakStatus2.setChecked(True)
-    #         self.ui.breakStatus2.toggled.connect(self.handle_power_failure_checkbox)
-    #     else:
-    #         self.ui.breakStatus2.toggled.disconnect(self.handle_power_failure_checkbox)
-    #         self.ui.breakStatus2.setChecked(False)
-    #         self.ui.breakStatus2.toggled.connect(self.handle_power_failure_checkbox)
+    def update_functional(self):
+        for block in self.all_blocks:
+            if self.ui.breakStatus1.isChecked() and (block.number == self.ui.murphyBlockNumber1.value()):
+                block.functional = False
+                self.functional_blocks[block.number] = False
+                self.ui.blockTable.item(block.table_row, block.table_column).setBackground(QtGui.QColor('red'))
+            else:
+                block.functional = True
+                self.functional_blocks[block.number] = True
+                self.ui.blockTable.item(block.table_row, block.table_column).setBackground(QtGui.QColor('green'))
+        for block in self.all_blocks:
+            print(f"Block {block.number} state: {block.functional}")
 
-    # def handle_rail_failure_num_step(self, block_num: int):
-    #     if self.ui.toggle_rail_failure[block_num]:
-    #         self.ui.breakStatus3.toggled.disconnect(self.handle_rail_failure_checkbox)
-    #         self.ui.breakStatus3.setChecked(True)
-    #         self.ui.breakStatus3.toggled.connect(self.handle_rail_failure_checkbox)
-    #     else:
-    #         self.ui.breakStatus3.toggled.disconnect(self.handle_rail_failure_checkbox)
-    #         self.ui.breakStatus3.setChecked(False)
-    #         self.ui.breakStatus3.toggled.connect(self.handle_rail_failure_checkbox)
+    def handle_failures(self):
+        self.handle_circuit_failure()
 
     def handle_circuit_failure(self):
         if self.ui.breakStatus1.isChecked():
-            self.ui.toggle_circuit_failure.append(self.ui.murphyBlockNumber1.value())
-        else:
-            self.ui.toggle_circuit_failure.remove(self.ui.murphyBlockNumber1.value())
-
-    # def handle_power_failure_checkbox(self, block_num: int):
-    #     if self.ui.toggle_power_failure[block_num]:
-    #         self.ui.toggle_power_failure[block_num] = False
-    #     else:
-    #         self.ui.toggle_power_failure[block_num] = True
-
-    # def handle_rail_failure_checkbox(self, block_num: int):
-    #     if self.ui.toggle_rail_failure[block_num]:
-    #         self.ui.toggle_rail_failure[block_num] = False
-    #     else:
-    #         self.ui.toggle_rail_failure[block_num] = True
+            self.all_blocks[self.ui.murphyBlockNumber1.value()].functional = False
+        elif not self.ui.breakStatus1.isChecked():
+            self.all_blocks[self.ui.murphyBlockNumber1.value()].functional = True
 
 ############################################################################################################
 #
@@ -704,24 +678,14 @@ class track_model:
 ############################################################################################################
     def update_ui_list(self):
         self.ui.all_blocks = self.all_blocks
-        # self.ui.functional_list = self.functional_blocks
+        self.update_functional()
+        self.ui.functional_list = self.functional_blocks
         self.ui.occupancy_list = self.occupancies
         self.ui.switch_list = self.ui_switch_array
         self.ui.lights_list = self.ui_light_array
         self.ui.crossing_list = self.ui_crossing_array
         self.ui.num_people_at_station_list = self.ui_people_at_station
         self.ui.update_block_table()
-
-    # def update_functional(self):
-    #     for i in range(len(self.all_blocks)):
-    #         if self.ui.toggle_circuit_failure[i]:
-    #             self.functional_blocks[i] = 2
-    #         elif self.ui.toggle_power_failure[i]:
-    #             self.functional_blocks[i] = 3
-    #         elif self.ui.toggle_rail_failure[i]:
-    #             self.functional_blocks[i] = 4
-    #         else:
-    #             self.functional_blocks[i] = 1
 
     def update_occupancies(self):
         self.set_train_occupancies()
@@ -766,14 +730,6 @@ class track_model:
         self.gen_num_passengers_at_station()
         self.update_people_at_station()
 
-    def initialize_failures(self):
-        temp_failures = []
-        for block in self.all_blocks:
-            temp_failures.append(False)
-        self.ui.toggle_circuit_failure = temp_failures
-        self.ui.toggle_power_failure = temp_failures
-        self.ui.toggle_rail_failure = temp_failures
-
     def initialize_coordinates(self):
         for block in self.all_blocks:
             self.ui.greenCoordinates.append([block.number,block.table_column, block.table_row])       
@@ -786,7 +742,6 @@ class track_model:
         self.initialize_lights()
         self.initialize_crossings()
         self.initialize_people()
-        self.initialize_failures()
         self.create_length_array()
             
 
