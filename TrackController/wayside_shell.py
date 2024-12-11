@@ -609,7 +609,6 @@ class wayside_shell_class:
             self.write_cmd_authority[i] = cmd_authority_array[i-74]
 
     def green_line_plc_3_switch_cmd_handler(self, switch_cmd_array):
-        print(f'--------\nswitch_cmd_array: {switch_cmd_array[0]}, {switch_cmd_array[1]}\n--------')
         self.write_switch_cmd[4] = not switch_cmd_array[0] # N1
         self.write_switch_cmd[5] = switch_cmd_array[1] # N2
 
@@ -655,7 +654,21 @@ class wayside_shell_class:
 
     def write(self):
 
+        # Wayside 1 manual mode
+        if self.ui.wayside_1_operational_mode == 1:
+            self.write_switch_cmd[0] = self.ui.ui_switches[0]
+            self.write_switch_cmd[1] = self.ui.ui_switches[1]
         
+        # Wayside 2 manual mode
+        if self.ui.wayside_2_operational_mode == 1:
+            self.write_switch_cmd[2] = self.ui.ui_switches[2]
+            self.write_switch_cmd[3] = self.ui.ui_switches[3]
+
+        # Wayside 3 manual mode
+        if self.ui.wayside_3_operational_mode == 1:
+            self.write_switch_cmd[4] = self.ui.ui_switches[4]
+            self.write_switch_cmd[5] = self.ui.ui_switches[5]
+
         ####################################
         #     Green Line Emit Signals
         ####################################
