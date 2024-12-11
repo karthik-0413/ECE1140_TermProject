@@ -111,7 +111,7 @@ class wayside_shell_class:
             
             self.sugg_speed_check = 1
 
-            if self.sugg_speed_check and self.sugg_authority_check and self.block_occupancy_check: #and self.maintenance_block_check and self.maintenance_switch_check:
+            if self.sugg_speed_check and self.sugg_authority_check and self.block_occupancy_check and self.maintenance_block_check and self.maintenance_switch_check:
 
                 # Update UI suggested speed and authority table
                 self.ui.shell_sugg_speed_auth_handler(self.read_sugg_speed, self.read_sugg_authority)
@@ -145,7 +145,7 @@ class wayside_shell_class:
             
             self.sugg_authority_check = 1
             
-            if self.sugg_speed_check and self.sugg_authority_check and self.block_occupancy_check: #and self.maintenance_block_check and self.maintenance_switch_check:
+            if self.sugg_speed_check and self.sugg_authority_check and self.block_occupancy_check and self.maintenance_block_check and self.maintenance_switch_check:
 
                 # Update UI suggested speed and authority table
                 self.ui.shell_sugg_speed_auth_handler(self.read_sugg_speed, self.read_sugg_authority)
@@ -249,7 +249,7 @@ class wayside_shell_class:
             
             self.block_occupancy_check = 1
             
-            if self.sugg_speed_check and self.sugg_authority_check and self.block_occupancy_check: #and self.maintenance_block_check and self.maintenance_switch_check:
+            if self.sugg_speed_check and self.sugg_authority_check and self.block_occupancy_check and self.maintenance_block_check and self.maintenance_switch_check:
 
                 # Update UI suggested speed and authority table
                 self.ui.shell_sugg_speed_auth_handler(self.read_sugg_speed, self.read_sugg_authority)
@@ -642,6 +642,8 @@ class wayside_shell_class:
     def connect_ctc_signals(self):
         self.ctc_wayside_comm_object.suggested_speed_signal.connect(self.read_sugg_speed_handler)
         self.ctc_wayside_comm_object.suggested_authority_signal.connect(self.read_sugg_authority_handler)
+        self.ctc_wayside_comm_object.block_maintenance_signal.connect(self.read_maintenance_blocks_handler)
+        self.ctc_wayside_comm_object.switch_signal.connect(self.read_maintenance_switch_cmd_handler)
 
     def connect_track_model_signals(self):
         self.wayside_track_comm_object.block_occupancies_signal.connect(self.read_block_occupancy_handler)
@@ -656,17 +658,17 @@ class wayside_shell_class:
 
         # Wayside 1 manual mode
         if self.ui.wayside_1_operational_mode == 1:
-            self.write_switch_cmd[0] = self.ui.ui_switches[0]
+            self.write_switch_cmd[0] = not self.ui.ui_switches[0]
             self.write_switch_cmd[1] = self.ui.ui_switches[1]
         
         # Wayside 2 manual mode
         if self.ui.wayside_2_operational_mode == 1:
             self.write_switch_cmd[2] = self.ui.ui_switches[2]
-            self.write_switch_cmd[3] = self.ui.ui_switches[3]
+            self.write_switch_cmd[3] = not self.ui.ui_switches[3]
 
         # Wayside 3 manual mode
         if self.ui.wayside_3_operational_mode == 1:
-            self.write_switch_cmd[4] = self.ui.ui_switches[4]
+            self.write_switch_cmd[4] = not self.ui.ui_switches[4]
             self.write_switch_cmd[5] = self.ui.ui_switches[5]
 
         ####################################
