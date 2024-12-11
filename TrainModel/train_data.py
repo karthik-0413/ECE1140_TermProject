@@ -399,8 +399,8 @@ class TrainData(QObject):
     def set_track_commanded_speed(self, speed_list):
         """Handle commanded speed signals from Track Model."""
         # Ensure the list is long enough
-        if len(speed_list) < max(1, self.train_count):
-            speed_list = speed_list + [0] * (max(1, self.train_count) - len(speed_list))
+        """ if len(speed_list) < max(1, self.train_count):
+            speed_list = speed_list + [0] * (max(1, self.train_count) - len(speed_list)) """
         self.commanded_speed_tc = speed_list
         # print(f"Commanded Speed in Train Model: {self.commanded_speed_tc}")
         # Convert km/h to m/s for calculations
@@ -412,8 +412,8 @@ class TrainData(QObject):
     def set_track_commanded_authority(self, authority_list):
         """Handle commanded authority signals from Track Model."""
         # Ensure the list is long enough
-        if len(authority_list) < max(1, self.train_count):
-            authority_list = authority_list + [0] * (max(1, self.train_count) - len(authority_list))
+        """ if len(authority_list) < max(1, self.train_count):
+            authority_list = authority_list + [0] * (max(1, self.train_count) - len(authority_list)) """
         self.authority = authority_list
         self.commanded_authority = authority_list #UUU
         self.data_changed.emit()

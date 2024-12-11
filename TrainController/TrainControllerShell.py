@@ -156,21 +156,23 @@ class TrainControllerShell:
         if len(self.train_controller_list):
             if len(commanded_speed):
                 for i in range(len(commanded_speed)):
-                    if i < len(self.train_controller_list):
-                        if commanded_speed[i] == 0:
-                            self.train_controller_list[i].speed_control.handle_commanded_speed(0)
-                        else:
-                            self.train_controller_list[i].speed_control.handle_commanded_speed(commanded_speed[i])
-                    # print(f"Commanded Speed {i + 1}: {commanded_speed}")
+                    if commanded_speed[i] is not None:
+                        if i < len(self.train_controller_list):
+                            if commanded_speed[i] == 0:
+                                self.train_controller_list[i].speed_control.handle_commanded_speed(0)
+                            else:
+                                self.train_controller_list[i].speed_control.handle_commanded_speed(commanded_speed[i])
+                        # print(f"Commanded Speed {i + 1}: {commanded_speed}")
             
     def update_commanded_authority(self, commanded_authority: list):
         # print(f"Commanded Authority in Train Controller Shell: {commanded_authority}")
         if len(self.train_controller_list):
             if len(commanded_authority):
                 for i in range(len(commanded_authority)):
-                    if i < len(self.train_controller_list):
-                        self.train_controller_list[i].position.handle_commanded_authority(commanded_authority[i])
-                    # print(f"Commanded Authority {i + 1}: {commanded_authority}")
+                    if commanded_authority[i] is not None:
+                        if i < len(self.train_controller_list):
+                            self.train_controller_list[i].position.handle_commanded_authority(commanded_authority[i])
+                        # print(f"Commanded Authority {i + 1}: {commanded_authority}")
                     
     def update_current_velocity(self, current_velocity: list):
         if len(self.train_controller_list):
