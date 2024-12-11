@@ -387,7 +387,7 @@ class SpeedControl(QObject):
     commanded_speed_signal = pyqtSignal(float)
     current_velocity_signal = pyqtSignal(float)
     
-    def __init__(self, power_class: PowerCommand, brake_status: BrakeStatus, communicator: Communicate):
+    def __init__(self, power_class: PowerCommand, brake_status: BrakeStatus, communicator: Communicate, doors: Doors):
         super().__init__()
         self.commanded_speed = 0.0
         self.setpoint_speed = 0.0
@@ -398,6 +398,7 @@ class SpeedControl(QObject):
         self.desired_velocity = 0.0
         self.power_class = power_class
         self.brake_status = brake_status
+        self.doors = doors
         self.communicator = communicator
         self.max_speed = 0.0
         self.prev_service_brake = False
@@ -445,7 +446,11 @@ class SpeedControl(QObject):
             # self.brake_status.driver_brake_status = False
             # self.brake_status.driver_service_brake_command = False
             # self.brake_status.driver_emergency_brake_command = False
-            # self.communicator.passenger_brake_command_signal.emit(False)  
+            # self.communicator.passenger_brake_command_signal.emit(False)
+            
+        if speed > 0:
+            self.doors.close_left_door()
+            self.doors.close_right_door()  
         
             
         if self.brake_status.driver_service_brake_command:
@@ -780,6 +785,7 @@ class Position(QObject):
         self.iterate = True
         self.repeat = False
         self.accept_authority = False
+        self.at_station = False
         self.line = line
         self.counter = 0
         
@@ -916,6 +922,7 @@ class Position(QObject):
             print("Entered check_current if statement")
             self.check_current_block()
             self.find_station_name()
+            self.at_station = True
             if self.speed_control.operation_mode == 0:
                 self.brake_status.station_auto_mode = True
             self.accept_authority = True
@@ -1013,6 +1020,7 @@ class Position(QObject):
     def close_doors(self):
         self.door.close_left_door()
         self.door.close_right_door()
+        self.at_station = False
         # self.repeat = True
         if self.speed_control.operation_mode == 0:
             self.brake_status.station_auto_mode = False
@@ -1766,14 +1774,14 @@ class TrainControllerUI(QWidget):
             self.right_door_status.setStyleSheet("background-color: red; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
         
     def handle_right_door(self):
-        if self.speed_control.current_velocity == 0:
+        if self.speed_control.current_velocity == 0 and self.position.at_station == False:
             if self.doors.right_door:
                 self.doors.close_right_door()
             else:
                 self.doors.open_right_door()
             
     def handle_left_door(self):
-        if self.speed_control.current_velocity == 0:
+        if self.speed_control.current_velocity == 0 and self.position.at_station == False:
             if self.doors.left_door:
                 self.doors.close_left_door()
             else:
@@ -1847,18 +1855,19 @@ class TrainControllerUI(QWidget):
     def send_setpoint_speed(self):
         # 20 mph = 8.9408 m/s
         # print(f"Setpoint Speed: {float(self.setpoint_speed_edit.text()) * 0.44704}")
-        if float(self.setpoint_speed_edit.text()) * 0.44704 > self.speed_control.max_speed:
-            # Set setpoint speed input to max speed value
-            self.setpoint_speed_edit.setText(f"{self.speed_control.max_speed * 2.23694:.2f}")
-            
-        if float(self.setpoint_speed_edit.text()) * 0.44704 < self.speed_control.desired_velocity:
-            self.brake_class.entered_lower = True
-            self.speed_control.desired_velocity = float(self.setpoint_speed_edit.text()) * 0.44704
-            self.speed_control.update_setpoint_speed_calculations(float(self.setpoint_speed_edit.text()) * 0.44704)
-        else:
-            self.speed_control.desired_velocity = float(self.setpoint_speed_edit.text()) * 0.44704
-            
-            self.speed_control.update_setpoint_speed_calculations(float(self.setpoint_speed_edit.text()) * 0.44704)
+        if self.position.at_station == False:
+            if float(self.setpoint_speed_edit.text()) * 0.44704 > self.speed_control.max_speed:
+                # Set setpoint speed input to max speed value
+                self.setpoint_speed_edit.setText(f"{self.speed_control.max_speed * 2.23694:.2f}")
+                
+            if float(self.setpoint_speed_edit.text()) * 0.44704 < self.speed_control.desired_velocity:
+                self.brake_class.entered_lower = True
+                self.speed_control.desired_velocity = float(self.setpoint_speed_edit.text()) * 0.44704
+                self.speed_control.update_setpoint_speed_calculations(float(self.setpoint_speed_edit.text()) * 0.44704)
+            else:
+                self.speed_control.desired_velocity = float(self.setpoint_speed_edit.text()) * 0.44704
+                
+                self.speed_control.update_setpoint_speed_calculations(float(self.setpoint_speed_edit.text()) * 0.44704)
             
     def send_manual_mode(self):
         # Enable setpoint speed input
