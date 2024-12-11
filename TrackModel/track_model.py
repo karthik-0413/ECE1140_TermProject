@@ -70,9 +70,6 @@ class track_model:
         self.ui.show()
 
         self.ui.uploadButton.clicked.connect(self.upload_file)
-        self.ui.breakStatus1.toggled.connect(self.handle_circuit_failure)
-        # self.ui.breakStatus2.toggled.connect(self.handle_power_failure)
-        # self.ui.breakStatus3.toggled.connect(self.handle_rail_failure)
 
         self.read_train()
         self.read_wayside()
@@ -651,25 +648,27 @@ class track_model:
 
     def update_functional(self):
         for block in self.all_blocks:
-            if (self.ui.breakStatus1.isChecked() and (block.number == self.ui.murphyBlockNumber1.value())) or (self.ui.breakStatus2.isChecked() and (block.number == self.ui.murphyBlockNumber2.value())) or (self.ui.breakStatus3.isChecked() and (block.number == self.ui.murphyBlockNumber3.value())):
+            if (self.ui.breakStatus1.isChecked() and (block.number == self.ui.murphyBlockNumber1.value())):
                 block.functional = False
                 self.functional_blocks[block.number] = False
                 self.ui.blockTable.item(block.table_row, block.table_column).setBackground(QtGui.QColor('red'))
+                self.ui.blockInfo.setItem(11, 0, QtWidgets.QTableWidgetItem("Circuit Failure"))
+            elif (self.ui.breakStatus2.isChecked() and (block.number == self.ui.murphyBlockNumber2.value())):
+                block.functional = False
+                self.functional_blocks[block.number] = False
+                self.ui.blockTable.item(block.table_row, block.table_column).setBackground(QtGui.QColor('red'))
+                self.ui.blockInfo.setItem(11, 0, QtWidgets.QTableWidgetItem("Power Failure"))
+            elif (self.ui.breakStatus3.isChecked() and (block.number == self.ui.murphyBlockNumber3.value())):
+                block.functional = False
+                self.functional_blocks[block.number] = False
+                self.ui.blockTable.item(block.table_row, block.table_column).setBackground(QtGui.QColor('red'))
+                self.ui.blockInfo.setItem(11, 0, QtWidgets.QTableWidgetItem("Rail Failure"))
             else:
                 block.functional = True
                 self.functional_blocks[block.number] = True
                 self.ui.blockTable.item(block.table_row, block.table_column).setBackground(QtGui.QColor('green'))
         for block in self.all_blocks:
             print(f"Block {block.number} state: {block.functional}")
-
-    def handle_failures(self):
-        self.handle_circuit_failure()
-
-    def handle_circuit_failure(self):
-        if self.ui.breakStatus1.isChecked():
-            self.all_blocks[self.ui.murphyBlockNumber1.value()].functional = False
-        elif not self.ui.breakStatus1.isChecked():
-            self.all_blocks[self.ui.murphyBlockNumber1.value()].functional = True
 
 ############################################################################################################
 #
@@ -685,6 +684,7 @@ class track_model:
         self.ui.lights_list = self.ui_light_array
         self.ui.crossing_list = self.ui_crossing_array
         self.ui.num_people_at_station_list = self.ui_people_at_station
+        self.ui.update_block_info_table()
         self.ui.update_block_table()
 
     def update_occupancies(self):
@@ -735,6 +735,7 @@ class track_model:
             self.ui.greenCoordinates.append([block.number,block.table_column, block.table_row])       
         
     def initialize_arrays(self):
+        self.ui.initialize_block_info_table()
         self.ui.initialize_map()
         self.initialize_functional()
         self.initialize_occupancy()
