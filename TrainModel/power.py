@@ -79,7 +79,7 @@ def calculate_train_speed(train_data, index):
     k = 0.3
     time_step = 0.5
     
-    if abs(current_temp - desired_temp) > 0.01:  # Tolerance for stopping
+    if abs(current_temp - desired_temp) > 0.01 and round(initial_temp, 2) != round(desired_temp, 2):  # Tolerance for stopping
         dT = k * (desired_temp - current_temp)
         current_temp += dT
         train_data.cabin_temperature[index] = current_temp

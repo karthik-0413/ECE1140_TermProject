@@ -9,10 +9,11 @@ from PyQt6.QtWidgets import QApplication
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from TrainController.TrainController import *
 from Resources.TrainTrainControllerComm import TrainTrainController as Communicate
+from Resources.ClockComm import ClockComm
 from TrainController.ControllerToShellCommuicate import *
 
 class TrainControllerShell:
-    def __init__(self, communicator: Communicate, communicator2: ControllerToShellCommunicate):
+    def __init__(self, communicator: Communicate, communicator2: ControllerToShellCommunicate, clock_comm: ClockComm):
         # Making a list of needed Train Controller UI instances
         self.train_controller_list: list[TrainControllerUI] = []
         self.train_engineer_list: list[TrainEngineerUI] = []
@@ -20,6 +21,7 @@ class TrainControllerShell:
         # Setting up the parameters
         self.communicator = communicator
         self.communicator2 = communicator2
+        self.clock_comm = clock_comm
         
         # Initializing the variables needed
         self.counter = 0
@@ -91,9 +93,9 @@ class TrainControllerShell:
         failure_modes = FailureModes(speed_control, power_class)
         lights = Lights(speed_control)
         temperature = Temperature()
-        position = Position(doors, failure_modes, speed_control, power_class, self.communicator, lights, brake_status, 'Green')
+        position = Position(doors, failure_modes, speed_control, power_class, self.communicator, lights, brake_status, 'Green', self.clock_comm)
         
-        train_controller_ui = TrainControllerUI(self.communicator, self.communicator2, doors, tuning, brake_status, power_class, speed_control, failure_modes, position, lights, temperature)
+        train_controller_ui = TrainControllerUI(self.communicator, self.communicator2, doors, tuning, brake_status, power_class, speed_control, failure_modes, position, lights, temperature, self.clock_comm)
         train_engineer_ui = TrainEngineerUI(tuning, power_class)
         return train_controller_ui, train_engineer_ui
     
@@ -156,12 +158,13 @@ class TrainControllerShell:
         if len(self.train_controller_list):
             if len(commanded_speed):
                 for i in range(len(commanded_speed)):
-                    if i < len(self.train_controller_list):
-                        if commanded_speed[i] == 0:
-                            self.train_controller_list[i].speed_control.handle_commanded_speed(0)
-                        else:
-                            self.train_controller_list[i].speed_control.handle_commanded_speed(commanded_speed[i])
-                    # print(f"Commanded Speed {i + 1}: {commanded_speed}")
+                    if commanded_speed[i] is not None:
+                        if i < len(self.train_controller_list):
+                            if commanded_speed[i] == 0:
+                                self.train_controller_list[i].speed_control.handle_commanded_speed(0)
+                            else:
+                                self.train_controller_list[i].speed_control.handle_commanded_speed(commanded_speed[i])
+                        # print(f"Commanded Speed {i + 1}: {commanded_speed}")
             
     def update_commanded_authority(self, commanded_authority: list):
         # print(f"Commanded Authority in Train Controller Shell: {commanded_authority}")

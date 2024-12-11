@@ -6,6 +6,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 from CTC_Office.CTC_logic import CTC_logic
 from Resources.CTCWaysideComm import CTCWaysideControllerComm
 from Resources.CTCTrain import CTCTrain
+from Resources.ClockComm import ClockComm
 
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtWidgets import QApplication, QFileDialog
@@ -13,11 +14,13 @@ from PyQt6.QtWidgets import QApplication, QFileDialog
 import datetime as dt
 
 class CTC_frontend(object):
-    def __init__(self, ctc_train_communicate: CTCTrain, wayside_communicate: CTCWaysideControllerComm):
+    def __init__(self, ctc_train_communicate: CTCTrain, wayside_communicate: CTCWaysideControllerComm, clock_communicate: ClockComm):
         self.ctc = CTC_logic(ctc_train_communicate, wayside_communicate)
         self.wayside_communicate = wayside_communicate
         self.ctc_train_communicate = ctc_train_communicate
         self.wayside_communicate.block_occupancy_signal.connect(self.update_block_occupancies)
+        self.clock_communicate = clock_communicate
+        # self.clock_communicate.elapsed_seconds.connect(self.time_step)
 
         self.wall_clock_time = dt.datetime.now()
         self.selected_block = 0

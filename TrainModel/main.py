@@ -14,11 +14,12 @@ from Resources.TrainTrainControllerComm import TrainTrainController
 from TrainModel.track_model_communicate import TrackModelCommunicate
 from Resources.CTCTrain import CTCTrain
 from TrainModel.CTC_communicate import CTC_Train_Model_Communicate
+from Resources.Clock import ClockComm
 
 class MainWindow(QMainWindow):
     """Main window of the application."""
 
-    def __init__(self, ctc_train_communicate: CTCTrain, tc_communicate: TrainTrainController, tm_communicate: TrackModelCommunicate):
+    def __init__(self, ctc_train_communicate: CTCTrain, tc_communicate: TrainTrainController, tm_communicate: TrackModelCommunicate, clock_comm: ClockComm):
         super().__init__()
 
         self.setWindowTitle("Train Control Application")
@@ -28,9 +29,10 @@ class MainWindow(QMainWindow):
         self.tc_communicate = tc_communicate
         self.tm_communicate = tm_communicate
         self.ctc_communicate = ctc_train_communicate
+        self.clock_comm = clock_comm
 
         # Create TrainData instance
-        self.train_data = TrainData(self.tc_communicate, self.tm_communicate, self.ctc_communicate)
+        self.train_data = TrainData(self.tc_communicate, self.tm_communicate, self.ctc_communicate, self.clock_comm)
         # # print("TrainData instance created")
 
         # Create tab widget

@@ -38,6 +38,8 @@ python train_control_system.py
 ### Process of Initializing Modules
 There are certain chronological steps that need to be taken in order to successfully launch the project.
 
+Our train system is compatible with only the Green Line.
+
 1. First, upload the Track Layout to the Track Model by clicking the 'Upload Layout' button in the Train Model UI.
 
 2. Second, upload the corresponding PLC programs to the Waysides by clicking the 'Upload' button in the Wayside Controller UI.

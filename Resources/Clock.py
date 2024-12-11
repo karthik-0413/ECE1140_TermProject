@@ -3,10 +3,12 @@ import time
 from PyQt6.QtCore import QThread, pyqtSignal, QMutex, QWaitCondition, Qt, QMutexLocker
 from PyQt6.QtWidgets import QApplication, QLabel, QWidget, QSlider, QVBoxLayout
 
+from Resources.ClockComm import ClockComm
+
 class StopwatchEngine(QThread):
     time_updated = pyqtSignal(int)
 
-    def __init__(self):
+    def __init__(self, comm: ClockComm):
         super().__init__()
         self.running = False
         self.on_hold = False
@@ -14,6 +16,7 @@ class StopwatchEngine(QThread):
         self.speed_factor = 1.0
         self.mutex = QMutex()
         self.pause_condition = QWaitCondition()
+        self.comm = comm
 
     def initiate(self):
         self.running = True
@@ -31,6 +34,7 @@ class StopwatchEngine(QThread):
 
     def set_speed(self, multiplier: float):
         self.speed_factor = multiplier
+        self.comm.speed_factor.emit(self.speed_factor)
 
     def terminate(self):
         self.running = False
@@ -44,10 +48,11 @@ class StopwatchEngine(QThread):
                     self.pause_condition.wait(self.mutex)
 
             # Wait based on the modified speed factor
-            time.sleep(1.0 / (self.speed_factor * 10))
+            time.sleep(1.0 / (self.speed_factor))
             self.elapsed_seconds += 1
             # # print(f"Elapsed time: {self.elapsed_seconds} seconds")
             self.time_updated.emit(self.elapsed_seconds)
+            self.comm.elapsed_seconds.emit(self.elapsed_seconds)
 
 class ClockDisplay(QWidget):
     def __init__(self, stopwatch: StopwatchEngine):
