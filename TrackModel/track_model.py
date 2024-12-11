@@ -651,7 +651,7 @@ class track_model:
 
     def update_functional(self):
         for block in self.all_blocks:
-            if self.ui.breakStatus1.isChecked() and (block.number == self.ui.murphyBlockNumber1.value()):
+            if (self.ui.breakStatus1.isChecked() and (block.number == self.ui.murphyBlockNumber1.value())) or (self.ui.breakStatus2.isChecked() and (block.number == self.ui.murphyBlockNumber2.value())) or (self.ui.breakStatus3.isChecked() and (block.number == self.ui.murphyBlockNumber3.value())):
                 block.functional = False
                 self.functional_blocks[block.number] = False
                 self.ui.blockTable.item(block.table_row, block.table_column).setBackground(QtGui.QColor('red'))
