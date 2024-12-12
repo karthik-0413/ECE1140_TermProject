@@ -22,7 +22,7 @@ import sys
 from time import sleep
 
 # Upload track layout and PLC programs automatically
-debug = True
+debug = False
 
 # Function to be triggered by clock tick
 def handle_clock_tick(seconds, train_controller_shell: TrainControllerShell, train_model_data: MainWindow, track_model_backend: track_model, wayside_shell_object: wayside_shell_class, ctc_frontend: CTC_frontend):
