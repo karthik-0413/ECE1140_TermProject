@@ -51,8 +51,8 @@ class CTC_logic():
         self.suggested_speed_list = [None for _ in self.line.layout]
         self.block_maintenance_list = [False for _ in self.line.layout]
     
-    def upload_schedule_to_line():
-        pass
+    def upload_schedule_to_line(self, path_to_layout:str, curr_time):
+        self.line.read_excel_schedule(path_to_layout, curr_time)
 
     def add_new_train_to_line(self, destination:int, arrival_time, destination_station:str=None):
         
@@ -136,17 +136,12 @@ class CTC_logic():
         self.update_train_locations_list()
         self.update_authority_list()
         self.update_suggested_speed_list()
-        self.calculate_arrival_times()
         self.update_block_maintenance_list()
         self.update_switch_list()
         self.calculate_total_throughput()
 
     def calculate_total_throughput(self):
-        pass
-        #total_throughput = 0
-        #for line in self.lines:
-            #line.calculate_line_throughput()
-            #total_throughput += line.throughput
+        self.line.calculate_line_throughput()
 
     def toggle_automatic_manual(self):
         self.automatic = not self.automatic

@@ -248,6 +248,7 @@ class CTC_frontend(object):
         self.destination_scroll_area.setGeometry(QtCore.QRect(10, 130, 171, 61))
         self.destination_scroll_area.setWidgetResizable(True)
         self.destination_scroll_area.setObjectName("destination_scroll_area")
+        self.destination_scroll_area.setDisabled(False)
         self.scroll_area_contents = QtWidgets.QWidget()
         self.scroll_area_contents.setGeometry(QtCore.QRect(0, 0, 167, 57))
         self.scroll_area_contents.setObjectName("scroll_area_contents")
@@ -950,13 +951,15 @@ class CTC_frontend(object):
 
         curr_time = dt.datetime.combine(dt.date.today(), self.current_time)
 
-        if (self.ctc.line.layout):
-                earliest_arrival = curr_time + dt.timedelta(seconds=self.ctc.line.arrival_times[self.StationSelector.currentIndex()][1])
+        if (self.ctc.line.train_list):
+                train_index = [train.train_id for train in self.ctc.line.train_list].index(self.Train_view_train_selector.value())
+                earliest_arrival = curr_time + dt.timedelta(seconds=self.ctc.line.arrival_time_between(self.ctc.line.train_list[train_index].location, self.ctc.line.train_list[train_index].destinations[0]))
                 if (dt.time(hour=self.ArrivalSelector.time().hour(), minute=self.ArrivalSelector.time().minute()) < earliest_arrival.time()):
                         self.ArrivalSelector.setTime(QtCore.QTime(earliest_arrival.time().hour, earliest_arrival.time().minute, earliest_arrival.time().second))
-        #self.ThroughputDisplay.setText(self.ctc.get_throughput())
-        #self.ThroughputDisplay_pg2.setText(self.ctc.get_throughput())
-        #self.ThroughputDisplay_pg3.setText(self.ctc.get_throughput())
+
+        through = str(self.ctc.line.throughput) + " Trains/hr/line"
+        self.ThroughputDisplay.setText(through)
+        self.ThroughputDisplay_pg2.setText(through)
 
         self.train_table.clear()
         self.train_table.setRowCount(len(self.ctc.line.train_list))
@@ -1137,17 +1140,14 @@ class CTC_frontend(object):
         
     def departure_ready(self, train_id):
         train_index = [train.train_id for train in self.ctc.line.pending_trains].index(train_id)
-
-        dest = self.ctc.line.pending_trains[train_index].destinations[0]
-        
-
         # Departure is ready if the arrival time < current_time + time to reach destination
-        time_to_reach_destination = self.ctc.line.arrival_time_between(self.ctc.line.pending_trains[train_index].location, self.ctc.line.pending_trains[train_index].destinations[0])
+        time_to_reach_destination = self.ctc.line.arrival_time_between(0, self.ctc.line.pending_trains[train_index].destinations[0])
 
-        blocks = [tup[0] for tup in self.ctc.line.arrival_times]
         curr_time = dt.datetime.combine(dt.date.today(), self.current_time)
-        arrival_time_index = blocks.index(abs(self.ctc.line.pending_trains[train_index].destinations[0]))
         time = (curr_time + dt.timedelta(seconds=time_to_reach_destination)).time()
+        #print("Train Arrival Time = ", self.ctc.line.pending_trains[train_index].arrival_times[0])
+        #print("Time to be able to reach destination = ", time)
+        #print("Current Time = ", curr_time.time())
         if self.ctc.line.pending_trains[train_index].arrival_times[0].hour <= time.hour and self.ctc.line.pending_trains[train_index].arrival_times[0].minute <= time.minute:
             return True
         else:
@@ -1260,7 +1260,10 @@ class CTC_frontend(object):
     
     def upload_schedule(self):
         if self.ctc.automatic:
-            return
+            filename,_ = QFileDialog.getOpenFileName(None, "Select Schedule File", os.getcwd(), "Excel File (*.xlsx *.xls)")
+            if filename:
+                self.ctc.upload_schedule_to_line(filename, self.current_time)
+                self.updateUI()
     
     def upload_layout(self):
         filename, _ = QFileDialog.getOpenFileName(None, "Select Layout File", os.getcwd(), "Excel File (*.xlsx *.xls)")

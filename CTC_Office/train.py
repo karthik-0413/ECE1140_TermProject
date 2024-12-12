@@ -56,7 +56,10 @@ class Train():
     def remove_destination(self, destination):
         """Remove a destination from the train"""
         if self.to_yard == False:
-            index = self.destinations.index(destination)
+            if self.destinations.count(destination) == 0:
+                index = self.destinations.index(-destination)
+            else:
+                index = self.destinations.index(destination)
             self.destinations.pop(index)
             self.destination_strings.pop(index)
             self.path.pop(index)
