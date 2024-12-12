@@ -1138,6 +1138,9 @@ class CTC_frontend(object):
     def departure_ready(self, train_id):
         train_index = [train.train_id for train in self.ctc.line.pending_trains].index(train_id)
 
+        dest = self.ctc.line.pending_trains[train_index].destinations[0]
+        
+
         # Departure is ready if the arrival time < current_time + time to reach destination
         time_to_reach_destination = self.ctc.line.arrival_time_between(self.ctc.line.pending_trains[train_index].location, self.ctc.line.pending_trains[train_index].destinations[0])
 
