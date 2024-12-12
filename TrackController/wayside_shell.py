@@ -306,9 +306,9 @@ class wayside_shell_class:
         # Check if the sugg_authority_array is empty
         if len(self.read_sugg_authority):
             for i in range(1, 33):
-                plc_1_sugg_authority.append(self.read_sugg_speed[i])
-            plc_1_sugg_authority.append(self.read_sugg_speed[150])
-            plc_1_sugg_authority.append(self.read_sugg_speed[151])
+                plc_1_sugg_authority.append(self.read_sugg_authority[i])
+            plc_1_sugg_authority.append(self.read_sugg_authority[150])
+            plc_1_sugg_authority.append(self.read_sugg_authority[151])
 
             # Pass suggested authorities to PLC Program 1
             if self.plc_program_1 != None:

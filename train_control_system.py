@@ -26,7 +26,6 @@ debug = True
 
 # Function to be triggered by clock tick
 def handle_clock_tick(seconds, train_controller_shell: TrainControllerShell, train_model_data: MainWindow, track_model_backend: track_model, wayside_shell_object: wayside_shell_class, ctc_frontend: CTC_frontend):
-    # # print(f"Clock tick {seconds} seconds")
     if seconds % 2 == 0:
         ctc_frontend.ctc.write_to_communicate_objects()
         ## print("Writing to communicate objects")
@@ -34,13 +33,8 @@ def handle_clock_tick(seconds, train_controller_shell: TrainControllerShell, tra
         track_model_backend.write()
         train_model_data.train_data.write_to_trainController_trackModel()
         train_controller_shell.write_to_train_model()
-    # Create a QTimer to call handle_clock_tick every second
-    # else:
-    #     pass
-
-
+        
 def get_seconds_elapsed(seconds):
-    # # print(f"Elapsed time: {seconds} seconds")
     return seconds
 
 if __name__ == '__main__':

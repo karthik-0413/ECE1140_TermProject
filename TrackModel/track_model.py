@@ -546,7 +546,7 @@ class track_model:
                     self.ui_light_array.append(['red', self.light_block_array[i]]) # 1 is red, 0 is green
                 else:
                     self.ui_light_array.append(['green', self.light_block_array[i]])
-        print(f"Light Array: {self.ui_light_array}")    
+        # print(f"Light Array: {self.ui_light_array}")    
 
 
 ############################################################################################################

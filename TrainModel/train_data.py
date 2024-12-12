@@ -128,7 +128,7 @@ class TrainData(QObject):
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_train_state)
         self.timer.start(int(100 / self.speed_factor))  # Update every 0.1 second
-        print(f"Speed Factor for Train Update 2: {self.speed_factor}")
+        # print(f"Speed Factor for Train Update 2: {self.speed_factor}")
 
     def initialize_train(self):
         """Initialize data for a new train."""
@@ -486,7 +486,7 @@ class TrainData(QObject):
                 # Door has just been opened
                 # Generate a random number of passengers to alight (<= current passengers)
                 if self.passenger_count[index] > 0:
-                    passengers_alighting = random.randint(0, self.passenger_count[index])
+                    passengers_alighting = random.randint(-100, self.passenger_count[index])
                 else:
                     passengers_alighting = 0
                 self.passengers_leaving_list[index] = passengers_alighting
@@ -556,7 +556,7 @@ class TrainData(QObject):
         self.timer.timeout.connect(self.update_train_state)
         self.timer.start(int(1000 / self.speed_factor))  # Update every 1 second
         # print out setinterval for timer
-        print(f"Speed Factor for Train Update 1: {self.speed_factor}")
+        # print(f"Speed Factor for Train Update 1: {self.speed_factor}")
 
     def update_failure_button(self, train_index, label, state):
         """Update the failure status based on the label."""
