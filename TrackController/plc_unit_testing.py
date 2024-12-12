@@ -26,6 +26,7 @@
 ####################################################################################################
 
 # System Libraries
+from PyQt6.QtWidgets import QApplication
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
@@ -44,6 +45,13 @@ from TrackController.green_plc_2 import green_line_plc_2_class
 
 # PLC Program 3
 from TrackController.green_plc_3 import green_line_plc_3_class
+
+# Wayside Shell
+from TrackController.wayside_shell import wayside_shell_class
+
+# Communicate classes
+from Resources.CTCWaysideComm import CTCWaysideControllerComm
+from Resources.WaysideTrackComm import WaysideControllerTrackComm
 
 ####################################################################################################
 #
@@ -77,6 +85,15 @@ def call_plc_3_handlers(plc_program_3: green_line_plc_3_class, sugg_speed_test_a
     plc_program_3.read_block_occupancy_handler(occupancy_test_array)
     plc_program_3.read_maintenance_block_handler(maintenance_block_test_array)
     plc_program_3.read_maintenance_switches_handler(maintenance_switch_test_array)
+
+def call_wayside_shell_handlers(wayside_shell_object: wayside_shell_class, sugg_speed: list, sugg_auth: list, occupancy: list, maintenance_blocks: list, maintenance_switches: list):
+
+    # Call wayside shell handlers
+    wayside_shell_object.read_sugg_speed_handler(sugg_speed)
+    wayside_shell_object.read_sugg_authority_handler(sugg_auth)
+    wayside_shell_object.read_block_occupancy_handler(occupancy)
+    wayside_shell_object.read_maintenance_blocks_handler(maintenance_blocks)
+    wayside_shell_object.read_maintenance_switch_cmd_handler(maintenance_switches)
 
 ####################################################################################################
 #
@@ -3999,6 +4016,97 @@ class test_maintenance_switches_plc_3(unittest.TestCase):
         seudo_module_unit_testing.seudo_track_model_occupancy_plc_3([76, 77, 101, 85, 86, 100], self.maintenance_blocks_test_array)
         call_plc_3_handlers(self.plc_program_3, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
         self.assertEqual(self.plc_program_3.write_switch_cmd_array, [0, 1])
+
+####################################################################################################
+#
+#                                      Wayside Shell Test Cases
+#
+####################################################################################################
+
+class test_cmd_authority_of_plc_1_in_shell(unittest.TestCase):
+
+    # Set up test variables
+    def setUp(self):
+
+        # Application
+        app = QApplication(sys.argv)
+
+        # Test Arrays
+        self.occupancy_test_array = [0] * 152
+        self.sugg_speed_test_array = [50] * 152
+        self.sugg_authority_test_array = [100] * 152
+        self.maintenance_switches_test_array = [0] * 6
+        self.maintenance_blocks_test_array = [0] * 152
+
+        # Communicate objects
+        ctc_wayside_comm = CTCWaysideControllerComm()
+        wayside_track_comm = WaysideControllerTrackComm()
+
+        # PLC Object
+        self.plc_program_1 = green_line_plc_1_class()
+        self.plc_program_2 = green_line_plc_2_class()
+        self.plc_program_3 = green_line_plc_3_class()
+
+        # Shell Object
+        self.shell = wayside_shell_class(ctc_wayside_comm, wayside_track_comm)
+
+        # Pass plc programs to shell
+        self.shell.plc_program_1 = self.plc_program_1
+        self.shell.plc_program_2 = self.plc_program_2
+        self.shell.plc_program_3 = self.plc_program_3
+
+    # Pass values to plc programs
+    def test_passing_values_to_shell(self):
+
+        # call shell handlers
+        call_wayside_shell_handlers(self.shell, self.sugg_speed_test_array, self.sugg_authority_test_array, self.occupancy_test_array, self.maintenance_blocks_test_array, self.maintenance_switches_test_array)
+
+        # Check the values of cmd speed
+        for speed in self.shell.write_cmd_speed:
+            if speed == 0:
+                self.assertEqual(speed, 0)
+            else:
+                self.assertEqual(speed, 50)
+
+        for auth in self.shell.write_cmd_authority:
+            self.assertEqual(auth, 100)
+
+class test_plc_upload_in_shell(unittest.TestCase):
+
+    # Set up test variables
+    def setUp(self):
+
+        # Test Arrays
+        self.occupancy_test_array = [0] * 152
+        self.sugg_speed_test_array = [50] * 152
+        self.sugg_authority_test_array = [100] * 152
+        self.maintenance_switches_test_array = [0] * 6
+        self.maintenance_blocks_test_array = [0] * 152
+
+        # File Paths
+        self.file_paths = ["TrackController/green_plc_3.py", "TrackController/green_plc_1.py", "TrackController/green_plc_2.py"]
+
+        # Communicate objects
+        self.ctc_wayside_comm = CTCWaysideControllerComm()
+        self.wayside_track_comm = WaysideControllerTrackComm()
+
+    # Pass values to wayside shell
+    def test_passing_values_to_shell(self):
+
+        # Application
+        app = QApplication(sys.argv)
+
+        # Shell Object
+        self.shell = wayside_shell_class(self.ctc_wayside_comm, self.wayside_track_comm)
+
+        # call shell handlers
+        self.shell.execute_files(self.file_paths)
+
+        # Check the plcs have been uploaded correctly
+        self.assertTrue(self.shell.plc_program_1.green_plc_1_is_created)
+        self.assertTrue(self.shell.plc_program_2.green_plc_2_is_created)
+        self.assertTrue(self.shell.plc_program_3.green_plc_3_is_created)
+
 
 ####################################################################################################
 #

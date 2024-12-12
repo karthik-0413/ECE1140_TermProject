@@ -91,7 +91,7 @@ class wayside_shell_class:
 
     #                    Yard   C   D   F   G   J   K  N1  N2   O   R 
     write_signal_cmd = [    0,  0,  1,  0,  1,  1,  0,  0,  1,  0,  1 ]
-
+                        #   0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10
     #                     E  T
     write_crossing_cmd = [0, 0]
 
@@ -209,9 +209,9 @@ class wayside_shell_class:
         self.read_maintenance_switch_cmd = maintenance_switch_cmd_array.copy()
 
         # Update Wayside user interface table
-        if self.read_maintenance_switch_cmd:
+        if len(self.read_maintenance_switch_cmd):
             
-            self.maintenance_block_check = 1
+            self.maintenance_switch_check = 1
             
             if self.sugg_speed_check and self.sugg_authority_check and self.block_occupancy_check and self.maintenance_block_check and self.maintenance_switch_check:
 
@@ -308,9 +308,9 @@ class wayside_shell_class:
         # Check if the sugg_authority_array is empty
         if len(self.read_sugg_authority):
             for i in range(1, 33):
-                plc_1_sugg_authority.append(self.read_sugg_speed[i])
-            plc_1_sugg_authority.append(self.read_sugg_speed[150])
-            plc_1_sugg_authority.append(self.read_sugg_speed[151])
+                plc_1_sugg_authority.append(self.read_sugg_authority[i])
+            plc_1_sugg_authority.append(self.read_sugg_authority[150])
+            plc_1_sugg_authority.append(self.read_sugg_authority[151])
 
             # Pass suggested authorities to PLC Program 1
             if self.plc_program_1 != None:
@@ -642,8 +642,8 @@ class wayside_shell_class:
     def connect_ctc_signals(self):
         self.ctc_wayside_comm_object.suggested_speed_signal.connect(self.read_sugg_speed_handler)
         self.ctc_wayside_comm_object.suggested_authority_signal.connect(self.read_sugg_authority_handler)
-        self.ctc_wayside_comm_object.block_maintenance_signal.connect(self.read_maintenance_blocks_handler)
-        self.ctc_wayside_comm_object.switch_signal.connect(self.read_maintenance_switch_cmd_handler)
+        #self.ctc_wayside_comm_object.block_maintenance_signal.connect(self.read_maintenance_blocks_handler)
+        #self.ctc_wayside_comm_object.switch_signal.connect(self.read_maintenance_switch_cmd_handler)
 
     def connect_track_model_signals(self):
         self.wayside_track_comm_object.block_occupancies_signal.connect(self.read_block_occupancy_handler)
@@ -726,69 +726,71 @@ class wayside_shell_class:
     # Execute the selected Python files
     def execute_files(self, file_paths):
 
-            # Start each file in a separate process
-                    
             # Import filepath
+            if file_paths:
+
+                for file in file_paths:
+
+                    # PLC Program 1
+                    if 'green_plc_1.py' in file:
+                        module_name = 'gp1'
+                        gp1_spec = importlib.util.spec_from_file_location(module_name, file)
+                        self.plc_1 = importlib.util.module_from_spec(gp1_spec)
+                        gp1_spec.loader.exec_module(self.plc_1)
+
+                    # PLC Program 2
+                    elif 'green_plc_2.py' in file:
+                        module_name = 'gp2'
+                        gp2_spec = importlib.util.spec_from_file_location(module_name, file)
+                        self.plc_2 = importlib.util.module_from_spec(gp2_spec)
+                        gp2_spec.loader.exec_module(self.plc_2)
+
+                    # PLC Program 3
+                    elif 'green_plc_3.py' in file:
+                        module_name = 'gp3'
+                        gp3_spec = importlib.util.spec_from_file_location(module_name, file)
+                        self.plc_3 = importlib.util.module_from_spec(gp3_spec)
+                        gp3_spec.loader.exec_module(self.plc_3)
+                    
+                    else:
+                        # Change Upload PLC button text
+                        self.ui.UploadPLCButton.setText('ERROR\nTry again')
+
+                        # Change Upload PLC button color
+                        self.ui.UploadPLCButton.setStyleSheet("border: 2px solid black; border-radius: 5px; background-color: red;")
 
             # PLC Program 1
-            module_name = 'gp1'
-            gp1_spec = importlib.util.spec_from_file_location(module_name, file_paths[0])
-            self.plc_1 = importlib.util.module_from_spec(gp1_spec)
-            gp1_spec.loader.exec_module(self.plc_1)
+            try:
+                self.plc_program_1 = self.plc_1.green_line_plc_1_class()
+                green_1 = self.plc_program_1.green_plc_1_is_created()
+            except:
+                green_1 = False
 
             # PLC Program 2
-            module_name = 'gp2'
-            gp2_spec = importlib.util.spec_from_file_location(module_name, file_paths[1])
-            self.plc_2 = importlib.util.module_from_spec(gp2_spec)
-            gp2_spec.loader.exec_module(self.plc_2)
+            try:
+                self.plc_program_2 = self.plc_2.green_line_plc_2_class()
+                green_2 = self.plc_program_2.green_plc_2_is_created()
+            except:
+                green_2 = False
 
             # PLC Program 3
-            module_name = 'gp3'
-            gp3_spec = importlib.util.spec_from_file_location(module_name, file_paths[2])
-            self.plc_3 = importlib.util.module_from_spec(gp3_spec)
-            gp3_spec.loader.exec_module(self.plc_3)
+            try:
+                self.plc_program_3 = self.plc_3.green_line_plc_3_class()
+                green_3 = self.plc_program_3.green_plc_3_is_created()
+            except: 
+                green_3 = False
 
-            # PLC Program 1
-            self.plc_program_1 = self.plc_1.green_line_plc_1_class()
+            # PLC programs are correctly initialized
+            if green_1 and green_2 and green_3:
 
-            # PLC Program 2
-            self.plc_program_2 = self.plc_2.green_line_plc_2_class()
+                # Change Upload PLC button text
+                self.ui.UploadPLCButton.setText('PLCs\nUploaded')
 
-            # PLC Program 3
-            self.plc_program_3 = self.plc_3.green_line_plc_3_class()
+                # Change Upload PLC button color
+                self.ui.UploadPLCButton.setStyleSheet("border: 2px solid black; border-radius: 5px; background-color: lime;")
 
-            # Green Line
-            if self.line_color == 'Green':
-
-                # PLC 1
-                try:
-                    green_1 = self.plc_program_1.green_plc_1_is_created()
-                except:
-                    green_1 = False
-
-                # PLC 2
-                try:
-                    green_2 = self.plc_program_2.green_plc_2_is_created()
-                except:
-                    green_2 = False
-
-                # PLC 3
-                try:
-                    green_3 = self.plc_program_3.green_plc_3_is_created()
-                except:
-                    green_3 = False
-
-                # PLC programs are correctly initialized
-                if green_1 and green_2 and green_3:
-
-                    # Change Upload PLC button text
-                    self.ui.UploadPLCButton.setText('PLCs\nUploaded')
-
-                    # Change Upload PLC button color
-                    self.ui.UploadPLCButton.setStyleSheet("border: 2px solid black; border-radius: 5px; background-color: lime;")
-
-                    # Disable Upload PLC button
-                    self.ui.UploadPLCButton.setEnabled(False)
+                # Disable Upload PLC button
+                self.ui.UploadPLCButton.setEnabled(False)
 
             # Red Line
             if self.line_color == 'Red':

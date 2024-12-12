@@ -2187,7 +2187,7 @@ class wayside_ui_green_line(object):
                 for i in range(len(self.ui_sugg_speed)):
 
                         # Check if new speed is different
-                        if self.ui_sugg_speed[i] != self.ui_past_sugg_speed[i]:
+                        if self.ui_sugg_speed[i] != self.ui_past_sugg_speed[i] and self.ui_sugg_speed[i] != None:
 
                                 # Set block text
                                 block = self.set_block_text(i)
@@ -2196,9 +2196,8 @@ class wayside_ui_green_line(object):
                                 entry = QtWidgets.QTableWidgetItem()
                                 self.copy_table_widget_item(temp_text_item, entry)
 
-                                # Set item text (sugg speed)
-                                entry.setText(f'Block {block} sugg speed set to {f'{round(self.ui_sugg_speed[i] / 1.609)} mph' if self.ui_sugg_speed[i] != None else 'None'}\n'
-                                              f'Block {block} cmd  speed set to {f'{round(self.ui_cmd_speed[i] / 1.609)} mph' if self.ui_cmd_speed[i] != None else 'None'}')
+                                # Set item text (cmd speed)
+                                entry.setText(f'Block {block} cmd speed set to {f'{round(self.ui_cmd_speed[i] / 1.609)} mph' if self.ui_cmd_speed[i] != None else 'None'}')
                                 
                                 # Add log item
                                 self.add_log_item(entry)
@@ -2207,7 +2206,7 @@ class wayside_ui_green_line(object):
                 for i in range(len(self.ui_cmd_authority)):
 
                         # Check if new authority is different
-                        if self.ui_cmd_authority[i] != self.ui_past_cmd_authority[i]:
+                        if self.ui_cmd_authority[i] != self.ui_past_cmd_authority[i] and self.ui_cmd_authority[i] != None:
 
                                 # Set block text
                                 block = self.set_block_text(i)
@@ -2301,7 +2300,12 @@ class wayside_ui_green_line(object):
 
                         # Add log item
                         self.add_log_item(entry)
-                
+
+                # Limit table to 20 items
+                if self.UpdateLog.rowCount() > 20:
+                        self.UpdateLog.setRowCount(20)
+
+
         #########################################################################################
         #
         #                               Shell Handler function
@@ -2461,8 +2465,6 @@ class wayside_ui_green_line(object):
                 # Set new operational mode
                 self.determine_operational_mode()
                 
-
-
 
 #########################################################################################
 #
