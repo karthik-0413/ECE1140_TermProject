@@ -1,0 +1,533 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>TrackModel</class>
+ <widget class="QMainWindow" name="TrackModel">
+  <property name="windowModality">
+   <enum>Qt::WindowModality::WindowModal</enum>
+  </property>
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>890</width>
+    <height>859</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="1" column="1">
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <item>
+       <widget class="QTabWidget" name="tabs">
+        <property name="autoFillBackground">
+         <bool>false</bool>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">font: 14pt &quot;Times New Roman&quot;;
+color: rgb(0, 0, 0);
+background-color: rgb(204, 204, 204);</string>
+        </property>
+        <property name="currentIndex">
+         <number>0</number>
+        </property>
+        <property name="documentMode">
+         <bool>true</bool>
+        </property>
+        <property name="tabsClosable">
+         <bool>false</bool>
+        </property>
+        <property name="tabBarAutoHide">
+         <bool>false</bool>
+        </property>
+        <widget class="QWidget" name="tab">
+         <attribute name="title">
+          <string>Track Layout</string>
+         </attribute>
+         <layout class="QGridLayout" name="gridLayout_14">
+          <item row="3" column="3">
+           <widget class="QFrame" name="trackLayout_header">
+            <layout class="QVBoxLayout" name="verticalLayout_3">
+             <item>
+              <widget class="QTableWidget" name="blockInfo"/>
+             </item>
+             <item>
+              <widget class="QGroupBox" name="murphyControls">
+               <property name="title">
+                <string>Murphy's Controls</string>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_3">
+                <item row="0" column="0">
+                 <layout class="QVBoxLayout" name="verticalLayout_7">
+                  <item>
+                   <layout class="QHBoxLayout" name="horizontalLayout">
+                    <item>
+                     <widget class="QLabel" name="circuitFailureLabel">
+                      <property name="text">
+                       <string>Circuit Failure: Block</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QSpinBox" name="murphyBlockNumber1"/>
+                    </item>
+                    <item>
+                     <widget class="QCheckBox" name="breakStatus1">
+                      <property name="text">
+                       <string>BREAK</string>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
+                  </item>
+                 </layout>
+                </item>
+                <item row="1" column="0">
+                 <layout class="QHBoxLayout" name="horizontalLayout_3">
+                  <item>
+                   <widget class="QLabel" name="poewrFailureLabel">
+                    <property name="text">
+                     <string>Power Failure: Block</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QSpinBox" name="murphyBlockNumber2"/>
+                  </item>
+                  <item>
+                   <widget class="QCheckBox" name="breakStatus2">
+                    <property name="text">
+                     <string>BREAK</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+                <item row="2" column="0">
+                 <layout class="QHBoxLayout" name="horizontalLayout_2">
+                  <item>
+                   <widget class="QLabel" name="railFailureLabel_2">
+                    <property name="text">
+                     <string>Rail Failure: Block</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QSpinBox" name="murphyBlockNumber3"/>
+                  </item>
+                  <item>
+                   <widget class="QCheckBox" name="breakStatus3">
+                    <property name="text">
+                     <string>BREAK</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <layout class="QVBoxLayout" name="verticalLayout_5">
+               <item>
+                <layout class="QVBoxLayout" name="verticalLayout_6">
+                 <item>
+                  <layout class="QGridLayout" name="gridLayout_16">
+                   <item row="3" column="1">
+                    <widget class="QSpinBox" name="tempStepper">
+                     <property name="styleSheet">
+                      <string notr="true">font: 20pt &quot;Times New Roman&quot;;</string>
+                     </property>
+                     <property name="wrapping">
+                      <bool>false</bool>
+                     </property>
+                     <property name="alignment">
+                      <set>Qt::AlignmentFlag::AlignCenter</set>
+                     </property>
+                     <property name="buttonSymbols">
+                      <enum>QAbstractSpinBox::ButtonSymbols::UpDownArrows</enum>
+                     </property>
+                     <property name="accelerated">
+                      <bool>false</bool>
+                     </property>
+                     <property name="suffix">
+                      <string> F</string>
+                     </property>
+                     <property name="minimum">
+                      <number>-50</number>
+                     </property>
+                     <property name="maximum">
+                      <number>150</number>
+                     </property>
+                     <property name="value">
+                      <number>40</number>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="0">
+                    <widget class="QLabel" name="heaterStatus">
+                     <property name="styleSheet">
+                      <string notr="true">font: 10pt &quot;Times New Roman&quot;;
+background-color: rgb(68, 68, 68);
+color: rgb(0, 0, 0);</string>
+                     </property>
+                     <property name="text">
+                      <string>Heater</string>
+                     </property>
+                     <property name="alignment">
+                      <set>Qt::AlignmentFlag::AlignCenter</set>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="0" colspan="2">
+                    <widget class="QLabel" name="tempLabel">
+                     <property name="styleSheet">
+                      <string notr="true">font: 30pt &quot;Times New Roman&quot;;</string>
+                     </property>
+                     <property name="text">
+                      <string>Rail Temperature</string>
+                     </property>
+                     <property name="alignment">
+                      <set>Qt::AlignmentFlag::AlignCenter</set>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="uploadButton">
+                   <property name="styleSheet">
+                    <string notr="true">font: 30pt &quot;Times New Roman&quot;;</string>
+                   </property>
+                   <property name="text">
+                    <string>Upload New Layout</string>
+                   </property>
+                   <property name="autoDefault">
+                    <bool>false</bool>
+                   </property>
+                   <property name="default">
+                    <bool>false</bool>
+                   </property>
+                   <property name="flat">
+                    <bool>false</bool>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item row="0" column="0" rowspan="2" colspan="4">
+           <widget class="QLabel" name="tab1Label">
+            <property name="styleSheet">
+             <string notr="true">font: 40pt &quot;Times New Roman&quot;;
+background-color: rgb(0, 85, 255);
+color: rgb(255, 255, 255);</string>
+            </property>
+            <property name="text">
+             <string>Track Layout</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignmentFlag::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0" rowspan="2">
+           <widget class="QTableWidget" name="blocks">
+            <column>
+             <property name="text">
+              <string>Functional</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Occupancy</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Occupied</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Passengers</string>
+             </property>
+            </column>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="tab_2">
+         <attribute name="title">
+          <string>Testbench</string>
+         </attribute>
+         <layout class="QGridLayout" name="gridLayout_19">
+          <item row="7" column="0">
+           <layout class="QVBoxLayout" name="verticalLayout_9">
+            <item>
+             <widget class="QTableWidget" name="passInfoTable">
+              <property name="styleSheet">
+               <string notr="true">font: 14pt &quot;Times New Roman&quot;;
+color: rgb(0, 0, 0);</string>
+              </property>
+              <attribute name="horizontalHeaderDefaultSectionSize">
+               <number>123</number>
+              </attribute>
+              <row>
+               <property name="text">
+                <string>Block 1</string>
+               </property>
+              </row>
+              <row>
+               <property name="text">
+                <string>Block 2</string>
+               </property>
+              </row>
+              <row>
+               <property name="text">
+                <string>Block 3</string>
+               </property>
+              </row>
+              <row>
+               <property name="text">
+                <string>Block 4</string>
+               </property>
+              </row>
+              <row>
+               <property name="text">
+                <string>Block 5</string>
+               </property>
+              </row>
+              <row>
+               <property name="text">
+                <string>Block 6</string>
+               </property>
+              </row>
+              <row>
+               <property name="text">
+                <string>Block 7</string>
+               </property>
+              </row>
+              <row>
+               <property name="text">
+                <string>Block 8</string>
+               </property>
+              </row>
+              <row>
+               <property name="text">
+                <string>Block 9</string>
+               </property>
+              </row>
+              <row>
+               <property name="text">
+                <string>Block 10</string>
+               </property>
+              </row>
+              <row>
+               <property name="text">
+                <string>Block 11</string>
+               </property>
+              </row>
+              <row>
+               <property name="text">
+                <string>Block 12</string>
+               </property>
+              </row>
+              <row>
+               <property name="text">
+                <string>Block 13</string>
+               </property>
+              </row>
+              <row>
+               <property name="text">
+                <string>Block 14</string>
+               </property>
+              </row>
+              <row>
+               <property name="text">
+                <string>Block 15</string>
+               </property>
+              </row>
+              <column>
+               <property name="text">
+                <string>Commanded Speed</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>Authority</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>Vacancy</string>
+               </property>
+              </column>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="8" column="0" colspan="2">
+           <widget class="QPushButton" name="applyChangesButton">
+            <property name="styleSheet">
+             <string notr="true">font: 14pt &quot;Times New Roman&quot;;
+color: rgb(0, 0, 0);</string>
+            </property>
+            <property name="text">
+             <string>Apply Changes</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <layout class="QHBoxLayout" name="horizontalLayout_5"/>
+          </item>
+          <item row="3" column="1" rowspan="5">
+           <widget class="QTextEdit" name="textEdit"/>
+          </item>
+          <item row="3" column="0">
+           <layout class="QHBoxLayout" name="horizontalLayout_4"/>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLabel" name="beaconLabel">
+            <property name="styleSheet">
+             <string notr="true">font: 14pt &quot;Times New Roman&quot;;
+color: rgb(0, 0, 0);</string>
+            </property>
+            <property name="text">
+             <string>Beacon Information</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignmentFlag::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <layout class="QVBoxLayout" name="verticalLayout_2">
+            <item>
+             <widget class="QLabel" name="label_3">
+              <property name="styleSheet">
+               <string notr="true">font: 20pt &quot;Times New Roman&quot;;
+color: rgb(0, 0, 0);</string>
+              </property>
+              <property name="text">
+               <string>Position</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignmentFlag::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QDoubleSpinBox" name="positionValue">
+              <property name="alignment">
+               <set>Qt::AlignmentFlag::AlignCenter</set>
+              </property>
+              <property name="suffix">
+               <string> m</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="4" column="0">
+           <widget class="QGroupBox" name="switchCommands">
+            <property name="title">
+             <string>Switch Commands</string>
+            </property>
+            <layout class="QGridLayout" name="gridLayout_2">
+             <item row="3" column="0">
+              <widget class="QComboBox" name="switches">
+               <property name="styleSheet">
+                <string notr="true">font: 16pt &quot;Times New Roman&quot;;
+color: rgb(0, 0, 0);</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="1">
+              <widget class="QCheckBox" name="switchToggle">
+               <property name="text">
+                <string>Toggle</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QComboBox" name="stationPicker">
+            <property name="styleSheet">
+             <string notr="true">font: 14pt &quot;Times New Roman&quot;;
+color: rgb(0, 0, 0);</string>
+            </property>
+            <item>
+             <property name="text">
+              <string>Station A</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Station B</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Station C</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="6" column="0">
+           <widget class="QGroupBox" name="groupBox">
+            <property name="title">
+             <string>Crossing Commands</string>
+            </property>
+            <layout class="QGridLayout" name="gridLayout_4">
+             <item row="0" column="0">
+              <widget class="QComboBox" name="crossings"/>
+             </item>
+             <item row="0" column="1">
+              <widget class="QCheckBox" name="crossingStatus">
+               <property name="text">
+                <string>Toggle</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="2">
+              <widget class="QLabel" name="lightStatus">
+               <property name="styleSheet">
+                <string notr="true">color: rgb(0, 0, 0);
+font: 16pt &quot;Times New Roman&quot;;</string>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </widget>
+      </item>
+     </layout>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
