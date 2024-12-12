@@ -7,13 +7,19 @@ from PyQt6.QtCore import (QObject, pyqtSignal)
 from TrackModel.track_model_ui import Ui_TrackModel
 from TrackModel.TrackTrainCommunicate import TrackTrainComms as TrainComms
 from TrackModel.WaysideTrackCommunicate import WaysideTrackComms as WaysideComms
+from TrackModel.track_model_ui import Ui_TrackModel
+from TrackModel.TrackTrainCommunicate import TrackTrainComms as TrainComms
+from TrackModel.WaysideTrackCommunicate import WaysideTrackComms as WaysideComms
 
+# from track_model_ui import Ui_TrackModel
+# from TrackTrainCommunicate import TrackTrainComms as TrainComms
+# from WaysideTrackCommunicate import WaysideTrackComms as WaysideComms
 # from track_model_ui import Ui_TrackModel
 # from TrackTrainCommunicate import TrackTrainComms as TrainComms
 # from WaysideTrackCommunicate import WaysideTrackComms as WaysideComms
 
 class Block():
-    def __init__(self, line, section, number: int, length: float, grade: float, speedLimit: float, infrastructure: str, side, elevation: float, cumulativeElevation: float, polarity: bool):
+    def __init__(self, line, section, number: int, length: float, grade: float, speedLimit: float, infrastructure: str, side, elevation: float, cumulativeElevation: float, polarity: bool, table_column: int, table_row: int):
         self.line = line
         self.section = section
         self.number = number
@@ -27,9 +33,8 @@ class Block():
         self.polarity = polarity
         self.functional = True
         self.occupied = False
-
-    # def checkFailure(ui) -> bool:
-    #     return any(toggle.isChecked() for toggle in [ui.breakStatus1, ui.breakStatus2, ui.breakStatus3])
+        self.table_column = table_column
+        self.table_row = table_row
 
 class track_model:
     # defaultRedPath = [
@@ -62,12 +67,6 @@ class track_model:
         self.ui.show()
 
         self.ui.uploadButton.clicked.connect(self.upload_file)
-        self.ui.murphyBlockNumber1.valueChanged.connect(self.handle_circuit_failure_num_step)
-        self.ui.murphyBlockNumber2.valueChanged.connect(self.handle_power_failure_num_step)
-        self.ui.murphyBlockNumber3.valueChanged.connect(self.handle_rail_failure_num_step)
-        self.ui.breakStatus1.toggled.connect(self.handle_circuit_failure_checkbox)
-        self.ui.breakStatus2.toggled.connect(self.handle_power_failure_checkbox)
-        self.ui.breakStatus3.toggled.connect(self.handle_rail_failure_checkbox)
 
         self.read_train()
         self.read_wayside()
@@ -151,6 +150,7 @@ class track_model:
             else:
                 self.polarity_values.append(True)
         # print(f"track: {self.polarity_values}")
+        # print(f"track: {self.polarity_values}")
 
     def update_grade_values(self):
         self.all_blocks.clear()
@@ -216,34 +216,36 @@ class track_model:
         # 1: closed
 
     def handle_switch_cmd_signal(self, switch_cmds: list):
-        self.switch_cmds = switch_cmds
+        self.switch_cmds = switch_cmds.copy()
         self.update_switch_status()
 
     def handle_signal_cmd_signal(self, light_cmds: list):
-        self.light_cmds = light_cmds
+        self.light_cmds = light_cmds.copy()
         self.update_light_status()
 
     def handle_crossing_cmd_signal(self, crossing_cmds: list):
-        self.crossing_cmds = crossing_cmds
+        #print(f"Received Crossing Cmd: {crossing_cmds}")
+        self.crossing_cmds = crossing_cmds.copy()
         self.update_crossing_status()
 
     def handle_commanded_speed_signal(self, cmd_speeds: list):
-        self.past_cmd_speeds_wayside = self.cmd_speeds_wayside
+        self.past_cmd_speeds_wayside = self.cmd_speeds_wayside.copy()
         self.cmd_speeds_wayside = cmd_speeds
+        # print(f"cmd speed in track model: {self.cmd_speeds_wayside}")
 
         # if len(self.cmd_speeds_wayside):
-        #      # print(f"Received Cmd Speed: {self.cmd_speeds_wayside[0]}")
+        #      print(f"Received Cmd Speed: {self.cmd_speeds_wayside[0]}")
 
         # Update the train commanded speeds
         self.update_train_cmd_speeds()
 
     def handle_commanded_authority_signal(self, cmd_authorities: list):
-        self.cmd_authorities = cmd_authorities
-        self.past_cmd_authorities_wayside = self.cmd_authorities_wayside
-        self.cmd_authorities_wayside = cmd_authorities
+        self.cmd_authorities = cmd_authorities.copy()
+        self.past_cmd_authorities_wayside = self.cmd_authorities_wayside.copy()
+        self.cmd_authorities_wayside = cmd_authorities.copy()
 
         # if len(self.cmd_authorities_wayside):
-        #     # print(f"Received Cmd Authority: {self.cmd_authorities_wayside[0]}")
+        #     print(f"Received Cmd Authority: {self.cmd_authorities_wayside[0]}")
 
         # Update the train commanded authorities
         self.update_train_cmd_authorities()
@@ -268,7 +270,7 @@ class track_model:
 
     def write(self):
         # print('Occupancies:', self.occupancies)
-
+        self.set_failure_occupancies()
         self.train_communicator.number_passenger_boarding_signal.emit(self.num_passengers_embarking)
         self.train_communicator.polarity_signal.emit(self.polarity_values)
         self.train_communicator.block_grade_signal.emit(self.grade_values)
@@ -300,10 +302,11 @@ class track_model:
             for row in reader:
                 self.layout_data.append(row)
                 for row in self.layout_data:
-                    line, section, number, length, grade, speedLimit, infrastructure, side, elevation, cumulativeElevation, polarity = row[:11]
-                    temp_block = Block(line,section,int(number),float(length),float(grade),float(speedLimit),infrastructure,side,float(elevation),float(cumulativeElevation),int(polarity)
+                    line, section, number, length, grade, speedLimit, infrastructure, side, elevation, cumulativeElevation, polarity, table_column, table_row = row[:13]
+                    temp_block = Block(line,section,int(number),float(length),float(grade),float(speedLimit),infrastructure,side,float(elevation),float(cumulativeElevation),int(polarity),int(table_column),int(table_row)
                 )
                 self.all_blocks.append(temp_block)
+        self.initialize_coordinates()
         self.initialize_arrays()
         self.update_ui_list()
         # for block in self.all_blocks:
@@ -334,20 +337,16 @@ class track_model:
                 if (block_start <= position_value < block_end):
                     self.all_blocks[self.defaultGreenPath[i]].occupied = True
                     self.current_block.append(self.all_blocks[self.defaultGreenPath[i]].number)
-                #else:
-                    #self.all_blocks[self.defaultGreenPath[i]].occupied = False
                 block_start = block_end
 
         for block in self.all_blocks:
             self.occupancies.append(block.occupied)
 
         # print(f"Occupancy locations: {[block.number for block in self.all_blocks if block.occupied == True]}")
-
-        
-
+  
     def set_failure_occupancies(self):
         for i in range(len(self.all_blocks)):
-            if self.ui.functional_list[i] != 1:
+            if self.all_blocks[i].functional == False:
                 self.occupancies[i] = True
 
 ############################################################################################################
@@ -544,9 +543,10 @@ class track_model:
             self.ui_light_array.clear()
             for i in range(len(self.light_cmds)):
                 if self.light_cmds[i]:
-                    self.ui_light_array.append(['red', self.light_block_array[i]]) # 0 is red, 1 is green
+                    self.ui_light_array.append(['red', self.light_block_array[i]]) # 1 is red, 0 is green
                 else:
                     self.ui_light_array.append(['green', self.light_block_array[i]])
+        print(f"Light Array: {self.ui_light_array}")    
 
 
 ############################################################################################################
@@ -641,55 +641,32 @@ class track_model:
     def initialize_functional(self):
         self.functional_blocks.clear()
         for block in self.all_blocks:
-            self.functional_blocks.append(1)
-    
-    def handle_circuit_failure_num_step(self, block_num: int):
-        if self.ui.toggle_circuit_failure[block_num]:
-            self.ui.breakStatus1.toggled.disconnect(self.handle_circuit_failure_checkbox)
-            self.ui.breakStatus1.setChecked(True)
-            self.ui.breakStatus1.toggled.connect(self.handle_circuit_failure_checkbox)
-        else:
-            self.ui.breakStatus1.toggled.disconnect(self.handle_circuit_failure_checkbox)
-            self.ui.breakStatus1.setChecked(False)
-            self.ui.breakStatus1.toggled.connect(self.handle_circuit_failure_checkbox)
+            self.functional_blocks.append(block.functional)
+        # print(self.functional_blocks)
 
-    def handle_power_failure_num_step(self, block_num: int):
-        if self.ui.toggle_power_failure[block_num]:
-            self.ui.breakStatus2.toggled.disconnect(self.handle_power_failure_checkbox)
-            self.ui.breakStatus2.setChecked(True)
-            self.ui.breakStatus2.toggled.connect(self.handle_power_failure_checkbox)
-        else:
-            self.ui.breakStatus2.toggled.disconnect(self.handle_power_failure_checkbox)
-            self.ui.breakStatus2.setChecked(False)
-            self.ui.breakStatus2.toggled.connect(self.handle_power_failure_checkbox)
-
-    def handle_rail_failure_num_step(self, block_num: int):
-        if self.ui.toggle_rail_failure[block_num]:
-            self.ui.breakStatus3.toggled.disconnect(self.handle_rail_failure_checkbox)
-            self.ui.breakStatus3.setChecked(True)
-            self.ui.breakStatus3.toggled.connect(self.handle_rail_failure_checkbox)
-        else:
-            self.ui.breakStatus3.toggled.disconnect(self.handle_rail_failure_checkbox)
-            self.ui.breakStatus3.setChecked(False)
-            self.ui.breakStatus3.toggled.connect(self.handle_rail_failure_checkbox)
-
-    def handle_circuit_failure_checkbox(self, block_num: int):
-        if self.ui.toggle_circuit_failure[block_num]:
-            self.ui.toggle_circuit_failure[block_num] = False
-        else:
-            self.ui.toggle_circuit_failure[block_num] = True
-
-    def handle_power_failure_checkbox(self, block_num: int):
-        if self.ui.toggle_power_failure[block_num]:
-            self.ui.toggle_power_failure[block_num] = False
-        else:
-            self.ui.toggle_power_failure[block_num] = True
-
-    def handle_rail_failure_checkbox(self, block_num: int):
-        if self.ui.toggle_rail_failure[block_num]:
-            self.ui.toggle_rail_failure[block_num] = False
-        else:
-            self.ui.toggle_rail_failure[block_num] = True
+    def update_functional(self):
+        for block in self.all_blocks:
+            if (self.ui.breakStatus1.isChecked() and (block.number == self.ui.murphyBlockNumber1.value())):
+                block.functional = False
+                block.occupied = True
+                self.functional_blocks[block.number] = False
+                self.ui.blockTable.item(block.table_row, block.table_column).setBackground(QtGui.QColor('red'))
+            elif (self.ui.breakStatus2.isChecked() and (block.number == self.ui.murphyBlockNumber2.value())):
+                block.functional = False
+                block.occupied = True
+                self.functional_blocks[block.number] = False
+                self.ui.blockTable.item(block.table_row, block.table_column).setBackground(QtGui.QColor('red'))
+            elif (self.ui.breakStatus3.isChecked() and (block.number == self.ui.murphyBlockNumber3.value())):
+                block.functional = False
+                block.occupied = True
+                self.functional_blocks[block.number] = False
+                self.ui.blockTable.item(block.table_row, block.table_column).setBackground(QtGui.QColor('red'))
+            else:
+                block.functional = True
+                self.functional_blocks[block.number] = True
+                self.ui.blockTable.item(block.table_row, block.table_column).setBackground(QtGui.QColor('green'))
+        # for block in self.all_blocks:
+        #     print(f"Block {block.number} state: {block.functional}")
 
 ############################################################################################################
 #
@@ -697,24 +674,16 @@ class track_model:
 #
 ############################################################################################################
     def update_ui_list(self):
+        self.ui.all_blocks = self.all_blocks
+        self.update_functional()
         self.ui.functional_list = self.functional_blocks
         self.ui.occupancy_list = self.occupancies
         self.ui.switch_list = self.ui_switch_array
         self.ui.lights_list = self.ui_light_array
         self.ui.crossing_list = self.ui_crossing_array
         self.ui.num_people_at_station_list = self.ui_people_at_station
+        self.ui.update_block_info_table()
         self.ui.update_block_table()
-
-    def update_functional(self):
-        for i in range(len(self.all_blocks)):
-            if self.ui.toggle_circuit_failure[i]:
-                self.functional_blocks[i] = 2
-            elif self.ui.toggle_power_failure[i]:
-                self.functional_blocks[i] = 3
-            elif self.ui.toggle_rail_failure[i]:
-                self.functional_blocks[i] = 4
-            else:
-                self.functional_blocks[i] = 1
 
     def update_occupancies(self):
         self.set_train_occupancies()
@@ -745,7 +714,7 @@ class track_model:
         self.update_switch_status()
 
     def initialize_lights(self):
-        self.light_cmds = [0, 1, 0, 1, 1, 0, 0, 1, 0, 1, 0]
+        self.light_cmds = [0, 0, 1, 0, 1, 1, 0, 0, 1, 0, 1]
         self.update_light_states()
         self.update_light_status()
 
@@ -759,117 +728,21 @@ class track_model:
         self.gen_num_passengers_at_station()
         self.update_people_at_station()
 
-    def initialize_failures(self):
-        temp_failures = []
+    def initialize_coordinates(self):
         for block in self.all_blocks:
-            temp_failures.append(False)
-        self.ui.toggle_circuit_failure = temp_failures
-        self.ui.toggle_power_failure = temp_failures
-        self.ui.toggle_rail_failure = temp_failures
+            self.ui.greenCoordinates.append([block.number,block.table_column, block.table_row])       
         
     def initialize_arrays(self):
+        self.ui.initialize_block_info_table()
+        self.ui.initialize_map()
         self.initialize_functional()
         self.initialize_occupancy()
         self.initialize_switches()
         self.initialize_lights()
         self.initialize_crossings()
         self.initialize_people()
-        self.initialize_failures()
         self.create_length_array()
-        self.ui.initialize_block_table(len(self.all_blocks))
-        
-    # def updateBlockTable(self) -> None:
-    #     blocks = self.all_blocks
-    #     self.ui.blockTable.setRowCount(len(blocks))
-
-    #     # glorious king zach changing the headers of the rows
-    #     labels = []
-    #     for i in range(len(blocks)):
-    #         if i == 0:
-    #             labels.append("Yard")
-
-    #         else:
-    #             labels.append(f"{i}")
-
-    #     self.ui.blockTable.setVerticalHeaderLabels(labels)
-    #     #
-
-    #     headers = ["Functional", "Occupied", "Switch State"]
-    #     self.ui.blockTable.setColumnCount(len(headers))
-    #     self.ui.blockTable.setHorizontalHeaderLabels(headers)
-
-    #     for row, block in enumerate(blocks):
-    #         functional_item = QtWidgets.QTableWidgetItem(str(block.functional))
-    #         occupancy_item = QtWidgets.QTableWidgetItem(str(block.occupied))
-    #         switch_item = QtWidgets.QTableWidgetItem("")
-    #         passeneger_item = QtWidgets.QTableWidgetItem("")
-
-    #         for switch in self.ui_switch_array:
-    #             if block.number == switch['joint']:
-    #                 switch_item.setText(self.checkSwitch())
-
-
-    #         self.ui.blockTable.setItem(row, 0, functional_item)
-    #         self.ui.blockTable.setItem(row, 1, occupancy_item)
-    #         self.ui.blockTable.setItem(row, 2, switch_item)
-
-    #         if block.occupied:
-    #             for col in range(len(headers)-1):
-    #                 self.ui.blockTable.item(row, col).setBackground(QtGui.QColor('lightblue'))
-    #         if not block.functional:
-    #             for col in range(len(headers)-1):
-    #                 self.ui.blockTable.item(row, col).setBackground(QtGui.QColor('lightcoral'))
-
-    #     self.ui.blockTable.cellClicked.connect(self.handleCellClick)
-
-    # def handleCellClick(self, row: int, column: int) -> None:
-    #     if column == 2: 
-    #         selectedBlock = self.all_blocks[row]
-    #         for switch in self.ui_switch_array:
-    #             if selectedBlock.number == switch['joint']:
-    #                 self.ui.switches.setCurrentText(f"Switch at Block {switch['joint']}")
-    #                 self.ui.switchToggle.setChecked(not self.ui.switchToggle.isChecked())
-    #                 switch_state = self.checkSwitch()
-    #                 self.ui.blockTable.item(row, column).setText(switch_state)
-    #                 break
-
-    # def # printBlockInfo(self) -> None:
-    #     selectedItems = self.ui.blockTable.selectedItems()
-    #     if not selectedItems:
-    #         return
-    #     selectedRow = selectedItems[0].row()
-    #     allBlocks = [block for blocks in self.blocks.values() for block in blocks]
-    #     selectedBlock = allBlocks[selectedRow]
-
-    #     self.ui.blockInfo.setRowCount(11)
-    #     self.ui.blockInfo.setColumnCount(1)
-    #     self.ui.blockInfo.setVerticalHeaderLabels([
-    #         "Line", "Section", "Number", "Length", "Grade", "Speed Limit", 
-    #         "Infrastructure", "Elevation", "Cumulative Elevation", "Side", "Polarity"
-    #     ])
-    #     self.ui.blockInfo.setItem(0, 0, QtWidgets.QTableWidgetItem(selectedBlock.line))
-    #     self.ui.blockInfo.setItem(1, 0, QtWidgets.QTableWidgetItem(selectedBlock.section))
-    #     self.ui.blockInfo.setItem(2, 0, QtWidgets.QTableWidgetItem(str(selectedBlock.number)))
-    #     self.ui.blockInfo.setItem(3, 0, QtWidgets.QTableWidgetItem(str(selectedBlock.length)))
-    #     self.ui.blockInfo.setItem(4, 0, QtWidgets.QTableWidgetItem(str(selectedBlock.grade)))
-    #     self.ui.blockInfo.setItem(5, 0, QtWidgets.QTableWidgetItem(str(selectedBlock.speedLimit)))
-    #     self.ui.blockInfo.setItem(6, 0, QtWidgets.QTableWidgetItem(selectedBlock.infrastructure))
-    #     self.ui.blockInfo.setItem(7, 0, QtWidgets.QTableWidgetItem(str(selectedBlock.elevation)))
-    #     self.ui.blockInfo.setItem(8, 0, QtWidgets.QTableWidgetItem(str(selectedBlock.cumulativeElevation)))
-    #     self.ui.blockInfo.setItem(9, 0, QtWidgets.QTableWidgetItem(str(selectedBlock.side)))
-    #     self.ui.blockInfo.setItem(10, 0, QtWidgets.QTableWidgetItem(str(selectedBlock.polarity)))
-
-    # def updateOccupancy(self) -> None:
-    #     position = self.ui.positionValue.value()
-    #     self.occupancies = TrackModel.set_train_occupancies(self)
-    #     self.updateBlockTable()
-
-    # def recurring(self) -> None:
-    #     self.updateOccupancy()
-    #     self.checkSwitch()
-    #     self.checkCrossing()
-    #     self.checkTemp()        
-
+            
 
 class track_ui(QtWidgets.QMainWindow, Ui_TrackModel):
     def __init__(self):

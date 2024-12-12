@@ -11,6 +11,7 @@ from PyQt6.QtCore import Qt, QCoreApplication, pyqtSignal, QObject, QTimer
 from PyQt6.QtGui import QDoubleValidator
 from TrainController.TrainControllerHW import send_data_to_pi
 from TrainController.ControllerToShellCommuicate import ControllerToShellCommunicate as Communicate2
+from Resources.ClockComm import ClockComm
 # from TrainControllerHW import send_numbers_to_pi
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -178,7 +179,7 @@ class PowerCommand(QObject):
         self.ek_current = 0.0
         self.uk_previous = 0.0
         self.ek_previous = 0.0
-        self.power_command = 0.0
+        self.power_command = 10.0
         self.tuning = tuning
         self.brake_status = brake_status
         self.module = module     # 1 for Software, 0 for Hardware
@@ -188,6 +189,8 @@ class PowerCommand(QObject):
         self.raspberry_pi_port = 22
         self.raspberry_pi_username = 'maj214'
         self.raspberry_pi_password = 'password'
+        self.previous_power_command = 0.0
+        self.total_power_command = 10.0
         
     def update_kp(self, kp):
         self.tuning.kp = kp
@@ -212,7 +215,6 @@ class PowerCommand(QObject):
                 if self.brake_status.reaching_station:
                     self.power_command = 0
                     self.power_command_signal.emit(self.power_command)
-                    print("Reaching Station")
                     self.brake_status.apply_service_brake()
                     if current_velocity == 0.0:
                         self.brake_status.no_apply_service_brake()
@@ -224,7 +226,6 @@ class PowerCommand(QObject):
                     self.power_command_signal.emit(self.power_command)
                     self.brake_status.apply_service_brake()
                     if current_velocity < desired_velocity or current_velocity == 0.0:
-                        print("Entered Lower")
                         self.brake_status.no_apply_service_brake()
                         self.brake_status.entered_lower = False
                         self.brake_status.no_again = False
@@ -341,12 +342,9 @@ class PowerCommand(QObject):
             result = send_data_to_pi([desired_velocity, current_velocity, self.ek_current, self.max_power, self.uk_current, self.uk_previous, self.ek_previous, self.tuning.kp, self.tuning.ki, self.brake_status.station_auto_mode, self.brake_status.reaching_station, self.brake_status.entered_lower, self.brake_status.no_again, self.brake_status.driver_emergency_brake_command, self.brake_status.driver_service_brake_command, self.brake_status.manual_driver_service_brake_command])
             # print(f"Result:{result}")
             if result:
-                # Split the result string into a list of values
-                # result_list = list(map(float, result.split(',')))
-                
-                
                 # Split the result string by commas
                 result_list = result.split(',')
+                
                 # for i in range(len(result_list)):
                 #     print(f"Data Type: {type(result_list[i])}") # Everything is a string
                     
@@ -355,8 +353,6 @@ class PowerCommand(QObject):
                     result_list[i] = self.convert_element(result_list[i], i)
                     # print(f"Data Type: {type(result_list[i])}") # Everything is a string
                 
-                # Apply the conversion to each element
-                # parsed_result = [self.convert_element(el) for el in result_list]
                 
                 self.power_command, self.ek_previous, self.uk_previous, self.uk_current, self.ek_current, self.brake_status.station_auto_mode, self.brake_status.reaching_station, self.brake_status.entered_lower, self.brake_status.no_again, self.brake_status.driver_emergency_brake_command, self.brake_status.driver_service_brake_command, self.brake_status.manual_driver_service_brake_command = result_list
                 self.power_command_signal.emit(self.power_command)
@@ -369,33 +365,31 @@ class PowerCommand(QObject):
                     self.brake_status.apply_emergency_brake()
                 elif self.brake_status.driver_emergency_brake_command == False:
                     self.brake_status.no_apply_emergency_brake()
-                    
-
 
     def convert_element(self, element, index):
         if index < 5:
             try:
-                print(f"Converting element {index} '{element}' to float")
+                # print(f"Converting element {index} '{element}' to float")
                 return float(element)  # Convert the first five elements to float
             except ValueError:
-                print(f"Could not convert element {index} '{element}' to float, returning as is")
+                # print(f"Could not convert element {index} '{element}' to float, returning as is")
                 return element  # If conversion fails, return as is
         else:
             if element == ' True':
-                print(f"Converting element {index} '{element}' to True")
+                # print(f"Converting element {index} '{element}' to True")
                 return True
             elif element == ' False':
-                print(f"Converting element {index} '{element}' to False")
+                # print(f"Converting element {index} '{element}' to False")
                 return False
             else:
-                print(f"Element {index} '{element}' is neither 'True' nor 'False', returning as is")
+                # print(f"Element {index} '{element}' is neither 'True' nor 'False', returning as is")
                 return element
                        
 class SpeedControl(QObject):
     commanded_speed_signal = pyqtSignal(float)
     current_velocity_signal = pyqtSignal(float)
     
-    def __init__(self, power_class: PowerCommand, brake_status: BrakeStatus, communicator: Communicate):
+    def __init__(self, power_class: PowerCommand, brake_status: BrakeStatus, communicator: Communicate, doors: Doors):
         super().__init__()
         self.commanded_speed = 0.0
         self.setpoint_speed = 0.0
@@ -406,6 +400,7 @@ class SpeedControl(QObject):
         self.desired_velocity = 0.0
         self.power_class = power_class
         self.brake_status = brake_status
+        self.doors = doors
         self.communicator = communicator
         self.max_speed = 0.0
         self.prev_service_brake = False
@@ -453,7 +448,11 @@ class SpeedControl(QObject):
             # self.brake_status.driver_brake_status = False
             # self.brake_status.driver_service_brake_command = False
             # self.brake_status.driver_emergency_brake_command = False
-            # self.communicator.passenger_brake_command_signal.emit(False)  
+            # self.communicator.passenger_brake_command_signal.emit(False)
+            
+        if speed > 0:
+            self.doors.close_left_door()
+            self.doors.close_right_door()  
         
             
         if self.brake_status.driver_service_brake_command:
@@ -512,23 +511,23 @@ class SpeedControl(QObject):
         # # print(f"Current Speed: {self.current_velocity:.2f} m/s")
         
     def handle_commanded_speed(self, speed: float):
-        if speed == 0:
+        if speed == 0 and speed is not None:
             self.commanded_speed = 0.0
             self.desired_velocity = 0.0
             self.commanded_speed_signal.emit(self.commanded_speed)
             self.power_class.update_power_command(self.current_velocity, self.desired_velocity)
             # Brake to 0 with E-Brake
         # print(f"Commanded Speed: {speed:.2f} km/hr")
-        elif self.operation_mode == 1 and self.desired_velocity > speed / 3.6:
+        elif self.operation_mode == 1 and speed is not None and self.desired_velocity > speed / 3.6:
             self.commanded_speed = speed / 3.6
             self.commanded_speed_signal.emit(self.commanded_speed)
             self.update_setpoint_speed_calculations(speed / 3.6)
-        elif self.operation_mode == 0 and self.desired_velocity > speed / 3.6:
+        elif self.operation_mode == 0 and speed is not None and self.desired_velocity > speed / 3.6:
             self.commanded_speed = speed / 3.6
             self.commanded_speed_signal.emit(self.commanded_speed)
             self.update_setpoint_speed_auto(self.commanded_speed)
         # Only goes through this if statement one time (when the commanded speed is processed to be lower than current commanded speed)
-        elif self.commanded_speed > (speed / 3.6):
+        elif self.commanded_speed > (speed / 3.6) and speed is not None:
                 # self.brake_status.entered_lower = True
                 self.commanded_speed = speed / 3.6
                 self.commanded_speed_signal.emit(self.commanded_speed)
@@ -769,7 +768,7 @@ class Lights(QObject):
 class Position(QObject):
     commanded_authority_signal = pyqtSignal(int)
     
-    def __init__(self, doors: Doors, failure_modes: FailureModes, speed_control: SpeedControl, power_class: PowerCommand, communicator: Communicate, lights: Lights, brake_status: BrakeStatus, line: str):
+    def __init__(self, doors: Doors, failure_modes: FailureModes, speed_control: SpeedControl, power_class: PowerCommand, communicator: Communicate, lights: Lights, brake_status: BrakeStatus, line: str, clockComm: ClockComm):
         super().__init__()
         self.prev_authority = 0 # int
         self.commanded_authority = 111 + 1 - 1   # int
@@ -779,6 +778,7 @@ class Position(QObject):
         self.polarity = True   # boolean
         # I need the block number of the station so that I can query into my infrastructure array and check what the station name is of that block
         self.communicator = communicator
+        self.clockComm = clockComm
         self.door = doors
         self.failure_modes = failure_modes
         self.speed_control = speed_control
@@ -788,6 +788,7 @@ class Position(QObject):
         self.iterate = True
         self.repeat = False
         self.accept_authority = False
+        self.at_station = False
         self.line = line
         self.counter = 0
         
@@ -812,6 +813,10 @@ class Position(QObject):
             49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 52, 51, 50, 49, 48, 47, 46, 45, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35, 34, 33, 72, 73,
             74, 75, 76, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10
         ]
+        
+        self.speed_factor = 1.0
+        
+        self.clockComm.speed_factor.connect(self.update_speed_factor)
         
         if self.line == 'Green':
             self.current_block = self.green_default_path_blocks[0]  # int
@@ -838,6 +843,10 @@ class Position(QObject):
                 self.red_underground.append(entry['Infrastructure'])
                 self.red_station_door.append(entry['Station Side'])
                 self.red_speed_limit.append(entry['Speed Limit (Km/Hr)'])
+                
+    def update_speed_factor(self, speed_factor: float):
+        self.speed_factor = speed_factor
+        
         
     # Connect function for the Communicate class (Function is called every time the authority is changed OR decreased by 1)
     def handle_commanded_authority(self, authority: int):
@@ -882,7 +891,7 @@ class Position(QObject):
                     # Start a timer to check every 100 ms
                     self.timer = QTimer()
                     self.timer.timeout.connect(self.check_current)
-                    self.timer.start(100)
+                    self.timer.start(int(100 / self.speed_factor))
                     
             
             if self.line == 'Green':
@@ -895,7 +904,7 @@ class Position(QObject):
                     if self.iterate == True:
                         current_index = self.green_default_path_blocks.index(self.current_block)
                         self.current_block = self.green_default_path_blocks[current_index + 1]
-                print(f"Current Block: {self.current_block}")
+                # print(f"Current Block: {self.current_block}")
                 # self.check_current_block()
                 self.check_block_underground()
                 # self.calculate_desired_speed()
@@ -924,6 +933,7 @@ class Position(QObject):
             print("Entered check_current if statement")
             self.check_current_block()
             self.find_station_name()
+            self.at_station = True
             if self.speed_control.operation_mode == 0:
                 self.brake_status.station_auto_mode = True
             self.accept_authority = True
@@ -978,16 +988,11 @@ class Position(QObject):
                 print("No doors opened")
                 # # print("No doors opened")
                 
-            # Stop any existing timer if there's one
-            if hasattr(self, 'timer') and self.timer.isActive():
-                print("Stopping timer")
-                self.timer.stop()
-            
-            # Close doors after 60 seconds
-            print("Starting new timer")
+            # Close doors after 60 seconds and print seconds passed
+            self.seconds_passed = 0
             self.timer = QTimer(self)
-            self.timer.timeout.connect(self.close_doors)
-            self.timer.start(60000)
+            self.timer.timeout.connect(self.update_timer)
+            self.timer.start(int(1000 / self.speed_factor))
             
         elif self.line == 'Red':
             if "Left" in self.red_station_door[self.current_block] and  "Right" not in self.red_station_door[self.current_block]:
@@ -1005,14 +1010,41 @@ class Position(QObject):
                 self.door.close_right_door()
                 # # print("No doors opened")
                 
-            # Close doors after 60 seconds
+            # # Stop any existing timer if there's one
+            # if hasattr(self, 'timer') and self.timer.isActive():
+            #     print("Stopping timer")
+            #     self.timer.stop()
+                
+            # Close doors after 60 seconds and print seconds passed
+            self.seconds_passed = 0
             self.timer = QTimer(self)
-            self.timer.timeout.connect(self.close_doors)
-            self.timer.start(60000)
+            self.timer.timeout.connect(self.update_timer)
+            self.timer.start(int(1000 / self.speed_factor))
+
+    def update_timer(self):
+        print(f"Speed Factor for Train Doors: {self.speed_factor}")
+        total_seconds = 60
+        # Adjust total_seconds based on speed_factor
+        base_total_seconds = 60  # Base time for doors to remain open at speed factor 1
+        total_seconds = base_total_seconds / self.speed_factor
+
+        self.seconds_passed += 1
+        print(f"{self.seconds_passed} seconds have passed")
+        if self.seconds_passed >= total_seconds:
+            self.close_doors()
+            self.timer.stop()
+        
+        
+        # self.seconds_passed += 1
+        # print(f"{self.seconds_passed} seconds have passed")
+        # if self.seconds_passed >= total_seconds:
+        #     self.close_doors()
+        #     self.timer.stop()
 
     def close_doors(self):
         self.door.close_left_door()
         self.door.close_right_door()
+        self.at_station = False
         # self.repeat = True
         if self.speed_control.operation_mode == 0:
             self.brake_status.station_auto_mode = False
@@ -1217,7 +1249,7 @@ class TrainControllerUI(QWidget):
     train_id_signal = pyqtSignal(int)
     train_id_list_signal = pyqtSignal(list)
     
-    def __init__(self, communicator: Communicate, communicator2: Communicate2, doors: Doors, tuning: Tuning, brake_class: BrakeStatus, power_class: PowerCommand, speed_control: SpeedControl, failure_modes: FailureModes, position: Position, lights: Lights, temperature: Temperature):
+    def __init__(self, communicator: Communicate, communicator2: Communicate2, doors: Doors, tuning: Tuning, brake_class: BrakeStatus, power_class: PowerCommand, speed_control: SpeedControl, failure_modes: FailureModes, position: Position, lights: Lights, temperature: Temperature, clockComm: ClockComm):
         super().__init__()
     
         # Train ID Variables
@@ -1238,6 +1270,7 @@ class TrainControllerUI(QWidget):
         # PyqtSignal Class to communicate with the Train Model
         self.communicator = communicator
         self.communicator2 = communicator2
+        self.clockComm = clockComm
         
         # self.power_class.power_command_signal.connect(self.change_power_UI)
         
@@ -1677,12 +1710,20 @@ class TrainControllerUI(QWidget):
         # Set Main Layout
         self.setLayout(main_layout)
         
+        self.speed_factor = 1.0
+        
         # Call the update UI function to update the UI with the current values every 100ms
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_UI)
-        self.timer.start(100)
+        self.timer.start(int(10 / self.speed_factor))
         
+        self.clockComm.speed_factor.connect(self.update_speed_factor)
         
+    def update_speed_factor(self, speed_factor):
+        self.speed_factor = speed_factor
+        # Update the existing timer's interval
+        self.timer.setInterval(int(100 / self.speed_factor))
+        print(f"Speed Factor for UI Update: {self.speed_factor}")
         
     def update_UI(self):
         self.update_current_speed(self.speed_control.current_velocity)
@@ -1766,14 +1807,14 @@ class TrainControllerUI(QWidget):
             self.right_door_status.setStyleSheet("background-color: red; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
         
     def handle_right_door(self):
-        if self.speed_control.current_velocity == 0:
+        if self.speed_control.current_velocity == 0 and self.position.at_station == False:
             if self.doors.right_door:
                 self.doors.close_right_door()
             else:
                 self.doors.open_right_door()
             
     def handle_left_door(self):
-        if self.speed_control.current_velocity == 0:
+        if self.speed_control.current_velocity == 0 and self.position.at_station == False:
             if self.doors.left_door:
                 self.doors.close_left_door()
             else:
@@ -1784,7 +1825,6 @@ class TrainControllerUI(QWidget):
             if self.lights.manual_interior_lights:
                 self.lights.manual_turn_off_interior_lights()
             else:
-                # # print("Turning on interior lights")
                 self.lights.manual_turn_on_interior_lights()
             
     def handle_exterior_lights(self):
@@ -1848,18 +1888,19 @@ class TrainControllerUI(QWidget):
     def send_setpoint_speed(self):
         # 20 mph = 8.9408 m/s
         # print(f"Setpoint Speed: {float(self.setpoint_speed_edit.text()) * 0.44704}")
-        if float(self.setpoint_speed_edit.text()) * 0.44704 > self.speed_control.max_speed:
-            # Set setpoint speed input to max speed value
-            self.setpoint_speed_edit.setText(f"{self.speed_control.max_speed * 2.23694:.2f}")
-            
-        if float(self.setpoint_speed_edit.text()) * 0.44704 < self.speed_control.desired_velocity:
-            self.brake_class.entered_lower = True
-            self.speed_control.desired_velocity = float(self.setpoint_speed_edit.text()) * 0.44704
-            self.speed_control.update_setpoint_speed_calculations(float(self.setpoint_speed_edit.text()) * 0.44704)
-        else:
-            self.speed_control.desired_velocity = float(self.setpoint_speed_edit.text()) * 0.44704
-            
-            self.speed_control.update_setpoint_speed_calculations(float(self.setpoint_speed_edit.text()) * 0.44704)
+        if self.position.at_station == False:
+            if float(self.setpoint_speed_edit.text()) * 0.44704 > self.speed_control.max_speed:
+                # Set setpoint speed input to max speed value
+                self.setpoint_speed_edit.setText(f"{self.speed_control.max_speed * 2.23694:.2f}")
+                
+            if float(self.setpoint_speed_edit.text()) * 0.44704 < self.speed_control.desired_velocity:
+                self.brake_class.entered_lower = True
+                self.speed_control.desired_velocity = float(self.setpoint_speed_edit.text()) * 0.44704
+                self.speed_control.update_setpoint_speed_calculations(float(self.setpoint_speed_edit.text()) * 0.44704)
+            else:
+                self.speed_control.desired_velocity = float(self.setpoint_speed_edit.text()) * 0.44704
+                
+                self.speed_control.update_setpoint_speed_calculations(float(self.setpoint_speed_edit.text()) * 0.44704)
             
     def send_manual_mode(self):
         # Enable setpoint speed input
@@ -1884,44 +1925,18 @@ class TrainControllerUI(QWidget):
             self.brake_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
 
     def update_service_brake_status(self, brake_status: bool, manual_brake_status: bool):
+        # print(f"Brake Status: {brake_status}")
+        # print(f"Manual Brake Status: {manual_brake_status}")
         if brake_status or manual_brake_status:
             self.divet_in_service_brake_button()
         else:
             self.reset_service_brake_button_style()
             
     def update_emergency_brake_status(self, brake_status: bool):
-        if brake_status:
+        if brake_status or self.brake_class.manual_driver_emergency_brake_command:
             self.divet_in_emergency_brake_buttons()
         else:
             self.reset_emergency_brake_button_style()
-        
-        
-    ####################################################################
-    # FUNCTIONS TO HANDLE THE BACKEND LOGIC OF TRAIN CONTROLLER MODULE #
-    ####################################################################
-    
-    def write_to_train_model(self):
-        self.communicator.power_command_signal.emit(self.power_class.power_command)
-        self.communicator.service_brake_command_signal.emit(self.brake_class.driver_service_brake_command)
-        self.communicator.emergency_brake_command_signal.emit(self.brake_class.driver_emergency_brake_command) 
-        self.communicator.desired_temperature_signal.emit(self.temperature.desired_temperature)
-        self.communicator.exterior_lights_signal.emit([self.lights.interior_lights])
-        self.communicator.interior_lights_signal.emit([self.lights.exterior_lights])
-        self.communicator.left_door_signal.emit(self.doors.left_door)
-        self.communicator.right_door_signal.emit(self.doors.right_door)
-        self.communicator.announcement_signal.emit(self.position.announcement)
-    
-    def read_from_train_model(self):
-        self.communicator.current_velocity_signal.connect(self.speed_control.handle_current_velocity)
-        self.communicator.commanded_speed_signal.connect(self.speed_control.handle_commanded_speed)
-        self.communicator.commanded_authority_signal.connect(self.position.handle_commanded_authority)
-        self.communicator.engine_failure_signal.connect(self.failure_modes.handle_engine_failure)
-        self.communicator.brake_failure_signal.connect(self.failure_modes.handle_brake_failure)
-        self.communicator.signal_failure_signal.connect(self.failure_modes.handle_signal_failure)
-        self.communicator.passenger_brake_command_signal.connect(self.brake_class.handle_passenger_brake_command)
-        self.communicator.actual_temperature_signal.connect(self.temperature.update_current_temp_display)
-        self.communicator.polarity_signal.connect(self.position.handle_polarity_change)
-        
 
     ############################################
     # BRAKE DIVET FUNCTIONS FOR USER INTERFACE #
@@ -1941,13 +1956,10 @@ class TrainControllerUI(QWidget):
         
     def reset_emergency_brake_button_style(self):
         self.emergency_brake_button.setStyleSheet("border: 3px solid black; margin-left: 40px; background-color: red; color: white; font-size: 20px; font-weight: bold; padding: 50px; border-radius: 10px;")
-        # Turn the brake status to OFF
-        # self.brake_status.setText("OFF")
-        # self.brake_status.setStyleSheet("background-color: #888c8b; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
         self.reset_brake_status(self.brake_class.driver_service_brake_command, self.brake_class.driver_emergency_brake_command)
 
-    def reset_brake_status(self, service_brake: bool = False, emergency_brake: bool = False):
-        if service_brake or emergency_brake:
+    def reset_brake_status(self, service_brake: bool, emergency_brake: bool):
+        if service_brake or emergency_brake or self.brake_class.manual_driver_emergency_brake_command or self.brake_class.manual_driver_service_brake_command:
             self.brake_status.setText("ON")
             self.brake_status.setStyleSheet("background-color: #f5c842; max-width: 80px; border: 2px solid black; border-radius: 5px; padding: 3px;")
         else:

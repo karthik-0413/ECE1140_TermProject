@@ -89,8 +89,8 @@ class wayside_shell_class:
     #                    D  F   I   K  N1  N2   
     write_switch_cmd = [ 1, 1,  0,  0,  0,  0]
 
-    #                    Yard   C   D   F   G   J   K  N1  N2   O   R 
-    write_signal_cmd = [    0,  0,  1,  0,  1,  1,  0,  0,  1,  0,  1 ]
+    #                    C   D   F   G   J   K  N1  N2   O   R  Yard 
+    write_signal_cmd = [ 0,  1,  0,  1,  1,  0,  0,  1,  0,  1,  0 ]
 
     #                     E  T
     write_crossing_cmd = [0, 0]
@@ -111,7 +111,7 @@ class wayside_shell_class:
             
             self.sugg_speed_check = 1
 
-            if self.sugg_speed_check and self.sugg_authority_check and self.block_occupancy_check: #and self.maintenance_block_check and self.maintenance_switch_check:
+            if self.sugg_speed_check and self.sugg_authority_check and self.block_occupancy_check and self.maintenance_block_check and self.maintenance_switch_check:
 
                 # Update UI suggested speed and authority table
                 self.ui.shell_sugg_speed_auth_handler(self.read_sugg_speed, self.read_sugg_authority)
@@ -145,7 +145,7 @@ class wayside_shell_class:
             
             self.sugg_authority_check = 1
             
-            if self.sugg_speed_check and self.sugg_authority_check and self.block_occupancy_check: #and self.maintenance_block_check and self.maintenance_switch_check:
+            if self.sugg_speed_check and self.sugg_authority_check and self.block_occupancy_check and self.maintenance_block_check and self.maintenance_switch_check:
 
                 # Update UI suggested speed and authority table
                 self.ui.shell_sugg_speed_auth_handler(self.read_sugg_speed, self.read_sugg_authority)
@@ -245,11 +245,11 @@ class wayside_shell_class:
         self.write_block_occupancy = block_occupancy_array.copy()
 
         # Update Wayside user interface table
-        if self.read_block_occupancy:
+        if len(self.read_block_occupancy):
             
             self.block_occupancy_check = 1
             
-            if self.sugg_speed_check and self.sugg_authority_check and self.block_occupancy_check: #and self.maintenance_block_check and self.maintenance_switch_check:
+            if self.sugg_speed_check and self.sugg_authority_check and self.block_occupancy_check and self.maintenance_block_check and self.maintenance_switch_check:
 
                 # Update UI suggested speed and authority table
                 self.ui.shell_sugg_speed_auth_handler(self.read_sugg_speed, self.read_sugg_authority)
@@ -264,11 +264,13 @@ class wayside_shell_class:
                 # Call PLC Program handler functions
                 if self.plc_program_1 != None and self.plc_program_2 != None and self.plc_program_3 != None:
                     
+                    # print('Calling PLC Program read functions')
                     # Read incoming data
                     self.call_green_line_plc_1_read_handlers()
                     self.call_green_line_plc_2_read_handlers()
                     self.call_green_line_plc_3_read_handlers()
 
+                    # print("Calling PLC Program operation functions")
                     # Process incoming data
                     self.call_green_line_plc_1_operation_handlers()
                     self.call_green_line_plc_2_operation_handlers()
@@ -373,10 +375,10 @@ class wayside_shell_class:
         self.write_switch_cmd[1] = switch_cmd_array[1] # F
 
     def green_line_plc_1_signal_cmd_handler(self, signal_cmd_array):
-        self.write_signal_cmd[1] = signal_cmd_array[0]
-        self.write_signal_cmd[2] = signal_cmd_array[1]
-        self.write_signal_cmd[3] = signal_cmd_array[2]
-        self.write_signal_cmd[4] = signal_cmd_array[3]
+        self.write_signal_cmd[0] = signal_cmd_array[0]
+        self.write_signal_cmd[1] = signal_cmd_array[1]
+        self.write_signal_cmd[2] = signal_cmd_array[2]
+        self.write_signal_cmd[3] = signal_cmd_array[3]
 
     def green_line_plc_1_crossing_cmd_handler(self, crossing_cmd_bool):
         self.write_crossing_cmd[0] = crossing_cmd_bool
@@ -509,12 +511,12 @@ class wayside_shell_class:
         self.write_switch_cmd[3] = not switch_cmd_array[1] # K
 
     def green_line_plc_2_signal_cmd_handler(self, signal_cmd_array):
-        self.write_signal_cmd[0] = signal_cmd_array[0] # Yard
-        self.write_signal_cmd[5] = signal_cmd_array[1]  # J
-        self.write_signal_cmd[6] = signal_cmd_array[2]  # K
+        self.write_signal_cmd[10] = signal_cmd_array[0] # Yard
+        self.write_signal_cmd[4] = signal_cmd_array[1]  # J
+        self.write_signal_cmd[5] = signal_cmd_array[2]  # K
 
     def green_line_plc_2_crossing_cmd_handler(self, crossing_cmd_bool):
-        self.write_crossing_cmd[1] = crossing_cmd_bool
+        self.write_crossing_cmd[0] = crossing_cmd_bool
 
     def call_green_line_plc_2_read_handlers(self):
         self.green_line_plc_2_maintenance_block_handler()
@@ -607,14 +609,15 @@ class wayside_shell_class:
             self.write_cmd_authority[i] = cmd_authority_array[i-74]
 
     def green_line_plc_3_switch_cmd_handler(self, switch_cmd_array):
+        print(f'--------\nswitch_cmd_array: {switch_cmd_array[0]}, {switch_cmd_array[1]}\n--------')
         self.write_switch_cmd[4] = not switch_cmd_array[0] # N1
         self.write_switch_cmd[5] = switch_cmd_array[1] # N2
 
     def green_line_plc_3_signal_cmd_handler(self, signal_cmd_array):
-        self.write_signal_cmd[7] = signal_cmd_array[0] # N1
-        self.write_signal_cmd[10] = signal_cmd_array[1] # R
-        self.write_signal_cmd[8] = signal_cmd_array[2] # N2
-        self.write_signal_cmd[9] = signal_cmd_array[3] # O
+        self.write_signal_cmd[6] = signal_cmd_array[0] # N1
+        self.write_signal_cmd[9] = signal_cmd_array[1] # R
+        self.write_signal_cmd[7] = signal_cmd_array[2] # N2
+        self.write_signal_cmd[8] = signal_cmd_array[3] # O
 
     # No crossing commands for PLC Program 3
 
@@ -640,8 +643,6 @@ class wayside_shell_class:
     def connect_ctc_signals(self):
         self.ctc_wayside_comm_object.suggested_speed_signal.connect(self.read_sugg_speed_handler)
         self.ctc_wayside_comm_object.suggested_authority_signal.connect(self.read_sugg_authority_handler)
-        #self.ctc_wayside_comm_object.block_maintenance_signal.connect(self.read_maintenance_blocks_handler)
-        #self.ctc_wayside_comm_object.switch_signal.connect(self.read_maintenance_switch_cmd_handler)
 
     def connect_track_model_signals(self):
         self.wayside_track_comm_object.block_occupancies_signal.connect(self.read_block_occupancy_handler)
@@ -654,21 +655,7 @@ class wayside_shell_class:
 
     def write(self):
 
-        # Wayside 1 manual mode
-        if self.ui.wayside_1_operational_mode == 1:
-            self.write_switch_cmd[0] = not self.ui.ui_switches[0]
-            self.write_switch_cmd[1] = self.ui.ui_switches[1]
         
-        # Wayside 2 manual mode
-        if self.ui.wayside_2_operational_mode == 1:
-            self.write_switch_cmd[2] = self.ui.ui_switches[2]
-            self.write_switch_cmd[3] = not self.ui.ui_switches[3]
-
-        # Wayside 3 manual mode
-        if self.ui.wayside_3_operational_mode == 1:
-            self.write_switch_cmd[4] = not self.ui.ui_switches[4]
-            self.write_switch_cmd[5] = self.ui.ui_switches[5]
-
         ####################################
         #     Green Line Emit Signals
         ####################################
@@ -828,8 +815,6 @@ class wayside_shell_class:
         self.line_color = line_color
 
         # Initialize run PLC checks
-        self.maintenance_block_check = 0
-        self.maintenance_switch_check = 0
         self.block_occupancy_check = 0
         self.sugg_speed_check = 0
         self.sugg_authority_check = 0
