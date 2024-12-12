@@ -57,7 +57,7 @@ class TrainControllerShell:
                         # Only want Hardware for second Train that was dispatched
                         elif self.counter == 2:
                             # print("Hardware Train Controller is Initialized")
-                            self.create_and_add_train_controller_and_engineer_ui(False)
+                            self.create_and_add_train_controller_and_engineer_ui(True)
                             
                 elif train_id < len(self.train_controller_list):
                     self.train_counter -= 1

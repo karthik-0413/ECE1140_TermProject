@@ -13,7 +13,7 @@ class StopwatchEngine(QThread):
         self.running = False
         self.on_hold = False
         self.elapsed_seconds = 0
-        self.speed_factor = 1.0
+        self.speed_factor = 2.0
         self.mutex = QMutex()
         self.pause_condition = QWaitCondition()
         self.comm = comm
@@ -72,13 +72,13 @@ class ClockDisplay(QWidget):
         # Speed control slider
         self.speed_slider = QSlider(Qt.Orientation.Horizontal)
         self.speed_slider.setRange(0, 20)
-        self.speed_slider.setValue(1)
+        self.speed_slider.setValue(2)
         self.speed_slider.setTickPosition(QSlider.TickPosition.TicksBelow)
         self.speed_slider.setTickInterval(1)
         self.speed_slider.valueChanged.connect(self.adjust_speed)
 
         # Display for current speed
-        self.speed_label = QLabel("1.0x")
+        self.speed_label = QLabel("2.0x")
         self.speed_label.setStyleSheet("color: black;")
         
         # Arrange slider and speed label

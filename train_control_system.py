@@ -15,14 +15,16 @@ from TrackModel.track_model_ui import Ui_TrackModel
 from Resources.TrackTrainComm import TrackTrainModelComm
 from TrackModel.track_model import track_model
 from Resources.WaysideTrackComm import WaysideControllerTrackComm
+from Resources.ClockComm import ClockComm
 
 from TrackController.wayside_shell import wayside_shell_class
 
 import sys
 from time import sleep
+import datetime as dt
 
 # Upload track layout and PLC programs automatically
-debug = True
+debug = False
 
 # Function to be triggered by clock tick
 def handle_clock_tick(seconds, train_controller_shell: TrainControllerShell, train_model_data: MainWindow, track_model_backend: track_model, wayside_shell_object: wayside_shell_class, ctc_frontend: CTC_frontend):
@@ -69,6 +71,9 @@ if __name__ == '__main__':
     
     # Train Controller -> Train Controller Shell Communication
     comm6 = ControllerToShellCommunicate()
+
+    # Clock Communication
+    clock_comm = ClockComm()
     
     # Clock Communication
     clock_comm = ClockComm()
@@ -126,9 +131,10 @@ if __name__ == '__main__':
 
         # Update Station Selector
         ctc_ui.StationSelector.clear()
-        stations = ctc_ui.ctc.get_stations()
-        # print("Stations = ", stations)
-        ctc_ui.StationSelector.addItems(stations)
+        ctc_ui.stations = ctc_ui.ctc.get_stations()
+        ctc_ui.StationSelector.addItems([station[0] for station in ctc_ui.stations])
+
+        ctc_ui.updateUI()
 
     
     # Timer to update every 

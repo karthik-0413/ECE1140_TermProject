@@ -23,7 +23,9 @@ class CTC_logic():
         # Communication Buffers
         self.suggested_speed_list = []
         self.suggested_authority_list = []
-
+        self.block_maintenance_list = []
+        self.switch_list = [False, False, False, False, False, False]
+    
 
         self.train_model_communicate = train_model_communicate
         self.wayside_communicate = wayside_communicate
@@ -36,8 +38,10 @@ class CTC_logic():
         # Write all buffered information to the communicate objects
         self.wayside_communicate.suggested_speed_signal.emit(self.suggested_speed_list)
         self.wayside_communicate.suggested_authority_signal.emit(self.suggested_authority_list)
-        # print("CTC Speed list = ", [speed for speed in self.suggested_speed_list if speed is not None])
-        # print("CTC Authority list = ", [auth for auth in self.suggested_authority_list if auth is not None])
+        self.wayside_communicate.block_maintenance_signal.emit(self.block_maintenance_list)
+        self.wayside_communicate.switch_signal.emit(self.switch_list)
+        #print("CTC Speed list = ", [speed for speed in self.suggested_speed_list if speed is not None])
+        #print("CTC Authority list = ", [auth for auth in self.suggested_authority_list if auth is not None])
 
     def upload_layout_to_line(self, path_to_layout:str):
         self.line.read_excel_layout(path_to_layout)
@@ -45,23 +49,25 @@ class CTC_logic():
         # Set the lists to the correct size
         self.suggested_authority_list = [None for _ in self.line.layout]
         self.suggested_speed_list = [None for _ in self.line.layout]
+        self.block_maintenance_list = [False for _ in self.line.layout]
     
-    def upload_schedule_to_line():
-        pass
+    def upload_schedule_to_line(self, path_to_layout:str, curr_time):
+        self.line.read_excel_schedule(path_to_layout, curr_time)
 
     def add_new_train_to_line(self, destination:int, arrival_time, destination_station:str=None):
         
         # Add destinations to the train object 
         self.line.create_train(destination, arrival_time, destination_station)
-        # print("Adding train")
+        #print("Adding train")
         self.num_trains = len(self.line.train_list)
         # print("Num trains = ", self.num_trains)
 
-    def add_new_pending_train(self, destination:int, arrival_time, destination_station:str=None, depart_time:str=None):
-        self.line.add_pending_train(destination, arrival_time, destination_station, depart_time)
+    def add_new_pending_train(self, destination:int, arrival_time, destination_station:str=None):
+        self.line.add_pending_train(destination, arrival_time, destination_station)
 
     def dispatch_pending_train(self, train_id):
         self.line.dispatch_pending_train(train_id)
+        self.num_trains = len(self.line.train_list)
 
     def add_train_destination_on_line(self, train_id:int, destination:int, arrival_time, station_name:str=None):
         self.line.add_train_destination(train_id, destination, arrival_time, station_name)
@@ -87,11 +93,37 @@ class CTC_logic():
             self.line.calc_speed(train.train_id)
             self.suggested_speed_list[train.location] = train.suggested_speed
 
+    def update_block_maintenance_list(self):
+
+        self.block_maintenance_list = [False for _ in self.block_maintenance_list]
+
+        for block in self.line.layout:
+            if block.maintenance:
+                self.block_maintenance_list[block.block_number] = True
+            else:
+                self.block_maintenance_list[block.block_number] = False
+
+    def update_switch_list(self):
+        self.switch_list = []
+
+        for block in self.line.layout:
+            if block.switch_positions:
+                self.switch_list.append(block.curr_switch_position)
+
+    def test_switch(self, block_number:int):
+        block = self.line.layout[block_number]
+        if block.switch_positions:
+            if (block.maintenance and
+                self.line.layout[block.switch_positions[0]].maintenance and 
+                self.line.layout[block.switch_positions[1]].maintenance):
+                self.line.test_switch(block_number)
+
+
     def update_train_locations_list(self):
         self.line.update_train_locations()
             
-    def confirm_train_paths():
-        pass
+    def calculate_arrival_times(self):
+        self.line.calc_arrival_times()
 
     def select_line_for_maintenance(self, block_number:int):
         self.line.toggle_block_maintenance(block_number)
@@ -101,17 +133,19 @@ class CTC_logic():
         for block in self.line.layout:
             block.update_occupancy(block_occupancies[block.block_number])
 
-        self.update_train_locations_list()
+        ret = self.update_train_locations_list()
+        if not ret:
+            self.num_trains = len(self.line.train_list)
+            self.train_model_communicate.dispatch_train_signal.emit(self.num_trains)
+
         self.update_authority_list()
         self.update_suggested_speed_list()
+        self.update_block_maintenance_list()
+        self.update_switch_list()
         self.calculate_total_throughput()
 
     def calculate_total_throughput(self):
-        pass
-        #total_throughput = 0
-        #for line in self.lines:
-            #line.calculate_line_throughput()
-            #total_throughput += line.throughput
+        self.line.calculate_line_throughput()
 
     def toggle_automatic_manual(self):
         self.automatic = not self.automatic
