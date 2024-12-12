@@ -217,6 +217,8 @@ class Line():
         blocks = [block[0] for block in self.arrival_times]
 
         path = self.calc_path(start, end, end < 0)
+        if end == 16:
+            print("Path: ", path)
         start_index = -1
         for block in path:
             if block in blocks:
@@ -278,7 +280,7 @@ class Line():
         self.calc_auth(train_id)
 
     def remove_train(self, train_id):
-        self.train_list.pop(train_id)
+        self.train_list.pop(0)
 
     def add_train_destination(self, train_id, destination, arrival_time, station_name=None):
         dest = abs(destination)
@@ -375,6 +377,14 @@ class Line():
                 # print("Train location updated")
                 train.prev_location = train.location
                 train.location = next
+
+            if train.location == 57:
+                if not self.layout[train.location].occupied:
+                    self.remove_train(train.train_id)
+                    return 1
+                
+        return 0
+
 
     def get_stations(self):
         stations = []

@@ -133,7 +133,11 @@ class CTC_logic():
         for block in self.line.layout:
             block.update_occupancy(block_occupancies[block.block_number])
 
-        self.update_train_locations_list()
+        ret = self.update_train_locations_list()
+        if not ret:
+            self.num_trains = len(self.line.train_list)
+            self.train_model_communicate.dispatch_train_signal.emit(self.num_trains)
+
         self.update_authority_list()
         self.update_suggested_speed_list()
         self.update_block_maintenance_list()
