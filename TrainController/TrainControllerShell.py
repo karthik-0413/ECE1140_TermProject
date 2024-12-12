@@ -154,7 +154,7 @@ class TrainControllerShell:
         self.communicator.polarity_signal.connect(self.update_polarity)
         
     def update_commanded_speed(self, commanded_speed: list):
-        # print(f"Commanded Speed in Train Controller Shell: {commanded_speed}")
+        print(f"Commanded Speed in Train Controller Shell: {commanded_speed}")
         if len(self.train_controller_list):
             if len(commanded_speed):
                 for i in range(len(commanded_speed)):
@@ -171,9 +171,10 @@ class TrainControllerShell:
         if len(self.train_controller_list):
             if len(commanded_authority):
                 for i in range(len(commanded_authority)):
-                    if i < len(self.train_controller_list):
-                        self.train_controller_list[i].position.handle_commanded_authority(commanded_authority[i])
-                    # print(f"Commanded Authority {i + 1}: {commanded_authority}")
+                    if commanded_authority[i] is not None:
+                        if i < len(self.train_controller_list):
+                            self.train_controller_list[i].position.handle_commanded_authority(commanded_authority[i])
+                        # print(f"Commanded Authority {i + 1}: {commanded_authority}")
                     
     def update_current_velocity(self, current_velocity: list):
         if len(self.train_controller_list):

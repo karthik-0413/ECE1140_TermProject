@@ -1,5 +1,6 @@
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtCore import QObject
+import csv
 
 class Ui_TrackModel(QObject):
         def __init__(self):
@@ -30,37 +31,83 @@ class Ui_TrackModel(QObject):
                 self.heater_status = False
                 self.temperature = 0
 
+                self.greenCoordinates = []
+                self.all_blocks = []
+
         def update_block_table(self):
                 self.update_functional_list()
                 self.update_occupancy_list()
-                self.update_switch_list()
+                self.update_station_list()
                 self.update_crossing_list()
-                self.update_lights_list()
-                self.update_num_people_at_station_list()
-
-        def update_block_info_table(self):
-                selectedItems = self.blockTable.selectedItems()
-                if not selectedItems:
-                        return
-                selectedRow = selectedItems[0].row()
-
-                self.blockInfo.setRowCount(10)
+                # self.update_lights_list()
+                # self.update_num_people_at_station_list()
+        
+        def initialize_block_info_table(self): 
+                self.blockInfo.setRowCount(14)
                 self.blockInfo.setColumnCount(1)
                 self.blockInfo.setVerticalHeaderLabels([
                 "Line", "Section", "Number", "Length", "Grade", "Speed Limit", 
-                "Infrastructure", "Elevation", "Cumulative Elevation", "Side"
+                "Infrastructure", "Elevation", "Cumulative Elevation", "Side", "Switch State", "Light", "People at Station", "Failure"
                 ])
-                self.blockInfo.setItem(0, 0, QtWidgets.QTableWidgetItem(self.block_line_list[selectedRow]))
-                self.blockInfo.setItem(1, 0, QtWidgets.QTableWidgetItem(self.block_section_list[selectedRow]))
-                self.blockInfo.setItem(2, 0, QtWidgets.QTableWidgetItem(str(self.block_number_list[selectedRow])))
-                self.blockInfo.setItem(3, 0, QtWidgets.QTableWidgetItem(str(self.block_length_list[selectedRow])))
-                self.blockInfo.setItem(4, 0, QtWidgets.QTableWidgetItem(str(self.block_grade_list[selectedRow])))
-                self.blockInfo.setItem(5, 0, QtWidgets.QTableWidgetItem(str(self.block_speed_limit_list[selectedRow])))
-                self.blockInfo.setItem(6, 0, QtWidgets.QTableWidgetItem(self.block_infrastructure_list[selectedRow]))
-                self.blockInfo.setItem(7, 0, QtWidgets.QTableWidgetItem(str(self.block_elevation_list[selectedRow])))
-                self.blockInfo.setItem(8, 0, QtWidgets.QTableWidgetItem(str(self.block_cumulative_elevation_list[selectedRow])))
-                self.blockInfo.setItem(9, 0, QtWidgets.QTableWidgetItem(str(self.block_side_list[selectedRow])))
+                self.blockInfo.setItem(0, 0, QtWidgets.QTableWidgetItem(""))
+                self.blockInfo.setItem(1, 0, QtWidgets.QTableWidgetItem(""))
+                self.blockInfo.setItem(2, 0, QtWidgets.QTableWidgetItem(""))
+                self.blockInfo.setItem(3, 0, QtWidgets.QTableWidgetItem(""))
+                self.blockInfo.setItem(4, 0, QtWidgets.QTableWidgetItem(""))
+                self.blockInfo.setItem(5, 0, QtWidgets.QTableWidgetItem(""))
+                self.blockInfo.setItem(6, 0, QtWidgets.QTableWidgetItem(""))
+                self.blockInfo.setItem(7, 0, QtWidgets.QTableWidgetItem(""))
+                self.blockInfo.setItem(8, 0, QtWidgets.QTableWidgetItem(""))
+                self.blockInfo.setItem(9, 0, QtWidgets.QTableWidgetItem(""))
+                self.blockInfo.setItem(10, 0, QtWidgets.QTableWidgetItem(""))
+                self.blockInfo.setItem(11, 0, QtWidgets.QTableWidgetItem(""))
+                self.blockInfo.setItem(12, 0, QtWidgets.QTableWidgetItem(""))
+                self.blockInfo.setItem(13, 0, QtWidgets.QTableWidgetItem(""))
 
+        def update_block_info_table(self):
+                selected_items = self.blockTable.selectedItems()
+                if selected_items:
+                        selected_block_number = selected_items[0].text()
+                        for block in self.all_blocks:
+                                if str(block.number) == selected_block_number:
+                                        self.blockInfo.setItem(0, 0, QtWidgets.QTableWidgetItem(block.line))
+                                        self.blockInfo.setItem(1, 0, QtWidgets.QTableWidgetItem(block.section))
+                                        self.blockInfo.setItem(2, 0, QtWidgets.QTableWidgetItem(str(block.number)))
+                                        self.blockInfo.setItem(3, 0, QtWidgets.QTableWidgetItem(str(block.length)))
+                                        self.blockInfo.setItem(4, 0, QtWidgets.QTableWidgetItem(str(block.grade)))
+                                        self.blockInfo.setItem(5, 0, QtWidgets.QTableWidgetItem(str(block.speedLimit)))
+                                        self.blockInfo.setItem(6, 0, QtWidgets.QTableWidgetItem(block.infrastructure))
+                                        self.blockInfo.setItem(7, 0, QtWidgets.QTableWidgetItem(str(block.elevation)))
+                                        self.blockInfo.setItem(8, 0, QtWidgets.QTableWidgetItem(str(block.cumulativeElevation)))
+                                        self.blockInfo.setItem(9, 0, QtWidgets.QTableWidgetItem(block.side))
+                                        if "SWITCH" in block.infrastructure:
+                                                for switch_state in self.switch_list:  
+                                                        if switch_state[1] == block.number:                                        
+                                                                self.blockInfo.setItem(10, 0, QtWidgets.QTableWidgetItem(switch_state[0]))
+                                        else:
+                                                self.blockInfo.setItem(10, 0, QtWidgets.QTableWidgetItem("N/A"))
+                                        if "STATION" in block.infrastructure:
+                                                for people in self.num_people_at_station_list:
+                                                        if people[1] == block.number:
+                                                                self.blockInfo.setItem(12, 0, QtWidgets.QTableWidgetItem(str(people[0])))
+                                        else:
+                                                self.blockInfo.setItem(12, 0, QtWidgets.QTableWidgetItem("N/A"))
+                                        
+                                        if "LIGHT" in block.infrastructure:
+                                                for light_state in self.lights_list:
+                                                        if light_state[1] == block.number:
+                                                                if light_state[0] == "red":
+                                                                        self.blockInfo.item(11, 0).setBackground(QtGui.QColor("red"))
+                                                                else:
+                                                                        self.blockInfo.item(11, 0).setBackground(QtGui.QColor("green"))
+                                        else: 
+                                                self.blockInfo.item(11, 0).setBackground(QtGui.QColor("lightgrey"))
+
+
+
+                                        break
+
+                
         def update_heater_status(self):
                 """if the rail temperature drops below 32 degrees, the heater turns on. default is off"""
                 self.update_temp()
@@ -72,64 +119,74 @@ class Ui_TrackModel(QObject):
                         self.heaterStatus.setStyleSheet("font: 10pt \"Times New Roman\";\nbackground-color: rgb(68, 68, 68);\ncolor: rgb(0, 0, 0);")
 
         def update_temp(self):
-                self.temperature = self.tempStepper.value()   
+                self.temperature = self.tempStepper.value()    
 
         def update_functional_list(self):
                 """updates the ui with the functional status of each block"""
-                for i in range(0, len(self.functional_list)):
-                        if self.functional_list[i] == 1:
-                                self.blockTable.setItem(i, 0, QtWidgets.QTableWidgetItem("Functional"))
-
-                        elif self.functional_list[i] == 2:
-                                self.blockTable.setItem(i, 0, QtWidgets.QTableWidgetItem("Circuit Failure"))
-
-                        elif self.functional_list[i] == 3:
-                                self.blockTable.setItem(i, 0, QtWidgets.QTableWidgetItem("Power Failure"))
-                        
-                        elif self.functional_list[i] == 4:
-                                self.blockTable.setItem(i, 0, QtWidgets.QTableWidgetItem("Rail Failure"))
+                for block in self.all_blocks:
+                        if (block.functional == False):
+                                self.blockTable.item(block.table_row, block.table_column).setBackground(QtGui.QColor("red"))
+                        else:
+                                self.blockTable.item(block.table_row, block.table_column).setBackground(QtGui.QColor("green"))
                         
         def update_occupancy_list(self):
-                for i in range(0, len(self.occupancy_list)):
-                        if self.occupancy_list[i] == 1:
-                                self.blockTable.setItem(i, 1, QtWidgets.QTableWidgetItem("Occupied"))
+                """updates the ui with the occupational status of each block"""
+                for block in self.all_blocks:
+                        if (block.occupied and block.functional):
+                                self.blockTable.item(block.table_row, block.table_column).setBackground(QtGui.QColor("blue"))
+                        elif (not block.functional):
+                                self.blockTable.item(block.table_row, block.table_column).setBackground(QtGui.QColor("red"))
                         else:
-                                self.blockTable.setItem(i, 1, QtWidgets.QTableWidgetItem("Vacant"))
-
-        def update_switch_list(self):
-                for switch_state in self.switch_list:        
-                        self.blockTable.setItem(switch_state[1], 2, QtWidgets.QTableWidgetItem(switch_state[0]))
+                                self.blockTable.item(block.table_row, block.table_column).setBackground(QtGui.QColor("green"))  
 
         def update_crossing_list(self):
-                for crossing_state in self.crossing_list:
-                        self.blockTable.setItem(crossing_state[1], 3, QtWidgets.QTableWidgetItem(crossing_state[0])) # open or closed
+                for block in self.all_blocks:
+                        if "RAILWAY CROSSING" in block.infrastructure:
+                                for crossing_state in self.crossing_list:
+                                        if (crossing_state[1] == block.number) and (block.functional) and (not block.occupied) and crossing_state[0] == "Open":
+                                                block.occupied = True
+                                                self.blockTable.item(block.table_row, block.table_column).setBackground(QtGui.QColor("black"))   
+
+        def update_station_list(self):
+                for block in self.all_blocks:
+                        if ("STATION" in block.infrastructure) and (not block.occupied) and (block.functional):
+                                self.blockTable.item(block.table_row, block.table_column).setBackground(QtGui.QColor("violet")) 
 
         def update_lights_list(self):
-                for light_state in self.lights_list:
-                        self.blockTable.setItem(light_state[1], 4, QtWidgets.QTableWidgetItem(None))
-                        self.blockTable.item(light_state[1], 4).setBackground(QtGui.QColor(str(light_state[0]))) # red or green
+                for block in self.all_blocks:
+                        if "LIGHT" in block.infrastructure:
+                                for light_state in self.lights_list:
+                                        if light_state[1] == block.number:
+                                                if light_state[0] == "Red":
+                                                        self.blockTable.item(block.table_row, block.table_column).setForeground(QtGui.QColor("red"))
+                                                        self.blockTable.item(block.table_row, block.table_column).setFont(QtGui.QFont("Times New Roman", 10, QtGui.QFont.Weight.Bold))
+                                                        self.blockTable.item(block.table_row, block.table_column).setTextAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+                                                        self.blockTable.item(block.table_row, block.table_column).setStyleSheet("border: 5px solid red;")
+                                                else:
+                                                        self.blockTable.item(block.table_row, block.table_column).setForeground(QtGui.QColor("green"))
+                                                        self.blockTable.item(block.table_row, block.table_column).setFont(QtGui.QFont("Times New Roman", 10, QtGui.QFont.Weight.Bold))
+                                                        self.blockTable.item(block.table_row, block.table_column).setTextAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+                                                        self.blockTable.item(block.table_row, block.table_column).setStyleSheet("border: 5px solid green;")
 
-        def update_num_people_at_station_list(self):
-                for people in self.num_people_at_station_list:
-                        self.blockTable.setItem(people[1], 5, QtWidgets.QTableWidgetItem(str(people[0])))
-                
-        def initialize_block_table(self, num_blocks: int):
-                self.blockTable.setRowCount(num_blocks)
-                # glorious king zach changing the headers of the rows
-                labels = []
-                for i in range(num_blocks):
-                        if i == 0:
-                                labels.append("Yard")
-
-                        else:
-                                labels.append(f"{i}")
-
-                self.blockTable.setVerticalHeaderLabels(labels)
+        def initialize_map(self):
+                self.blockTable.setColumnCount(38)
+                self.blockTable.setRowCount(40)
+                self.blockTable.horizontalHeader().setDefaultSectionSize(25)
+                self.blockTable.verticalHeader().setDefaultSectionSize(25)
+                self.blockTable.setStyleSheet("font: 10pt \"Times New Roman\";\ncolor: rgb(255, 255, 255);\ntext-align: center;")
+                for i in range(38):
+                        for j in range(40):
+                                self.blockTable.setItem(j, i, QtWidgets.QTableWidgetItem())
+                                self.blockTable.item(j, i).setBackground(QtGui.QColor("white"))
+                for coord in self.greenCoordinates:
+                        num, col, row = coord
+                        self.blockTable.setItem(row, col, QtWidgets.QTableWidgetItem(str(num)))
+                        self.blockTable.item(row, col).setBackground(QtGui.QColor("green"))      
 
         def setupUi(self, TrackModel):
                 TrackModel.setObjectName("TrackModel")
                 TrackModel.setWindowModality(QtCore.Qt.WindowModality.WindowModal)
-                TrackModel.resize(890, 859)
+                TrackModel.resize(890, 860)
                 sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Preferred)
                 sizePolicy.setHorizontalStretch(0)
                 sizePolicy.setVerticalStretch(0)
@@ -160,8 +217,6 @@ class Ui_TrackModel(QObject):
                 self.verticalLayout_3.setObjectName("verticalLayout_3")
                 self.blockInfo = QtWidgets.QTableWidget(parent=self.trackLayout_header)
                 self.blockInfo.setObjectName("blockInfo")
-                self.blockInfo.setColumnCount(0)
-                self.blockInfo.setRowCount(0)
                 self.verticalLayout_3.addWidget(self.blockInfo)
                 self.murphyControls = QtWidgets.QGroupBox(parent=self.trackLayout_header)
                 self.murphyControls.setObjectName("murphyControls")
@@ -262,28 +317,6 @@ class Ui_TrackModel(QObject):
                 self.gridLayout_14.addWidget(self.tab1Label, 0, 0, 2, 4)
                 self.blockTable = QtWidgets.QTableWidget(parent=self.tab)
                 self.blockTable.setObjectName("blockTable")
-                self.blockTable.setColumnCount(10)
-                self.blockTable.setRowCount(0)
-                item = QtWidgets.QTableWidgetItem()
-                self.blockTable.setHorizontalHeaderItem(0, item)
-                item = QtWidgets.QTableWidgetItem()
-                self.blockTable.setHorizontalHeaderItem(1, item)
-                item = QtWidgets.QTableWidgetItem()
-                self.blockTable.setHorizontalHeaderItem(2, item)
-                item = QtWidgets.QTableWidgetItem()
-                self.blockTable.setHorizontalHeaderItem(3, item)
-                item = QtWidgets.QTableWidgetItem()
-                self.blockTable.setHorizontalHeaderItem(4, item)
-                item = QtWidgets.QTableWidgetItem()
-                self.blockTable.setHorizontalHeaderItem(5, item)
-                item = QtWidgets.QTableWidgetItem()
-                self.blockTable.setHorizontalHeaderItem(6, item)
-                item = QtWidgets.QTableWidgetItem()
-                self.blockTable.setHorizontalHeaderItem(7, item)
-                item = QtWidgets.QTableWidgetItem()
-                self.blockTable.setHorizontalHeaderItem(8, item)
-                item = QtWidgets.QTableWidgetItem()
-                self.blockTable.setHorizontalHeaderItem(9, item)
                 self.gridLayout_14.addWidget(self.blockTable, 3, 0, 2, 1)
                 self.tabs.addTab(self.tab, "")
                 self.tab_2 = QtWidgets.QWidget()
@@ -420,27 +453,10 @@ class Ui_TrackModel(QObject):
                 self.retranslateUi(TrackModel)
                 self.tabs.setCurrentIndex(0)
                 QtCore.QMetaObject.connectSlotsByName(TrackModel)
-
-                # self.blockTable.setRowCount(151)
-
-                # # glorious king zach changing the headers of the rows
-                # labels = []
-                # for i in range(len(151)):
-                #         if i == 0:
-                #                 labels.append("Yard")
-
-                #         else:
-                #                 labels.append(f"{i}")
-
-                # self.blockTable.setVerticalHeaderLabels(labels)
-
-                headers = ["Functional", "Occupied", "Switch State", "Crossing State", "Light State", "People at Station"]
-                self.blockTable.setColumnCount(len(headers))
-                self.blockTable.setHorizontalHeaderLabels(headers)
-
+        
         def retranslateUi(self, TrackModel):
                 _translate = QtCore.QCoreApplication.translate
-                TrackModel.setWindowTitle(_translate("TrackModel", "MainWindow"))
+                TrackModel.setWindowTitle(_translate("TrackModel", "Track Model"))
                 self.murphyControls.setTitle(_translate("TrackModel", "Murphy\'s Controls"))
                 self.circuitFailureLabel.setText(_translate("TrackModel", "Circuit Failure: Block"))
                 self.breakStatus1.setText(_translate("TrackModel", "BREAK"))
@@ -453,26 +469,6 @@ class Ui_TrackModel(QObject):
                 self.tempLabel.setText(_translate("TrackModel", "Rail Temperature"))
                 self.uploadButton.setText(_translate("TrackModel", "Upload New Layout"))
                 self.tab1Label.setText(_translate("TrackModel", "Track Layout"))
-                item = self.blockTable.horizontalHeaderItem(0)
-                item.setText(_translate("TrackModel", "Line"))
-                item = self.blockTable.horizontalHeaderItem(1)
-                item.setText(_translate("TrackModel", "Section"))
-                item = self.blockTable.horizontalHeaderItem(2)
-                item.setText(_translate("TrackModel", "Number"))
-                item = self.blockTable.horizontalHeaderItem(3)
-                item.setText(_translate("TrackModel", "Length"))
-                item = self.blockTable.horizontalHeaderItem(4)
-                item.setText(_translate("TrackModel", "Grade"))
-                item = self.blockTable.horizontalHeaderItem(5)
-                item.setText(_translate("TrackModel", "Speed Limit"))
-                item = self.blockTable.horizontalHeaderItem(6)
-                item.setText(_translate("TrackModel", "Infrastructure"))
-                item = self.blockTable.horizontalHeaderItem(7)
-                item.setText(_translate("TrackModel", "Elevation"))
-                item = self.blockTable.horizontalHeaderItem(8)
-                item.setText(_translate("TrackModel", "Cumulative Elevation"))
-                item = self.blockTable.horizontalHeaderItem(9)
-                item.setText(_translate("TrackModel", "Occupancy"))
                 self.tabs.setTabText(self.tabs.indexOf(self.tab), _translate("TrackModel", "Track Layout"))
                 item = self.passInfoTable.verticalHeaderItem(0)
                 item.setText(_translate("TrackModel", "Block 1"))
@@ -522,21 +518,3 @@ class Ui_TrackModel(QObject):
                 self.groupBox.setTitle(_translate("TrackModel", "Crossing Commands"))
                 self.crossingStatus.setText(_translate("TrackModel", "Toggle"))
                 self.tabs.setTabText(self.tabs.indexOf(self.tab_2), _translate("TrackModel", "Testbench"))
-
-        def initializa_block_info_table(self):
-                self.blockInfo.setRowCount(10)
-                self.blockInfo.setColumnCount(1)
-                self.blockInfo.setVerticalHeaderLabels([
-                "Line", "Section", "Number", "Length", "Grade", "Speed Limit", 
-                "Infrastructure", "Elevation", "Cumulative Elevation", "Side"
-                ])
-                self.blockInfo.setItem(0, 0, QtWidgets.QTableWidgetItem(""))
-                self.blockInfo.setItem(1, 0, QtWidgets.QTableWidgetItem(""))
-                self.blockInfo.setItem(2, 0, QtWidgets.QTableWidgetItem(""))
-                self.blockInfo.setItem(3, 0, QtWidgets.QTableWidgetItem(""))
-                self.blockInfo.setItem(4, 0, QtWidgets.QTableWidgetItem(""))
-                self.blockInfo.setItem(5, 0, QtWidgets.QTableWidgetItem(""))
-                self.blockInfo.setItem(6, 0, QtWidgets.QTableWidgetItem(""))
-                self.blockInfo.setItem(7, 0, QtWidgets.QTableWidgetItem(""))
-                self.blockInfo.setItem(8, 0, QtWidgets.QTableWidgetItem(""))
-                self.blockInfo.setItem(9, 0, QtWidgets.QTableWidgetItem(""))
