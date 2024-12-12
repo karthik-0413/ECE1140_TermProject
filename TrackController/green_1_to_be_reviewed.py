@@ -525,10 +525,9 @@ class green_line_plc_1_class:
 
     # Update crossing command
     def update_crossing_cmd(self):
-        # print('Section E Overall Occ:', self.sec_array[4].overall_occupancy)
+        
         # Check section E occupancy
         if self.sec_array[4].overall_occupancy:
-            # print('in crossing if statement')
             self.write_cross_cmd_array[0] = 1
         else:
             self.write_cross_cmd_array[0] = 0

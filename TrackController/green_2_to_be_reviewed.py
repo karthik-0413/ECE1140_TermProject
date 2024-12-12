@@ -418,7 +418,7 @@ class green_line_plc_2_class:
             self.write_signal_cmd_array[1] = 1 # Section J
 
         # Signal for Section K
-        self.write_signal_cmd_array[2] = 0 # Default signal
+        self.write_signal_cmd_array[2] = 1 # Default signal
 
     # Update crossing command
     def update_crossing_cmd(self):
