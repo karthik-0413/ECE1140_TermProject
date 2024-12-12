@@ -7,6 +7,7 @@ from CTC_Office.CTC_logic import CTC_logic
 from Resources.CTCWaysideComm import CTCWaysideControllerComm
 from Resources.CTCTrain import CTCTrain
 from Resources.ClockComm import ClockComm
+from Resources.ClockComm import ClockComm
 
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtWidgets import QApplication, QFileDialog

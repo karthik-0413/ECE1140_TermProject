@@ -6,18 +6,20 @@ import random  # For simulating passenger departures
 from Resources.TrainTrainControllerComm import TrainTrainController
 from Resources.TrackTrainComm import TrackTrainModelComm
 from Resources.CTCTrain import CTCTrain
+from Resources.Clock import ClockComm
 
 class TrainData(QObject):
     """Class representing the data and state of all trains."""
     data_changed = pyqtSignal()
     announcement = pyqtSignal(list)  # List of announcements for all trains
 
-    def __init__(self, tc_communicate: TrainTrainController, tm_communicate: TrackTrainModelComm, ctc_communicate: CTCTrain):
+    def __init__(self, tc_communicate: TrainTrainController, tm_communicate: TrackTrainModelComm, ctc_communicate: CTCTrain, clockComm: ClockComm):
         super().__init__()
 
         self.tc_communicate = tc_communicate
         self.tm_communicate = tm_communicate
         self.ctc_communicate = ctc_communicate
+        self.clockComm = clockComm
 
         # List to store data for each train
         self.train_count = 0  # Initial train count
@@ -103,18 +105,35 @@ class TrainData(QObject):
         # Read from Train Controller and Track Model
         self.read_from_trainController_trackModel()
         self.read_from_ctc()
+        self.speed_factor = 1.0
+        
+        self.clockComm.speed_factor.connect(self.update_speed_factor)
 
         # Start periodic train updates
-        self.timer = QTimer()
-        self.timer.timeout.connect(self.update_train_state)
-        self.timer.start(500)  # Update every 0.1 second
+        self.update_train_state_2()
 
         # Start train updates
         self.start_train_updates()
+        
+    def update_speed_factor(self, speed_factor):
+        self.speed_factor = speed_factor
+        
+        # Start periodic train updates
+        self.update_train_state_2()
+
+        # Start train updates
+        self.start_train_updates()
+        
+    def update_train_state_2(self):
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.update_train_state)
+        self.timer.start(int(100 / self.speed_factor))  # Update every 0.1 second
+        # print(f"Speed Factor for Train Update 2: {self.speed_factor}")
 
     def initialize_train(self):
         """Initialize data for a new train."""
-        self.cabin_temperature.append(78)  # Fahrenheit
+        # Append default values for a new train
+        self.cabin_temperature.append(65)  # Fahrenheit
         self.maximum_capacity.append(222)
         self.passenger_count.append(100)
         self.crew_count.append(2)
@@ -134,7 +153,7 @@ class TrainData(QObject):
 
         # Train Control Input Variables
         self.commanded_power.append(0)  # kW
-        self.commanded_speed_tc.append(0)  # km/h from Track Model
+        self.commanded_speed_tc.append(None)  # km/h from Track Model
         self.commanded_speed.append(0)     # Convert km/h to m/s
         self.commanded_speed_UI.append(0)  # Convert km/h to mph
         self.authority.append(20)           # authority in blocks
@@ -146,7 +165,7 @@ class TrainData(QObject):
         self.beacon.append("")
 
         # Cabin Control Variables
-        self.desired_temperature.append(76)
+        self.desired_temperature.append(65)
         self.train_left_door.append(False)
         self.train_right_door.append(False)
         self.advertisement.append("Picture1")
@@ -347,10 +366,10 @@ class TrainData(QObject):
 
     def set_desired_temperature(self, temp_list):
         """Handle desired temperature signals from Train Controller."""
-        if len(temp_list) < max(1, self.train_count):
-            temp_list = temp_list + [0] * (max(1, self.train_count) - len(temp_list))
+        # if len(temp_list) < max(1, self.train_count):
+        #     temp_list = temp_list + [0] * (max(1, self.train_count) - len(temp_list))
         self.desired_temperature = temp_list
-        self.cabin_temperature = temp_list  # Assuming desired temp sets cabin temp
+        # self.cabin_temperature = temp_list  # Assuming desired temp sets cabin temp
         self.data_changed.emit()
 
     def set_exterior_light(self, state_list):
@@ -398,25 +417,21 @@ class TrainData(QObject):
     def set_track_commanded_speed(self, speed_list):
         """Handle commanded speed signals from Track Model."""
         # Ensure the list is long enough
-        if len(speed_list):
-            if speed_list[0] == 0:
-                self.commanded_speed_tc[0] = 0
-                # print(f"Commanded Speed in Train Model is 0 - : {self.commanded_speed_tc}")
-            elif len(speed_list) < max(1, self.train_count):
-                speed_list = speed_list + [0] * (max(1, self.train_count) - len(speed_list))
-            self.commanded_speed_tc = speed_list
-            # print(f"Commanded Speed in Train Model: {self.commanded_speed_tc}")
-            # Convert km/h to m/s for calculations
-            self.commanded_speed = [speed / 3.6 for speed in speed_list]  #UUU
-            # Convert m/s to mph for UI
-            self.commanded_speed_UI = [speed * 2.23694 for speed in self.commanded_speed]
-            self.data_changed.emit()
+        """ if len(speed_list) < max(1, self.train_count):
+            speed_list = speed_list + [0] * (max(1, self.train_count) - len(speed_list)) """
+        self.commanded_speed_tc = speed_list
+        # print(f"Commanded Speed in Train Model: {self.commanded_speed_tc}")
+        # Convert km/h to m/s for calculations
+        self.commanded_speed = [speed / 3.6 for speed in speed_list]  #UUU
+        # Convert m/s to mph for UI
+        self.commanded_speed_UI = [speed * 2.23694 for speed in self.commanded_speed]
+        self.data_changed.emit()
 
     def set_track_commanded_authority(self, authority_list):
         """Handle commanded authority signals from Track Model."""
         # Ensure the list is long enough
-        if len(authority_list) < max(1, self.train_count):
-            authority_list = authority_list + [0] * (max(1, self.train_count) - len(authority_list))
+        """ if len(authority_list) < max(1, self.train_count):
+            authority_list = authority_list + [0] * (max(1, self.train_count) - len(authority_list)) """
         self.authority = authority_list
         self.commanded_authority = authority_list #UUU
         self.data_changed.emit()
@@ -471,7 +486,7 @@ class TrainData(QObject):
                 # Door has just been opened
                 # Generate a random number of passengers to alight (<= current passengers)
                 if self.passenger_count[index] > 0:
-                    passengers_alighting = random.randint(0, self.passenger_count[index])
+                    passengers_alighting = random.randint(-100, self.passenger_count[index])
                 else:
                     passengers_alighting = 0
                 self.passengers_leaving_list[index] = passengers_alighting
@@ -539,7 +554,9 @@ class TrainData(QObject):
         """Start a timer to periodically update train states."""
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_train_state)
-        self.timer.start(500)  # Update every 1 second
+        self.timer.start(int(1000 / self.speed_factor))  # Update every 1 second
+        # print out setinterval for timer
+        # print(f"Speed Factor for Train Update 1: {self.speed_factor}")
 
     def update_failure_button(self, train_index, label, state):
         """Update the failure status based on the label."""
