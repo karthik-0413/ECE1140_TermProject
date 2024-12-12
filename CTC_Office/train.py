@@ -8,7 +8,7 @@ import datetime as dt
 
 
 class Train(): 
-    def __init__(self, train_id, destination, arrival_time, destination_station=None, departure_time=None):
+    def __init__(self, train_id, destination, arrival_time, destination_station=None):
         """Initialize a train object
         destination is the block number
         destination_station is the station name
@@ -19,9 +19,8 @@ class Train():
         self.location = 0
         self.prev_location = -1
 
-        self.departure_time = departure_time
+        #self.departure_time = departure_time
         self.departed = False
-
         self.destinations = []
         # self.second_time = Does this destination refer to the first or second time the station has been reached?
         self.second_time = []
@@ -61,8 +60,11 @@ class Train():
             self.destinations.pop(index)
             self.destination_strings.pop(index)
             self.path.pop(index)
-            self.arrival_times.pop(index)
             if len(self.destinations) == 0:
                 self.to_yard = True
                 self.destinations.append(0)
                 self.destination_strings.append("Yard")
+
+            else:
+                self.arrival_times.pop(index)
+                self.second_time.pop(index)

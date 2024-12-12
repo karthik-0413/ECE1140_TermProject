@@ -1,5 +1,6 @@
 from enum import Enum
 import re
+import math
 
 class Signal(Enum):
     RED = 1
@@ -13,7 +14,8 @@ class Block():
                 block_length:str,
                 speed_limit:str,
                 infrastructure:str,
-                next_block_string:str
+                next_block_string:str,
+                station_time:str
                 ):
 
         self.section = str(section)
@@ -23,10 +25,13 @@ class Block():
         self.infrastructure = str(infrastructure)
         self.next_block_string = str(next_block_string)
 
-        self.ideal_traverse_time = int((self.block_length / (self.speed_limit * 1000)) * 3600)
+        self.min_time_to_station = None
+
+        if not math.isnan(float(station_time)):
+            self.min_time_to_station = int(station_time)
+
 
         self.station_name = None
-
         self.occupied = False
         self.failure = False
         self.maintenance = False

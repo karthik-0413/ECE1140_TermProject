@@ -24,7 +24,7 @@ class CTC_logic():
         self.suggested_speed_list = []
         self.suggested_authority_list = []
         self.block_maintenance_list = []
-        self.switch_list = []
+        self.switch_list = [False, False, False, False, False, False]
     
 
         self.train_model_communicate = train_model_communicate
@@ -38,6 +38,8 @@ class CTC_logic():
         # Write all buffered information to the communicate objects
         self.wayside_communicate.suggested_speed_signal.emit(self.suggested_speed_list)
         self.wayside_communicate.suggested_authority_signal.emit(self.suggested_authority_list)
+        self.wayside_communicate.block_maintenance_signal.emit(self.block_maintenance_list)
+        self.wayside_communicate.switch_signal.emit(self.switch_list)
         #print("CTC Speed list = ", [speed for speed in self.suggested_speed_list if speed is not None])
         #print("CTC Authority list = ", [auth for auth in self.suggested_authority_list if auth is not None])
 
@@ -60,8 +62,8 @@ class CTC_logic():
         self.num_trains = len(self.line.train_list)
         # print("Num trains = ", self.num_trains)
 
-    def add_new_pending_train(self, destination:int, arrival_time, destination_station:str=None, depart_time:str=None):
-        self.line.add_pending_train(destination, arrival_time, destination_station, depart_time)
+    def add_new_pending_train(self, destination:int, arrival_time, destination_station:str=None):
+        self.line.add_pending_train(destination, arrival_time, destination_station)
 
     def dispatch_pending_train(self, train_id):
         self.line.dispatch_pending_train(train_id)
@@ -120,8 +122,8 @@ class CTC_logic():
     def update_train_locations_list(self):
         self.line.update_train_locations()
             
-    def confirm_train_paths():
-        pass
+    def calculate_arrival_times(self):
+        self.line.calc_arrival_times()
 
     def select_line_for_maintenance(self, block_number:int):
         self.line.toggle_block_maintenance(block_number)
@@ -134,6 +136,7 @@ class CTC_logic():
         self.update_train_locations_list()
         self.update_authority_list()
         self.update_suggested_speed_list()
+        self.calculate_arrival_times()
         self.update_block_maintenance_list()
         self.update_switch_list()
         self.calculate_total_throughput()

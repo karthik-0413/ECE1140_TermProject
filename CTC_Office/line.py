@@ -12,6 +12,7 @@ from CTC_Office.train import Train
 class Line():
     def __init__(self, line_name:str):
         self.layout = []
+        self.arrival_times = []
         self.train_list = []
         self.throughput = 0
 
@@ -33,20 +34,20 @@ class Line():
                     block_length=row['Block Length (m)'],
                     speed_limit=row['Speed Limit (Km/Hr)'],
                     infrastructure=row['Infrastructure'],
-                    next_block_string=row['Next Block']
+                    next_block_string=row['Next Block'],
+                    station_time=row['Min Time To Station']
                 )
                 self.layout.append(block)
                 #print(f"Block number: {block.block_number}  Block length: {block.block_length}  Section: {block.section}  Infrastructure: {block.infrastructure}")
+        
+        self.calc_arrival_times()
 
     def read_excel_schedule():
         pass
 
     def calc_auth(self, train_id:int):
 
-
-
         if self.train_list:
-
             train_index = [train.train_id for train in self.train_list].index(train_id)
             
             if self.train_list[train_index].destinations or self.train_list[train_index].to_yard:
@@ -55,7 +56,7 @@ class Line():
                 end = 0
 
                 orig_second_time = self.train_list[train_index].second_time[0]
-                
+
                 # start is the current location of the train
                 # end is the destination of the train
                 # curr is the current block of the calculation
@@ -92,19 +93,17 @@ class Line():
 
                 if authority == 0:
 
-                    if not self.train_list[train_index].to_yard:
-                        self.remove_train_destination(train_id, end)
-                        self.train_list[train_index].path.insert(0, (self.calc_path(self.train_list[train_index].location, 0, self.train_list[train_index].second_time[0])))
-                        traverse_time = 0
-                        for block_num in self.train_list[train_index].path[0]:
-                            traverse_time = traverse_time + self.layout[block_num].ideal_traverse_time
+                    if self.train_list[train_index].to_yard:
 
-                        date = dt.datetime.now()
-                        datetime = date + dt.timedelta(seconds=traverse_time)
-                        self.train_list[train_index].arrival_times.append(datetime.time())
-                        # to_yard set in remove_train_destination
-                        #if not self.train_list[train_index].destinations:
-                            #self.train_list[train_index].to_yard = True
+                        self.remove_train_destination(train_id, end)
+                        self.train_list[train_index].path.insert(0, (self.calc_path(self.train_list[train_index].location, self.train_list[train_index].destinations[0], self.train_list[train_index].second_time[0])))
+                        traverse_time = 0
+                        for block in [layout_block for layout_block in self.train_list[train_index].path[0] if self.layout[layout_block].min_time_to_station != None]:
+                            traverse_time = traverse_time + self.layout[block].min_time_to_station
+
+                        time = dt.datetime.combine(dt.datetime.today(), self.train_list[train_index].arrival_times[-1])   
+                        time = time + dt.timedelta(seconds=traverse_time)
+                        self.train_list[train_index].arrival_times.append(time.time())
                         
                             
 
@@ -145,7 +144,6 @@ class Line():
 
             if not train.arrivals_calculated:
                 train.arrivals_calculated = True
-                train.path = []
                 total_traverse_time = 0
                 traverse_time = 0
 
@@ -187,19 +185,67 @@ class Line():
                 datetime = datetime_last + dt.timedelta(seconds=traverse_time)
                 train.arrival_times.append(datetime.time())
 
+    #def calc_arrival_times(self):
+        for train in self.train_list:
+            train.arrival_times.clear()
+            total_traverse_time = 0
+            traverse_time = 0
+
+            # first arrival
+            for block_num in [block for block in train.path[0] if self.layout[block].min_time_to_station != None]:
+                traverse_time = traverse_time + self.layout[block_num].min_time_to_station
+
+            total_traverse_time = total_traverse_time + traverse_time
+            train.arrival_times.append(total_traverse_time)
+
+            for prev_dest_index, dest in enumerate(train.destinations[1:]):
+                # Add 60 seconds for dwell time at station
+                traverse_time = 60
+                for block_num in [block for block in train.path[prev_dest_index + 1] if self.layout[block].min_time_to_station != None]:
+                    traverse_time = traverse_time + self.layout[block_num].min_time_to_station
+
+                total_traverse_time = total_traverse_time + traverse_time
+                train.arrival_times.append(total_traverse_time)
+
+            #traverse_time = 60
+            #print("Path to yard: ", train.path[-1])
+            #for block_num in [block for block in train.path[-1] if self.layout[block].min_time_to_station != None]:
+            #    traverse_time = traverse_time + self.layout[block_num].min_time_to_station
+            #    
+            #total_traverse_time = total_traverse_time + traverse_time
+            #train.arrival_times.append(total_traverse_time)
+
+    def calc_arrival_times(self):
+        for block in [layout_block for layout_block in self.layout if layout_block.min_time_to_station != None]:
+            self.arrival_times.append((block.block_number, block.min_time_to_station))
+
+    def arrival_time_between(self, start, end):
+        if [0, 63, 64].count(start):
+            start_index = 0
+        else:
+            start_index = [block[0] for block in self.arrival_times].index(start)
+        end_index = [block[0] for block in self.arrival_times].index(end)
+        traverse_time = 0
+        while start_index < end_index:
+            traverse_time = traverse_time + self.arrival_times[start_index][1]
+            start_index += 1
+
+        return 
+
     def create_train(self, destination, arrival_time, destination_station=None):
         """ Directly add a train to the line """
         dest = abs(destination)
-        self.train_list.append(Train(self.next_train_id, dest, arrival_time, destination_station, departure_time=dt.datetime.now().time()))
+        self.train_list.append(Train(self.next_train_id, dest, arrival_time, destination_station))
         self.train_list[-1].second_time.append(destination < 0)
         self.next_train_id += 1
         self.train_list[-1].path.append(self.calc_path(0, dest, destination < 0))
         self.calc_auth(self.train_list[-1].train_id)
 
-    def add_pending_train(self, destination, arrival_time, destination_station=None, depart_time:str=None):
+    def add_pending_train(self, destination, arrival_time, destination_station=None):
         """ Add a train to be dispatched later"""
         dest = abs(destination)
-        self.pending_trains.append(Train(self.next_train_id, dest, arrival_time, destination_station, depart_time))
+        self.pending_trains.append(Train(self.next_train_id, dest, arrival_time, destination_station))
+        self.pending_trains[-1].second_time.append(destination < 0)
         self.pending_trains[-1].path.append(self.calc_path(0, dest, destination < 0))
         self.next_train_id += 1
 
@@ -245,7 +291,6 @@ class Line():
     def remove_train_destination(self, train_id, destination):
         train_index = [train.train_id for train in self.train_list].index(train_id)
         self.train_list[train_index].remove_destination(destination)
-        self.train_list[train_index].second_time.pop(0)
 
         # recalculate path to next destination if it exists
         if train_index in [train.destinations for train in self.train_list]:
